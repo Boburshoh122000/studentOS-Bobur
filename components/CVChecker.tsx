@@ -1,19 +1,43 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 
 export default function CVChecker({ navigateTo }: NavigationProps) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isSidebarLocked, setIsSidebarLocked] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [activeMode, setActiveMode] = useState<'builder' | 'ats'>('ats');
   const [activeTab, setActiveTab] = useState('Personal Info');
+  const hoverTimeoutRef = useRef<any>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(true);
+    }, 120);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(false);
+    }, 320);
+  };
+
+  const isSidebarExpanded = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 relative z-20`}>
-        {/* Toggle Button */}
+    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
+      {/* Sidebar */}
+      <aside 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 z-20 relative`}
+      >
         <button 
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          className="absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+          onClick={() => setIsSidebarLocked(!isSidebarLocked)}
+          className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
         >
-          <span className="material-symbols-outlined text-[14px]">{isSidebarExpanded ? 'chevron_left' : 'chevron_right'}</span>
+          <span className="material-symbols-outlined text-[14px]">{isSidebarLocked ? 'chevron_left' : 'chevron_right'}</span>
         </button>
 
         <div className={`flex flex-col ${isSidebarExpanded ? 'items-start px-4' : 'items-center'} gap-8 w-full transition-all duration-300`}>
@@ -76,298 +100,518 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           </div>
         </div>
       </aside>
+      
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header className="h-16 px-6 border-b border-gray-200 dark:border-gray-800 bg-card-light dark:bg-card-dark flex items-center justify-between flex-shrink-0 z-10">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-text-main dark:text-white flex items-center gap-2">
-              <span className="text-primary material-symbols-outlined">fact_check</span>
-              CV Maker & ATS Checker
-            </h1>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">PRO TOOL</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block group">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px] group-focus-within:text-primary transition-colors">search</span>
-              <input className="pl-9 pr-4 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all" placeholder="Search templates..." type="text" />
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] backdrop-blur-sm px-6 flex items-center justify-between shrink-0 z-10">
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">StudentOS</h1>
+              <div className="h-4 w-px bg-slate-300 dark:bg-slate-700"></div>
+              <span className="text-sm font-medium text-slate-500">{activeMode === 'ats' ? 'ATS Checker' : 'CV Builder'}</span>
             </div>
-            <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1"></div>
-            <button className="relative p-2 rounded-lg text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2 right-2.5 size-2 bg-red-500 rounded-full border border-white dark:border-card-dark"></span>
-            </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <span className="text-sm font-medium text-text-main dark:text-white">Export PDF</span>
-              <span className="material-symbols-outlined text-sm">download</span>
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+              <button 
+                onClick={() => setActiveMode('builder')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeMode === 'builder' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              >
+                CV Builder
+              </button>
+              <button 
+                onClick={() => setActiveMode('ats')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeMode === 'ats' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              >
+                ATS Checker
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-xs text-slate-400 font-medium mr-2">Last saved: 1 min ago</div>
+            <button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Export Report
             </button>
           </div>
         </header>
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-full lg:w-5/12 xl:w-4/12 bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex flex-col z-0">
-            <div className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto scrollbar-hide">
-              <button 
-                onClick={() => setActiveTab('Personal Info')}
-                className={`px-6 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'Personal Info' ? 'text-primary border-primary bg-primary/5' : 'text-text-sub border-transparent hover:text-text-main hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-              >
-                Personal Info
-              </button>
-              <button 
-                onClick={() => setActiveTab('Experience')}
-                className={`px-6 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'Experience' ? 'text-primary border-primary bg-primary/5' : 'text-text-sub border-transparent hover:text-text-main hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-              >
-                Experience
-              </button>
-              <button 
-                onClick={() => setActiveTab('Education')}
-                className={`px-6 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'Education' ? 'text-primary border-primary bg-primary/5' : 'text-text-sub border-transparent hover:text-text-main hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-              >
-                Education
-              </button>
-              <button 
-                onClick={() => setActiveTab('Skills')}
-                className={`px-6 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'Skills' ? 'text-primary border-primary bg-primary/5' : 'text-text-sub border-transparent hover:text-text-main hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-              >
-                Skills
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-text-main dark:text-white">Contact Details</h2>
-                  <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">Auto-saved</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1 space-y-1.5">
-                    <label className="text-xs font-semibold text-text-sub uppercase">First Name</label>
-                    <input className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="text" defaultValue="Alex" />
-                  </div>
-                  <div className="col-span-1 space-y-1.5">
-                    <label className="text-xs font-semibold text-text-sub uppercase">Last Name</label>
-                    <input className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="text" defaultValue="Morgan" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-sub uppercase">Job Title</label>
-                  <input className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="text" defaultValue="Product Designer" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1 space-y-1.5">
-                    <label className="text-xs font-semibold text-text-sub uppercase">Email</label>
-                    <input className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="email" defaultValue="alex.morgan@example.com" />
-                  </div>
-                  <div className="col-span-1 space-y-1.5">
-                    <label className="text-xs font-semibold text-text-sub uppercase">Phone</label>
-                    <input className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="tel" defaultValue="+1 (555) 000-1234" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-sub uppercase flex justify-between">
-                    <span>Professional Summary</span>
-                    <button className="text-primary hover:text-primary-dark flex items-center gap-1 text-[10px]">
-                      <span className="material-symbols-outlined text-[12px]">auto_awesome</span> Generate with AI
+
+        {activeMode === 'ats' ? (
+          <div className="flex-1 overflow-hidden bg-background-light dark:bg-background-dark p-6">
+            <div className="h-full grid grid-cols-12 gap-6 max-w-7xl mx-auto">
+              <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full overflow-y-auto hide-scrollbar pb-10">
+                <div className="bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all hover:bg-primary/10 group cursor-pointer relative overflow-hidden shadow-sm">
+                  <div className="absolute top-4 right-4">
+                    <button className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors" title="Re-upload">
+                      <span className="material-symbols-outlined text-[20px]">refresh</span>
                     </button>
-                  </label>
-                  <textarea className="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow resize-none" rows={4} defaultValue="Product Designer with 4 years of experience in building user-centric digital products. Skilled in Figma, prototyping, and design systems. Proven track record of improving user engagement through data-driven design decisions."></textarea>
-                  <p className="text-[10px] text-text-sub text-right">240/500 characters</p>
+                  </div>
+                  <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">Upload your CV</h3>
+                    <p className="text-sm text-slate-500 mt-1">Drag & drop or <span className="text-primary font-medium hover:underline">browse</span></p>
+                  </div>
+                  <p className="text-xs text-slate-400">PDF, DOCX up to 10MB</p>
                 </div>
-              </div>
-              <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-text-main dark:text-white">Social Links</h2>
-                  <button className="text-primary hover:bg-primary/10 p-1 rounded transition-colors">
-                    <span className="material-symbols-outlined">add</span>
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded text-text-sub">
-                      <span className="material-symbols-outlined text-[18px]">link</span>
+                <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 min-h-[300px]">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-sm">Recently Scanned</h3>
+                    <button className="text-xs text-primary font-medium hover:underline">View All</button>
+                  </div>
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <div className="p-4 bg-primary/5 flex items-center gap-3 cursor-pointer border-l-4 border-primary">
+                      <div className="size-10 rounded-lg bg-white dark:bg-slate-700 text-red-500 shadow-sm flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined">picture_as_pdf</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">Alex_Smith_Frontend.pdf</h4>
+                        <p className="text-xs text-primary font-medium">Just now</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-full border border-green-200">85%</span>
+                      </div>
                     </div>
-                    <input className="flex-1 rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="text" defaultValue="linkedin.com/in/alexmorgan" />
-                    <button className="text-red-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded text-text-sub">
-                      <span className="material-symbols-outlined text-[18px]">language</span>
+                    <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-3 cursor-pointer border-l-4 border-transparent">
+                      <div className="size-10 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-500 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined">description</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">Alex_Smith_Generic.docx</h4>
+                        <p className="text-xs text-slate-400">2 days ago</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-bold text-yellow-700 bg-yellow-100 px-2.5 py-1 rounded-full border border-yellow-200">64%</span>
+                      </div>
                     </div>
-                    <input className="flex-1 rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-primary focus:ring-primary/20 transition-shadow" type="text" defaultValue="alex.design" />
-                    <button className="text-red-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
+                    <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-3 cursor-pointer border-l-4 border-transparent">
+                      <div className="size-10 rounded-lg bg-slate-100 dark:bg-slate-800 text-red-500 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined">picture_as_pdf</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">Alex_Smith_v1.pdf</h4>
+                        <p className="text-xs text-slate-400">1 week ago</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-bold text-orange-700 bg-orange-100 px-2.5 py-1 rounded-full border border-orange-200">42%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-              <span className="text-xs text-text-sub">Last saved: Just now</span>
-              <button className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
-                Save & Continue
-              </button>
+              <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 h-full overflow-y-auto hide-scrollbar pb-10">
+                <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm flex flex-col md:flex-row items-center gap-10">
+                  <div className="relative size-40 shrink-0">
+                    <div className="size-full rounded-full shadow-inner" style={{ background: 'conic-gradient(#2e2ee0 85%, #e2e8f0 0)' }}></div>
+                    <div className="absolute inset-3 bg-white dark:bg-card-dark rounded-full flex flex-col items-center justify-center shadow-md">
+                      <span className="text-4xl font-extrabold text-slate-900 dark:text-white">85<span className="text-xl text-slate-400">%</span></span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ATS Score</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-4 text-center md:text-left">
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Excellent! Your CV is optimized.</h2>
+                      <p className="text-sm text-slate-500 leading-relaxed max-w-lg">Your resume parses correctly and matches <strong className="text-slate-700 dark:text-slate-300">85%</strong> of the keywords for <span className="text-primary font-bold bg-primary/5 px-1 rounded">Junior Frontend Developer</span>. A few tweaks to your skills section could push this to 95%.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-2">
+                      <div className="px-5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center gap-3">
+                        <div className="size-2 rounded-full bg-green-500"></div>
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase font-bold tracking-wider">Hard Skills</span>
+                          <span className="block text-lg font-bold text-slate-900 dark:text-white">12<span className="text-slate-400 text-sm">/15</span></span>
+                        </div>
+                      </div>
+                      <div className="px-5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center gap-3">
+                        <div className="size-2 rounded-full bg-yellow-500"></div>
+                        <div>
+                          <span className="block text-[10px] text-slate-400 uppercase font-bold tracking-wider">Soft Skills</span>
+                          <span className="block text-lg font-bold text-slate-900 dark:text-white">6<span className="text-slate-400 text-sm">/8</span></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                        <span className="material-symbols-outlined">key</span>
+                      </div>
+                      <h3 className="font-bold text-slate-800 dark:text-white">Keyword Match</h3>
+                    </div>
+                    <div className="space-y-5 flex-1">
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold mb-2">
+                          <span className="text-slate-700 dark:text-slate-300">Required Keywords</span>
+                          <span className="text-indigo-600 dark:text-indigo-400">85%</span>
+                        </div>
+                        <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-500 w-[85%] rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold mb-2">
+                          <span className="text-slate-700 dark:text-slate-300">Recommended Keywords</span>
+                          <span className="text-indigo-400 dark:text-indigo-300">60%</span>
+                        </div>
+                        <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-300 dark:bg-indigo-600 w-[60%] rounded-full"></div>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold rounded uppercase">React</span>
+                          <span className="px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold rounded uppercase">Javascript</span>
+                          <span className="px-2 py-1 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold rounded uppercase line-through decoration-red-600">TypeScript</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-bold rounded uppercase">+5 more</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                        <span className="material-symbols-outlined">work</span>
+                      </div>
+                      <h3 className="font-bold text-slate-800 dark:text-white">Role Relevance</h3>
+                    </div>
+                    <div className="flex flex-col gap-4 flex-1">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1 tracking-wider">Target Role</div>
+                        <div className="font-bold text-slate-800 dark:text-white text-sm">Junior Frontend Developer</div>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">AI Compatibility:</span>
+                        <span className="flex items-center gap-1 text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md border border-green-100">
+                          <span className="material-symbols-outlined text-[16px]">verified</span> High Match
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 leading-snug mt-auto">Your experience duration and project complexity align well with market standards for this role based on 500+ similar job descriptions.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg">
+                      <span className="material-symbols-outlined">format_shapes</span>
+                    </div>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Formatting Check</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                      <span className="material-symbols-outlined text-green-500 shrink-0">check_circle</span>
+                      Standard Fonts (Inter, Arial)
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                      <span className="material-symbols-outlined text-green-500 shrink-0">check_circle</span>
+                      File Size (&lt; 2MB)
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                      <span className="material-symbols-outlined text-green-500 shrink-0">check_circle</span>
+                      No Tables Detected
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 p-2 rounded bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 transition-colors">
+                      <span className="material-symbols-outlined text-red-500 shrink-0">cancel</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">Header/Footer Graphics Detected</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-6 text-white relative overflow-hidden shadow-xl border border-slate-700">
+                  <div className="absolute top-0 right-0 p-20 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+                  <div className="flex items-center justify-between mb-6 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-400/20 rounded-lg border border-yellow-400/20">
+                        <span className="material-symbols-outlined text-yellow-400">lightbulb</span>
+                      </div>
+                      <h3 className="font-bold text-lg tracking-tight">Optimization Tips</h3>
+                    </div>
+                    <span className="px-3 py-1 bg-yellow-400 text-slate-900 text-[10px] font-black rounded-full uppercase tracking-wider shadow-lg shadow-yellow-400/20 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">star</span> Premium
+                    </span>
+                  </div>
+                  <div className="space-y-3 relative z-10">
+                    <div className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                      <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/30">
+                        <span className="material-symbols-outlined text-green-400 text-xs">add</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">Increase use of action verbs</p>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">Replace passive phrases like "Responsible for" with strong verbs like "Spearheaded", "Developed", or "Optimized".</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                      <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/30">
+                        <span className="material-symbols-outlined text-green-400 text-xs">add</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">Add 'TypeScript' to skills section</p>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">It appears in your work experience description but is missing from your core skills list which bots scan first.</p>
+                      </div>
+                    </div>
+                    <div aria-hidden="true" className="space-y-3 relative select-none">
+                      <div className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10 blur-[4px] opacity-40">
+                        <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-green-400 text-xs">add</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white">Quantify your achievements</p>
+                          <p className="text-xs text-slate-400 mt-1">Add metrics to 3 more bullet points to show impact.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10 blur-[4px] opacity-40">
+                        <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-green-400 text-xs">add</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white">Reduce document length</p>
+                          <p className="text-xs text-slate-400 mt-1">Your CV exceeds 2 pages. Condense older roles.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10 blur-[4px] opacity-40">
+                        <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-green-400 text-xs">add</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white">Fix date formatting inconsistencies</p>
+                          <p className="text-xs text-slate-400 mt-1">Use MM/YYYY format consistently.</p>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent rounded-b-2xl">
+                        <button className="bg-white text-slate-900 hover:bg-blue-50 px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-black/50 transition-all hover:scale-105 flex items-center gap-2 group">
+                          <span className="material-symbols-outlined text-lg group-hover:text-primary transition-colors">lock_open</span>
+                          Unlock Full Analysis
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex-1 bg-gray-100 dark:bg-[#0B0D15] relative overflow-hidden flex flex-col">
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2 bg-white dark:bg-card-dark p-1.5 rounded-full shadow-lg border border-gray-200 dark:border-gray-700">
-              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-sub hover:text-primary transition-colors" title="Zoom Out">
-                <span className="material-symbols-outlined text-[18px]">remove</span>
-              </button>
-              <span className="px-2 py-1.5 text-xs font-semibold text-text-main dark:text-white min-w-[3rem] text-center">100%</span>
-              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-sub hover:text-primary transition-colors" title="Zoom In">
-                <span className="material-symbols-outlined text-[18px]">add</span>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-8 lg:p-12 flex justify-center items-start">
-              <div className="resume-paper bg-white text-black shadow-xl shrink-0 origin-top transform scale-90 lg:scale-100 transition-transform duration-300">
-                <div className="p-12 h-full flex flex-col">
-                  <header className="border-b-2 border-gray-800 pb-6 mb-6">
-                    <h1 className="text-4xl font-bold uppercase tracking-wide text-gray-900">Alex Morgan</h1>
-                    <p className="text-xl text-gray-600 font-light mt-1">Product Designer</p>
-                    <div className="flex gap-4 mt-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">mail</span> alex.morgan@example.com</span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">call</span> +1 (555) 000-1234</span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">location_on</span> San Francisco, CA</span>
+        ) : (
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[450px] shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark overflow-y-auto no-scrollbar flex flex-col">
+              <div className="p-6 pb-20 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-800 dark:text-white">Editor</h2>
+                  <span className="text-xs text-slate-400">All changes saved automatically</span>
+                </div>
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50">
+                  <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-sm">person</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Personal Details</span>
                     </div>
-                  </header>
-                  <div className="grid grid-cols-3 gap-8 flex-1">
-                    <div className="col-span-2 space-y-6">
-                      <section>
-                        <h3 className="font-bold uppercase tracking-wider text-sm border-b border-gray-300 pb-1 mb-3">Professional Summary</h3>
-                        <p className="text-sm leading-relaxed text-gray-700">Product Designer with 4 years of experience in building user-centric digital products. Skilled in Figma, prototyping, and design systems. Proven track record of improving user engagement through data-driven design decisions.</p>
-                      </section>
-                      <section>
-                        <h3 className="font-bold uppercase tracking-wider text-sm border-b border-gray-300 pb-1 mb-3">Experience</h3>
-                        <div className="mb-4">
-                          <div className="flex justify-between items-baseline mb-1">
-                            <h4 className="font-bold text-gray-800">Senior UI Designer</h4>
-                            <span className="text-xs text-gray-500">2021 - Present</span>
-                          </div>
-                          <p className="text-xs font-semibold text-gray-600 mb-2">TechFlow Inc.</p>
-                          <ul className="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
-                            <li>Led the redesign of the core mobile application, resulting in a 25% increase in daily active users.</li>
-                            <li>Established a comprehensive design system used across 4 different product lines.</li>
-                            <li>Mentored junior designers and conducted weekly design critiques.</li>
-                          </ul>
-                        </div>
-                        <div className="mb-4">
-                          <div className="flex justify-between items-baseline mb-1">
-                            <h4 className="font-bold text-gray-800">UX Designer</h4>
-                            <span className="text-xs text-gray-500">2019 - 2021</span>
-                          </div>
-                          <p className="text-xs font-semibold text-gray-600 mb-2">Creative Studio</p>
-                          <ul className="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
-                            <li>Collaborated with product managers to define user requirements and user flows.</li>
-                            <li>Conducted usability testing sessions with over 50 participants.</li>
-                          </ul>
-                        </div>
-                      </section>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_less</span>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-4">
+                    <div className="col-span-1 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">First Name</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Alex"/>
                     </div>
-                    <div className="col-span-1 space-y-6">
-                      <section>
-                        <h3 className="font-bold uppercase tracking-wider text-sm border-b border-gray-300 pb-1 mb-3">Skills</h3>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">Figma</span>
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">Adobe XD</span>
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">Prototyping</span>
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">HTML/CSS</span>
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">User Research</span>
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">Wireframing</span>
-                        </div>
-                      </section>
-                      <section>
-                        <h3 className="font-bold uppercase tracking-wider text-sm border-b border-gray-300 pb-1 mb-3">Education</h3>
-                        <div className="mb-3">
-                          <h4 className="font-bold text-gray-800 text-sm">BFA Interaction Design</h4>
-                          <p className="text-xs text-gray-600">California College of the Arts</p>
-                          <p className="text-xs text-gray-500">2015 - 2019</p>
-                        </div>
-                      </section>
+                    <div className="col-span-1 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">Last Name</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Smith"/>
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">Job Title</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Junior Frontend Developer"/>
+                    </div>
+                    <div className="col-span-1 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">Email</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="email" defaultValue="alex.smith@student.edu"/>
+                    </div>
+                    <div className="col-span-1 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">Phone</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="tel" defaultValue="+1 (555) 000-1234"/>
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 uppercase">Location</label>
+                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="San Francisco, CA"/>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="absolute right-6 top-6 bottom-6 w-80 bg-white/95 dark:bg-card-dark/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col z-20 transition-transform transform translate-x-0">
-              <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">analytics</span>
-                  <h3 className="font-bold text-text-main dark:text-white">ATS Score</h3>
-                </div>
-                <span className="text-xs font-medium text-text-sub bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Job: Product Designer</span>
-              </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-6">
-                <div className="flex flex-col items-center justify-center py-2">
-                  <div className="relative size-32">
-                    <svg className="size-full -rotate-90" viewBox="0 0 36 36">
-                      <path className="text-gray-100 dark:text-gray-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3"></path>
-                      <path className="text-primary drop-shadow-[0_0_4px_rgba(45,77,224,0.5)]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="87, 100" strokeLinecap="round" strokeWidth="3"></path>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold text-text-main dark:text-white">87%</span>
-                      <span className="text-[10px] text-text-sub font-medium uppercase tracking-wide">Match</span>
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50 group">
+                  <div className="bg-white dark:bg-slate-800 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-sm">assignment</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Professional Summary</span>
                     </div>
-                  </div>
-                  <p className="text-center text-sm text-text-sub mt-3 px-2">Great job! Your resume is highly optimized for this role.</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-red-500 text-[18px]">warning</span>
-                    Missing Keywords
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 text-xs font-medium rounded border border-red-100 dark:border-red-800/30 flex items-center gap-1 group cursor-pointer hover:bg-red-100 transition-colors">
-                      Agile <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100">add</span>
-                    </span>
-                    <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 text-xs font-medium rounded border border-red-100 dark:border-red-800/30 flex items-center gap-1 group cursor-pointer hover:bg-red-100 transition-colors">
-                      Jira <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100">add</span>
-                    </span>
-                    <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 text-xs font-medium rounded border border-red-100 dark:border-red-800/30 flex items-center gap-1 group cursor-pointer hover:bg-red-100 transition-colors">
-                      Typography <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100">add</span>
-                    </span>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
                   </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
-                    Top Matched
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 text-xs font-medium rounded border border-green-100 dark:border-green-800/30">Figma</span>
-                    <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 text-xs font-medium rounded border border-green-100 dark:border-green-800/30">Prototyping</span>
-                    <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 text-xs font-medium rounded border border-green-100 dark:border-green-800/30">Design Systems</span>
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 mt-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-bold text-primary flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-                      AI Suggestions
-                    </h4>
-                    <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded">PRO</span>
-                  </div>
-                  <div className="space-y-3 filter blur-[2px] select-none opacity-60">
-                    <div className="bg-white dark:bg-card-dark p-2 rounded border border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-text-main dark:text-white">Rewrite summary to include "Leadership".</p>
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50 group">
+                  <div className="bg-white dark:bg-slate-800 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-sm">work</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Experience</span>
                     </div>
-                    <div className="bg-white dark:bg-card-dark p-2 rounded border border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-text-main dark:text-white">Quantify results in Experience section.</p>
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/30 dark:bg-black/30 backdrop-blur-[1px]">
-                    <span className="material-symbols-outlined text-primary text-3xl mb-1">lock</span>
-                    <button className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full shadow-lg hover:bg-primary-dark transition-colors">
-                      Unlock Premium
-                    </button>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
                   </div>
                 </div>
-              </div>
-              <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-                <button className="w-full py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black text-sm font-bold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 shadow-lg">
-                  <span className="material-symbols-outlined text-[20px]">refresh</span> Re-scan Resume
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50 group">
+                  <div className="bg-white dark:bg-slate-800 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-sm">school</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Education</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                  </div>
+                </div>
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50 group">
+                  <div className="bg-white dark:bg-slate-800 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-sm">psychology</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Skills & Tools</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                  </div>
+                </div>
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/50 group">
+                  <div className="bg-white dark:bg-slate-800 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-sm">translate</span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Languages</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                  </div>
+                </div>
+                <button className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined text-sm">add_circle</span>
+                  Add Custom Section
                 </button>
               </div>
             </div>
+            <div className="flex-1 bg-slate-100 dark:bg-[#0B0D15] relative overflow-hidden flex flex-col">
+              <div className="absolute bottom-6 right-6 z-30 flex flex-col gap-2">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-1 flex flex-col items-center">
+                  <button className="p-2 text-slate-500 hover:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">add</span>
+                  </button>
+                  <div className="h-px w-4 bg-slate-200 dark:bg-slate-700"></div>
+                  <button className="p-2 text-slate-500 hover:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">remove</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-8 lg:p-12 flex justify-center items-start">
+                <div className="resume-paper bg-white text-black shadow-xl shrink-0 origin-top transform scale-90 lg:scale-100 transition-transform duration-300">
+                  <div className="p-8 flex flex-col gap-6">
+                    <div className="border-b-2 border-slate-900 pb-5">
+                      <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight uppercase mb-1">Alex Smith</h1>
+                      <p className="text-xl text-primary font-bold">Junior Frontend Developer</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-slate-600 font-medium">
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">email</span>
+                          alex.smith@student.edu
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">call</span>
+                          +1 (555) 000-1234
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">location_on</span>
+                          San Francisco, CA
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">link</span>
+                          linkedin.com/in/alexsmith
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">Professional Profile</h2>
+                      <p className="text-xs text-slate-700 leading-relaxed text-justify">
+                        Passionate computer science student with a focus on building accessible, user-friendly web applications. Experienced in React and Tailwind CSS, with a strong foundation in modern JavaScript. Eager to launch a career in frontend development and contribute to innovative tech solutions. Proven ability to work in agile environments and deliver high-quality code.
+                      </p>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-200 pb-1">Experience</h2>
+                      <div className="flex flex-col gap-5">
+                        <div className="relative pl-4 border-l-2 border-slate-100">
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h3 className="text-sm font-bold text-slate-800">Web Development Intern</h3>
+                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Jun 2023 - Aug 2023</span>
+                          </div>
+                          <p className="text-xs font-bold text-primary mb-2">TechStart Inc. — San Francisco</p>
+                          <ul className="list-disc list-outside ml-3 text-xs text-slate-700 space-y-1.5">
+                            <li>Assisted in refactoring legacy codebase to React 18, improving maintainability by 40%.</li>
+                            <li>Collaborated closely with UX designers to implement pixel-perfect UI components from Figma.</li>
+                            <li>Optimized image assets and scripts, improving page load times by 20% across the platform.</li>
+                            <li>Participated in daily stand-ups and code reviews, ensuring code quality standards.</li>
+                          </ul>
+                        </div>
+                        <div className="relative pl-4 border-l-2 border-slate-100">
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h3 className="text-sm font-bold text-slate-800">Freelance Web Developer</h3>
+                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Jan 2022 - Present</span>
+                          </div>
+                          <p className="text-xs font-bold text-primary mb-2">Remote</p>
+                          <ul className="list-disc list-outside ml-3 text-xs text-slate-700 space-y-1.5">
+                            <li>Developed responsive websites for local businesses using HTML5, CSS3, and JavaScript.</li>
+                            <li>Implemented SEO best practices, resulting in a 15% increase in organic traffic for clients.</li>
+                            <li>Managed client communications and project timelines effectively.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-200 pb-1">Education</h2>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-800">BS Computer Science</h3>
+                            <p className="text-xs font-medium text-slate-600 italic">University of Tech</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-semibold text-slate-500">Expected 2024</span>
+                            <p className="text-[10px] text-slate-400 mt-0.5">GPA: 3.8/4.0</p>
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-700">
+                          <span className="font-semibold">Relevant Coursework:</span> Data Structures, Algorithms, Web Development, Database Systems, UI/UX Design.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-8">
+                      <div>
+                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">Technical Skills</h2>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">JavaScript (ES6+)</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">React.js</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">TypeScript</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">HTML5 & CSS3</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">Tailwind CSS</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">Git & GitHub</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">Figma</span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded">Node.js</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">Languages</h2>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-slate-700 font-medium">English</span>
+                            <span className="text-slate-500">Native</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5">
+                            <div className="bg-primary h-1.5 rounded-full" style={{ width: '100%' }}></div>
+                          </div>
+                          <div className="flex justify-between text-[11px] mt-2">
+                            <span className="text-slate-700 font-medium">Spanish</span>
+                            <span className="text-slate-500">Intermediate</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5">
+                            <div className="bg-primary h-1.5 rounded-full" style={{ width: '60%' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isSidebarLocked, setIsSidebarLocked] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const hoverTimeoutRef = useRef<any>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(true);
+    }, 120);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(false);
+    }, 320);
+  };
+
+  const isSidebarExpanded = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 relative z-20`}>
-        {/* Toggle Button */}
+    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
+      {/* Sidebar */}
+      <aside 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 z-20 relative`}
+      >
         <button 
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          className="absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+          onClick={() => setIsSidebarLocked(!isSidebarLocked)}
+          className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
         >
-          <span className="material-symbols-outlined text-[14px]">{isSidebarExpanded ? 'chevron_left' : 'chevron_right'}</span>
+          <span className="material-symbols-outlined text-[14px]">{isSidebarLocked ? 'chevron_left' : 'chevron_right'}</span>
         </button>
 
         <div className={`flex flex-col ${isSidebarExpanded ? 'items-start px-4' : 'items-center'} gap-8 w-full transition-all duration-300`}>
@@ -333,3 +356,28 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30">
                           <span className="material-symbols-outlined text-[14px] font-bold">payments</span>
                           $10,000 + Mentorship
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        <span className="bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-1 rounded dark:bg-gray-800 dark:text-gray-400">Postgraduate</span>
+                        <span className="bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-1 rounded dark:bg-gray-800 dark:text-gray-400">Computer Science</span>
+                        <span className="bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-1 rounded dark:bg-gray-800 dark:text-gray-400">Creative Tech</span>
+                      </div>
+                      <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 text-orange-600 font-bold">
+                          <span className="material-symbols-outlined text-[16px]">calendar_clock</span>
+                          <span>2 weeks left</span>
+                        </div>
+                        <span className="text-gray-400">Oct 25, 2023</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

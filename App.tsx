@@ -25,6 +25,7 @@ import AdminPricing from './components/AdminPricing';
 import AdminUsers from './components/AdminUsers';
 import AdminScholarships from './components/AdminScholarships';
 import AdminRoles from './components/AdminRoles';
+import AdminBlog from './components/AdminBlog';
 import EmployerDashboard from './components/EmployerDashboard';
 
 export default function App() {
@@ -109,6 +110,9 @@ export default function App() {
       )}
       {currentScreen === Screen.ADMIN_ROLES && (
         <AdminRoles navigateTo={navigateTo} />
+      )}
+      {currentScreen === Screen.ADMIN_BLOG && (
+        <AdminBlog navigateTo={navigateTo} />
       )}
       {currentScreen === Screen.EMPLOYER_DASHBOARD && (
         <EmployerDashboard navigateTo={navigateTo} />

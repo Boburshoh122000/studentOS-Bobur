@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isSidebarLocked, setIsSidebarLocked] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const hoverTimeoutRef = useRef<any>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(true);
+    }, 120);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(false);
+    }, 320);
+  };
+
+  const isSidebarExpanded = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 relative z-20`}>
-        {/* Toggle Button */}
+    <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
+      
+      {/* Sidebar - Standard Flow */}
+      <aside 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`${isSidebarExpanded ? 'w-64' : 'w-20'} bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 flex flex-col justify-between transition-all duration-300 ease-in-out hidden md:flex items-center py-6 z-20 flex-shrink-0 relative`}
+      >
+        {/* Lock/Unlock Toggle */}
         <button 
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          className="absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+          onClick={() => setIsSidebarLocked(!isSidebarLocked)}
+          className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
+          title={isSidebarLocked ? "Unlock Sidebar" : "Lock Sidebar Open"}
         >
-          <span className="material-symbols-outlined text-[14px]">{isSidebarExpanded ? 'chevron_left' : 'chevron_right'}</span>
+          <span className="material-symbols-outlined text-[14px]">{isSidebarLocked ? 'chevron_left' : 'chevron_right'}</span>
         </button>
 
         <div className={`flex flex-col ${isSidebarExpanded ? 'items-start px-4' : 'items-center'} gap-8 w-full transition-all duration-300`}>

@@ -1,18 +1,42 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 
 export default function AdminDashboard({ navigateTo }: NavigationProps) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarLocked, setIsSidebarLocked] = useState(true);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const hoverTimeoutRef = useRef<any>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(true);
+    }, 120);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsSidebarHovered(false);
+    }, 320);
+  };
+
+  const isSidebarExpanded = isSidebarLocked || isSidebarHovered;
 
   return (
-    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}>
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
+      
+      {/* Sidebar - Standard Flow */}
+      <aside 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 ease-in-out z-20 flex-shrink-0 relative`}
+      >
         <button 
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+          onClick={() => setIsSidebarLocked(!isSidebarLocked)}
+          className={`absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
         >
-          <span className="material-symbols-outlined text-[14px]">{isSidebarExpanded ? 'chevron_left' : 'chevron_right'}</span>
+          <span className="material-symbols-outlined text-[14px]">{isSidebarLocked ? 'chevron_left' : 'chevron_right'}</span>
         </button>
 
         <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
@@ -66,6 +90,14 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               >
                 <span className="material-symbols-outlined">school</span>
                 {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>}
+              </button>
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Blog Management" : ""}
+              >
+                <span className="material-symbols-outlined">article</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>}
               </button>
               <button 
                 onClick={() => navigateTo(Screen.ADMIN_ROLES)} 
@@ -186,85 +218,8 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                   <line className="dark:stroke-gray-700" stroke="#e2e8f0" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="150" y2="150"></line>
                   <line className="dark:stroke-gray-700" stroke="#e2e8f0" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="50" y2="50"></line>
                   <path d="M0,250 C100,240 150,200 200,180 C250,160 300,190 350,150 C400,110 450,130 500,100 C550,70 600,90 650,60 C700,30 750,50 800,40 V300 H0 Z" fill="url(#growthGradient)"></path>
-                  <path d="M0,250 C100,240 150,200 200,180 C250,160 300,190 350,150 C400,110 450,130 500,100 C550,70 600,90 650,60 C700,30 750,50 800,40" fill="none" stroke="#2d4ee1" strokeWidth="3"></path>
-                  <path d="M0,280 C120,270 180,260 240,240 C300,220 360,230 420,200 C480,170 540,190 600,160 C660,130 720,150 800,120" fill="none" stroke="#f97316" strokeDasharray="5 5" strokeWidth="2"></path>
-                  <circle className="dark:stroke-gray-800" cx="200" cy="180" fill="#2d4ee1" r="4" stroke="#fff" strokeWidth="2"></circle>
-                  <circle className="dark:stroke-gray-800" cx="500" cy="100" fill="#2d4ee1" r="4" stroke="#fff" strokeWidth="2"></circle>
-                  <circle className="dark:stroke-gray-800" cx="650" cy="60" fill="#2d4ee1" r="4" stroke="#fff" strokeWidth="2"></circle>
+                  <path d="M0,250 C100,240 150,200 200,180 C250,160 300,190 350,150 C400,110 450,130 500,100 C550,70 600,90 650,60 C700,30 750,50 800,40" stroke="#2d4ee1" strokeWidth="3" fill="none"></path>
                 </svg>
-              </div>
-              <div className="mt-4 flex justify-between px-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
-              </div>
-              <div className="mt-4 flex gap-6 justify-center">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-primary"></span>
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">New Signups</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Active Users</span>
-                </div>
-              </div>
-            </div>
-            <div className="lg:col-span-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">User Demographics</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Distribution by Age & Role</p>
-              </div>
-              <div className="flex-1 flex flex-col justify-center gap-5">
-                <div className="group">
-                  <div className="flex justify-between text-xs font-semibold mb-1 text-slate-900 dark:text-white">
-                    <span>Students (18-24)</span>
-                    <span>65%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3 overflow-hidden">
-                    <div className="bg-primary h-3 rounded-full" style={{ width: "65%" }}></div>
-                  </div>
-                </div>
-                <div className="group">
-                  <div className="flex justify-between text-xs font-semibold mb-1 text-slate-900 dark:text-white">
-                    <span>Graduates (25-30)</span>
-                    <span>20%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3 overflow-hidden">
-                    <div className="bg-emerald-500 h-3 rounded-full" style={{ width: "20%" }}></div>
-                  </div>
-                </div>
-                <div className="group">
-                  <div className="flex justify-between text-xs font-semibold mb-1 text-slate-900 dark:text-white">
-                    <span>Employers / Recruiters</span>
-                    <span>10%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3 overflow-hidden">
-                    <div className="bg-orange-500 h-3 rounded-full" style={{ width: "10%" }}></div>
-                  </div>
-                </div>
-                <div className="group">
-                  <div className="flex justify-between text-xs font-semibold mb-1 text-slate-900 dark:text-white">
-                    <span>Administrators</span>
-                    <span>5%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3 overflow-hidden">
-                    <div className="bg-purple-500 h-3 rounded-full" style={{ width: "5%" }}></div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Dominant Group</span>
-                  <span className="font-bold text-primary">Students</span>
-                </div>
-                <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-slate-500 dark:text-slate-400">Fastest Growing</span>
-                  <span className="font-bold text-emerald-500">Graduates</span>
-                </div>
               </div>
             </div>
           </section>
