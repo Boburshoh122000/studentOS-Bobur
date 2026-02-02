@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Screen } from './types';
 import LandingPage from './components/LandingPage';
@@ -19,7 +20,9 @@ import Blog from './components/Blog';
 import AboutUs from './components/AboutUs';
 import ProfileSettings from './components/ProfileSettings';
 import AdminDashboard from './components/AdminDashboard';
+import AdminEmployers from './components/AdminEmployers';
 import AdminPricing from './components/AdminPricing';
+import AdminUsers from './components/AdminUsers';
 import AdminScholarships from './components/AdminScholarships';
 import AdminRoles from './components/AdminRoles';
 import EmployerDashboard from './components/EmployerDashboard';
@@ -92,8 +95,14 @@ export default function App() {
       {currentScreen === Screen.ADMIN_DASHBOARD && (
         <AdminDashboard navigateTo={navigateTo} />
       )}
+      {currentScreen === Screen.ADMIN_EMPLOYERS && (
+        <AdminEmployers navigateTo={navigateTo} />
+      )}
       {currentScreen === Screen.ADMIN_PRICING && (
         <AdminPricing navigateTo={navigateTo} />
+      )}
+      {currentScreen === Screen.ADMIN_USERS && (
+        <AdminUsers navigateTo={navigateTo} />
       )}
       {currentScreen === Screen.ADMIN_SCHOLARSHIPS && (
         <AdminScholarships navigateTo={navigateTo} />

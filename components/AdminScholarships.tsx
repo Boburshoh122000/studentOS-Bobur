@@ -1,59 +1,97 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Screen, NavigationProps } from '../types';
 
 export default function AdminScholarships({ navigateTo }: NavigationProps) {
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
   return (
     <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside className="flex w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-colors duration-200">
-        <div className="flex h-full flex-col justify-between p-4">
+      <aside className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}>
+        <button 
+          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+        >
+          <span className="material-symbols-outlined text-[14px]">{isSidebarExpanded ? 'chevron_left' : 'chevron_right'}</span>
+        </button>
+
+        <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
           <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-3 px-2 cursor-pointer" onClick={() => navigateTo(Screen.LANDING)}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
+            <div className={`flex items-center gap-3 px-2 cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`} onClick={() => navigateTo(Screen.LANDING)}>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
                 <span className="material-symbols-outlined text-2xl">school</span>
               </div>
-              <div className="flex flex-col">
-                <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white">StudentOS</h1>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Admin Console</p>
+              <div className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+                <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white whitespace-nowrap">StudentOS</h1>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Admin Console</p>
               </div>
             </div>
             <nav className="flex flex-col gap-1">
-              <button onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full text-left">
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)} 
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Dashboard" : ""}
+              >
                 <span className="material-symbols-outlined">dashboard</span>
-                <span className="text-sm font-medium">Dashboard</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>}
               </button>
-              <button onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)} className="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full text-left">
-                <span className="material-symbols-outlined fill-1">school</span>
-                <span className="text-sm font-semibold">Scholarships</span>
-              </button>
-              <button className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full text-left">
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Employers" : ""}
+              >
                 <span className="material-symbols-outlined">work</span>
-                <span className="text-sm font-medium">Employers</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Employers</span>}
               </button>
-              <button onClick={() => navigateTo(Screen.ADMIN_PRICING)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full text-left">
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_PRICING)} 
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Pricing" : ""}
+              >
                 <span className="material-symbols-outlined">payments</span>
-                <span className="text-sm font-medium">Pricing</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Pricing</span>}
               </button>
-              <button onClick={() => navigateTo(Screen.ADMIN_ROLES)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full text-left">
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_USERS)} 
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Users" : ""}
+              >
                 <span className="material-symbols-outlined">group</span>
-                <span className="text-sm font-medium">Users</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Users</span>}
               </button>
-              <button onClick={() => navigateTo(Screen.ADMIN_ROLES)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full text-left">
-                <span className="material-symbols-outlined">settings</span>
-                <span className="text-sm font-medium">Settings</span>
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
+                className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Scholarships" : ""}
+              >
+                <span className="material-symbols-outlined fill-1">school</span>
+                {isSidebarExpanded && <span className="text-sm font-semibold whitespace-nowrap">Scholarships</span>}
+              </button>
+              <button 
+                onClick={() => navigateTo(Screen.ADMIN_ROLES)} 
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? "Roles & Permissions" : ""}
+              >
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+                {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>}
               </button>
             </nav>
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
-            <div className="flex items-center gap-3 px-2">
-              <div className="h-10 w-10 rounded-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBuz7qhWBsQWRjQG1k4CGzFYXhvsFourXvcGFagkS8Ygc6l63kf_qKcXMNXo-XVoFmsea9D7RojO2v9OQMLgttwk1_1u0Sefnl9iGveWDk1yjDa_QNz60aKEgmugT98Txyt38TOYyQMofKNHNsNclFGBFIyOx-Pp3k9dCugBZvO2F-jiAog2elvqhTUfgxkZ76fxUGvaAwgKP6ELOG_Pjri33lWH4w8m1KEmJ6TIWTLY4NQXPNvKCff1WFCaRn_73oR3o1z2hQVLt4')" }}></div>
-              <div className="flex flex-col">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">Jane Doe</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Super Admin</p>
+            <div className={`flex items-center gap-3 px-2 ${!isSidebarExpanded && 'justify-center px-0'}`}>
+              <div className="h-10 w-10 shrink-0 rounded-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBuz7qhWBsQWRjQG1k4CGzFYXhvsFourXvcGFagkS8Ygc6l63kf_qKcXMNXo-XVoFmsea9D7RojO2v9OQMLgttwk1_1u0Sefnl9iGveWDk1yjDa_QNz60aKEgmugT98Txyt38TOYyQMofKNHNsNclFGBFIyOx-Pp3k9dCugBZvO2F-jiAog2elvqhTUfgxkZ76fxUGvaAwgKP6ELOG_Pjri33lWH4w8m1KEmJ6TIWTLY4NQXPNvKCff1WFCaRn_73oR3o1z2hQVLt4')" }}></div>
+              <div className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">Jane Doe</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">Super Admin</p>
               </div>
             </div>
-            <button onClick={() => navigateTo(Screen.SIGN_IN)} className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+            <button 
+              onClick={() => navigateTo(Screen.SIGN_IN)} 
+              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'}`}
+              title={!isSidebarExpanded ? "Logout" : ""}
+            >
               <span className="material-symbols-outlined text-lg">logout</span>
-              Logout
+              {isSidebarExpanded && <span>Logout</span>}
             </button>
           </div>
         </div>
@@ -66,10 +104,6 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
               <p className="text-base text-slate-500 dark:text-slate-400">Create, edit, and manage scholarship opportunities</p>
             </div>
             <div className="flex gap-3">
-              <button className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                <span className="material-symbols-outlined text-lg">settings</span>
-                <span>Settings</span>
-              </button>
               <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 group">
                 <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform duration-300">add</span>
                 <span>Add Scholarship</span>

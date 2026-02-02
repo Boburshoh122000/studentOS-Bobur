@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
 
@@ -62,10 +63,6 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <p className="text-base text-slate-500 dark:text-slate-400">Manage your active listings and candidate applications</p>
             </div>
             <div className="flex gap-3">
-              <a className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors" href="#">
-                <span className="material-symbols-outlined text-lg">business</span>
-                <span>View Profile</span>
-              </a>
               <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30">
                 <span className="material-symbols-outlined text-lg">add</span>
                 <span>Post New Job</span>
