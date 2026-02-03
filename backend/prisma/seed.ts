@@ -303,7 +303,7 @@ async function main() {
   }
   console.log('✅ Sample scholarships created (10 scholarships)');
 
-  // Create sample blog posts
+  // Create sample blog posts (authored by admin)
   const blogPosts = [
     {
       title: 'How to Ace Your Tech Interview',
@@ -325,10 +325,11 @@ Understand the company's products, culture, and values. This shows genuine inter
 ## 5. Follow Up
 After the interview, send a thank-you email. It's a small gesture that can make a big difference.`,
       excerpt: 'Learn the essential strategies to prepare for and succeed in your next tech interview.',
-      imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800',
+      coverImageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800',
       tags: ['career', 'interview', 'tech'],
       status: 'PUBLISHED' as const,
       publishedAt: new Date(),
+      authorId: admin.id,
     },
     {
       title: '10 Scholarships Every Student Should Know About',
@@ -352,10 +353,11 @@ Germany's comprehensive funding program for international students.
 
 And many more! Start your applications early and don't be afraid to apply to multiple programs.`,
       excerpt: 'Discover the top scholarships that can help fund your education without breaking the bank.',
-      imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+      coverImageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
       tags: ['scholarships', 'funding', 'education'],
       status: 'PUBLISHED' as const,
       publishedAt: new Date(),
+      authorId: admin.id,
     },
     {
       title: 'Building Habits That Stick: A Students Guide',
@@ -377,10 +379,11 @@ Missing one day doesn't mean you've failed. Get back on track the next day.
 ## Reward Yourself
 Celebrate small wins. This positive reinforcement makes habits more likely to stick.`,
       excerpt: 'Learn science-backed strategies to build and maintain productive habits as a student.',
-      imageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800',
+      coverImageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800',
       tags: ['productivity', 'habits', 'student-life'],
       status: 'PUBLISHED' as const,
       publishedAt: new Date(),
+      authorId: admin.id,
     },
   ];
 
