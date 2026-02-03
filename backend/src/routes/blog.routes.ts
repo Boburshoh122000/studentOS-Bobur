@@ -6,7 +6,7 @@ import { requireAdmin } from '../middleware/role.middleware.js';
 const router = Router();
 
 // Get all published posts
-router.get('/', optionalAuth, async (req, res, next) => {
+router.get('/', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { tag, page = '1', limit = '10' } = req.query as any;
 
@@ -53,7 +53,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
 });
 
 // Get single post by slug
-router.get('/:slug', optionalAuth, async (req, res, next) => {
+router.get('/:slug', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const post = await prisma.blogPost.findUnique({
       where: { slug: req.params.slug as string },

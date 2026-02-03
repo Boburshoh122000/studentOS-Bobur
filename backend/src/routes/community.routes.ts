@@ -5,7 +5,7 @@ import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/
 const router = Router();
 
 // Get all posts
-router.get('/', optionalAuth, async (req, res, next) => {
+router.get('/', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { page = '1', limit = '20' } = req.query as any;
 
@@ -82,7 +82,7 @@ router.post('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
 });
 
 // Get single post with comments
-router.get('/:id', optionalAuth, async (req, res, next) => {
+router.get('/:id', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const post = await prisma.communityPost.findUnique({
       where: { id: req.params.id as string },
