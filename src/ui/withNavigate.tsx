@@ -34,7 +34,9 @@ const screenToPath: Record<Screen, string> = {
   [Screen.EMPLOYER_DASHBOARD]: '/employer',
 };
 
-export function withNavigate<P extends NavigationProps>(Component: React.ComponentType<P>) {
+type AnyComponent<P> = React.ComponentType<P> | React.LazyExoticComponent<React.ComponentType<P>>;
+
+export function withNavigate<P extends NavigationProps>(Component: AnyComponent<P>) {
   return function Wrapped(props: Omit<P, keyof NavigationProps>) {
     const navigate = useNavigate();
 

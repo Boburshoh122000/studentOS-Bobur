@@ -15,7 +15,7 @@ function NotFound() {
   return <div style={{ padding: 24 }}>404 — Not Found</div>;
 }
 
-// Lazy-load components, then wrap to inject `navigateTo`
+// Public
 const LandingPage = withNavigate(lazy(() => import('../components/LandingPage')));
 const SignIn = withNavigate(lazy(() => import('../components/SignIn')));
 const SignUpStep1 = withNavigate(lazy(() => import('../components/SignUpStep1')));
@@ -24,6 +24,7 @@ const AboutUs = withNavigate(lazy(() => import('../components/AboutUs')));
 const Blog = withNavigate(lazy(() => import('../components/Blog')));
 const ContactSupport = withNavigate(lazy(() => import('../components/ContactSupport')));
 
+// App
 const Dashboard = withNavigate(lazy(() => import('../components/Dashboard')));
 const ScholarshipFinder = withNavigate(lazy(() => import('../components/ScholarshipFinder')));
 const JobFinder = withNavigate(lazy(() => import('../components/JobFinder')));
@@ -36,6 +37,7 @@ const HabitTracker = withNavigate(lazy(() => import('../components/HabitTracker'
 const CommunityFeed = withNavigate(lazy(() => import('../components/CommunityFeed')));
 const ProfileSettings = withNavigate(lazy(() => import('../components/ProfileSettings')));
 
+// Admin
 const AdminDashboard = withNavigate(lazy(() => import('../components/AdminDashboard')));
 const AdminEmployers = withNavigate(lazy(() => import('../components/AdminEmployers')));
 const AdminPricing = withNavigate(lazy(() => import('../components/AdminPricing')));
@@ -44,6 +46,7 @@ const AdminScholarships = withNavigate(lazy(() => import('../components/AdminSch
 const AdminRoles = withNavigate(lazy(() => import('../components/AdminRoles')));
 const AdminBlog = withNavigate(lazy(() => import('../components/AdminBlog')));
 
+// Employer
 const EmployerDashboard = withNavigate(lazy(() => import('../components/EmployerDashboard')));
 
 export const router = createBrowserRouter([
