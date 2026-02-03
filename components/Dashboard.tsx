@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { userApi, authApi } from '../src/services/api';
+import { ThemeToggle } from './ThemeToggle';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
@@ -100,6 +102,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                { screen: Screen.HABIT_TRACKER, icon: 'track_changes', label: 'Habit Tracker' },
                { screen: Screen.SCHOLARSHIPS, icon: 'emoji_events', label: 'Scholarships' },
                { screen: Screen.PRESENTATION, icon: 'co_present', label: 'Presentation Maker' },
+               { screen: Screen.FINANCE, icon: 'payments', label: 'Finance Tracker' },
                { screen: Screen.PLAGIARISM, icon: 'plagiarism', label: 'Plagiarism Checker' },
              ].map((item, idx) => (
                 <button 
@@ -139,6 +142,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       </aside>
       
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#fafafa] dark:bg-background-dark">
+
         <header className="h-20 px-8 flex items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10">
           <div className="flex flex-col justify-center">
             <h2 className="text-2xl font-bold text-text-main dark:text-white">Welcome back, {firstName}!</h2>
@@ -149,9 +153,8 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
               <input className="pl-10 pr-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all shadow-sm dark:text-white" placeholder="Search tools, jobs..." type="text" />
             </div>
-            <button className="relative p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary transition-colors shadow-sm">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
+            <ThemeToggle />
+            <NotificationDropdown />
           </div>
         </header>
 

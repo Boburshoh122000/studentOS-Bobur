@@ -31,6 +31,7 @@ const JobFinder = withNavigate(lazy(() => import('../components/JobFinder')));
 const CVChecker = withNavigate(lazy(() => import('../components/CVChecker')));
 const CoverLetterGenerator = withNavigate(lazy(() => import('../components/CoverLetterGenerator')));
 const PresentationMaker = withNavigate(lazy(() => import('../components/PresentationMaker')));
+const FinanceTracker = withNavigate(lazy(() => import('../components/FinanceTracker')));
 const LearningPlan = withNavigate(lazy(() => import('../components/LearningPlan')));
 const PlagiarismChecker = withNavigate(lazy(() => import('../components/PlagiarismChecker')));
 const HabitTracker = withNavigate(lazy(() => import('../components/HabitTracker')));
@@ -163,6 +164,14 @@ export const router = createBrowserRouter([
         element: (
           <Wrap>
             <LearningPlan />
+          </Wrap>
+        ),
+      },
+      {
+        path: '/app/finance',
+        element: (
+          <Wrap>
+            <FinanceTracker />
           </Wrap>
         ),
       },

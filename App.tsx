@@ -12,6 +12,7 @@ import CoverLetterGenerator from './components/CoverLetterGenerator';
 import PresentationMaker from './components/PresentationMaker';
 import LearningPlan from './components/LearningPlan';
 import PlagiarismChecker from './components/PlagiarismChecker';
+import FinanceTracker from './components/FinanceTracker';
 import HabitTracker from './components/HabitTracker';
 import CommunityFeed from './components/CommunityFeed';
 import ContactSupport from './components/ContactSupport';
@@ -71,6 +72,9 @@ export default function App() {
       )}
       {currentScreen === Screen.PLAGIARISM && (
         <PlagiarismChecker navigateTo={navigateTo} />
+      )}
+      {currentScreen === Screen.FINANCE && (
+        <FinanceTracker navigateTo={navigateTo} />
       )}
       {currentScreen === Screen.HABIT_TRACKER && (
         <HabitTracker navigateTo={navigateTo} />

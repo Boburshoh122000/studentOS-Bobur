@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { jobApi, authApi } from '../src/services/api';
+import { ThemeToggle } from './ThemeToggle';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export default function JobFinder({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
@@ -167,9 +169,9 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
               </button>
             </div>
             <div className="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden sm:block"></div>
-            <button className="relative p-2 rounded-full bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
+            <ThemeToggle />
+            <ThemeToggle />
+            <NotificationDropdown />
           </div>
         </header>
         <div className="flex flex-1 overflow-hidden">

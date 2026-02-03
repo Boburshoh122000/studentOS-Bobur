@@ -246,3 +246,21 @@ export const adminApi = {
   getMessages: () => api.get('/admin/messages'),
   markMessageRead: (id: string) => api.patch(`/admin/messages/${id}`, {}),
 };
+
+// Finance API
+export const financeApi = {
+  getSummary: () => api.get<{ income: number; expense: number; balance: number; recentTransactions: any[] }>('/finance/summary'),
+  getTransactions: () => api.get<any[]>('/finance/transactions'),
+  createTransaction: (data: { amount: number; type: 'INCOME' | 'EXPENSE'; description?: string; categoryId?: string; date?: string }) =>
+    api.post<any>('/finance/transactions', data),
+  deleteTransaction: (id: string) => api.delete(`/finance/transactions/${id}`),
+  getBudgets: () => api.get<any[]>('/finance/budgets'),
+};
+
+// Notification API
+export const notificationApi = {
+  list: () => api.get<{ notifications: any[]; unreadCount: number }>('/notifications'),
+  markRead: (id: string) => api.patch(`/notifications/${id}/read`, {}),
+  markAllRead: () => api.patch('/notifications/read-all', {}),
+  create: (data: any) => api.post('/notifications', data), // For testing
+};

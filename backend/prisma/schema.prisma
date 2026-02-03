@@ -97,6 +97,12 @@ model User {
   subscription     Subscription?
   contactMessages  ContactMessage[]
 
+  // Finance
+  financeCategories FinanceCategory[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  notifications     Notification[]
+
   @@index([email])
   @@index([googleId])
 }
@@ -432,5 +438,87 @@ model ContactMessage {
   
   createdAt DateTime @default(now())
   
+  @@index([isRead])
+}
+
+// =============================================================================
+// FINANCE
+// =============================================================================
+
+model FinanceCategory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  type      String   // INCOME, EXPENSE
+  color     String?
+  icon      String?
+  
+  transactions Transaction[]
+  budgets      Budget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name, type])
+  @@index([userId])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  amount      Float
+  type        String   // INCOME, EXPENSE
+  date        DateTime @default(now())
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  amount      Float
+  period      String   @default("monthly") // monthly, yearly
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, categoryId, period])
+  @@index([userId])
+}
+
+// =============================================================================
+// NOTIFICATIONS
+// =============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR, SYSTEM
+  isRead    Boolean  @default(false)
+  link      String?  // Optional link to redirect
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
   @@index([isRead])
 }

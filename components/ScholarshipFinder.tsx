@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi, authApi } from '../src/services/api';
+import { ThemeToggle } from './ThemeToggle';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
@@ -142,9 +144,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             <span className="font-bold text-lg">StudentOS</span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="relative p-1.5 rounded-full text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>notifications</span>
-            </button>
+            <ThemeToggle />
+            <NotificationDropdown />
           </div>
         </header>
 
