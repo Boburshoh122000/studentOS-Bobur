@@ -24,7 +24,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const hoverTimeoutRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAnalyzeCV = async () => {
     if (!cvText.trim()) {
@@ -44,6 +46,43 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       setError(err.response?.data?.error || 'Failed to analyze CV. Please try again.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setSelectedFile(file);
+    setIsAnalyzing(true);
+    setError(null);
+    
+    try {
+      const response = await aiApi.uploadCV(file, jobDescription || undefined);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        const data = response.data as { extractedText: string; analysis: any };
+        setCvText(data.extractedText);
+        setAnalysisResult({
+          atsScore: data.analysis.score,
+          feedback: data.analysis.feedback?.join('\n') || '',
+          hardSkillsFound: data.analysis.keywords?.found?.length || 0,
+          softSkillsFound: 0,
+          missingKeywords: data.analysis.keywords?.missing || [],
+          presentKeywords: data.analysis.keywords?.found || [],
+          suggestions: data.analysis.suggestions || [],
+        });
+      }
+    } catch (err: any) {
+      console.error('Failed to upload CV:', err);
+      setError(err.message || 'Failed to upload and analyze CV.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
     }
   };
 
@@ -192,20 +231,47 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 </div>
 
                 {inputMode === 'upload' ? (
-                  <div className="bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all hover:bg-primary/10 group cursor-pointer relative overflow-hidden shadow-sm">
-                    <div className="absolute top-4 right-4">
-                      <button className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors" title="Re-upload">
-                        <span className="material-symbols-outlined text-[20px]">refresh</span>
-                      </button>
-                    </div>
-                    <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <span className="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">Upload your CV</h3>
-                      <p className="text-sm text-slate-500 mt-1">Drag & drop or <span className="text-primary font-medium hover:underline">browse</span></p>
-                    </div>
-                    <p className="text-xs text-slate-400">PDF, DOCX up to 10MB</p>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all hover:bg-primary/10 group cursor-pointer relative overflow-hidden shadow-sm"
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      aria-label="Upload CV file"
+                    />
+                    {isAnalyzing ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                          <span className="material-symbols-outlined text-primary text-3xl animate-spin">sync</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Analyzing CV...</h3>
+                        <p className="text-sm text-slate-500">{selectedFile?.name}</p>
+                      </div>
+                    ) : selectedFile ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-green-600 text-3xl">check_circle</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">{selectedFile.name}</h3>
+                        <p className="text-sm text-primary cursor-pointer hover:underline">Click to upload a different file</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <span className="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Upload your CV</h3>
+                          <p className="text-sm text-slate-500 mt-1">Drag & drop or <span className="text-primary font-medium hover:underline">browse</span></p>
+                        </div>
+                        <p className="text-xs text-slate-400">PDF, DOCX up to 10MB</p>
+                      </>
+                    )}
+                    {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
                   </div>
                 ) : (
                   <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-4 shadow-sm">

@@ -107,6 +107,29 @@ class ApiClient {
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
+
+  async postFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
+    const token = this.getToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: data,
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        return { error: responseData.error || 'An error occurred' };
+      }
+      return { data: responseData };
+    } catch (error) {
+      console.error('API Error:', error);
+      return { error: 'Network error. Please check your connection.' };
+    }
+  }
 }
 
 export const api = new ApiClient(API_URL);
@@ -221,12 +244,22 @@ export const communityApi = {
 export const aiApi = {
   analyzeCV: (cvText: string, jobDescription?: string) =>
     api.post('/ai/analyze-cv', { cvText, jobDescription }),
+  uploadCV: (file: File, jobDescription?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (jobDescription) {
+      formData.append('jobDescription', jobDescription);
+    }
+    return api.postFormData('/ai/upload-cv', formData);
+  },
   generateCoverLetter: (data: { jobTitle: string; company: string; jobDescription: string }) =>
     api.post('/ai/cover-letter', data),
   generateLearningPlan: (data: { goal: string; timeframe?: string }) =>
     api.post('/ai/learning-plan', data),
   checkPlagiarism: (text: string) =>
     api.post('/ai/plagiarism-check', { text }),
+  generatePresentation: (data: { topic: string; slideCount?: number; style?: string }) =>
+    api.post('/ai/generate-presentation', data),
 };
 
 // Admin API

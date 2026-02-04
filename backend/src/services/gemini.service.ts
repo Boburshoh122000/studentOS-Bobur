@@ -156,3 +156,77 @@ Respond ONLY with valid JSON, no markdown.`;
     };
   }
 };
+
+export const generatePresentationContent = async (
+  topic: string,
+  slideCount: number = 5,
+  style: string = 'professional'
+): Promise<{
+  title: string;
+  author: string;
+  slides: { slideNumber: number; title: string; bulletPoints: string[]; notes?: string }[];
+  theme: { primaryColor: string; accentColor: string };
+}> => {
+  if (!genAI) {
+    throw new Error('Gemini API key not configured');
+  }
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  const prompt = `Create a presentation outline for this topic:
+
+Topic: ${topic}
+Number of slides: ${slideCount}
+Style: ${style}
+
+Provide a JSON response with:
+1. "title": Presentation title
+2. "author": Leave as ""
+3. "slides": Array of slides, each with:
+   - "slideNumber": number
+   - "title": slide title
+   - "bulletPoints": array of 3-5 key points
+   - "notes": speaker notes (optional)
+4. "theme": Object with "primaryColor" (hex) and "accentColor" (hex) appropriate for the style
+
+Make the content engaging, informative, and well-structured for ${style} presentation.
+
+Respond ONLY with valid JSON, no markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = result.response.text();
+  
+  try {
+    return JSON.parse(response);
+  } catch {
+    return {
+      title: topic,
+      author: '',
+      slides: [
+        { slideNumber: 1, title: topic, bulletPoints: ['Unable to generate content'] }
+      ],
+      theme: { primaryColor: '#4F46E5', accentColor: '#7C3AED' },
+    };
+  }
+};
+
+export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
+  if (!genAI) {
+    throw new Error('Gemini API key not configured');
+  }
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  // Gemini can process PDFs directly via file data
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType: 'application/pdf',
+        data: base64Content,
+      },
+    },
+    'Extract all text content from this PDF document. Return only the extracted text, preserving the structure as much as possible.',
+  ]);
+
+  return result.response.text();
+};

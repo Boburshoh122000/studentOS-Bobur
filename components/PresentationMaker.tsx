@@ -1,11 +1,59 @@
 
 import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
+import { aiApi } from '../src/services/api';
+
+interface Slide {
+  slideNumber: number;
+  title: string;
+  bulletPoints: string[];
+  notes?: string;
+}
+
+interface PresentationData {
+  title: string;
+  author: string;
+  slides: Slide[];
+  theme: { primaryColor: string; accentColor: string };
+}
 
 export default function PresentationMaker({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [topic, setTopic] = useState('');
+  const [slideCount, setSlideCount] = useState(5);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [presentation, setPresentation] = useState<PresentationData | null>(null);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const hoverTimeoutRef = useRef<any>(null);
+
+  const handleGeneratePresentation = async () => {
+    if (!topic.trim()) {
+      setError('Please enter a presentation topic');
+      return;
+    }
+    
+    setIsGenerating(true);
+    setError(null);
+    
+    try {
+      const response = await aiApi.generatePresentation({ topic, slideCount });
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setPresentation(response.data as PresentationData);
+        setActiveSlideIndex(0);
+        setShowGenerateModal(false);
+      }
+    } catch (err: any) {
+      console.error('Failed to generate presentation:', err);
+      setError(err.message || 'Failed to generate presentation. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -22,6 +70,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
   };
 
   const isSidebarExpanded = isSidebarLocked || isSidebarHovered;
+  const currentSlide = presentation?.slides[activeSlideIndex];
 
   return (
     <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
@@ -118,7 +167,10 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
               <button className="px-3 py-1.5 rounded-md text-sm font-medium text-text-sub hover:text-text-main transition-all">Prototype</button>
             </div>
             <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md shadow-indigo-200 dark:shadow-none">
+            <button 
+              onClick={() => setShowGenerateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md shadow-indigo-200 dark:shadow-none"
+            >
               <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
               AI Generate
             </button>
@@ -233,6 +285,77 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
           </div>
         </div>
       </main>
+
+      {/* AI Generate Modal */}
+      {showGenerateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-card-dark rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Generate Presentation</h2>
+              <button 
+                onClick={() => setShowGenerateModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                aria-label="Close modal"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Presentation Topic
+                </label>
+                <input
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="e.g. Modern Marketing Strategies"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary"
+                  aria-label="Presentation topic"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Number of Slides
+                </label>
+                <select
+                  value={slideCount}
+                  onChange={(e) => setSlideCount(Number(e.target.value))}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary"
+                  aria-label="Number of slides"
+                >
+                  <option value={3}>3 slides</option>
+                  <option value={5}>5 slides</option>
+                  <option value={7}>7 slides</option>
+                  <option value={10}>10 slides</option>
+                </select>
+              </div>
+              
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              
+              <button
+                onClick={handleGeneratePresentation}
+                disabled={isGenerating || !topic.trim()}
+                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    Generate Slides
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
