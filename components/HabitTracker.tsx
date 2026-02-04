@@ -463,6 +463,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                       key={color}
                       type="button"
                       onClick={() => setNewHabitColor(color)}
+                      aria-label={`Select ${color} color`}
                       className={`w-10 h-10 rounded-lg border-2 transition-all ${
                         newHabitColor === color ? 'ring-2 ring-offset-2 ring-primary' : ''
                       } ${

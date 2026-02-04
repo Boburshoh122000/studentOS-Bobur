@@ -33,7 +33,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
       setLoading(true);
       setError(null);
       const response = await communityApi.list(1);
-      setPosts(response.data.posts || []);
+      setPosts((response.data as { posts: any[] }).posts || []);
     } catch (err: any) {
       console.error('Failed to fetch posts:', err);
       setError('Failed to load community posts. Please try again.');
@@ -115,10 +115,10 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
               <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium">Messaging</button>
             </div>
             <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors" aria-label="Notifications">
                 <i className="ph-fill ph-bell text-xl"></i>
               </button>
-              <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors" aria-label="Messages">
                 <i className="ph-fill ph-chat-text text-xl"></i>
               </button>
               <div className="h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 bg-primary/10 flex items-center justify-center">

@@ -1,13 +1,51 @@
 
 import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
+import { aiApi } from '../src/services/api';
+
+interface CVAnalysisResult {
+  atsScore: number;
+  feedback: string;
+  hardSkillsFound: number;
+  softSkillsFound: number;
+  missingKeywords: string[];
+  presentKeywords: string[];
+  suggestions: string[];
+}
 
 export default function CVChecker({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [activeMode, setActiveMode] = useState<'builder' | 'ats'>('ats');
   const [activeTab, setActiveTab] = useState('Personal Info');
+  const [inputMode, setInputMode] = useState<'upload' | 'text'>('upload');
+  const [cvText, setCvText] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
   const hoverTimeoutRef = useRef<any>(null);
+
+  const handleAnalyzeCV = async () => {
+    if (!cvText.trim()) {
+      setError('Please enter your CV text');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    setError(null);
+    
+    try {
+      const response = await aiApi.analyzeCV(cvText, jobDescription || undefined);
+      const data = response.data as CVAnalysisResult;
+      setAnalysisResult(data);
+    } catch (err: any) {
+      console.error('Failed to analyze CV:', err);
+      setError(err.response?.data?.error || 'Failed to analyze CV. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -135,21 +173,80 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           <div className="flex-1 overflow-hidden bg-background-light dark:bg-background-dark p-6">
             <div className="h-full grid grid-cols-12 gap-6 max-w-7xl mx-auto">
               <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full overflow-y-auto hide-scrollbar pb-10">
-                <div className="bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all hover:bg-primary/10 group cursor-pointer relative overflow-hidden shadow-sm">
-                  <div className="absolute top-4 right-4">
-                    <button className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors" title="Re-upload">
-                      <span className="material-symbols-outlined text-[20px]">refresh</span>
+                {/* Mode Switcher */}
+                <div className="flex mb-4 gap-2">
+                  <button 
+                    onClick={() => setInputMode('upload')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${inputMode === 'upload' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
+                  >
+                    <span className="material-symbols-outlined text-[16px] mr-1 align-middle">cloud_upload</span>
+                    Upload
+                  </button>
+                  <button 
+                    onClick={() => setInputMode('text')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${inputMode === 'text' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
+                  >
+                    <span className="material-symbols-outlined text-[16px] mr-1 align-middle">edit_note</span>
+                    Paste Text
+                  </button>
+                </div>
+
+                {inputMode === 'upload' ? (
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all hover:bg-primary/10 group cursor-pointer relative overflow-hidden shadow-sm">
+                    <div className="absolute top-4 right-4">
+                      <button className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors" title="Re-upload">
+                        <span className="material-symbols-outlined text-[20px]">refresh</span>
+                      </button>
+                    </div>
+                    <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <span className="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">Upload your CV</h3>
+                      <p className="text-sm text-slate-500 mt-1">Drag & drop or <span className="text-primary font-medium hover:underline">browse</span></p>
+                    </div>
+                    <p className="text-xs text-slate-400">PDF, DOCX up to 10MB</p>
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-4 shadow-sm">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-500 uppercase mb-2 block">Your CV / Resume Text</label>
+                      <textarea
+                        value={cvText}
+                        onChange={(e) => setCvText(e.target.value)}
+                        placeholder="Paste your CV or resume text here..."
+                        className="w-full h-32 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-500 uppercase mb-2 block">Job Description (Optional)</label>
+                      <textarea
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste the job description for targeted analysis..."
+                        className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    {error && <p className="text-sm text-red-500">{error}</p>}
+                    <button
+                      onClick={handleAnalyzeCV}
+                      disabled={isAnalyzing || !cvText.trim()}
+                      className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">search_check</span>
+                          Analyze CV
+                        </>
+                      )}
                     </button>
                   </div>
-                  <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">Upload your CV</h3>
-                    <p className="text-sm text-slate-500 mt-1">Drag & drop or <span className="text-primary font-medium hover:underline">browse</span></p>
-                  </div>
-                  <p className="text-xs text-slate-400">PDF, DOCX up to 10MB</p>
-                </div>
+                )}
                 <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 min-h-[300px]">
                   <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                     <h3 className="font-bold text-slate-800 dark:text-white text-sm">Recently Scanned</h3>

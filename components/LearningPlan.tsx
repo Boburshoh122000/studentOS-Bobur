@@ -173,6 +173,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 <select 
                   value={timeframe}
                   onChange={(e) => setTimeframe(e.target.value)}
+                  aria-label="Select timeframe"
                   className="px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
                 >
                   <option value="2 weeks">2 weeks</option>

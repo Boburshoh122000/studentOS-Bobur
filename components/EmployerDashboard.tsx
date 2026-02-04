@@ -622,7 +622,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="w-full lg:w-64">
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 material-symbols-outlined text-[20px]">work</span>
-                      <select className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary cursor-pointer">
+                      <select className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary cursor-pointer" aria-label="Select job position">
                         <option>Junior Frontend Developer</option>
                         <option>UX/UI Design Intern</option>
                         <option>Marketing Associate</option>
