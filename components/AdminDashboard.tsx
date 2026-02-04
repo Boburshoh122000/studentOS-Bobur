@@ -1,7 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
+import toast from 'react-hot-toast';
 
 interface AdminStats {
   totalUsers: number;
@@ -41,6 +41,16 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
       setIsLoading(false);
     }
   };
+
+  const handleExport = () => {
+    toast.success('Report generation started...', { icon: '📄' });
+    setTimeout(() => toast('Export feature coming soon!', { icon: '🚧' }), 1000);
+  };
+
+  const handleDateFilter = () => {
+    toast('Date filtering coming soon!', { icon: '📅' });
+  };
+
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -171,11 +181,17 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               <p className="text-base text-slate-500 dark:text-slate-400">Real-time overview of platform analytics and user activity</p>
             </div>
             <div className="flex gap-3">
-              <button className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <button 
+                onClick={handleDateFilter}
+                className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+               >
                 <span className="material-symbols-outlined text-lg">calendar_today</span>
                 <span>Oct 24 - Nov 24</span>
               </button>
-              <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30">
+              <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
+              >
                 <span className="material-symbols-outlined text-lg">download</span>
                 <span>Export Report</span>
               </button>
