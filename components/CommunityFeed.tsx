@@ -241,7 +241,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                       <p className="text-xs text-gray-500 dark:text-gray-400">{formatTimeAgo(post.createdAt)}</p>
                     </div>
                   </div>
-                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="More options">
                     <i className="ph-bold ph-dots-three text-2xl"></i>
                   </button>
                 </div>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
+import { aiRateLimit } from '../middleware/rateLimit.middleware.js';
 import {
   analyzeCV,
   generateCoverLetter,
@@ -27,8 +28,8 @@ const upload = multer({
 
 const router = Router();
 
-// All AI routes require authentication
-router.use(authenticate);
+// All AI routes require authentication AND rate limiting (10 req/min)
+router.use(authenticate, aiRateLimit);
 
 // CV/ATS Analysis
 router.post('/analyze-cv', async (req: AuthenticatedRequest, res, next) => {

@@ -565,28 +565,28 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   </div>
                   <div className="p-4 grid grid-cols-2 gap-4">
                     <div className="col-span-1 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">First Name</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Alex"/>
+                      <label htmlFor="cv-first-name" className="text-[11px] font-medium text-slate-500 uppercase">First Name</label>
+                      <input id="cv-first-name" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Alex"/>
                     </div>
                     <div className="col-span-1 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">Last Name</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Smith"/>
+                      <label htmlFor="cv-last-name" className="text-[11px] font-medium text-slate-500 uppercase">Last Name</label>
+                      <input id="cv-last-name" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Smith"/>
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">Job Title</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Junior Frontend Developer"/>
+                      <label htmlFor="cv-job-title" className="text-[11px] font-medium text-slate-500 uppercase">Job Title</label>
+                      <input id="cv-job-title" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="Junior Frontend Developer"/>
                     </div>
                     <div className="col-span-1 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">Email</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="email" defaultValue="alex.smith@student.edu"/>
+                      <label htmlFor="cv-email" className="text-[11px] font-medium text-slate-500 uppercase">Email</label>
+                      <input id="cv-email" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="email" defaultValue="alex.smith@student.edu"/>
                     </div>
                     <div className="col-span-1 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">Phone</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="tel" defaultValue="+1 (555) 000-1234"/>
+                      <label htmlFor="cv-phone" className="text-[11px] font-medium text-slate-500 uppercase">Phone</label>
+                      <input id="cv-phone" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="tel" defaultValue="+1 (555) 000-1234"/>
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 uppercase">Location</label>
-                      <input className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="San Francisco, CA"/>
+                      <label htmlFor="cv-location" className="text-[11px] font-medium text-slate-500 uppercase">Location</label>
+                      <input id="cv-location" className="w-full text-sm rounded-md border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-primary focus:ring-primary/20" type="text" defaultValue="San Francisco, CA"/>
                     </div>
                   </div>
                 </div>
