@@ -110,11 +110,17 @@ router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, r
   try {
     const { title, content, excerpt, coverImageUrl, tags, status } = req.body;
 
-    // Generate slug
-    const slug = title
+    // Generate slug with collision handling
+    let slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+    
+    // Check for existing slug and make unique if needed
+    const existing = await prisma.blogPost.findUnique({ where: { slug } });
+    if (existing) {
+      slug = `${slug}-${Date.now()}`;
+    }
 
     const post = await prisma.blogPost.create({
       data: {

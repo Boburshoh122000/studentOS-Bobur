@@ -1,10 +1,22 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/role.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
 import { hashPassword } from '../services/auth.service.js';
 
 const router = Router();
+
+// Validation schemas
+const createUserSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    role: z.enum(['STUDENT', 'EMPLOYER', 'ADMIN']),
+    fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  }),
+});
 
 // All admin routes require authentication and admin role
 router.use(authenticate, requireAdmin);
@@ -102,8 +114,8 @@ router.get('/users', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
-// Create admin user
-router.post('/users', async (req: AuthenticatedRequest, res, next) => {
+// Create user with validation
+router.post('/users', validate(createUserSchema), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { email, password, role, fullName } = req.body;
 

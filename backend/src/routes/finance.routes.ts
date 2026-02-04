@@ -93,15 +93,14 @@ router.post('/transactions', validate(transactionSchema), async (req: Authentica
   try {
     const { amount, type, categoryId, description, date } = req.body;
     
-    // Check if category belongs to user? Or is it global?
-    // Assuming custom categories are user-specific
+    // Check if category belongs to user
     if (categoryId) {
         const category = await prisma.financeCategory.findFirst({
             where: { id: categoryId, userId: req.user!.id }
         });
         if (!category) {
-             // allow if it's a default category? For now strict check
-             // Implementation Detail: We might need default categories seeded
+            res.status(400).json({ error: 'Invalid category' });
+            return;
         }
     }
 

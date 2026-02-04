@@ -3,8 +3,19 @@ import { Router } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
 
 const router = Router();
+
+// Validation schema
+const createNotificationSchema = z.object({
+  body: z.object({
+    title: z.string().min(1, 'Title is required'),
+    message: z.string().optional(),
+    type: z.enum(['INFO', 'SUCCESS', 'WARNING', 'ERROR']).default('INFO'),
+    link: z.string().url().optional().nullable(),
+  }),
+});
 
 router.use(authenticate);
 
@@ -56,7 +67,7 @@ router.patch('/read-all', async (req: AuthenticatedRequest, res, next) => {
 });
 
 // Create notification (internal usage or testing)
-router.post('/', async (req: AuthenticatedRequest, res, next) => {
+router.post('/', validate(createNotificationSchema), async (req: AuthenticatedRequest, res, next) => {
     try {
         const { title, message, type, link } = req.body;
         const notification = await prisma.notification.create({
