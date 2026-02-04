@@ -170,7 +170,6 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
             </div>
             <div className="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden sm:block"></div>
             <ThemeToggle />
-            <ThemeToggle />
             <NotificationDropdown />
           </div>
         </header>
