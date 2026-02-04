@@ -1,11 +1,46 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
+import { adminApi } from '../src/services/api';
+
+interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalScholarships: number;
+  totalJobs: number;
+  totalApplications: number;
+  recentTransactions: number;
+  newUsersThisWeek: number;
+}
 
 export default function AdminDashboard({ navigateTo }: NavigationProps) {
   const [isSidebarLocked, setIsSidebarLocked] = useState(true);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const { data, error: apiError } = await adminApi.getStats();
+      if (apiError) {
+        setError(apiError);
+      } else if (data) {
+        setStats(data as AdminStats);
+      }
+    } catch (err) {
+      setError('Failed to load admin stats');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -147,52 +182,70 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
             </div>
           </header>
           <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Users</p>
-                <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">group</span>
+            {isLoading ? (
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm animate-pulse">
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 rounded mt-2"></div>
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mt-2"></div>
+                  </div>
+                ))}
+              </>
+            ) : error ? (
+              <div className="col-span-4 flex flex-col items-center justify-center py-8 text-center">
+                <span className="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+                <p className="text-red-600 dark:text-red-400">{error}</p>
+                <button onClick={fetchStats} className="mt-2 text-primary hover:underline text-sm font-medium">Retry</button>
               </div>
-              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">12,450</p>
-              <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="material-symbols-outlined text-base">trending_up</span>
-                <span>+12%</span>
-                <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">vs last month</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Now</p>
-                <span className="material-symbols-outlined text-emerald-500/80 text-xl">radio_button_checked</span>
-              </div>
-              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">1,893</p>
-              <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <span>+54</span>
-                <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">in last hour</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Recent Transactions</p>
-                <span className="material-symbols-outlined text-orange-500/80 text-xl">receipt_long</span>
-              </div>
-              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">342</p>
-              <div className="flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
-                <span className="material-symbols-outlined text-base">schedule</span>
-                <span>Pending</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Avg. Revenue / User</p>
-                <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">attach_money</span>
-              </div>
-              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">$18.40</p>
-              <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="material-symbols-outlined text-base">trending_up</span>
-                <span>+2.4%</span>
-                <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">vs last month</span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Users</p>
+                    <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">group</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{stats?.totalUsers?.toLocaleString() || 0}</p>
+                  <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <span className="material-symbols-outlined text-base">trending_up</span>
+                    <span>+{stats?.newUsersThisWeek || 0}</span>
+                    <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">this week</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Now</p>
+                    <span className="material-symbols-outlined text-emerald-500/80 text-xl">radio_button_checked</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{stats?.activeUsers?.toLocaleString() || 0}</p>
+                  <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <span className="material-symbols-outlined text-base">schedule</span>
+                    <span className="font-normal text-slate-500 dark:text-slate-400">in last 24 hours</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Subscriptions</p>
+                    <span className="material-symbols-outlined text-orange-500/80 text-xl">receipt_long</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{stats?.recentTransactions || 0}</p>
+                  <div className="flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
+                    <span className="material-symbols-outlined text-base">verified</span>
+                    <span>Active</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Jobs</p>
+                    <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">work</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{stats?.totalJobs?.toLocaleString() || 0}</p>
+                  <div className="flex items-center gap-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <span>{stats?.totalApplications || 0} applications</span>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
           <section className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">

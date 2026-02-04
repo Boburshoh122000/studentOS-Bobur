@@ -1,65 +1,27 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
+import { habitApi, authApi } from '../src/services/api';
+import { ThemeToggle } from './ThemeToggle';
+import { NotificationDropdown } from './NotificationDropdown';
+import toast from 'react-hot-toast';
 
 interface Habit {
   id: string;
   title: string;
-  subtitle: string;
   icon: string;
-  color: 'indigo' | 'teal' | 'amber' | 'blue';
-  currentStreak: number;
-  longestStreak: number;
+  color: string;
   completedToday: boolean;
-  history: ('completed' | 'missed' | 'skip')[]; // Last 4 days
+  streak: number;
+  logs: { completedAt: string }[];
 }
 
-const initialHabits: Habit[] = [
-  {
-    id: '1',
-    title: 'Learn to Code',
-    subtitle: 'Python Course • 1 hour daily',
-    icon: 'code',
-    color: 'indigo',
-    currentStreak: 12,
-    longestStreak: 15,
-    completedToday: false,
-    history: ['completed', 'completed', 'completed', 'missed']
-  },
-  {
-    id: '2',
-    title: 'Morning Meditation',
-    subtitle: 'Mindfulness • 15 mins',
-    icon: 'self_improvement',
-    color: 'teal',
-    currentStreak: 0,
-    longestStreak: 21,
-    completedToday: false,
-    history: ['completed', 'missed', 'missed', 'missed']
-  },
-  {
-    id: '3',
-    title: 'Read Non-Fiction',
-    subtitle: 'Personal Growth • 10 pages',
-    icon: 'menu_book',
-    color: 'amber',
-    currentStreak: 5,
-    longestStreak: 10,
-    completedToday: true,
-    history: ['completed', 'completed', 'completed', 'completed']
-  },
-  {
-    id: '4',
-    title: 'Drink Water',
-    subtitle: 'Health • 2.5 Liters',
-    icon: 'water_drop',
-    color: 'blue',
-    currentStreak: 24,
-    longestStreak: 45,
-    completedToday: false,
-    history: ['completed', 'completed', 'completed', 'completed']
-  }
-];
+interface HabitStats {
+  totalHabits: number;
+  completedToday: number;
+  longestStreak: number;
+  completionRate: number;
+}
 
 const getColorClasses = (color: string) => {
   switch (color) {
@@ -67,17 +29,45 @@ const getColorClasses = (color: string) => {
     case 'teal': return { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-600 dark:text-teal-300' };
     case 'amber': return { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-600 dark:text-amber-300' };
     case 'blue': return { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-300' };
-    default: return { bg: 'bg-gray-50', text: 'text-gray-600' };
+    default: return { bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-300' };
   }
 };
 
 export default function HabitTracker({ navigateTo }: NavigationProps) {
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [stats, setStats] = useState<HabitStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [streakFreezes, setStreakFreezes] = useState(2);
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [showNewHabitModal, setShowNewHabitModal] = useState(false);
+  const [newHabitTitle, setNewHabitTitle] = useState('');
+  const [newHabitIcon, setNewHabitIcon] = useState('check_circle');
+  const [newHabitColor, setNewHabitColor] = useState('indigo');
   const hoverTimeoutRef = useRef<any>(null);
   const MAX_FREEZES = 5;
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [habitsRes, statsRes] = await Promise.all([
+        habitApi.list(),
+        habitApi.getStats()
+      ]);
+      
+      if (habitsRes.data) setHabits(habitsRes.data as Habit[]);
+      if (statsRes.data) setStats(statsRes.data as HabitStats);
+    } catch (error) {
+      console.error('Failed to fetch habits:', error);
+      toast.error('Failed to load habits');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -101,36 +91,74 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
     }
   };
 
-  const toggleHabit = (id: string) => {
-    setHabits(habits.map(habit => {
-      if (habit.id === id) {
-        const isCompleted = !habit.completedToday;
-        let newCurrentStreak = habit.currentStreak;
-        let newLongestStreak = habit.longestStreak;
-
-        if (isCompleted) {
-          newCurrentStreak += 1;
-          if (newCurrentStreak > newLongestStreak) {
-            newLongestStreak = newCurrentStreak;
-          }
-        } else {
-          newCurrentStreak = Math.max(0, newCurrentStreak - 1);
-        }
-
-        return {
-          ...habit,
-          completedToday: isCompleted,
-          currentStreak: newCurrentStreak,
-          longestStreak: newLongestStreak
-        };
+  const toggleHabit = async (id: string, currentlyCompleted: boolean) => {
+    try {
+      if (currentlyCompleted) {
+        await habitApi.unlog(id);
+        toast.success('Habit unmarked');
+      } else {
+        await habitApi.log(id);
+        toast.success('Habit completed! 🎉');
       }
-      return habit;
-    }));
+      // Refresh data
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle habit:', error);
+      toast.error('Failed to update habit');
+    }
   };
 
-  const maxStreak = Math.max(...habits.map(h => h.currentStreak));
-  const completedCount = habits.filter(h => h.completedToday).length;
-  const completionRate = Math.round((completedCount / habits.length) * 100);
+  const handleCreateHabit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHabitTitle.trim()) return;
+
+    try {
+      const { error } = await habitApi.create({
+        title: newHabitTitle,
+        icon: newHabitIcon,
+        color: newHabitColor
+      });
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      toast.success('Habit created!');
+      setNewHabitTitle('');
+      setShowNewHabitModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to create habit');
+    }
+  };
+
+  const handleDeleteHabit = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this habit?')) return;
+    
+    try {
+      await habitApi.delete(id);
+      toast.success('Habit deleted');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to delete habit');
+    }
+  };
+
+  const maxStreak = stats?.longestStreak || 0;
+  const completedCount = stats?.completedToday || 0;
+  const completionRate = stats?.completionRate || 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background-light dark:bg-background-dark">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-text-sub">Loading habits...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden relative">
@@ -171,6 +199,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                { screen: null, icon: 'track_changes', label: 'Habit Tracker', active: true },
                { screen: Screen.SCHOLARSHIPS, icon: 'emoji_events', label: 'Scholarships' },
                { screen: Screen.PRESENTATION, icon: 'co_present', label: 'Presentation Maker' },
+               { screen: Screen.FINANCE, icon: 'payments', label: 'Finance Tracker' },
                { screen: Screen.PLAGIARISM, icon: 'plagiarism', label: 'Plagiarism Checker' },
              ].map((item, idx) => (
                 <button 
@@ -200,45 +229,44 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.PROFILE)}
             className={`flex items-center ${isSidebarExpanded ? 'gap-3 px-3 py-2 w-full' : 'justify-center size-10'} rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer`}
           >
-            <div className="size-8 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-gray-700 flex-shrink-0" data-alt="User profile picture placeholder" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAhG4np0VVE22WojP2CGz7Ch6oi2UbBGvY215GNeJl-qbqiIkvVO0e4VJCR48HYD7zcjJ60KfnEAbHOCeMGlVJwochpZSwqE5sh6rBSYgIsX8LQz5UE6yBSk2CJMQ8HXNzUxgZG2yHaebJYk7QmIl7Z2KUZH1fL8p4S0iaspKV4wNVdgBRvRv1lXYD-NeEM5GHeF11YqbTWAvllHQzT4AqVhoA_CKzfcl5nPMHa4BOHNacdhm-S2FFPGfH8ZhQF4TdbUdOb1vS8lg0')" }}></div>
+            <div className="size-8 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-gray-700 flex-shrink-0" style={{ backgroundImage: "url('https://ui-avatars.com/api/?name=User&background=random')" }}></div>
             <div className={`flex flex-col overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
-                <span className="text-sm font-bold text-text-main dark:text-white truncate">Alex Morgan</span>
-                <span className="text-xs text-text-sub truncate">alex@student.edu</span>
+                <span className="text-sm font-bold text-text-main dark:text-white truncate">My Profile</span>
+                <span className="text-xs text-text-sub truncate">View settings</span>
             </div>
           </div>
         </div>
       </aside>
+
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark">
         <header className="h-20 px-8 flex items-center justify-between flex-shrink-0 bg-background-light dark:bg-background-dark z-10">
           <div className="flex flex-col justify-center">
             <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
               Habit Tracker
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold border border-blue-100 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">sync</span> Telegram Sync Active
-              </span>
             </h2>
             <p className="text-sm text-text-sub">Track your daily goals, build consistency, and analyze your progress.</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm text-sm font-medium">
-                <span className="material-symbols-outlined text-[18px]">download</span>
-                Export Data
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow-sm text-sm font-medium">
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                New Habit
-              </button>
-            </div>
+            <ThemeToggle />
+            <NotificationDropdown />
+            <button 
+              onClick={() => setShowNewHabitModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow-sm text-sm font-medium"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Habit
+            </button>
           </div>
         </header>
+
         <div className="flex-1 overflow-y-auto px-8 pb-8 pt-2">
           <div className="max-w-7xl mx-auto space-y-6">
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Best Streak</span>
-                  <span className="material-symbols-outlined text-orange-500 bg-orange-50 p-1.5 rounded-md">local_fire_department</span>
+                  <span className="material-symbols-outlined text-orange-500 bg-orange-50 dark:bg-orange-900/20 p-1.5 rounded-md">local_fire_department</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">{maxStreak}</h3>
@@ -248,19 +276,21 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-[14px]">trending_up</span> Top performing habit
                 </p>
               </div>
+
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Today's Rate</span>
-                  <span className="material-symbols-outlined text-primary bg-blue-50 p-1.5 rounded-md">data_usage</span>
+                  <span className="material-symbols-outlined text-primary bg-blue-50 dark:bg-blue-900/20 p-1.5 rounded-md">data_usage</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">{completionRate}%</h3>
                 </div>
                 <p className="text-xs text-text-sub mt-2">{completedCount} of {habits.length} habits done</p>
-                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3">
+                <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 mt-3">
                   <div className="bg-primary h-1.5 rounded-full transition-all duration-500" style={{ width: `${completionRate}%` }}></div>
                 </div>
               </div>
+
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
                 <div className="absolute -right-4 -top-4 size-20 bg-blue-400/10 rounded-full blur-xl"></div>
                 <div className="flex justify-between items-start mb-2 relative z-10">
@@ -284,146 +314,186 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                       Max Capacity <span className="material-symbols-outlined text-[14px]">check_circle</span>
                     </span>
                   )}
-                  {streakFreezes < MAX_FREEZES && (
-                    <p className="text-[10px] text-text-sub mt-1">Can earn {MAX_FREEZES - streakFreezes} more</p>
-                  )}
                 </div>
               </div>
+
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Active Habits</span>
-                  <span className="material-symbols-outlined text-purple-500 bg-purple-50 p-1.5 rounded-md">list_alt</span>
+                  <span className="material-symbols-outlined text-purple-500 bg-purple-50 dark:bg-purple-900/20 p-1.5 rounded-md">list_alt</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">{habits.length}</h3>
                 </div>
-                <p className="text-xs text-text-sub mt-2">Across 4 categories</p>
-              </div>
-            </div>
-            
-            <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-text-main dark:text-white">Consistency Heatmap</h3>
-                  <p className="text-sm text-text-sub">Visualizing your daily activity over the last 6 months</p>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1 rounded-lg">
-                  <button className="px-3 py-1 text-xs font-medium bg-white dark:bg-gray-700 text-text-main dark:text-white shadow-sm rounded-md">6 Months</button>
-                  <button className="px-3 py-1 text-xs font-medium text-text-sub hover:text-text-main transition-colors">Year</button>
-                </div>
-              </div>
-              <div className="w-full overflow-x-auto pb-2">
-                <div className="min-w-[700px]">
-                  <div className="flex gap-1 text-[10px] text-text-sub mb-2">
-                    <span className="w-8"></span>
-                    <span className="flex-1">Apr</span>
-                    <span className="flex-1">May</span>
-                    <span className="flex-1">Jun</span>
-                    <span className="flex-1">Jul</span>
-                    <span className="flex-1">Aug</span>
-                    <span className="flex-1">Sep</span>
-                    <span className="flex-1">Oct</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex flex-col gap-[3px] text-[10px] text-text-sub pt-1 w-6">
-                      <span>Mon</span>
-                      <span className="mt-2">Wed</span>
-                      <span className="mt-2">Fri</span>
-                    </div>
-                    <div className="flex-1 grid grid-rows-7 grid-flow-col gap-[3px]">
-                        {/* Mock data for heatmap visualization */}
-                       {Array.from({ length: 180 }).map((_, i) => (
-                          <div 
-                            key={i} 
-                            className={`size-3 rounded-sm ${Math.random() > 0.7 ? 'bg-gray-100 dark:bg-gray-800' : Math.random() > 0.5 ? 'bg-primary/20' : Math.random() > 0.3 ? 'bg-primary/60' : 'bg-primary'}`}
-                          ></div>
-                       ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-end items-center gap-2 mt-3 text-xs text-text-sub">
-                    <span>Less</span>
-                    <div className="size-3 rounded-sm bg-gray-100 dark:bg-gray-800"></div>
-                    <div className="size-3 rounded-sm bg-primary/20"></div>
-                    <div className="size-3 rounded-sm bg-primary/40"></div>
-                    <div className="size-3 rounded-sm bg-primary/60"></div>
-                    <div className="size-3 rounded-sm bg-primary"></div>
-                    <span>More</span>
-                  </div>
-                </div>
+                <p className="text-xs text-text-sub mt-2">Total tracked habits</p>
               </div>
             </div>
 
+            {/* Habits List */}
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-text-main dark:text-white">Today's Habits</h3>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {habits.map((habit) => {
-                  const colors = getColorClasses(habit.color);
-                  return (
-                    <div key={habit.id} className={`bg-white dark:bg-card-dark rounded-xl p-5 border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden ${habit.completedToday ? 'border-green-200 dark:border-green-900/30' : 'border-gray-100 dark:border-gray-800'}`}>
-                      {habit.completedToday && (
-                        <div className="absolute top-0 right-0 p-0">
-                          <div className="bg-green-100 text-green-700 px-3 py-1 rounded-bl-xl text-xs font-bold flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">check_circle</span> Completed
+              
+              {habits.length === 0 ? (
+                <div className="bg-card-light dark:bg-card-dark rounded-xl p-12 text-center border border-gray-100 dark:border-gray-800">
+                  <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4">track_changes</span>
+                  <h4 className="text-lg font-bold text-text-main dark:text-white mb-2">No habits yet</h4>
+                  <p className="text-text-sub mb-4">Start building your daily routine by creating your first habit.</p>
+                  <button 
+                    onClick={() => setShowNewHabitModal(true)}
+                    className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                  >
+                    Create Your First Habit
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  {habits.map((habit) => {
+                    const colors = getColorClasses(habit.color || 'indigo');
+                    return (
+                      <div key={habit.id} className={`bg-white dark:bg-card-dark rounded-xl p-5 border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden ${habit.completedToday ? 'border-green-200 dark:border-green-900/30' : 'border-gray-100 dark:border-gray-800'}`}>
+                        {habit.completedToday && (
+                          <div className="absolute top-0 right-0 p-0">
+                            <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-bl-xl text-xs font-bold flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[14px]">check_circle</span> Completed
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex gap-4">
+                            <div className={`size-12 rounded-lg ${colors.bg} flex items-center justify-center ${colors.text}`}>
+                              <span className="material-symbols-outlined">{habit.icon || 'check_circle'}</span>
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-text-main dark:text-white">{habit.title}</h4>
+                              <p className="text-sm text-text-sub">Streak: {habit.streak} days</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 mr-12 sm:mr-0">
+                             <div className="flex items-center gap-1 text-orange-500 bg-orange-50 dark:bg-orange-900/10 px-2 py-1 rounded-md">
+                              <span className="material-symbols-outlined text-[16px]">local_fire_department</span>
+                              <span className="text-xs font-bold">{habit.streak} Days</span>
+                            </div>
                           </div>
                         </div>
-                      )}
-                      
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex gap-4">
-                          <div className={`size-12 rounded-lg ${colors.bg} flex items-center justify-center ${colors.text}`}>
-                            <span className="material-symbols-outlined">{habit.icon}</span>
+                        
+                        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            {!habit.completedToday ? (
+                               <button 
+                                 onClick={() => toggleHabit(habit.id, false)} 
+                                 className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark text-sm font-medium transition-colors shadow-sm shadow-primary/20"
+                               >
+                                 Mark Complete
+                               </button>
+                            ) : (
+                               <button 
+                                 onClick={() => toggleHabit(habit.id, true)} 
+                                 className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium transition-colors shadow-sm"
+                               >
+                                 Undo
+                               </button>
+                            )}
+                            <button 
+                              onClick={() => handleDeleteHabit(habit.id)}
+                              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-text-main dark:text-white">{habit.title}</h4>
-                            <p className="text-sm text-text-sub">{habit.subtitle}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 mr-12 sm:mr-0">
-                           <div className="flex items-center gap-1 text-orange-500 bg-orange-50 dark:bg-orange-900/10 px-2 py-1 rounded-md">
-                            <span className="material-symbols-outlined text-[16px]">local_fire_department</span>
-                            <span className="text-xs font-bold">{habit.currentStreak} Days</span>
-                          </div>
-                          <span className="text-[10px] text-text-sub font-medium">Longest: {habit.longestStreak}</span>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
-                        <div className="flex -space-x-1">
-                          {/* Mock history visuals based on simple array for now */}
-                          {habit.history.map((status, index) => (
-                             <div 
-                               key={index} 
-                               className={`size-8 rounded-full border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] 
-                               ${status === 'completed' ? 'bg-green-500 text-white' : 
-                                 status === 'missed' ? 'bg-red-400 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`} 
-                               title={index === 0 ? "Mon" : index === 1 ? "Tue" : index === 2 ? "Wed" : "Thu"}
-                             >
-                               {index === 0 ? "M" : index === 1 ? "T" : index === 2 ? "W" : "T"}
-                             </div>
-                          ))}
-                          <div className={`size-8 rounded-full border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] font-bold
-                            ${habit.completedToday ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`} 
-                            title="Today">
-                            Today
-                          </div>
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto">
-                          <button className={`flex-1 sm:flex-none px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${habit.completedToday ? 'opacity-50 pointer-events-none border-gray-200 text-gray-400' : 'border-gray-200 dark:border-gray-700 text-text-sub hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-text-main'}`}>Skip</button>
-                          {!habit.completedToday ? (
-                             <button onClick={() => toggleHabit(habit.id)} className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark text-sm font-medium transition-colors shadow-sm shadow-primary/20">Done</button>
-                          ) : (
-                             <button onClick={() => toggleHabit(habit.id)} className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium transition-colors shadow-sm">Undo</button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
+
+      {/* New Habit Modal */}
+      {showNewHabitModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-card-dark rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-text-main dark:text-white">Create New Habit</h3>
+              <button 
+                onClick={() => setShowNewHabitModal(false)}
+                className="text-text-sub hover:text-text-main transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateHabit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-main dark:text-white mb-2">Habit Name</label>
+                <input
+                  type="text"
+                  value={newHabitTitle}
+                  onChange={(e) => setNewHabitTitle(e.target.value)}
+                  placeholder="e.g., Read for 30 minutes"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-text-main dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-text-main dark:text-white mb-2">Icon</label>
+                <div className="flex gap-2 flex-wrap">
+                  {['check_circle', 'fitness_center', 'menu_book', 'code', 'water_drop', 'self_improvement', 'edit_note', 'music_note'].map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setNewHabitIcon(icon)}
+                      className={`p-3 rounded-lg border transition-colors ${newHabitIcon === icon ? 'border-primary bg-primary/10 text-primary' : 'border-gray-200 dark:border-gray-700 text-text-sub hover:border-primary'}`}
+                    >
+                      <span className="material-symbols-outlined">{icon}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-text-main dark:text-white mb-2">Color</label>
+                <div className="flex gap-2">
+                  {['indigo', 'teal', 'amber', 'blue'].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewHabitColor(color)}
+                      className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                        newHabitColor === color ? 'ring-2 ring-offset-2 ring-primary' : ''
+                      } ${
+                        color === 'indigo' ? 'bg-indigo-500' :
+                        color === 'teal' ? 'bg-teal-500' :
+                        color === 'amber' ? 'bg-amber-500' : 'bg-blue-500'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowNewHabitModal(false)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
+                >
+                  Create Habit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
