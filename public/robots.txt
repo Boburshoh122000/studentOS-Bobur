@@ -1,0 +1,15 @@
+# StudentOS Robots.txt
+# https://studentos-bobur-production.up.railway.app
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://studentos-bobur-production.up.railway.app/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /admin/
+
+# Crawl-delay for courtesy
+Crawl-delay: 1

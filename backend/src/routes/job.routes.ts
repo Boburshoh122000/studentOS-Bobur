@@ -4,11 +4,12 @@ import prisma from '../config/database.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireEmployer } from '../middleware/role.middleware.js';
+import { mediumCache } from '../middleware/cache.middleware.js';
 
 const router = Router();
 
-// Get all jobs
-router.get('/', optionalAuth, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+// Get all jobs (cached for 5 minutes)
+router.get('/', optionalAuth, mediumCache, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { 
       search, 
