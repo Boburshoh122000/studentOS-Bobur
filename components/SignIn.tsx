@@ -1,13 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 
 export default function SignIn({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Get returnUrl from query params (set by ProtectedRoute)
+  const returnUrl = searchParams.get('returnUrl');
+
+  const getDefaultRouteForRole = (role: string): string => {
+    switch (role) {
+      case 'ADMIN':
+        return '/admin';
+      case 'EMPLOYER':
+        return '/employer';
+      case 'STUDENT':
+      default:
+        return '/app';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +46,11 @@ export default function SignIn({ navigateTo }: NavigationProps) {
         localStorage.setItem('refreshToken', data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Navigate based on role
-        if (data.user.role === 'ADMIN') {
-          navigateTo(Screen.ADMIN_DASHBOARD);
-        } else if (data.user.role === 'EMPLOYER') {
-          navigateTo(Screen.EMPLOYER_DASHBOARD);
+        // Navigate to returnUrl if provided, otherwise go to role-based default
+        if (returnUrl) {
+          navigate(decodeURIComponent(returnUrl));
         } else {
-          navigateTo(Screen.DASHBOARD);
+          navigate(getDefaultRouteForRole(data.user.role));
         }
       }
     } catch (err) {
@@ -66,7 +82,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
         localStorage.setItem('refreshToken', data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        navigateTo(role === 'admin' ? Screen.ADMIN_DASHBOARD : Screen.EMPLOYER_DASHBOARD);
+        navigate(role === 'admin' ? '/admin' : '/employer');
       }
     } catch (err) {
       setError('Network error. Please check your connection.');
@@ -79,7 +95,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
     <div className="bg-[#f6f6f8] dark:bg-[#111421] min-h-screen flex flex-col justify-center items-center p-4 transition-colors duration-200 font-display text-slate-900 dark:text-white">
       <div className="w-full max-w-[440px] flex flex-col items-center">
         {/* Logo Section */}
-        <div className="mb-8 flex items-center gap-3 cursor-pointer" onClick={() => navigateTo(Screen.LANDING)}>
+        <div className="mb-8 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
           <div className="size-10 text-primary bg-white dark:bg-[#1e2130] rounded-xl shadow-sm flex items-center justify-center border border-slate-200 dark:border-slate-700 p-2">
              <span className="material-symbols-outlined text-[24px]">school</span>
           </div>
@@ -210,7 +226,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
 
           <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account? 
-            <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="font-bold text-primary hover:text-blue-700 hover:underline transition-all ml-1">Create an account</button>
+            <button onClick={() => navigate('/signup/step-1')} className="font-bold text-primary hover:text-blue-700 hover:underline transition-all ml-1">Create an account</button>
           </div>
         </div>
 

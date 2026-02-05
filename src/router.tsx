@@ -2,9 +2,17 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import RootLayout from './ui/RootLayout';
 import { withNavigate } from './ui/withNavigate';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function Loader() {
-  return <div style={{ padding: 24 }}>Loading…</div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Loading...</p>
+      </div>
+    </div>
+  );
 }
 
 function Wrap({ children }: { children: React.ReactNode }) {
@@ -12,7 +20,17 @@ function Wrap({ children }: { children: React.ReactNode }) {
 }
 
 function NotFound() {
-  return <div style={{ padding: 24 }}>404 — Not Found</div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-slate-300 dark:text-slate-700">404</h1>
+        <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">Page not found</p>
+        <a href="/" className="mt-6 inline-block text-primary hover:underline font-medium">
+          Go back home
+        </a>
+      </div>
+    </div>
+  );
 }
 
 // Helper to retry lazy imports on chunk load errors (e.g., after deployment)
@@ -49,7 +67,7 @@ const ContactSupport = withNavigate(lazyRetry(() => import('../components/Contac
 const TermsOfService = withNavigate(lazyRetry(() => import('../components/TermsOfService')));
 const PrivacyPolicy = withNavigate(lazyRetry(() => import('../components/PrivacyPolicy')));
 
-// App
+// App (Student)
 const Dashboard = withNavigate(lazyRetry(() => import('../components/Dashboard')));
 const ScholarshipFinder = withNavigate(lazyRetry(() => import('../components/ScholarshipFinder')));
 const JobFinder = withNavigate(lazyRetry(() => import('../components/JobFinder')));
@@ -75,10 +93,38 @@ const AdminBlog = withNavigate(lazyRetry(() => import('../components/AdminBlog')
 // Employer
 const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/EmployerDashboard')));
 
+// Helper component to wrap protected routes
+function StudentRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute allowedRoles={['STUDENT']}>
+      <Wrap>{children}</Wrap>
+    </ProtectedRoute>
+  );
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute allowedRoles={['ADMIN']}>
+      <Wrap>{children}</Wrap>
+    </ProtectedRoute>
+  );
+}
+
+function EmployerRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute allowedRoles={['EMPLOYER']}>
+      <Wrap>{children}</Wrap>
+    </ProtectedRoute>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
+      // ========================================
+      // PUBLIC ROUTES
+      // ========================================
       {
         path: '/',
         element: (
@@ -152,166 +198,175 @@ export const router = createBrowserRouter([
         ),
       },
 
+      // ========================================
+      // PROTECTED ROUTES - STUDENT
+      // ========================================
       {
         path: '/app',
         element: (
-          <Wrap>
+          <StudentRoute>
             <Dashboard />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/scholarships',
         element: (
-          <Wrap>
+          <StudentRoute>
             <ScholarshipFinder />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/jobs',
         element: (
-          <Wrap>
+          <StudentRoute>
             <JobFinder />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/cv-ats',
         element: (
-          <Wrap>
+          <StudentRoute>
             <CVChecker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/cover-letter',
         element: (
-          <Wrap>
+          <StudentRoute>
             <CoverLetterGenerator />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/presentation',
         element: (
-          <Wrap>
+          <StudentRoute>
             <PresentationMaker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/learning-plan',
         element: (
-          <Wrap>
+          <StudentRoute>
             <LearningPlan />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/finance',
         element: (
-          <Wrap>
+          <StudentRoute>
             <FinanceTracker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/plagiarism',
         element: (
-          <Wrap>
+          <StudentRoute>
             <PlagiarismChecker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/habit-tracker',
         element: (
-          <Wrap>
+          <StudentRoute>
             <HabitTracker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/community',
         element: (
-          <Wrap>
+          <StudentRoute>
             <CommunityFeed />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {
         path: '/app/profile',
         element: (
-          <Wrap>
+          <StudentRoute>
             <ProfileSettings />
-          </Wrap>
+          </StudentRoute>
         ),
       },
 
+      // ========================================
+      // PROTECTED ROUTES - ADMIN
+      // ========================================
       {
         path: '/admin',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminDashboard />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/employers',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminEmployers />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/pricing',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminPricing />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/users',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminUsers />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/scholarships',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminScholarships />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/roles',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminRoles />
-          </Wrap>
+          </AdminRoute>
         ),
       },
       {
         path: '/admin/blog',
         element: (
-          <Wrap>
+          <AdminRoute>
             <AdminBlog />
-          </Wrap>
+          </AdminRoute>
         ),
       },
 
+      // ========================================
+      // PROTECTED ROUTES - EMPLOYER
+      // ========================================
       {
         path: '/employer',
         element: (
-          <Wrap>
+          <EmployerRoute>
             <EmployerDashboard />
-          </Wrap>
+          </EmployerRoute>
         ),
       },
 

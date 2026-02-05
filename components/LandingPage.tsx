@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 
 const TypingAnimation = () => {
@@ -47,6 +48,7 @@ const TypingAnimation = () => {
 };
 
 export default function LandingPage({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -95,8 +97,8 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">StudentOS</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => navigateTo(Screen.LANDING)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Home</button>
-            <button onClick={() => navigateTo(Screen.ABOUT)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">About</button>
+            <button onClick={() => navigate('/')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Home</button>
+            <button onClick={() => navigate('/about')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">About</button>
             <div className="group relative h-full flex items-center">
               <button className="flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors py-6 focus:outline-none">
                 Tools
@@ -105,28 +107,28 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <button onClick={() => navigateTo(Screen.CV_ATS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/cv-ats')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">fact_check</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">CV & ATS Checker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Optimize for recruitment algorithms</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.COVER_LETTER)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/cover-letter')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">edit_document</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">AI Cover Letter Generator</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Create tailored letters in seconds</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.JOBS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/jobs')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">work_outline</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Job Finder</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Internships & graduate roles</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.PLAGIARISM)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/plagiarism')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">gavel</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Plagiarism & AI Checker</div>
@@ -135,28 +137,28 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                     </button>
                   </div>
                   <div className="space-y-2">
-                    <button onClick={() => navigateTo(Screen.PRESENTATION)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/presentation')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">co_present</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Presentation Maker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Create slides in minutes</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.SCHOLARSHIPS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/scholarships')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">school</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Scholarship Finder</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Find funding opportunities</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.HABIT_TRACKER)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/habit-tracker')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">check_circle</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Habit Tracker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Build study routines</div>
                       </div>
                     </button>
-                    <button onClick={() => navigateTo(Screen.LEARNING_PLAN)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => navigate('/app/learning-plan')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">route</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Learning Plan Builder</div>
@@ -167,13 +169,13 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                 </div>
               </div>
             </div>
-            <button onClick={() => navigateTo(Screen.COMMUNITY)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Community</button>
-            <button onClick={() => navigateTo(Screen.BLOG)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Blog</button>
-            <button onClick={() => navigateTo(Screen.CONTACT)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Contact</button>
+            <button onClick={() => navigate('/app/community')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Community</button>
+            <button onClick={() => navigate('/blog')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Blog</button>
+            <button onClick={() => navigate('/contact')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Contact</button>
           </nav>
           <div className="flex items-center gap-4">
-            <button onClick={() => navigateTo(Screen.SIGN_IN)} className="hidden text-sm font-medium text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary sm:block transition-colors">Sign In</button>
-            <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="rounded-xl bg-slate-900 dark:bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:hover:bg-primary-dark hover:shadow-lg hover:shadow-slate-500/20 active:scale-95">Get Started</button>
+            <button onClick={() => navigate('/signin')} className="hidden text-sm font-medium text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary sm:block transition-colors">Sign In</button>
+            <button onClick={() => navigate('/signup/step-1')} className="rounded-xl bg-slate-900 dark:bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:hover:bg-primary-dark hover:shadow-lg hover:shadow-slate-500/20 active:scale-95">Get Started</button>
           </div>
         </div>
       </header>
@@ -198,7 +200,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               </h1>
 
               <div className="flex flex-wrap gap-3 pt-2">
-                <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/30 hover:shadow-primary/40">
+                <button onClick={() => navigate('/signup/step-1')} className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/30 hover:shadow-primary/40">
                   Start free 3-day trial
                 </button>
                 <button 
@@ -481,14 +483,14 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: 'fact_check', title: 'CV & ATS Checker', desc: 'AI-powered analysis to ensure your resume passes Applicant Tracking Systems and gets seen by recruiters.', color: 'blue', action: 'Check CV', screen: Screen.CV_ATS },
-              { icon: 'edit_document', title: 'Cover Letter Generator', desc: 'Instantly create tailored cover letters for any job application using AI.', color: 'pink', action: 'Write Letter', screen: Screen.COVER_LETTER },
-              { icon: 'work_outline', title: 'Job Finder', desc: 'Smart filters specifically for student internships, part-time roles, and graduate programs.', color: 'purple', action: 'Find Jobs', screen: Screen.JOBS },
-              { icon: 'gavel', title: 'Plagiarism & AI Checker', desc: 'Verify your essays are original and citation-compliant before you hit submit.', color: 'orange', action: 'Check Work', screen: Screen.PLAGIARISM },
-              { icon: 'school', title: 'Scholarship Finder', desc: 'Match with thousands of scholarships based on your unique profile and academic interests.', color: 'teal', action: 'Find Funds', screen: Screen.SCHOLARSHIPS },
-              { icon: 'co_present', title: 'Presentation Maker', desc: 'AI-generated slides in multiple languages.', color: 'rose', action: 'Create Slides', screen: Screen.PRESENTATION },
-              { icon: 'calendar_today', title: 'Habit Tracker', desc: 'Daily consistency with Telegram integration.', color: 'emerald', action: 'Start Tracking', screen: Screen.HABIT_TRACKER },
-              { icon: 'map', title: 'Learning Plan Builder', desc: 'Customized academic and career roadmaps.', color: 'indigo', action: 'Build Plan', screen: Screen.LEARNING_PLAN },
+              { icon: 'fact_check', title: 'CV & ATS Checker', desc: 'AI-powered analysis to ensure your resume passes Applicant Tracking Systems and gets seen by recruiters.', color: 'blue', action: 'Check CV', route: '/app/cv-ats' },
+              { icon: 'edit_document', title: 'Cover Letter Generator', desc: 'Instantly create tailored cover letters for any job application using AI.', color: 'pink', action: 'Write Letter', route: '/app/cover-letter' },
+              { icon: 'work_outline', title: 'Job Finder', desc: 'Smart filters specifically for student internships, part-time roles, and graduate programs.', color: 'purple', action: 'Find Jobs', route: '/app/jobs' },
+              { icon: 'gavel', title: 'Plagiarism & AI Checker', desc: 'Verify your essays are original and citation-compliant before you hit submit.', color: 'orange', action: 'Check Work', route: '/app/plagiarism' },
+              { icon: 'school', title: 'Scholarship Finder', desc: 'Match with thousands of scholarships based on your unique profile and academic interests.', color: 'teal', action: 'Find Funds', route: '/app/scholarships' },
+              { icon: 'co_present', title: 'Presentation Maker', desc: 'AI-generated slides in multiple languages.', color: 'rose', action: 'Create Slides', route: '/app/presentation' },
+              { icon: 'calendar_today', title: 'Habit Tracker', desc: 'Daily consistency with Telegram integration.', color: 'emerald', action: 'Start Tracking', route: '/app/habit-tracker' },
+              { icon: 'map', title: 'Learning Plan Builder', desc: 'Customized academic and career roadmaps.', color: 'indigo', action: 'Build Plan', route: '/app/learning-plan' },
             ].map((feature, idx) => (
               <div key={idx} className="glass-card group relative flex flex-col rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:bg-white/60">
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-${feature.color}-50 text-${feature.color === 'blue' ? 'primary' : feature.color + '-600'} shadow-sm border border-${feature.color}-100`}>
@@ -498,7 +500,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                 <p className="mb-4 flex-1 text-sm leading-relaxed text-slate-500">
                   {feature.desc}
                 </p>
-                <button onClick={() => navigateTo(feature.screen)} className="inline-flex items-center text-sm font-bold text-primary hover:text-primary-dark transition-colors">
+                <button onClick={() => navigate(feature.route)} className="inline-flex items-center text-sm font-bold text-primary hover:text-primary-dark transition-colors">
                   {feature.action} <span className="material-symbols-outlined ml-1 text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                 </button>
               </div>
@@ -518,7 +520,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
             <div className="flex flex-wrap justify-center gap-8">
               <a href="/privacy" className="text-sm text-slate-500 hover:text-primary transition-colors">Privacy Policy</a>
               <a href="/terms" className="text-sm text-slate-500 hover:text-primary transition-colors">Terms of Service</a>
-              <button onClick={() => navigateTo(Screen.CONTACT)} className="text-sm text-slate-500 hover:text-primary transition-colors">Contact Support</button>
+              <button onClick={() => navigate('/contact')} className="text-sm text-slate-500 hover:text-primary transition-colors">Contact Support</button>
             </div>
             <div className="flex gap-4">
               <a href="#" className="text-slate-400 hover:text-primary transition-colors p-2 hover:bg-white/50 rounded-full">
