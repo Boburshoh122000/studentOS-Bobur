@@ -112,7 +112,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
 function EmployerRoute({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={['EMPLOYER']}>
+    <ProtectedRoute allowedRoles={['EMPLOYER', 'ADMIN']}>
       <Wrap>{children}</Wrap>
     </ProtectedRoute>
   );
