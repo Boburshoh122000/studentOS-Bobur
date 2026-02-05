@@ -60,36 +60,6 @@ export default function SignIn({ navigateTo }: NavigationProps) {
     setIsLoading(false);
   };
 
-  const handleDemoLogin = async (role: 'admin' | 'employer') => {
-    setIsLoading(true);
-    setError('');
-    
-    const credentials = role === 'admin' 
-      ? { email: 'admin@studentos.com', password: 'admin123' }
-      : { email: 'hr@techflow.com', password: 'employer123' };
-    
-    try {
-      const { data, error: apiError } = await authApi.login(credentials);
-      
-      if (apiError) {
-        setError(apiError);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        navigate(role === 'admin' ? '/admin' : '/employer');
-      }
-    } catch (err) {
-      setError('Network error. Please check your connection.');
-    }
-    
-    setIsLoading(false);
-  };
 
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#111421] min-h-screen flex flex-col justify-center items-center p-4 transition-colors duration-200 font-display text-slate-900 dark:text-white">
@@ -201,28 +171,6 @@ export default function SignIn({ navigateTo }: NavigationProps) {
             </button>
           </form>
 
-          {/* Quick Demo Links */}
-          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Demo Portals</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => handleDemoLogin('admin')} 
-                disabled={isLoading}
-                className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold transition-colors disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                Admin
-              </button>
-              <button 
-                onClick={() => handleDemoLogin('employer')} 
-                disabled={isLoading}
-                className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold transition-colors disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[16px]">business_center</span>
-                Employer
-              </button>
-            </div>
-          </div>
 
           <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account? 
