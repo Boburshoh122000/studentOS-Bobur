@@ -96,7 +96,7 @@ const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/Emp
 // Helper component to wrap protected routes
 function StudentRoute({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={['STUDENT']}>
+    <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
       <Wrap>{children}</Wrap>
     </ProtectedRoute>
   );
