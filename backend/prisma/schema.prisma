@@ -65,6 +65,12 @@ enum PlanInterval {
   YEARLY
 }
 
+enum ScholarshipStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+}
+
 // =============================================================================
 // USER & PROFILES
 // =============================================================================
@@ -82,20 +88,20 @@ model User {
   lastLoginAt   DateTime?
 
   // Relations
-  studentProfile   StudentProfile?
-  employerProfile  EmployerProfile?
-  refreshTokens    RefreshToken[]
-  habits           Habit[]
-  habitLogs        HabitLog[]
-  jobApplications  JobApplication[]
+  studentProfile    StudentProfile?
+  employerProfile   EmployerProfile?
+  refreshTokens     RefreshToken[]
+  habits            Habit[]
+  habitLogs         HabitLog[]
+  jobApplications   JobApplication[]
   savedScholarships SavedScholarship[]
-  savedJobs        SavedJob[]
-  blogPosts        BlogPost[]
-  communityPosts   CommunityPost[]
-  comments         Comment[]
-  likes            Like[]
-  subscription     Subscription?
-  contactMessages  ContactMessage[]
+  savedJobs         SavedJob[]
+  blogPosts         BlogPost[]
+  communityPosts    CommunityPost[]
+  comments          Comment[]
+  likes             Like[]
+  subscription      Subscription?
+  contactMessages   ContactMessage[]
 
   // Finance
   financeCategories FinanceCategory[]
@@ -108,50 +114,50 @@ model User {
 }
 
 model StudentProfile {
-  id              String          @id @default(cuid())
-  userId          String          @unique
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  fullName        String?
-  avatarUrl       String?
-  bio             String?
-  educationLevel  EducationLevel?
-  university      String?
-  graduationYear  Int?
-  major           String?
-  country         String?
-  goals           String[]        @default([])
-  skills          String[]        @default([])
-  cvUrl           String?
-  atsScore        Int?            @default(0)
-  profileCompletion Int           @default(0)
-  
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName          String?
+  avatarUrl         String?
+  bio               String?
+  educationLevel    EducationLevel?
+  university        String?
+  graduationYear    Int?
+  major             String?
+  country           String?
+  goals             String[]        @default([])
+  skills            String[]        @default([])
+  cvUrl             String?
+  atsScore          Int?            @default(0)
+  profileCompletion Int             @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model EmployerProfile {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  companyName   String
-  tagline       String?
-  description   String?
-  industry      String?
-  companySize   String?
-  logoUrl       String?
-  website       String?
-  linkedIn      String?
-  address       String?
-  city          String?
-  state         String?
-  country       String?
-  
-  jobs          Job[]
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName String
+  tagline     String?
+  description String?
+  industry    String?
+  companySize String?
+  logoUrl     String?
+  website     String?
+  linkedIn    String?
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+
+  jobs Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RefreshToken {
@@ -161,7 +167,7 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
-  
+
   @@index([token])
   @@index([userId])
 }
@@ -171,27 +177,29 @@ model RefreshToken {
 // =============================================================================
 
 model Scholarship {
-  id              String   @id @default(cuid())
-  title           String
-  institution     String
-  country         String
-  studyLevel      String
-  awardType       String
-  awardAmount     String?
-  deadline        DateTime?
-  description     String?
-  applicationUrl  String?
-  imageUrl        String?
-  isActive        Boolean  @default(true)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  savedBy         SavedScholarship[]
-  
+  id             String            @id @default(cuid())
+  title          String
+  institution    String
+  country        String
+  studyLevel     String
+  awardType      String
+  awardAmount    String?
+  deadline       DateTime?
+  description    String?
+  applicationUrl String?
+  imageUrl       String?
+  isActive       Boolean           @default(true)
+  status         ScholarshipStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  savedBy SavedScholarship[]
+
   @@index([country])
   @@index([studyLevel])
   @@index([isActive])
+  @@index([status])
 }
 
 model SavedScholarship {
@@ -201,7 +209,7 @@ model SavedScholarship {
   scholarshipId String
   scholarship   Scholarship @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
   savedAt       DateTime    @default(now())
-  
+
   @@unique([userId, scholarshipId])
   @@index([userId])
 }
@@ -225,38 +233,38 @@ model Job {
   responsibilities String[]     @default([])
   benefits         String[]     @default([])
   status           JobStatus    @default(ACTIVE)
-  
-  employerId       String
-  employer         EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  
-  postedAt         DateTime     @default(now())
-  expiresAt        DateTime?
-  updatedAt        DateTime     @updatedAt
-  
-  applications     JobApplication[]
-  savedBy          SavedJob[]
-  
+
+  employerId String
+  employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+
+  postedAt  DateTime  @default(now())
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
+
+  applications JobApplication[]
+  savedBy      SavedJob[]
+
   @@index([status])
   @@index([locationType])
   @@index([employerId])
 }
 
 model JobApplication {
-  id          String            @id @default(cuid())
-  jobId       String
-  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   status      ApplicationStatus @default(NEW)
   coverLetter String?
   cvUrl       String?
   matchScore  Int?
   notes       String?
-  
-  appliedAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
+
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([jobId, userId])
   @@index([userId])
   @@index([jobId])
@@ -270,7 +278,7 @@ model SavedJob {
   jobId   String
   job     Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   savedAt DateTime @default(now())
-  
+
   @@unique([userId, jobId])
   @@index([userId])
 }
@@ -280,21 +288,21 @@ model SavedJob {
 // =============================================================================
 
 model Habit {
-  id        String     @id @default(cuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   title     String
   icon      String?
   color     String?
-  frequency String     @default("daily")
-  isActive  Boolean    @default(true)
-  
-  logs      HabitLog[]
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
+  frequency String  @default("daily")
+  isActive  Boolean @default(true)
+
+  logs HabitLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
 }
 
@@ -306,7 +314,7 @@ model HabitLog {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
   notes       String?
-  
+
   @@index([habitId])
   @@index([userId])
   @@index([completedAt])
@@ -327,11 +335,11 @@ model BlogPost {
   author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   status        BlogStatus @default(DRAFT)
   tags          String[]   @default([])
-  
-  publishedAt   DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
   @@index([slug])
   @@index([status])
   @@index([authorId])
@@ -342,32 +350,32 @@ model BlogPost {
 // =============================================================================
 
 model CommunityPost {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String
-  imageUrl  String?
-  
-  comments  Comment[]
-  likes     Like[]
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content  String
+  imageUrl String?
+
+  comments Comment[]
+  likes    Like[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
 }
 
 model Comment {
-  id        String        @id @default(cuid())
-  postId    String
-  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String
-  
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  
+  id      String        @id @default(cuid())
+  postId  String
+  post    CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([postId])
   @@index([userId])
 }
@@ -379,7 +387,7 @@ model Like {
   userId    String
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
-  
+
   @@unique([postId, userId])
   @@index([postId])
 }
@@ -389,35 +397,35 @@ model Like {
 // =============================================================================
 
 model PricingPlan {
-  id            String         @id @default(cuid())
-  name          String
-  description   String?
-  price         Float
-  interval      PlanInterval   @default(MONTHLY)
-  features      String[]       @default([])
-  isActive      Boolean        @default(true)
-  isPopular     Boolean        @default(false)
-  
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  interval    PlanInterval @default(MONTHLY)
+  features    String[]     @default([])
+  isActive    Boolean      @default(true)
+  isPopular   Boolean      @default(false)
+
   subscriptions Subscription[]
-  
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
-  id        String             @id @default(cuid())
-  userId    String             @unique
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId    String
-  plan      PricingPlan        @relation(fields: [planId], references: [id])
-  status    SubscriptionStatus @default(ACTIVE)
-  
-  startDate DateTime           @default(now())
+  id     String             @id @default(cuid())
+  userId String             @unique
+  user   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId String
+  plan   PricingPlan        @relation(fields: [planId], references: [id])
+  status SubscriptionStatus @default(ACTIVE)
+
+  startDate DateTime  @default(now())
   endDate   DateTime?
-  
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([planId])
 }
@@ -427,17 +435,17 @@ model Subscription {
 // =============================================================================
 
 model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  subject   String?
-  message   String
-  isRead    Boolean  @default(false)
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
+  id      String  @id @default(cuid())
+  name    String
+  email   String
+  subject String?
+  message String
+  isRead  Boolean @default(false)
+  userId  String?
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
-  
+
   @@index([isRead])
 }
 
@@ -446,14 +454,14 @@ model ContactMessage {
 // =============================================================================
 
 model FinanceCategory {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  type      String   // INCOME, EXPENSE
-  color     String?
-  icon      String?
-  
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  type   String // INCOME, EXPENSE
+  color  String?
+  icon   String?
+
   transactions Transaction[]
   budgets      Budget[]
 
@@ -465,19 +473,19 @@ model FinanceCategory {
 }
 
 model Transaction {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categoryId  String?
-  category    FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
   amount      Float
-  type        String   // INCOME, EXPENSE
+  type        String // INCOME, EXPENSE
   date        DateTime @default(now())
   description String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([date])
@@ -485,17 +493,17 @@ model Transaction {
 }
 
 model Budget {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categoryId  String
-  category    FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
-  amount      Float
-  period      String   @default("monthly") // monthly, yearly
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  amount Float
+  period String @default("monthly") // monthly, yearly
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, categoryId, period])
   @@index([userId])
@@ -506,16 +514,16 @@ model Budget {
 // =============================================================================
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  title     String
-  message   String
-  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR, SYSTEM
-  isRead    Boolean  @default(false)
-  link      String?  // Optional link to redirect
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title   String
+  message String
+  type    String  @default("INFO") // INFO, SUCCESS, WARNING, ERROR, SYSTEM
+  isRead  Boolean @default(false)
+  link    String? // Optional link to redirect
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

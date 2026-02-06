@@ -20,13 +20,96 @@ const querySchema = z.object({
   }),
 });
 
-// Get all scholarships (cached for 5 minutes)
+// Admin: Get all scholarships (including drafts)
+router.get('/admin/list', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { search, status, page = '1', limit = '50' } = req.query as any;
+
+    const where: any = {};
+
+    if (status && status !== 'all') {
+      where.status = status;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { institution: { contains: search, mode: 'insensitive' } },
+        { country: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [scholarships, total] = await Promise.all([
+      prisma.scholarship.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (parseInt(page) - 1) * parseInt(limit),
+        take: parseInt(limit),
+      }),
+      prisma.scholarship.count({ where }),
+    ]);
+
+    res.json({
+      scholarships,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Admin: Get scholarship stats
+router.get('/admin/stats', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const [published, pending, draft, total] = await Promise.all([
+      prisma.scholarship.count({ where: { status: 'PUBLISHED' } }),
+      prisma.scholarship.count({ where: { status: 'PENDING' } }),
+      prisma.scholarship.count({ where: { status: 'DRAFT' } }),
+      prisma.scholarship.count(),
+    ]);
+
+    // Calculate total funding (parse awardAmount strings)
+    const allScholarships = await prisma.scholarship.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { awardAmount: true },
+    });
+
+    let totalFunding = 0;
+    allScholarships.forEach((s) => {
+      if (s.awardAmount) {
+        // Extract numeric value from strings like "$25,000" or "Full Tuition"
+        const match = s.awardAmount.replace(/,/g, '').match(/\d+/);
+        if (match) {
+          totalFunding += parseInt(match[0]);
+        }
+      }
+    });
+
+    res.json({
+      published,
+      pending,
+      draft,
+      total,
+      totalFunding,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get all scholarships - PUBLIC (only PUBLISHED status)
 router.get('/', optionalAuth, mediumCache, validate(querySchema), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { country, studyLevel, minAmount, search, page = '1', limit = '10' } = req.query as any;
 
     const where: any = {
       isActive: true,
+      status: 'PUBLISHED',
     };
 
     if (country) where.country = country;

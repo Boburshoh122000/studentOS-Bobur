@@ -77,7 +77,7 @@ class ApiClient {
         localStorage.setItem('refreshToken', data.refreshToken);
         return true;
       }
-    } catch {}
+    } catch { }
 
     // Clear tokens on failure
     localStorage.removeItem('accessToken');
@@ -174,6 +174,20 @@ export const scholarshipApi = {
   save: (id: string) => api.post(`/scholarships/${id}/save`),
   unsave: (id: string) => api.delete(`/scholarships/${id}/save`),
   getSaved: () => api.get('/scholarships/saved/list'),
+  // Admin methods
+  adminList: (params?: { search?: string; status?: string; page?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) searchParams.append(key, String(value));
+      });
+    }
+    return api.get(`/scholarships/admin/list?${searchParams}`);
+  },
+  adminStats: () => api.get('/scholarships/admin/stats'),
+  create: (data: any) => api.post('/scholarships', data),
+  update: (id: string, data: any) => api.patch(`/scholarships/${id}`, data),
+  delete: (id: string) => api.delete(`/scholarships/${id}`),
 };
 
 // Jobs API
@@ -226,7 +240,7 @@ export const blogApi = {
     return api.get(`/blog?${searchParams}`);
   },
   get: (slug: string) => api.get(`/blog/${slug}`),
-  
+
   // Admin endpoints
   adminList: () => api.get('/blog/admin/list'),
   create: (data: {
