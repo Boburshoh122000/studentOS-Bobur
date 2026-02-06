@@ -215,6 +215,7 @@ export const habitApi = {
 
 // Blog API
 export const blogApi = {
+  // Public endpoints
   list: (params?: { tag?: string; page?: number }) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -225,6 +226,26 @@ export const blogApi = {
     return api.get(`/blog?${searchParams}`);
   },
   get: (slug: string) => api.get(`/blog/${slug}`),
+  
+  // Admin endpoints
+  adminList: () => api.get('/blog/admin/list'),
+  create: (data: {
+    title: string;
+    content: string;
+    excerpt?: string;
+    coverImageUrl?: string;
+    tags?: string[];
+    status?: 'DRAFT' | 'PUBLISHED';
+  }) => api.post('/blog', data),
+  update: (id: string, data: {
+    title?: string;
+    content?: string;
+    excerpt?: string;
+    coverImageUrl?: string;
+    tags?: string[];
+    status?: 'DRAFT' | 'PUBLISHED';
+  }) => api.patch(`/blog/${id}`, data),
+  delete: (id: string) => api.delete(`/blog/${id}`),
 };
 
 // Community API
