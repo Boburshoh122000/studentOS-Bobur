@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
+import { useAuth } from '../src/contexts/AuthContext';
 
 const TypingAnimation = () => {
   const [text, setText] = useState('');
@@ -49,8 +50,20 @@ const TypingAnimation = () => {
 
 export default function LandingPage({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [activeSlide, setActiveSlide] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Auth-guarded navigation for tools
+  const handleToolClick = (toolPath: string) => {
+    if (isAuthenticated) {
+      navigate(toolPath);
+    } else {
+      // Redirect to signup with intended destination
+      const redirectTo = encodeURIComponent(toolPath);
+      navigate(`/signup/step-1?redirect_to=${redirectTo}`);
+    }
+  };
 
   useEffect(() => {
     // Slide rotation
@@ -107,28 +120,28 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <button onClick={() => navigate('/app/cv-ats')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/cv-ats')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">fact_check</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">CV & ATS Checker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Optimize for recruitment algorithms</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/cover-letter')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/cover-letter')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">edit_document</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">AI Cover Letter Generator</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Create tailored letters in seconds</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/jobs')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/jobs')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">work_outline</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Job Finder</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Internships & graduate roles</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/plagiarism')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/plagiarism')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">gavel</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Plagiarism & AI Checker</div>
@@ -137,28 +150,28 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                     </button>
                   </div>
                   <div className="space-y-2">
-                    <button onClick={() => navigate('/app/presentation')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/presentation')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">co_present</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Presentation Maker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Create slides in minutes</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/scholarships')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/scholarships')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">school</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Scholarship Finder</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Find funding opportunities</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/habit-tracker')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/habit-tracker')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">check_circle</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Habit Tracker</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Build study routines</div>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/app/learning-plan')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
+                    <button onClick={() => handleToolClick('/app/learning-plan')} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">route</span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">Learning Plan Builder</div>
@@ -169,7 +182,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                 </div>
               </div>
             </div>
-            <button onClick={() => navigate('/app/community')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Community</button>
+            <button onClick={() => handleToolClick('/app/community')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Community</button>
             <button onClick={() => navigate('/blog')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Blog</button>
             <button onClick={() => navigate('/contact')} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Contact</button>
           </nav>

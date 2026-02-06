@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 
 export default function SignUpStep1({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,8 +59,13 @@ export default function SignUpStep1({ navigateTo }: NavigationProps) {
         localStorage.setItem('refreshToken', data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Navigate to step 2 for onboarding
-        navigateTo(Screen.SIGNUP_STEP_2);
+        // Navigate to step 2, preserving redirect_to param if present
+        const redirectTo = searchParams.get('redirect_to');
+        if (redirectTo) {
+          navigate(`/signup/step-2?redirect_to=${encodeURIComponent(redirectTo)}`);
+        } else {
+          navigateTo(Screen.SIGNUP_STEP_2);
+        }
       }
     } catch (err) {
       setError('Network error. Please check your connection.');
@@ -65,6 +73,7 @@ export default function SignUpStep1({ navigateTo }: NavigationProps) {
     
     setIsLoading(false);
   };
+
 
   return (
     <div className="flex flex-col min-h-screen">

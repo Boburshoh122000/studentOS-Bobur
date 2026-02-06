@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 
 export default function SignUpStep2({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedGoals, setSelectedGoals] = useState<string[]>(['job']);
 
   const toggleGoal = (value: string) => {
@@ -14,9 +17,16 @@ export default function SignUpStep2({ navigateTo }: NavigationProps) {
 
   const handleFinish = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to dashboard instead of landing
-    navigateTo(Screen.DASHBOARD);
+    // Check if there's a redirect destination from tools navigation
+    const redirectTo = searchParams.get('redirect_to');
+    if (redirectTo) {
+      navigate(decodeURIComponent(redirectTo));
+    } else {
+      // Default: navigate to dashboard
+      navigateTo(Screen.DASHBOARD);
+    }
   };
+
 
   return (
     <div className="font-display bg-background-light text-slate-850 antialiased min-h-screen flex flex-col relative overflow-x-hidden">
