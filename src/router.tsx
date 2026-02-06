@@ -63,6 +63,7 @@ const SignUpStep1 = withNavigate(lazyRetry(() => import('../components/SignUpSte
 const SignUpStep2 = withNavigate(lazyRetry(() => import('../components/SignUpStep2')));
 const AboutUs = withNavigate(lazyRetry(() => import('../components/AboutUs')));
 const Blog = withNavigate(lazyRetry(() => import('../components/Blog')));
+const BlogPost = withNavigate(lazyRetry(() => import('../components/BlogPost')));
 const ContactSupport = withNavigate(lazyRetry(() => import('../components/ContactSupport')));
 const TermsOfService = withNavigate(lazyRetry(() => import('../components/TermsOfService')));
 const PrivacyPolicy = withNavigate(lazyRetry(() => import('../components/PrivacyPolicy')));
@@ -170,6 +171,14 @@ export const router = createBrowserRouter([
         element: (
           <Wrap>
             <Blog />
+          </Wrap>
+        ),
+      },
+      {
+        path: '/blog/:slug',
+        element: (
+          <Wrap>
+            <BlogPost />
           </Wrap>
         ),
       },

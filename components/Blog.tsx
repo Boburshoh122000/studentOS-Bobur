@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 
@@ -19,6 +20,7 @@ interface BlogPost {
 }
 
 export default function Blog({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +117,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                     Unlock your full academic potential by learning how to focus without distraction in an increasingly noisy world.
                   </p>
                   <div className="pt-2">
-                    <button className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors">
+                    <button onClick={() => navigate('/blog/mastering-deep-work')} className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors">
                       Read Article <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
                   </div>
@@ -210,7 +212,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {!loading && !error && filteredPosts.length > 0 && (
                 <div className="grid gap-x-6 gap-y-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredPosts.map(post => (
-                    <article key={post.id} className="group flex flex-col gap-3 cursor-pointer">
+                    <article key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group flex flex-col gap-3 cursor-pointer">
                       <div className="overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 aspect-[16/10] relative">
                         {post.coverImageUrl ? (
                           <div 
