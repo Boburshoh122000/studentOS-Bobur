@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Screen, NavigationProps } from '../types';
+import { NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
+import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
-export default function SignIn({ navigateTo }: NavigationProps) {
+export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Ref to track if we've already redirected (prevents multiple redirects/toasts)
+  const hasRedirected = useRef(false);
 
   // Get returnUrl from query params (set by ProtectedRoute)
   const returnUrl = searchParams.get('returnUrl');
@@ -24,24 +30,24 @@ export default function SignIn({ navigateTo }: NavigationProps) {
     }
   }, [justRegistered]);
 
-  // Check if user is already logged in
+  // Redirect authenticated users away from signin page
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const user = localStorage.getItem('user');
-    if (token && user) {
-      try {
-        const userData = JSON.parse(user);
-        console.log('[SignIn] User already logged in:', userData.email);
-        toast.success('You are already logged in!');
-        navigate(getDefaultRouteForRole(userData.role));
-      } catch (e) {
-        // Invalid user data, clear and continue
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-      }
+    // Only redirect once auth loading is complete and user is authenticated
+    if (!isAuthLoading && isAuthenticated && user && !hasRedirected.current) {
+      hasRedirected.current = true;
+      console.log('[SignIn] User already authenticated, redirecting...');
+
+      // Show toast only once
+      toast.success('You are already logged in!', { id: 'already-logged-in' });
+
+      // Navigate to returnUrl or role-based default
+      const destination = returnUrl
+        ? decodeURIComponent(returnUrl)
+        : getDefaultRouteForRole(user.role);
+
+      navigate(destination, { replace: true });
     }
-  }, [navigate]);
+  }, [isAuthLoading, isAuthenticated, user, navigate, returnUrl]);
 
   const getDefaultRouteForRole = (role: string): string => {
     switch (role) {
@@ -58,7 +64,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       console.log('[SignIn] Submitting login form for:', email);
@@ -70,7 +76,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
         toast.error(
           apiError === 'Invalid credentials' ? 'Email or password is incorrect' : apiError
         );
-        setIsLoading(false);
+        setIsSubmitting(false);
         return;
       }
 
@@ -95,8 +101,36 @@ export default function SignIn({ navigateTo }: NavigationProps) {
       toast.error('Network error. Please try again.');
     }
 
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
+
+  // Show loading spinner while auth state is being determined
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Checking authentication...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If already authenticated, show redirect message (brief flash before redirect)
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Redirecting to dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#111421] min-h-screen flex flex-col justify-center items-center p-4 transition-colors duration-200 font-display text-slate-900 dark:text-white">
@@ -188,7 +222,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -209,7 +243,7 @@ export default function SignIn({ navigateTo }: NavigationProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
@@ -225,10 +259,10 @@ export default function SignIn({ navigateTo }: NavigationProps) {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="mt-2 flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-base font-bold text-white shadow-md hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                     <circle
