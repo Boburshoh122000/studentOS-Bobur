@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { NavigationProps } from '../types';
-import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
+  const { isAuthenticated, user, isLoading: isAuthLoading, login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,41 +66,40 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
     setIsSubmitting(true);
 
     try {
-      console.log('[SignIn] Submitting login form for:', email);
-      const { data, error: apiError } = await authApi.login({ email, password });
+      // Use the login method from useAuth to properly update context state
+      const result = await login(email, password);
 
-      if (apiError) {
-        console.error('[SignIn] Login error:', apiError);
-        setError(apiError);
+      if (!result.success) {
+        console.error('[SignIn] Login error:', result.error);
+        setError(result.error || 'Login failed');
         toast.error(
-          apiError === 'Invalid credentials' ? 'Email or password is incorrect' : apiError
+          result.error === 'Invalid credentials'
+            ? 'Email or password is incorrect'
+            : result.error || 'Login failed'
         );
         setIsSubmitting(false);
         return;
       }
 
-      if (data) {
-        console.log('[SignIn] Login successful, storing tokens for:', data.user.email);
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
+      // Login successful - show toast
+      toast.success(`Welcome back!`);
 
-        toast.success(`Welcome back, ${data.user.profile?.fullName || 'User'}!`);
+      // Reset submitting state before redirect
+      setIsSubmitting(false);
 
-        // Navigate to returnUrl if provided, otherwise go to role-based default
-        if (returnUrl) {
-          navigate(decodeURIComponent(returnUrl));
-        } else {
-          navigate(getDefaultRouteForRole(data.user.role));
-        }
-      }
+      // IMMEDIATELY redirect - don't wait for useEffect
+      const destination = returnUrl
+        ? decodeURIComponent(returnUrl)
+        : getDefaultRouteForRole(user?.role || 'STUDENT');
+
+      // Force navigation with replace to prevent back-navigation to login
+      navigate(destination, { replace: true });
     } catch (err) {
       console.error('[SignIn] Network error:', err);
       setError('Network error. Please check your connection.');
       toast.error('Network error. Please try again.');
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   // Show loading spinner while auth state is being determined
