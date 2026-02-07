@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Screen } from '../types';
 import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
+import { useAuth } from '../src/contexts/AuthContext';
 
 interface SidebarProps {
   currentScreen: Screen;
@@ -15,9 +17,24 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentScreen, navigateTo, userData }: SidebarProps) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const hoverTimeoutRef = useRef<any>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -115,10 +132,35 @@ export default function Sidebar({ currentScreen, navigateTo, userData }: Sidebar
         </nav>
       </div>
 
-      {/* User Profile */}
+      {/* User Profile & Logout */}
       <div
         className={`flex flex-col ${isSidebarExpanded ? 'items-stretch px-4' : 'items-center px-2'} space-y-2 w-full mt-auto`}
       >
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className={`flex items-center ${isSidebarExpanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative text-text-sub hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400`}
+          title={!isSidebarExpanded ? 'Log Out' : ''}
+        >
+          <span
+            className={`material-symbols-outlined ${isLoggingOut ? 'animate-spin' : ''} ${!isSidebarExpanded ? 'text-2xl' : 'text-[20px]'}`}
+          >
+            {isLoggingOut ? 'progress_activity' : 'logout'}
+          </span>
+          {isSidebarExpanded && (
+            <span className="text-sm font-medium whitespace-nowrap">
+              {isLoggingOut ? 'Logging out...' : 'Log Out'}
+            </span>
+          )}
+          {!isSidebarExpanded && (
+            <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              Log Out
+            </span>
+          )}
+        </button>
+
+        {/* User Profile */}
         <div
           onClick={() => navigateTo(Screen.PROFILE)}
           className={`flex items-center ${isSidebarExpanded ? 'gap-3 px-3 py-2 w-full' : 'justify-center size-10'} rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer`}
