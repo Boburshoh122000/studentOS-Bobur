@@ -60,11 +60,17 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     return true;
   }
 
-  // Handle Google AI specific errors
-  if (errorMessage.includes('GoogleGenerativeAI') || errorMessage.includes('SAFETY')) {
+  // Handle Google AI safety blocks
+  if (
+    errorMessage.includes('GoogleGenerativeAI') ||
+    errorMessage.includes('SAFETY') ||
+    errorMessage.includes('AI_SAFETY_BLOCK')
+  ) {
     res.status(400).json({
-      error: 'Content blocked',
-      message: 'The AI could not process this request. Please try with different content.',
+      error: 'Content processing issue',
+      message: errorMessage.includes('PDF')
+        ? 'Could not process this PDF file. Please try using the "Paste Text" option instead.'
+        : 'The AI had trouble processing this content. Please try simplifying the text or use the "Paste Text" option.',
     });
     return true;
   }

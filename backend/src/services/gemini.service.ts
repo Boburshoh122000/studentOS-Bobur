@@ -69,30 +69,60 @@ export const analyzeCV = async (
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       safetySettings: cvSafetySettings,
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2048,
+      },
     });
 
-    const prompt = `Act as an expert Recruiter and ATS (Applicant Tracking System) algorithm. Analyze the following resume thoroughly.
-${jobDescription ? `Compare against this job description: ${jobDescription}` : 'Analyze for general job market compatibility.'}
+    // Sanitize the CV text - remove excessive special characters that might trigger filters
+    const sanitizedCV = cvText
+      .replace(/[^\w\s@.,\-():/+#&'"\n]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-Resume/CV Content:
-${cvText}
+    const prompt = `You are a professional career advisor and ATS (Applicant Tracking System) expert.
 
-Provide a strict JSON response with the following structure:
+TASK: Analyze the following professional resume/CV document for ATS compatibility and provide improvement suggestions.
+
+${jobDescription ? `TARGET JOB: ${jobDescription}` : 'Provide general job market analysis.'}
+
+---BEGIN RESUME---
+${sanitizedCV}
+---END RESUME---
+
+Respond with a JSON object containing:
 {
-  "score": <number 0-100 representing ATS compatibility>,
-  "missing_keywords": ["keyword1", "keyword2", ...],
-  "weaknesses": ["point 1", "point 2", ...],
-  "actionable_fixes": ["tip 1", "tip 2", ...]
+  "score": <number 0-100>,
+  "missing_keywords": ["keyword1", "keyword2"],
+  "weaknesses": ["weakness1", "weakness2"],
+  "actionable_fixes": ["fix1", "fix2"]
 }
 
-Be thorough and specific. Return ONLY valid JSON, no markdown, no code blocks.`;
+Return ONLY valid JSON. No markdown formatting.`;
 
     const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const response = result.response;
+
+    // Check if content was blocked
+    if (!response.candidates || response.candidates.length === 0) {
+      console.error('Gemini returned no candidates - possible content filter');
+      return {
+        score: 50,
+        missing_keywords: [],
+        weaknesses: ['Analysis could not be completed'],
+        actionable_fixes: ['Please try again with a simplified version of your CV'],
+        feedback: ['Analysis could not be completed'],
+        suggestions: ['Please try again'],
+        keywords: { found: [], missing: [] },
+      };
+    }
+
+    const responseText = response.text();
 
     try {
       // Clean response of any markdown formatting
-      const cleanedResponse = response
+      const cleanedResponse = responseText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
         .trim();
@@ -300,6 +330,10 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       safetySettings: cvSafetySettings,
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 8192,
+      },
     });
 
     // Gemini can process PDFs directly via file data
@@ -310,11 +344,25 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
           data: base64Content,
         },
       },
-      'Extract all text content from this PDF document. Return only the extracted text, preserving the structure as much as possible. This is a resume/CV document.',
+      'TASK: Extract all text content from this professional resume/CV PDF document. Return only the plain text content, preserving the structure and sections. This is a standard job application document.',
     ]);
 
-    return result.response.text();
-  } catch (error) {
+    const response = result.response;
+
+    // Check if content was blocked
+    if (!response.candidates || response.candidates.length === 0) {
+      console.error('PDF extraction blocked by content filter');
+      throw new Error(
+        'AI_SAFETY_BLOCK: Could not process this PDF. Please try pasting the text directly.'
+      );
+    }
+
+    return response.text();
+  } catch (error: any) {
+    // If it's already our error, rethrow
+    if (error?.message?.includes('AI_')) {
+      throw error;
+    }
     return handleGeminiError(error);
   }
 };
