@@ -1,7 +1,28 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { env } from '../config/env.js';
 
 const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+
+// Safety settings to allow CV/Resume content (which contains PII)
+// This prevents false positives on names, addresses, phone numbers
+const cvSafetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 // Helper to handle Gemini API errors with user-friendly messages
 const handleGeminiError = (error: any): never => {
@@ -17,6 +38,11 @@ const handleGeminiError = (error: any): never => {
   if (error?.message?.includes('API key')) {
     throw new Error(
       'AI_CONFIG_ERROR: AI service is not properly configured. Please contact support.'
+    );
+  }
+  if (error?.message?.includes('SAFETY') || error?.message?.includes('blocked')) {
+    throw new Error(
+      'AI_SAFETY_BLOCK: The content was blocked by safety filters. Please try again with different content.'
     );
   }
   throw error;
@@ -40,7 +66,10 @@ export const analyzeCV = async (
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      safetySettings: cvSafetySettings,
+    });
 
     const prompt = `Act as an expert Recruiter and ATS (Applicant Tracking System) algorithm. Analyze the following resume thoroughly.
 ${jobDescription ? `Compare against this job description: ${jobDescription}` : 'Analyze for general job market compatibility.'}
@@ -51,9 +80,9 @@ ${cvText}
 Provide a strict JSON response with the following structure:
 {
   "score": <number 0-100 representing ATS compatibility>,
-  "missing_keywords": ["keyword1", "keyword2", ...] // Important keywords that should be added,
-  "weaknesses": ["point 1", "point 2", ...] // Specific weaknesses in the resume,
-  "actionable_fixes": ["tip 1", "tip 2", ...] // Specific, actionable improvements
+  "missing_keywords": ["keyword1", "keyword2", ...],
+  "weaknesses": ["point 1", "point 2", ...],
+  "actionable_fixes": ["tip 1", "tip 2", ...]
 }
 
 Be thorough and specific. Return ONLY valid JSON, no markdown, no code blocks.`;
@@ -264,21 +293,28 @@ Respond ONLY with valid JSON, no markdown.`;
 
 export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
   if (!genAI) {
-    throw new Error('Gemini API key not configured');
+    throw new Error('AI_CONFIG_ERROR: Gemini API key not configured');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  try {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      safetySettings: cvSafetySettings,
+    });
 
-  // Gemini can process PDFs directly via file data
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: 'application/pdf',
-        data: base64Content,
+    // Gemini can process PDFs directly via file data
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          mimeType: 'application/pdf',
+          data: base64Content,
+        },
       },
-    },
-    'Extract all text content from this PDF document. Return only the extracted text, preserving the structure as much as possible.',
-  ]);
+      'Extract all text content from this PDF document. Return only the extracted text, preserving the structure as much as possible. This is a resume/CV document.',
+    ]);
 
-  return result.response.text();
+    return result.response.text();
+  } catch (error) {
+    return handleGeminiError(error);
+  }
 };
