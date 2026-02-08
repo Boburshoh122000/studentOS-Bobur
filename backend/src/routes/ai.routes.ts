@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import multer from 'multer';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
@@ -17,8 +17,10 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || 
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    if (
+      file.mimetype === 'application/pdf' ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
       cb(null, true);
     } else {
       cb(new Error('Only PDF and DOCX files are allowed'));
@@ -27,6 +29,49 @@ const upload = multer({
 });
 
 const router = Router();
+
+// Helper function to handle AI errors gracefully
+const handleAIError = (error: any, res: Response, next: NextFunction): boolean => {
+  const errorMessage = error?.message || '';
+
+  // Handle rate limit errors
+  if (
+    errorMessage.includes('AI_RATE_LIMIT') ||
+    errorMessage.includes('429') ||
+    errorMessage.includes('quota')
+  ) {
+    res.status(429).json({
+      error: 'Rate limit exceeded',
+      message: 'Too many AI requests. Please wait a moment and try again.',
+    });
+    return true;
+  }
+
+  // Handle API key / configuration errors
+  if (
+    errorMessage.includes('API key') ||
+    errorMessage.includes('AI_CONFIG') ||
+    errorMessage.includes('not configured')
+  ) {
+    res.status(503).json({
+      error: 'Service unavailable',
+      message: 'AI service is temporarily unavailable. Please try again later.',
+    });
+    return true;
+  }
+
+  // Handle Google AI specific errors
+  if (errorMessage.includes('GoogleGenerativeAI') || errorMessage.includes('SAFETY')) {
+    res.status(400).json({
+      error: 'Content blocked',
+      message: 'The AI could not process this request. Please try with different content.',
+    });
+    return true;
+  }
+
+  // Not an AI-specific error, pass to default handler
+  return false;
+};
 
 // All AI routes require authentication AND rate limiting (10 req/min)
 router.use(authenticate, aiRateLimit);
@@ -43,15 +88,26 @@ router.post('/analyze-cv', async (req: AuthenticatedRequest, res, next) => {
 
     const analysis = await analyzeCV(cvText, jobDescription);
 
-    // Update user's ATS score
-    await prisma.studentProfile.update({
-      where: { userId: req.user!.id },
-      data: { atsScore: analysis.score },
-    });
+    // Update user's ATS score (use upsert to handle missing profile)
+    try {
+      await prisma.studentProfile.upsert({
+        where: { userId: req.user!.id },
+        update: { atsScore: analysis.score },
+        create: {
+          userId: req.user!.id,
+          atsScore: analysis.score,
+          fullName: req.user!.email?.split('@')[0] || 'User',
+        },
+      });
+    } catch (dbError) {
+      console.error('Failed to update ATS score in profile:', dbError);
+    }
 
     res.json(analysis);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
@@ -70,20 +126,17 @@ router.post('/cover-letter', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
     });
 
-    const coverLetter = await generateCoverLetter(
-      jobTitle,
-      company,
-      jobDescription,
-      {
-        name: profile?.fullName || 'Applicant',
-        skills: profile?.skills || [],
-        experience: profile?.bio || undefined,
-      }
-    );
+    const coverLetter = await generateCoverLetter(jobTitle, company, jobDescription, {
+      name: profile?.fullName || 'Applicant',
+      skills: profile?.skills || [],
+      experience: profile?.bio || undefined,
+    });
 
     res.json({ coverLetter });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
@@ -102,15 +155,13 @@ router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
     });
 
-    const plan = await generateLearningPlan(
-      goal,
-      profile?.skills || [],
-      timeframe
-    );
+    const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
 
     res.json(plan);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
@@ -126,8 +177,10 @@ router.post('/plagiarism-check', async (req: AuthenticatedRequest, res, next) =>
 
     const result = await checkPlagiarism(text);
     res.json(result);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
@@ -140,28 +193,39 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
     }
 
     const { jobDescription } = req.body;
-    
+
     // Convert file buffer to base64
     const base64Content = req.file.buffer.toString('base64');
-    
+
     // Extract text from PDF using Gemini
     const extractedText = await extractTextFromPDF(base64Content);
-    
+
     // Analyze the CV
     const analysis = await analyzeCV(extractedText, jobDescription);
 
-    // Update user's ATS score
-    await prisma.studentProfile.update({
-      where: { userId: req.user!.id },
-      data: { atsScore: analysis.score },
-    });
+    // Update user's ATS score (use upsert to handle missing profile)
+    try {
+      await prisma.studentProfile.upsert({
+        where: { userId: req.user!.id },
+        update: { atsScore: analysis.score },
+        create: {
+          userId: req.user!.id,
+          atsScore: analysis.score,
+          fullName: req.user!.email?.split('@')[0] || 'User',
+        },
+      });
+    } catch (dbError) {
+      console.error('Failed to update ATS score in profile:', dbError);
+    }
 
     res.json({
       extractedText,
       analysis,
     });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
@@ -181,13 +245,15 @@ router.post('/generate-presentation', async (req: AuthenticatedRequest, res, nex
     });
 
     const presentation = await generatePresentationContent(topic, slideCount, style);
-    
+
     // Set author name if available
     presentation.author = profile?.fullName || '';
 
     res.json(presentation);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (!handleAIError(error, res, next)) {
+      next(error);
+    }
   }
 });
 
