@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
+import CVBuilder from './cv-builder/CVBuilder';
 
 interface CVAnalysisResult {
   score: number;
@@ -497,27 +498,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark">
-          <div className="text-center p-8">
-            <div className="size-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-slate-400 text-4xl">
-                construction
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
-              CV Builder Coming Soon
-            </h3>
-            <p className="text-sm text-slate-500 max-w-md">
-              We're working on a powerful CV builder to help you create ATS-optimized resumes from
-              scratch.
-            </p>
-            <button
-              onClick={() => setActiveMode('ats')}
-              className="mt-6 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
-            >
-              Use ATS Checker Instead
-            </button>
-          </div>
+        <div className="flex-1 flex overflow-hidden">
+          <CVBuilder />
         </div>
       )}
     </DashboardLayout>
