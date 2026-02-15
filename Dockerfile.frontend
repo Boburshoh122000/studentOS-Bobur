@@ -25,20 +25,22 @@ ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 # Build the app
 RUN npm run build
 
-# Production image with nginx
-FROM nginx:alpine AS runner
+# Production image with Node.js runtime
+FROM node:20-alpine AS runtime
 
-# Install envsubst (gettext package)
-RUN apk add --no-cache gettext
+WORKDIR /app
 
-# Copy nginx config template
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy package files from builder
+COPY package*.json ./
 
-# Copy built assets
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Install production dependencies only
+RUN npm install --production --legacy-peer-deps
 
-# Expose port (Railway will use PORT env var)
+# Copy built app from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose the port that Railway will use
 EXPOSE $PORT
 
-# Start nginx with environment variable substitution
-CMD ["/bin/sh", "-c", "PORT=${PORT:-80} envsubst '$$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Start the app with vite preview server
+CMD ["npm", "run", "start"]
