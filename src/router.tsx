@@ -98,6 +98,7 @@ const AdminUsers = withNavigate(lazyRetry(() => import('../components/AdminUsers
 const AdminScholarships = withNavigate(lazyRetry(() => import('../components/AdminScholarships')));
 const AdminRoles = withNavigate(lazyRetry(() => import('../components/AdminRoles')));
 const AdminBlog = withNavigate(lazyRetry(() => import('../components/AdminBlog')));
+const AdminTeam = withNavigate(lazyRetry(() => import('../components/AdminTeam')));
 const AdminProfile = withNavigate(lazyRetry(() => import('../components/AdminProfile')));
 const AdminNotifications = withNavigate(
   lazyRetry(() => import('../components/AdminNotifications'))
@@ -399,6 +400,14 @@ export const router = createBrowserRouter([
         element: (
           <AdminRoute>
             <AdminBlog />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: '/admin/team',
+        element: (
+          <AdminRoute>
+            <AdminTeam />
           </AdminRoute>
         ),
       },

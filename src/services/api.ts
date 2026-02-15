@@ -523,6 +523,26 @@ export const adminApi = {
     }
     return api.get<any>(`/notifications/admin/history?${searchParams}`);
   },
+
+  // Team Members
+  getTeamMembers: () => api.get<any>('/admin/team'),
+  createTeamMember: (data: {
+    fullName: string;
+    role: string;
+    avatarUrl?: string;
+    socialLinkedin?: string;
+    socialTwitter?: string;
+    socialWebsite?: string;
+    displayOrder?: number;
+  }) => api.post<any>('/admin/team', data),
+  updateTeamMember: (id: string, data: Record<string, unknown>) =>
+    api.patch<any>(`/admin/team/${id}`, data),
+  deleteTeamMember: (id: string) => api.delete<any>(`/admin/team/${id}`),
+};
+
+// Team API (public)
+export const teamApi = {
+  list: () => api.get<any>('/team'),
 };
 
 // Finance API

@@ -650,4 +650,107 @@ router.post('/grant-credits', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
+// =============================================================================
+// TEAM MEMBERS
+// =============================================================================
+
+// GET /api/admin/team — List all team members
+router.get('/team', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const members = await prisma.teamMember.findMany({
+      orderBy: { displayOrder: 'asc' },
+    });
+    res.json(members);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/team — Create a team member
+router.post('/team', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const {
+      fullName,
+      role,
+      avatarUrl,
+      socialLinkedin,
+      socialTwitter,
+      socialWebsite,
+      displayOrder,
+    } = req.body;
+
+    if (!fullName || !role) {
+      return res.status(400).json({ error: 'fullName and role are required' });
+    }
+
+    const member = await prisma.teamMember.create({
+      data: {
+        fullName,
+        role,
+        avatarUrl: avatarUrl || null,
+        socialLinkedin: socialLinkedin || null,
+        socialTwitter: socialTwitter || null,
+        socialWebsite: socialWebsite || null,
+        displayOrder: displayOrder ?? 0,
+      },
+    });
+
+    await logAdminAction(req, 'CREATE_TEAM_MEMBER', 'TeamMember', member.id, { fullName, role });
+
+    res.status(201).json(member);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PATCH /api/admin/team/:id — Update a team member
+router.patch('/team/:id', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { id } = req.params;
+    const {
+      fullName,
+      role,
+      avatarUrl,
+      socialLinkedin,
+      socialTwitter,
+      socialWebsite,
+      displayOrder,
+    } = req.body;
+
+    const member = await prisma.teamMember.update({
+      where: { id: id as string },
+      data: {
+        ...(fullName !== undefined && { fullName }),
+        ...(role !== undefined && { role }),
+        ...(avatarUrl !== undefined && { avatarUrl: avatarUrl || null }),
+        ...(socialLinkedin !== undefined && { socialLinkedin: socialLinkedin || null }),
+        ...(socialTwitter !== undefined && { socialTwitter: socialTwitter || null }),
+        ...(socialWebsite !== undefined && { socialWebsite: socialWebsite || null }),
+        ...(displayOrder !== undefined && { displayOrder }),
+      },
+    });
+
+    await logAdminAction(req, 'UPDATE_TEAM_MEMBER', 'TeamMember', member.id, { fullName, role });
+
+    res.json(member);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /api/admin/team/:id — Delete a team member
+router.delete('/team/:id', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.teamMember.delete({ where: { id: id as string } });
+
+    await logAdminAction(req, 'DELETE_TEAM_MEMBER', 'TeamMember', id as string);
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

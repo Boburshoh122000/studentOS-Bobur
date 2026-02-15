@@ -1,91 +1,215 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
+import { teamApi } from '../src/services/api';
+
+interface TeamMember {
+  id: string;
+  fullName: string;
+  role: string;
+  avatarUrl: string | null;
+  socialLinkedin: string | null;
+  socialTwitter: string | null;
+  socialWebsite: string | null;
+  displayOrder: number;
+}
 
 export default function AboutUs({ navigateTo }: NavigationProps) {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isTeamLoading, setIsTeamLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const { data } = await teamApi.list();
+        if (data) setTeamMembers(data as TeamMember[]);
+      } catch {
+        /* silent fallback */
+      }
+      setIsTeamLoading(false);
+    };
+    fetchTeam();
+  }, []);
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden antialiased selection:bg-primary/30 selection:text-primary pt-20">
       <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root">
         <header className="fixed top-0 z-50 w-full bg-white/80 dark:bg-[#111421]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-20 transition-all duration-200">
           <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
-            <div className="flex items-center gap-2 text-slate-900 dark:text-white cursor-pointer select-none" onClick={() => navigateTo(Screen.LANDING)}>
+            <div
+              className="flex items-center gap-2 text-slate-900 dark:text-white cursor-pointer select-none"
+              onClick={() => navigateTo(Screen.LANDING)}
+            >
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <h2 className="text-xl font-bold tracking-tight">StudentOS</h2>
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              <button onClick={() => navigateTo(Screen.LANDING)} className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary">Home</button>
+              <button
+                onClick={() => navigateTo(Screen.LANDING)}
+                className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
+              >
+                Home
+              </button>
               <button className="text-sm font-medium text-primary">About</button>
               <div className="group relative h-full flex items-center">
                 <button className="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary focus:outline-none py-6">
                   Tools
-                  <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:-rotate-180">keyboard_arrow_down</span>
+                  <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:-rotate-180">
+                    keyboard_arrow_down
+                  </span>
                 </button>
                 <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <button onClick={() => navigateTo(Screen.CV_ATS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">fact_check</span>
+                      <button
+                        onClick={() => navigateTo(Screen.CV_ATS)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          fact_check
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">CV & ATS Checker</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Optimize for recruitment algorithms</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            CV & ATS Checker
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Optimize for recruitment algorithms
+                          </div>
                         </div>
                       </button>
-                      <button onClick={() => navigateTo(Screen.JOBS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">work_outline</span>
+                      <button
+                        onClick={() => navigateTo(Screen.JOBS)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          work_outline
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Job Finder</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Internships & graduate roles</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Job Finder
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Internships & graduate roles
+                          </div>
                         </div>
                       </button>
-                      <button onClick={() => navigateTo(Screen.PLAGIARISM)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">gavel</span>
+                      <button
+                        onClick={() => navigateTo(Screen.PLAGIARISM)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          gavel
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Plagiarism & AI Checker</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Ensure academic integrity</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Plagiarism & AI Checker
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Ensure academic integrity
+                          </div>
                         </div>
                       </button>
-                      <button onClick={() => navigateTo(Screen.PRESENTATION)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">co_present</span>
+                      <button
+                        onClick={() => navigateTo(Screen.PRESENTATION)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          co_present
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Presentation Maker</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Create slides in minutes</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Presentation Maker
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Create slides in minutes
+                          </div>
                         </div>
                       </button>
                     </div>
                     <div className="space-y-2">
-                      <button onClick={() => navigateTo(Screen.SCHOLARSHIPS)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">school</span>
+                      <button
+                        onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          school
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Scholarship Finder</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Find funding opportunities</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Scholarship Finder
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Find funding opportunities
+                          </div>
                         </div>
                       </button>
-                      <button onClick={() => navigateTo(Screen.HABIT_TRACKER)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">check_circle</span>
+                      <button
+                        onClick={() => navigateTo(Screen.HABIT_TRACKER)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          check_circle
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Habit Tracker</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Build study routines</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Habit Tracker
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Build study routines
+                          </div>
                         </div>
                       </button>
-                      <button onClick={() => navigateTo(Screen.LEARNING_PLAN)} className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item">
-                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">route</span>
+                      <button
+                        onClick={() => navigateTo(Screen.LEARNING_PLAN)}
+                        className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      >
+                        <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
+                          route
+                        </span>
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">Learning Plan Builder</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Customized curriculum paths</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            Learning Plan Builder
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Customized curriculum paths
+                          </div>
                         </div>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <button onClick={() => navigateTo(Screen.COMMUNITY)} className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary">Community</button>
-              <button onClick={() => navigateTo(Screen.BLOG)} className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary">Blog</button>
-              <button onClick={() => navigateTo(Screen.CONTACT)} className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary">Contact</button>
+              <button
+                onClick={() => navigateTo(Screen.COMMUNITY)}
+                className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
+              >
+                Community
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.BLOG)}
+                className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
+              >
+                Blog
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.CONTACT)}
+                className="text-sm font-medium hover:text-primary transition-colors text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary"
+              >
+                Contact
+              </button>
             </nav>
             <div className="flex items-center justify-end gap-4">
-              <button onClick={() => navigateTo(Screen.SIGN_IN)} className="hidden sm:flex text-sm font-medium hover:text-primary transition-colors text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary">Sign In</button>
-              <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="flex items-center justify-center overflow-hidden rounded-xl h-10 px-5 bg-primary dark:bg-primary hover:bg-blue-700 dark:hover:bg-primary-dark transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95">
+              <button
+                onClick={() => navigateTo(Screen.SIGN_IN)}
+                className="hidden sm:flex text-sm font-medium hover:text-primary transition-colors text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.SIGNUP_STEP_1)}
+                className="flex items-center justify-center overflow-hidden rounded-xl h-10 px-5 bg-primary dark:bg-primary hover:bg-blue-700 dark:hover:bg-primary-dark transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95"
+              >
                 <span className="truncate">Get Started</span>
               </button>
             </div>
@@ -97,18 +221,24 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
               <div className="flex flex-col-reverse gap-8 md:gap-16 lg:flex-row items-center">
                 <div className="flex flex-col gap-6 flex-1 text-center lg:text-left items-center lg:items-start">
                   <div className="space-y-4">
-                    <span className="inline-block px-3 py-1 text-xs font-bold tracking-wide text-primary uppercase bg-blue-100 dark:bg-blue-900/30 rounded-full">Our Vision</span>
+                    <span className="inline-block px-3 py-1 text-xs font-bold tracking-wide text-primary uppercase bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                      Our Vision
+                    </span>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white">
                       Empowering the next generation of leaders
                     </h1>
                     <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-normal leading-relaxed max-w-2xl">
-                      We are building the operating system for your future career. Connecting ambition with opportunity through technology.
+                      We are building the operating system for your future career. Connecting
+                      ambition with opportunity through technology.
                     </p>
                   </div>
-                  <button onClick={() => {
-                    const mission = document.getElementById('mission');
-                    if (mission) mission.scrollIntoView({ behavior: 'smooth' });
-                  }} className="mt-2 flex items-center gap-2 h-12 px-6 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold transition-colors">
+                  <button
+                    onClick={() => {
+                      const mission = document.getElementById('mission');
+                      if (mission) mission.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="mt-2 flex items-center gap-2 h-12 px-6 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold transition-colors"
+                  >
                     <span>See our story</span>
                     <span className="material-symbols-outlined text-sm">arrow_downward</span>
                   </button>
@@ -116,47 +246,69 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                 <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
                   <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/10">
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 mix-blend-overlay"></div>
-                    <div className="w-full h-full bg-cover bg-center transform hover:scale-105 transition-transform duration-700" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9W6rWzgSr7oymDSIL_c-R-mOjGoawmEqekCe7H8CBbPbAOPDkpTsAdFfClS8gKqK7Vui7xSUpVaQ9MUNs4bmCbok4W4p9SeOuE6rL-_Dd5rXaDb5fCncXlnPr2GQwaBSjVQANq8cBXKO5xoJFQ9lhOaCJ3Rh2yiDy8fKsi94wJM7sthAqIYBK8ptQ5icu-_RNlbScrawtcL5G2nds1XWP6DtPZeW3mRIUBF5QDANowZAPSidTtP84EAdt8krI3MZGUNl7j18iY-4')" }}>
-                    </div>
+                    <div
+                      className="w-full h-full bg-cover bg-center transform hover:scale-105 transition-transform duration-700"
+                      style={{
+                        backgroundImage:
+                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9W6rWzgSr7oymDSIL_c-R-mOjGoawmEqekCe7H8CBbPbAOPDkpTsAdFfClS8gKqK7Vui7xSUpVaQ9MUNs4bmCbok4W4p9SeOuE6rL-_Dd5rXaDb5fCncXlnPr2GQwaBSjVQANq8cBXKO5xoJFQ9lhOaCJ3Rh2yiDy8fKsi94wJM7sthAqIYBK8ptQ5icu-_RNlbScrawtcL5G2nds1XWP6DtPZeW3mRIUBF5QDANowZAPSidTtP84EAdt8krI3MZGUNl7j18iY-4')",
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div id="mission" className="w-full bg-white dark:bg-slate-900 py-20 border-y border-slate-100 dark:border-slate-800">
+          <div
+            id="mission"
+            className="w-full bg-white dark:bg-slate-900 py-20 border-y border-slate-100 dark:border-slate-800"
+          >
             <div className="max-w-[800px] mx-auto px-4 md:px-10 text-center">
-              <h2 className="text-primary text-sm font-bold tracking-widest uppercase mb-4">Our Mission</h2>
+              <h2 className="text-primary text-sm font-bold tracking-widest uppercase mb-4">
+                Our Mission
+              </h2>
               <h3 className="text-2xl md:text-3xl font-bold leading-tight mb-6 text-slate-900 dark:text-white">
                 Bridging the gap between education and execution.
               </h3>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                We believe education shouldn't stop at the classroom door. StudentOS bridges the gap between academic achievement and professional success, providing the tools needed to navigate the modern career landscape with confidence and clarity.
+                We believe education shouldn't stop at the classroom door. StudentOS bridges the gap
+                between academic achievement and professional success, providing the tools needed to
+                navigate the modern career landscape with confidence and clarity.
               </p>
             </div>
           </div>
           <div className="w-full max-w-[1200px] px-4 md:px-10 py-20">
             <div className="flex flex-col gap-12">
               <div className="text-center md:text-left max-w-[720px]">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">Core Values</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-lg">The principles that guide every feature we build and every decision we make.</p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
+                  Core Values
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-lg">
+                  The principles that guide every feature we build and every decision we make.
+                </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                     <span className="material-symbols-outlined text-2xl">lightbulb</span>
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Innovation</h3>
+                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
+                    Innovation
+                  </h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    We are constantly pushing boundaries to find new solutions for age-old problems in education tech.
+                    We are constantly pushing boundaries to find new solutions for age-old problems
+                    in education tech.
                   </p>
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                     <span className="material-symbols-outlined text-2xl">accessibility_new</span>
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Accessibility</h3>
+                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
+                    Accessibility
+                  </h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Tools designed for everyone, everywhere. We ensure our platform works for students from all backgrounds.
+                    Tools designed for everyone, everywhere. We ensure our platform works for
+                    students from all backgrounds.
                   </p>
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
@@ -165,7 +317,8 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Trust</h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Your future is private. Data privacy, security, and transparency are our top priorities.
+                    Your future is private. Data privacy, security, and transparency are our top
+                    priorities.
                   </p>
                 </div>
               </div>
@@ -174,67 +327,167 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
           <div className="w-full bg-slate-50 dark:bg-slate-900/50 py-20 border-y border-slate-100 dark:border-slate-800">
             <div className="max-w-[1200px] mx-auto px-4 md:px-10">
               <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">Meet the Team</h2>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
+                  Meet the Team
+                </h2>
                 <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                  A diverse group of educators, engineers, and dreamers working together to reshape the future of student success.
+                  A diverse group of educators, engineers, and dreamers working together to reshape
+                  the future of student success.
                 </p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
-                <div className="flex flex-col items-center text-center group">
-                  <div className="w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAsxzgp2Peup8eO1DBfkYm7DZCZZkJmvZKZz8-JGjYmoy4fhlSrRe3J7bA1Tz2kSzje5w9IVr6BmxMISzlwZS4DK-lGpIzzHi-uuO95dLY1LfCi3fgieb_Hhf1DI1EryzVno-MBgXGBWbmYhn7uoeqqWLXsjnS4ZdEA9sNAhKdT_dq65BNWHGNg810BO9LHsgMzCzn1Sm2on7sdOtXs0dCTduUtfzjoIA6UjDH9h1GIv58veGoEiOEf3HeRAaRJ-SYua-TRmvNeR_Q')" }}></div>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sarah Jenkins</h3>
-                  <p className="text-sm font-medium text-primary mb-2">CEO & Founder</p>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a className="text-slate-400 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined text-[20px]">link</span></a>
-                  </div>
+
+              {isTeamLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex flex-col items-center text-center animate-pulse">
+                      <div className="w-32 h-32 mb-5 rounded-full bg-slate-200 dark:bg-slate-700" />
+                      <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
+                      <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                    </div>
+                  ))}
                 </div>
-                <div className="flex flex-col items-center text-center group">
-                  <div className="w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBWVkuNfHyk9QoMG2rjeTp7RBZ6AOCCrK1b-kKh2Vdm13VOJYXjh61jJ8QPqdfmW726hdB4N59beGYZ65Y2Wsa0m4ite3tzSct2XNx9m_1npXSISkyp7XkXF2cZk9Jze_y0_HhhyeuO8k8eTSDTRIJD6FcUI8SR-ksOLN6fv5FC6DtqekiLXmFjkxRPcLT9Vhp5eb8Rns33oJHbk85XTYWyM9mp4ePSPkXnlrbacC-iamnEJG49kXIC0hYGwuwuMpIUhIdYqW8LskQ')" }}></div>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">David Chen</h3>
-                  <p className="text-sm font-medium text-primary mb-2">CTO</p>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a className="text-slate-400 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined text-[20px]">link</span></a>
-                  </div>
+              ) : teamMembers.length === 0 ? (
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                  <span className="material-symbols-outlined text-4xl mb-2 block">groups</span>
+                  <p>Team info coming soon.</p>
                 </div>
-                <div className="flex flex-col items-center text-center group">
-                  <div className="w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNGJ0s7fmHjVIV-8wxg6FcbWqK7fb60WUelQ9J4FCM56HhbYGM8YjE9J1h9DB1NBARMgH1k_qdYLB0gooVu4yWpgOXgwP4v3M8PKR5ZnoCpyDks20W33OVCgCUNJOAgNEsI6iPPgpP4v_kKvjUM7qFUoxmerB6AxoxM4CLgpdU0L3Y3ZRUxCOb18wrq2JJF3aqvaADzMySZk8s_vZQjNApUJCTqL8xriIxAMyNkj4EB-SNVzIzJ2W8q1TKZNYgAQJEMDOa-FHbhLk')" }}></div>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Maya Ross</h3>
-                  <p className="text-sm font-medium text-primary mb-2">Head of Product</p>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a className="text-slate-400 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined text-[20px]">link</span></a>
-                  </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="flex flex-col items-center text-center group">
+                      {/* Avatar with hover overlay */}
+                      <div className="relative w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                        {member.avatarUrl ? (
+                          <img
+                            src={member.avatarUrl}
+                            alt={member.fullName}
+                            className="w-full h-full object-cover group-hover:brightness-75 transition-all duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold group-hover:brightness-75 transition-all duration-300">
+                            {member.fullName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2)}
+                          </div>
+                        )}
+                        {/* Social overlay — slides in on hover */}
+                        {(member.socialLinkedin ||
+                          member.socialTwitter ||
+                          member.socialWebsite) && (
+                          <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                            {member.socialLinkedin && (
+                              <a
+                                href={member.socialLinkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                title="LinkedIn"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">link</span>
+                              </a>
+                            )}
+                            {member.socialTwitter && (
+                              <a
+                                href={member.socialTwitter}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                title="Twitter"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">
+                                  public
+                                </span>
+                              </a>
+                            )}
+                            {member.socialWebsite && (
+                              <a
+                                href={member.socialWebsite}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                title="Website"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">
+                                  language
+                                </span>
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                        {member.fullName}
+                      </h3>
+                      <p className="text-sm font-medium text-primary mb-2">{member.role}</p>
+                      {/* Mobile: always show social links below */}
+                      <div className="flex gap-2 md:hidden">
+                        {member.socialLinkedin && (
+                          <a
+                            href={member.socialLinkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">link</span>
+                          </a>
+                        )}
+                        {member.socialTwitter && (
+                          <a
+                            href={member.socialTwitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">public</span>
+                          </a>
+                        )}
+                        {member.socialWebsite && (
+                          <a
+                            href={member.socialWebsite}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">language</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex flex-col items-center text-center group">
-                  <div className="w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDecrNpzlP4eqViLy4CP5S34c6FrnLGD3WueijV1Vo4bTo0jGXAv8IFzMN3sRZ2Dc4w1IJ6u7O5fZcJ-1WmuSRaLGccYbAQThDoqo6j07U48JiuPRDqBaJtADO_s42TJyuKzlOgLUOUIMLCLOSQNCY0Nu4TnSl6R2hl1cBIVYQnlTrdbjGYkYWrv46lDk2jUR2-GNd9ttc_2OCIL5-uk5o_s_w9cPdF4Ctapng2y6W9Zym1H-kYiLrO3lqngeId1lroSbOssyFiBnc')" }}></div>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">James Wilson</h3>
-                  <p className="text-sm font-medium text-primary mb-2">Head of Design</p>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a className="text-slate-400 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined text-[20px]">link</span></a>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="w-full px-4 md:px-10 py-16">
             <div className="max-w-[1200px] mx-auto rounded-3xl bg-primary text-white overflow-hidden relative shadow-2xl shadow-blue-500/20">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 0%, transparent 40%), radial-gradient(circle at 80% 20%, white 0%, transparent 30%)" }}></div>
+              <div
+                className="absolute inset-0 opacity-10"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 20% 50%, white 0%, transparent 40%), radial-gradient(circle at 80% 20%, white 0%, transparent 30%)',
+                }}
+              ></div>
               <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-10 md:p-16 gap-8">
                 <div className="flex flex-col gap-4 max-w-xl text-center md:text-left">
-                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Ready to launch your career?</h2>
-                  <p className="text-blue-100 text-lg">Join thousands of students who are already building their future with StudentOS.</p>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                    Ready to launch your career?
+                  </h2>
+                  <p className="text-blue-100 text-lg">
+                    Join thousands of students who are already building their future with StudentOS.
+                  </p>
                 </div>
                 <div className="flex flex-shrink-0">
-                  <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="bg-white text-primary hover:bg-blue-50 transition-colors px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2 group">
+                  <button
+                    onClick={() => navigateTo(Screen.SIGNUP_STEP_1)}
+                    className="bg-white text-primary hover:bg-blue-50 transition-colors px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2 group"
+                  >
                     <span>Join the community</span>
-                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+                      arrow_forward
+                    </span>
                   </button>
                 </div>
               </div>
@@ -249,38 +502,78 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-primary">school</span>
                   <span className="font-bold text-lg">StudentOS</span>
                 </div>
-                <p className="text-slate-500 text-sm">Building the operating system for your future career.</p>
+                <p className="text-slate-500 text-sm">
+                  Building the operating system for your future career.
+                </p>
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white mb-4">Product</h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                  <li><button className="hover:text-primary transition-colors">Features</button></li>
-                  <li><button className="hover:text-primary transition-colors">Pricing</button></li>
-                  <li><button className="hover:text-primary transition-colors">Integrations</button></li>
+                  <li>
+                    <button className="hover:text-primary transition-colors">Features</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-primary transition-colors">Pricing</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-primary transition-colors">Integrations</button>
+                  </li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white mb-4">Company</h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                  <li><button onClick={() => navigateTo(Screen.ABOUT)} className="hover:text-primary transition-colors">About Us</button></li>
-                  <li><button className="hover:text-primary transition-colors">Careers</button></li>
-                  <li><button onClick={() => navigateTo(Screen.BLOG)} className="hover:text-primary transition-colors">Blog</button></li>
+                  <li>
+                    <button
+                      onClick={() => navigateTo(Screen.ABOUT)}
+                      className="hover:text-primary transition-colors"
+                    >
+                      About Us
+                    </button>
+                  </li>
+                  <li>
+                    <button className="hover:text-primary transition-colors">Careers</button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => navigateTo(Screen.BLOG)}
+                      className="hover:text-primary transition-colors"
+                    >
+                      Blog
+                    </button>
+                  </li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                  <li><a href="/privacy" className="hover:text-primary transition-colors">Privacy</a></li>
-                  <li><a href="/terms" className="hover:text-primary transition-colors">Terms</a></li>
-                  <li><button className="hover:text-primary transition-colors">Security</button></li>
+                  <li>
+                    <a href="/privacy" className="hover:text-primary transition-colors">
+                      Privacy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/terms" className="hover:text-primary transition-colors">
+                      Terms
+                    </a>
+                  </li>
+                  <li>
+                    <button className="hover:text-primary transition-colors">Security</button>
+                  </li>
                 </ul>
               </div>
             </div>
             <div className="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-sm text-slate-400">© 2024 StudentOS Inc. All rights reserved.</p>
               <div className="flex gap-4 text-slate-400">
-                <a className="hover:text-primary transition-colors" href="#"><span className="sr-only">Twitter</span><span className="material-symbols-outlined text-xl">public</span></a>
-                <a className="hover:text-primary transition-colors" href="#"><span className="sr-only">LinkedIn</span><span className="material-symbols-outlined text-xl">share</span></a>
+                <a className="hover:text-primary transition-colors" href="#">
+                  <span className="sr-only">Twitter</span>
+                  <span className="material-symbols-outlined text-xl">public</span>
+                </a>
+                <a className="hover:text-primary transition-colors" href="#">
+                  <span className="sr-only">LinkedIn</span>
+                  <span className="material-symbols-outlined text-xl">share</span>
+                </a>
               </div>
             </div>
           </div>

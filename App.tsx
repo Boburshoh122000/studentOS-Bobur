@@ -26,6 +26,7 @@ import AdminUsers from './components/AdminUsers';
 import AdminScholarships from './components/AdminScholarships';
 import AdminRoles from './components/AdminRoles';
 import AdminBlog from './components/AdminBlog';
+import AdminTeam from './components/AdminTeam';
 import AdminProfile from './components/AdminProfile';
 import EmployerDashboard from './components/EmployerDashboard';
 import StudentSettings from './components/StudentSettings';
@@ -68,6 +69,7 @@ export default function App() {
       {currentScreen === Screen.ADMIN_SCHOLARSHIPS && <AdminScholarships navigateTo={navigateTo} />}
       {currentScreen === Screen.ADMIN_ROLES && <AdminRoles navigateTo={navigateTo} />}
       {currentScreen === Screen.ADMIN_BLOG && <AdminBlog navigateTo={navigateTo} />}
+      {currentScreen === Screen.ADMIN_TEAM && <AdminTeam navigateTo={navigateTo} />}
       {currentScreen === Screen.ADMIN_SETTINGS && <AdminProfile navigateTo={navigateTo} />}
       {currentScreen === Screen.EMPLOYER_DASHBOARD && <EmployerDashboard navigateTo={navigateTo} />}
     </div>

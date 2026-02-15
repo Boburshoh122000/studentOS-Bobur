@@ -26,6 +26,7 @@ import notificationRoutes from './routes/notification.routes.js';
 import creditsRoutes from './routes/credits.routes.js';
 import telegramRoutes from './routes/telegram.routes.js';
 import learningPlanRoutes from './routes/learning-plan.routes.js';
+import teamRoutes from './routes/team.routes.js';
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/credits', creditsRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/learning-plans', learningPlanRoutes);
+app.use('/api/team', teamRoutes);
 
 // Error handling
 app.use(errorHandler);

@@ -721,3 +721,19 @@ model PlanResource {
 
   @@index([phaseId])
 }
+
+// =============================================================================
+// TEAM MEMBERS (About Page)
+// =============================================================================
+
+model TeamMember {
+  id             String   @id @default(cuid())
+  fullName       String
+  role           String
+  avatarUrl      String?
+  socialLinkedin String?
+  socialTwitter  String?
+  socialWebsite  String?
+  displayOrder   Int      @default(0)
+  createdAt      DateTime @default(now())
+}
