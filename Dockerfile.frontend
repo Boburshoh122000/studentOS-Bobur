@@ -33,8 +33,8 @@ WORKDIR /app
 # Copy package files from builder
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm install --production --legacy-peer-deps
+# Copy node_modules from builder to avoid reinstalling
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy built app from builder stage
 COPY --from=builder /app/dist ./dist
