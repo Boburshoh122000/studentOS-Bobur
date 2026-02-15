@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
         preview: {
       host: '0.0.0.0',
       port: Number(process.env.PORT) || 4173,
-      strictPort: false,
+allowedHosts: ['localhost', '.railway.app', '.studentos.uz'], // Allow Railway and custom domain
     },
       plugins: [react()],
       define: {
