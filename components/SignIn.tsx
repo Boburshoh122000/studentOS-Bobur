@@ -69,6 +69,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
     const result = await login(email, password);
 
     if (!result.success) {
+      console.error('[SignIn] Login failed:', result);
       setError(result.error || 'Invalid email or password');
       setIsSubmitting(false);
     }

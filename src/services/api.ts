@@ -1,6 +1,7 @@
 // API Configuration and HTTP Client
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+console.warn('[API] Base URL:', API_URL);
 
 interface ApiResponse<T> {
   data?: T;
@@ -52,8 +53,12 @@ class ApiClient {
 
       return { data };
     } catch (error) {
-      console.error('API Error:', error);
-      return { error: 'Network error. Please check your connection.' };
+      console.error(`[API] Request failed: ${this.baseUrl}${endpoint}`, error);
+      const msg =
+        error instanceof TypeError
+          ? `Cannot reach server at ${this.baseUrl}. Is the backend running?`
+          : 'Network error. Please check your connection.';
+      return { error: msg };
     }
   }
 
