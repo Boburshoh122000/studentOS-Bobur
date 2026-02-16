@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
-const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 const THROTTLE_MS = 500; // Only reset timer at most every 500ms
 
 const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
@@ -28,7 +28,7 @@ export default function AutoLogoutProvider({ children }: { children: React.React
   const lastResetRef = useRef<number>(Date.now());
 
   const handleLogout = useCallback(async () => {
-    toast('You have been logged out due to 5 minutes of inactivity.', {
+    toast('You have been logged out due to 10 minutes of inactivity.', {
       icon: '🔒',
       duration: 5000,
     });
