@@ -22,6 +22,8 @@ import {
   GrantTemplate,
   TechTemplate,
 } from './CVTemplates';
+import { userApi } from '../../src/services/api';
+import toast from 'react-hot-toast';
 
 const STORAGE_KEY = 'studentos_cv_draft';
 
@@ -631,6 +633,8 @@ export default function CVBuilder() {
     'skills',
     'languages',
   ]);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Load from localStorage on mount
@@ -880,11 +884,53 @@ export default function CVBuilder() {
 
       const fileName = `${cvData.personalInfo.firstName || 'My'}_${cvData.personalInfo.lastName || 'Resume'}_CV.pdf`;
       pdf.save(fileName);
+      // After successful export, offer to sync profile
+      setShowSyncModal(true);
     } catch (error) {
       console.error('Failed to export PDF:', error);
       alert('Failed to export PDF. Please try again.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // ─── CV → Profile Sync ─────────────────────────────────────────────────
+
+  const syncToProfile = async () => {
+    setIsSyncing(true);
+    try {
+      const fullName = `${cvData.personalInfo.firstName} ${cvData.personalInfo.lastName}`.trim();
+
+      const educationHistory = cvData.education.map((edu) => ({
+        school: edu.school,
+        degree: edu.degree,
+        year: edu.endDate || edu.startDate,
+        description: edu.gpa ? `GPA: ${edu.gpa}` : '',
+      }));
+
+      const workExperience = cvData.experience.map((exp) => ({
+        company: exp.company,
+        role: exp.role,
+        duration: `${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}`,
+        description: exp.description,
+      }));
+
+      await userApi.updateProfile({
+        fullName: fullName || undefined,
+        headline: cvData.personalInfo.jobTitle || undefined,
+        bio: cvData.summary || undefined,
+        skills: cvData.skills.length > 0 ? cvData.skills : undefined,
+        educationHistory: educationHistory.length > 0 ? educationHistory : undefined,
+        workExperience: workExperience.length > 0 ? workExperience : undefined,
+      });
+
+      toast.success('Profile updated successfully!');
+      setShowSyncModal(false);
+    } catch (error) {
+      console.error('Failed to sync profile:', error);
+      toast.error('Failed to update profile.');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -1347,6 +1393,51 @@ export default function CVBuilder() {
           </div>
         </div>
       </div>
+
+      {/* ─── CV → Profile Sync Modal ─────────────────────────────────── */}
+      {showSyncModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary">sync</span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                Update your Portfolio?
+              </h3>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Would you like to update your main Profile with data from this CV? This will sync your{' '}
+              <strong>name, headline, bio, education, experience, and skills</strong>.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowSyncModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                No, Skip
+              </button>
+              <button
+                onClick={syncToProfile}
+                disabled={isSyncing}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSyncing ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">check</span>
+                    Yes, Update Profile
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

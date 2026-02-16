@@ -155,6 +155,9 @@ model StudentProfile {
   cvUrl             String?
   atsScore          Int?            @default(0)
   profileCompletion Int             @default(0)
+  headline          String?
+  educationHistory  Json?           // Array of { school, degree, year, description }
+  workExperience    Json?           // Array of { company, role, duration, description }
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

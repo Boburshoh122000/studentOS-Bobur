@@ -20,6 +20,9 @@ const updateProfileSchema = z.object({
     country: z.string().optional(),
     goals: z.array(z.string()).optional(),
     skills: z.array(z.string()).optional(),
+    headline: z.string().max(200).optional(),
+    educationHistory: z.any().optional(),
+    workExperience: z.any().optional(),
   }),
 });
 
