@@ -153,22 +153,6 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                       </div>
                     </button>
                     <button
-                      onClick={() => handleToolClick('/app/cover-letter')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        edit_document
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          AI Cover Letter Generator
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Create tailored letters in seconds
-                        </div>
-                      </div>
-                    </button>
-                    <button
                       onClick={() => handleToolClick('/app/jobs')}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
@@ -339,7 +323,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
-                New: AI Cover Letter Generator
+                New: AI Scholarship Finder
               </div>
 
               <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 sm:text-6xl drop-shadow-sm min-h-[140px] sm:min-h-[auto]">
@@ -620,12 +604,14 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="flex items-center gap-3 p-3 glass-card rounded-xl shadow-sm hover:translate-x-1 transition-transform cursor-pointer">
                         <div className="size-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shadow-sm">
-                          <span className="material-symbols-outlined text-lg">edit_document</span>
+                          <span className="material-symbols-outlined text-lg">school</span>
                         </div>
                         <div className="flex-1">
-                          <div className="font-bold text-slate-800 text-xs">Draft Cover Letter</div>
+                          <div className="font-bold text-slate-800 text-xs">
+                            Apply for Scholarship
+                          </div>
                           <div className="text-[10px] text-slate-500 font-medium">
-                            Google Internship
+                            Chevening 2026
                           </div>
                         </div>
                         <div className="size-4 rounded-full border-2 border-slate-200"></div>
@@ -758,14 +744,6 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                 color: 'blue',
                 action: 'Check CV',
                 route: '/app/cv-ats',
-              },
-              {
-                icon: 'edit_document',
-                title: 'Cover Letter Generator',
-                desc: 'Instantly create tailored cover letters for any job application using AI.',
-                color: 'pink',
-                action: 'Write Letter',
-                route: '/app/cover-letter',
               },
               {
                 icon: 'work_outline',

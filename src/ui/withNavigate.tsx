@@ -15,7 +15,6 @@ const screenToPath: Record<Screen, string> = {
   [Screen.SCHOLARSHIPS]: '/app/scholarships',
   [Screen.JOBS]: '/app/jobs',
   [Screen.CV_ATS]: '/app/cv-ats',
-  [Screen.COVER_LETTER]: '/app/cover-letter',
   [Screen.PRESENTATION]: '/app/presentation',
   [Screen.LEARNING_PLAN]: '/app/learning-plan',
   [Screen.PLAGIARISM]: '/app/plagiarism',
@@ -23,7 +22,6 @@ const screenToPath: Record<Screen, string> = {
   [Screen.COMMUNITY]: '/app/community',
   [Screen.PROFILE]: '/app/profile',
   [Screen.SETTINGS]: '/app/settings',
-  [Screen.FINANCE]: '/app/finance',
 
   [Screen.ADMIN_DASHBOARD]: '/admin',
   [Screen.ADMIN_EMPLOYERS]: '/admin/employers',

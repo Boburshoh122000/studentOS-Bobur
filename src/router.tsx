@@ -78,11 +78,7 @@ const Dashboard = withNavigate(lazyRetry(() => import('../components/Dashboard')
 const ScholarshipFinder = withNavigate(lazyRetry(() => import('../components/ScholarshipFinder')));
 const JobFinder = withNavigate(lazyRetry(() => import('../components/JobFinder')));
 const CVChecker = withNavigate(lazyRetry(() => import('../components/CVChecker')));
-const CoverLetterGenerator = withNavigate(
-  lazyRetry(() => import('../components/CoverLetterGenerator'))
-);
 const PresentationMaker = withNavigate(lazyRetry(() => import('../components/PresentationMaker')));
-const FinanceTracker = withNavigate(lazyRetry(() => import('../components/FinanceTracker')));
 const LearningPlan = withNavigate(lazyRetry(() => import('../components/LearningPlan')));
 const PlagiarismChecker = withNavigate(lazyRetry(() => import('../components/PlagiarismChecker')));
 const HabitTracker = withNavigate(lazyRetry(() => import('../components/HabitTracker')));
@@ -272,14 +268,6 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: '/app/cover-letter',
-        element: (
-          <StudentRoute>
-            <CoverLetterGenerator />
-          </StudentRoute>
-        ),
-      },
-      {
         path: '/app/presentation',
         element: (
           <StudentRoute>
@@ -292,14 +280,6 @@ export const router = createBrowserRouter([
         element: (
           <StudentRoute>
             <LearningPlan />
-          </StudentRoute>
-        ),
-      },
-      {
-        path: '/app/finance',
-        element: (
-          <StudentRoute>
-            <FinanceTracker />
           </StudentRoute>
         ),
       },

@@ -1,12 +1,16 @@
 {
-  "name": "StudentOS",
+  "name": "StudentOS — AI Career Platform for Students",
   "short_name": "StudentOS",
-  "description": "AI-powered career platform for students",
+  "description": "All-in-one AI-powered career platform for students. CV checker, scholarship finder, job board, plagiarism checker, presentation maker, and more.",
   "start_url": "/",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#f6f6f8",
   "theme_color": "#2D4DE0",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -21,5 +25,52 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "productivity", "business"]
+  "categories": ["education", "productivity", "business", "utilities"],
+  "shortcuts": [
+    {
+      "name": "CV & ATS Checker",
+      "short_name": "CV Checker",
+      "description": "Check your resume against ATS systems",
+      "url": "/app/cv-ats",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Scholarship Finder",
+      "short_name": "Scholarships",
+      "description": "Find scholarships matching your profile",
+      "url": "/app/scholarships",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Job Finder",
+      "short_name": "Jobs",
+      "description": "Find internships and graduate roles",
+      "url": "/app/jobs",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "StudentOS Dashboard"
+    }
+  ]
 }

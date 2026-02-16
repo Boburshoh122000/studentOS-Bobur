@@ -372,8 +372,6 @@ export const aiApi = {
     }
     return api.postFormData('/ai/upload-cv', formData);
   },
-  generateCoverLetter: (data: { jobTitle: string; company: string; jobDescription: string }) =>
-    api.post('/ai/cover-letter', data),
   generateLearningPlan: (data: { goal: string; timeframe?: string }) =>
     api.post('/ai/learning-plan', data),
   checkPlagiarism: (text: string) => api.post('/ai/plagiarism-check', { text }),
@@ -553,24 +551,6 @@ export const adminApi = {
 // Team API (public)
 export const teamApi = {
   list: () => api.get<any>('/team'),
-};
-
-// Finance API
-export const financeApi = {
-  getSummary: () =>
-    api.get<{ income: number; expense: number; balance: number; recentTransactions: any[] }>(
-      '/finance/summary'
-    ),
-  getTransactions: () => api.get<any[]>('/finance/transactions'),
-  createTransaction: (data: {
-    amount: number;
-    type: 'INCOME' | 'EXPENSE';
-    description?: string;
-    categoryId?: string;
-    date?: string;
-  }) => api.post<any>('/finance/transactions', data),
-  deleteTransaction: (id: string) => api.delete(`/finance/transactions/${id}`),
-  getBudgets: () => api.get<any[]>('/finance/budgets'),
 };
 
 // Notification API

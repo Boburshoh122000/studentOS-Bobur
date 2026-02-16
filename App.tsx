@@ -7,11 +7,9 @@ import Dashboard from './components/Dashboard';
 import ScholarshipFinder from './components/ScholarshipFinder';
 import JobFinder from './components/JobFinder';
 import CVChecker from './components/CVChecker';
-import CoverLetterGenerator from './components/CoverLetterGenerator';
 import PresentationMaker from './components/PresentationMaker';
 import LearningPlan from './components/LearningPlan';
 import PlagiarismChecker from './components/PlagiarismChecker';
-import FinanceTracker from './components/FinanceTracker';
 import HabitTracker from './components/HabitTracker';
 import CommunityFeed from './components/CommunityFeed';
 import ContactSupport from './components/ContactSupport';
@@ -49,11 +47,9 @@ export default function App() {
       {currentScreen === Screen.SCHOLARSHIPS && <ScholarshipFinder navigateTo={navigateTo} />}
       {currentScreen === Screen.JOBS && <JobFinder navigateTo={navigateTo} />}
       {currentScreen === Screen.CV_ATS && <CVChecker navigateTo={navigateTo} />}
-      {currentScreen === Screen.COVER_LETTER && <CoverLetterGenerator navigateTo={navigateTo} />}
       {currentScreen === Screen.PRESENTATION && <PresentationMaker navigateTo={navigateTo} />}
       {currentScreen === Screen.LEARNING_PLAN && <LearningPlan navigateTo={navigateTo} />}
       {currentScreen === Screen.PLAGIARISM && <PlagiarismChecker navigateTo={navigateTo} />}
-      {currentScreen === Screen.FINANCE && <FinanceTracker navigateTo={navigateTo} />}
       {currentScreen === Screen.HABIT_TRACKER && <HabitTracker navigateTo={navigateTo} />}
       {currentScreen === Screen.COMMUNITY && <CommunityFeed navigateTo={navigateTo} />}
       {currentScreen === Screen.CONTACT && <ContactSupport navigateTo={navigateTo} />}

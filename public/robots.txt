@@ -1,15 +1,44 @@
 # StudentOS Robots.txt
 # https://studentos-bobur-production.up.railway.app
 
+# Default: allow all crawlers
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /app/
+Disallow: /auth/
+Disallow: /employer/
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /app/
+Disallow: /auth/
+Disallow: /employer/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /app/
+Disallow: /auth/
+Disallow: /employer/
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /app/
+Disallow: /auth/
+Disallow: /employer/
 
 # Sitemap
 Sitemap: https://studentos-bobur-production.up.railway.app/sitemap.xml
 
-# Disallow admin and API routes
-Disallow: /api/
-Disallow: /admin/
-
-# Crawl-delay for courtesy
-Crawl-delay: 1
+# Canonical Host
+Host: https://studentos-bobur-production.up.railway.app
