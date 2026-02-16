@@ -4,6 +4,8 @@ import { userApi, authApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
 
+/* ─── Types ───────────────────────────────────────────────────────────────── */
+
 interface EducationEntry {
   school: string;
   degree: string;
@@ -21,11 +23,12 @@ interface WorkEntry {
 const emptyEducation: EducationEntry = { school: '', degree: '', year: '', description: '' };
 const emptyWork: WorkEntry = { company: '', role: '', duration: '', description: '' };
 
+/* ─── Component ───────────────────────────────────────────────────────────── */
+
 export default function ProfileSettings({ navigateTo }: NavigationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Portfolio data
   const [fullName, setFullName] = useState('');
   const [headline, setHeadline] = useState('');
   const [bio, setBio] = useState('');
@@ -33,9 +36,12 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   const [goals, setGoals] = useState<string[]>([]);
   const [educationHistory, setEducationHistory] = useState<EducationEntry[]>([]);
   const [workExperience, setWorkExperience] = useState<WorkEntry[]>([]);
-
   const [newSkill, setNewSkill] = useState('');
   const [newGoal, setNewGoal] = useState('');
+
+  // Editing states: index being edited, null = not editing
+  const [editingEdu, setEditingEdu] = useState<number | null>(null);
+  const [editingWork, setEditingWork] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -46,68 +52,69 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
       setIsLoading(true);
       const { data: authData } = await authApi.me();
       const { data: profileData } = await userApi.getProfile();
-      const profile = profileData as any;
-
-      if (profile) {
-        setFullName(profile.fullName || (authData as any)?.profile?.fullName || '');
-        setHeadline(profile.headline || '');
-        setBio(profile.bio || '');
-        setSkills(profile.skills || []);
-        setGoals(profile.goals || []);
-        setEducationHistory(
-          Array.isArray(profile.educationHistory) ? profile.educationHistory : []
-        );
-        setWorkExperience(Array.isArray(profile.workExperience) ? profile.workExperience : []);
+      const p = profileData as any;
+      if (p) {
+        setFullName(p.fullName || (authData as any)?.profile?.fullName || '');
+        setHeadline(p.headline || '');
+        setBio(p.bio || '');
+        setSkills(p.skills || []);
+        setGoals(p.goals || []);
+        setEducationHistory(Array.isArray(p.educationHistory) ? p.educationHistory : []);
+        setWorkExperience(Array.isArray(p.workExperience) ? p.workExperience : []);
       }
-    } catch (error) {
-      console.error('Failed to load profile', error);
+    } catch (err) {
+      console.error('Failed to load profile', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ─── Education handlers ────────────────────────────────────────────────────
-  const addEducation = () => setEducationHistory((prev) => [...prev, { ...emptyEducation }]);
-  const updateEducation = (index: number, field: keyof EducationEntry, value: string) =>
-    setEducationHistory((prev) => prev.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
-  const removeEducation = (index: number) =>
-    setEducationHistory((prev) => prev.filter((_, i) => i !== index));
-
-  // ─── Work Experience handlers ──────────────────────────────────────────────
-  const addWork = () => setWorkExperience((prev) => [...prev, { ...emptyWork }]);
-  const updateWork = (index: number, field: keyof WorkEntry, value: string) =>
-    setWorkExperience((prev) => prev.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
-  const removeWork = (index: number) =>
-    setWorkExperience((prev) => prev.filter((_, i) => i !== index));
-
-  // ─── Skills / Goals tag handlers ───────────────────────────────────────────
-  const handleAddSkill = () => {
-    const trimmed = newSkill.trim();
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills((prev) => [...prev, trimmed]);
-      setNewSkill('');
-    }
-  };
-  const handleRemoveSkill = (s: string) => setSkills((prev) => prev.filter((x) => x !== s));
-
-  const handleAddGoal = () => {
-    const trimmed = newGoal.trim();
-    if (trimmed && !goals.includes(trimmed)) {
-      setGoals((prev) => [...prev, trimmed]);
-      setNewGoal('');
-    }
-  };
-  const handleRemoveGoal = (g: string) => setGoals((prev) => prev.filter((x) => x !== g));
-
-  // ─── Initials ──────────────────────────────────────────────────────────────
-  const getInitials = (name: string) => {
+  /* ─── Helpers ─────────────────────────────────────────────────────────────── */
+  const initials = (name: string) => {
     if (!name) return 'U';
     const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : name.substring(0, 2).toUpperCase();
   };
 
-  // ─── Save ──────────────────────────────────────────────────────────────────
+  /* Education */
+  const addEducation = () => {
+    setEducationHistory((prev) => [...prev, { ...emptyEducation }]);
+    setEditingEdu(educationHistory.length);
+  };
+  const updateEducation = (i: number, f: keyof EducationEntry, v: string) =>
+    setEducationHistory((prev) => prev.map((e, idx) => (idx === i ? { ...e, [f]: v } : e)));
+  const removeEducation = (i: number) => {
+    setEducationHistory((prev) => prev.filter((_, idx) => idx !== i));
+    setEditingEdu(null);
+  };
+
+  /* Work */
+  const addWork = () => {
+    setWorkExperience((prev) => [...prev, { ...emptyWork }]);
+    setEditingWork(workExperience.length);
+  };
+  const updateWork = (i: number, f: keyof WorkEntry, v: string) =>
+    setWorkExperience((prev) => prev.map((e, idx) => (idx === i ? { ...e, [f]: v } : e)));
+  const removeWork = (i: number) => {
+    setWorkExperience((prev) => prev.filter((_, idx) => idx !== i));
+    setEditingWork(null);
+  };
+
+  /* Tags */
+  const addSkill = () => {
+    const t = newSkill.trim();
+    if (t && !skills.includes(t)) setSkills((p) => [...p, t]);
+    setNewSkill('');
+  };
+  const addGoal = () => {
+    const t = newGoal.trim();
+    if (t && !goals.includes(t)) setGoals((p) => [...p, t]);
+    setNewGoal('');
+  };
+
+  /* Save */
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -120,365 +127,444 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         educationHistory,
         workExperience,
       });
-      toast.success('Portfolio saved successfully!');
-    } catch (error) {
-      console.error('Failed to update profile', error);
+      toast.success('Portfolio saved!');
+    } catch {
       toast.error('Failed to save portfolio');
     } finally {
       setSaving(false);
     }
   };
 
-  // ─── Header ────────────────────────────────────────────────────────────────
+  /* ─── Header Bar ─────────────────────────────────────────────────────────── */
   const headerContent = (
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10 gap-3">
       <div className="flex flex-col justify-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">account_circle</span>
-          My Portfolio
-        </h2>
-        <p className="text-gray-500 mt-1 text-sm">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Portfolio</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Your professional profile visible to employers and recruiters.
         </p>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="material-symbols-outlined text-[18px]">{saving ? 'sync' : 'save'}</span>
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </div>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
+      >
+        <span className="material-symbols-outlined text-[18px]">{saving ? 'sync' : 'save'}</span>
+        {saving ? 'Saving...' : 'Save Changes'}
+      </button>
     </header>
   );
 
+  /* ─── Loading ────────────────────────────────────────────────────────────── */
   if (isLoading) {
     return (
       <DashboardLayout currentScreen={Screen.PROFILE} navigateTo={navigateTo}>
         <div className="flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-gray-500 text-sm">Loading portfolio...</span>
+            <span className="text-sm text-gray-500">Loading portfolio...</span>
           </div>
         </div>
       </DashboardLayout>
     );
   }
 
+  /* ─── Render ─────────────────────────────────────────────────────────────── */
   return (
     <DashboardLayout
       currentScreen={Screen.PROFILE}
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 dark:bg-background-dark">
-        <div className="max-w-5xl mx-auto space-y-6">
-          {/* ─── 1. Profile Header Card ──────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-            {/* Banner */}
-            <div className="h-40 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-500 relative">
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.3)_1px,transparent_1px)] bg-[length:20px_20px]" />
-            </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 md:p-8">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {/* ═════════════════════════════════════════════════════════════════
+                1.  PROFILE HEADER — Banner + Avatar + Name + Headline
+            ═════════════════════════════════════════════════════════════════ */}
+            <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+              {/* Banner */}
+              <div className="h-36 md:h-44 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary via-blue-500 to-indigo-600" />
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wOCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-60" />
+                {/* Faint decorative circles */}
+                <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/5" />
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/5" />
+              </div>
 
-            <div className="px-8 pb-8">
-              <div className="flex flex-col md:flex-row items-start gap-6">
-                {/* Avatar */}
-                <div className="-mt-12 relative">
-                  <div className="w-28 h-28 rounded-full bg-yellow-200 border-4 border-white dark:border-gray-900 flex items-center justify-center text-3xl font-bold text-yellow-800 shadow-md select-none">
-                    {getInitials(fullName)}
+              <div className="px-6 md:px-8 pb-6 md:pb-8">
+                <div className="flex flex-col md:flex-row items-start gap-5 md:gap-6">
+                  {/* Avatar */}
+                  <div className="-mt-14 md:-mt-16 relative z-10 shrink-0">
+                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-amber-200 to-yellow-300 border-4 border-white dark:border-gray-900 shadow-xl flex items-center justify-center text-2xl md:text-3xl font-bold text-amber-800 select-none">
+                      {initials(fullName)}
+                    </div>
                   </div>
-                </div>
 
-                {/* Name & Headline Inputs */}
-                <div className="flex-1 mt-4 md:mt-2 w-full space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
+                  {/* Fields */}
+                  <div className="flex-1 w-full mt-2 md:mt-0 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InputField
+                        label="Full Name"
                         value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Your Full Name"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 font-semibold text-gray-900 dark:text-white"
+                        onChange={setFullName}
+                        placeholder="e.g. John Doe"
+                        bold
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Headline
-                      </label>
-                      <input
-                        type="text"
+                      <InputField
+                        label="Headline"
                         value={headline}
-                        onChange={(e) => setHeadline(e.target.value)}
+                        onChange={setHeadline}
                         placeholder="e.g. Junior Frontend Developer"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* ─── 2. About Me ─────────────────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                <span className="material-symbols-outlined text-[20px]">person</span>
+            {/* ═════════════════════════════════════════════════════════════════
+                2.  ABOUT ME
+            ═════════════════════════════════════════════════════════════════ */}
+            <SectionCard icon="person" title="About Me">
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value.slice(0, 500))}
+                placeholder="Write a short professional summary about yourself, your ambitions, and what you bring to the table..."
+                rows={5}
+                className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 resize-none text-sm text-gray-800 dark:text-gray-200 leading-relaxed placeholder-gray-400"
+              />
+              <div className="flex justify-end mt-1.5">
+                <span className="text-xs text-gray-400 tabular-nums">{bio.length} / 500</span>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">About Me</h2>
-            </div>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value.slice(0, 500))}
-              placeholder="Write a short professional summary about yourself..."
-              rows={5}
-              className="w-full p-4 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-gray-700 dark:text-gray-200 leading-relaxed bg-white dark:bg-gray-800"
-            />
-            <p className="text-right text-xs text-gray-400 mt-2">{bio.length}/500 characters</p>
-          </div>
+            </SectionCard>
 
-          {/* ─── 3. Education ────────────────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                <span className="material-symbols-outlined text-[20px]">school</span>
-              </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Education</h2>
-            </div>
-
-            <div className="space-y-4">
-              {educationHistory.map((edu, i) => (
-                <div
-                  key={i}
-                  className="relative p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3 group"
-                >
-                  <button
-                    onClick={() => removeEducation(i)}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
+            {/* ═════════════════════════════════════════════════════════════════
+                3.  EDUCATION
+            ═════════════════════════════════════════════════════════════════ */}
+            <SectionCard icon="school" title="Education">
+              <div className="space-y-3">
+                {educationHistory.map((edu, i) => (
+                  <div
+                    key={i}
+                    className="group relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:border-primary/30 transition-all duration-200"
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldInput
-                      label="School / University"
-                      value={edu.school}
-                      onChange={(v) => updateEducation(i, 'school', v)}
-                      placeholder="e.g. Stanford University"
-                    />
-                    <FieldInput
-                      label="Degree / Major"
-                      value={edu.degree}
-                      onChange={(v) => updateEducation(i, 'degree', v)}
-                      placeholder="e.g. B.S. Computer Science"
-                    />
+                    {/* Collapsed view */}
+                    {editingEdu !== i ? (
+                      <div
+                        className="flex items-center gap-4 p-4 cursor-pointer"
+                        onClick={() => setEditingEdu(i)}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px]">
+                            school
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {edu.degree || edu.school || 'Untitled Education'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {[edu.school, edu.year].filter(Boolean).join(' · ') || 'Click to edit'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingEdu(i);
+                            }}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeEducation(i);
+                            }}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Expanded edit */
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                            Edit Education
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => setEditingEdu(null)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">check</span>
+                            </button>
+                            <button
+                              onClick={() => removeEducation(i)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <InputField
+                            label="School / University"
+                            value={edu.school}
+                            onChange={(v) => updateEducation(i, 'school', v)}
+                            placeholder="e.g. Stanford University"
+                          />
+                          <InputField
+                            label="Degree / Major"
+                            value={edu.degree}
+                            onChange={(v) => updateEducation(i, 'degree', v)}
+                            placeholder="e.g. B.S. Computer Science"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <InputField
+                            label="Year"
+                            value={edu.year}
+                            onChange={(v) => updateEducation(i, 'year', v)}
+                            placeholder="e.g. 2020 – 2024"
+                          />
+                          <InputField
+                            label="Description"
+                            value={edu.description}
+                            onChange={(v) => updateEducation(i, 'description', v)}
+                            placeholder="GPA, honors, relevant coursework..."
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldInput
-                      label="Year"
-                      value={edu.year}
-                      onChange={(v) => updateEducation(i, 'year', v)}
-                      placeholder="e.g. 2020 - 2024"
-                    />
-                    <FieldInput
-                      label="Description (optional)"
-                      value={edu.description}
-                      onChange={(v) => updateEducation(i, 'description', v)}
-                      placeholder="GPA, honors, etc."
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Add Education Button */}
-              <button
-                type="button"
-                onClick={addEducation}
-                className="w-full group border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all cursor-pointer"
-              >
-                <div className="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                  <span className="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-blue-600">
-                    add
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">
-                    Add Education
-                  </span>
-                  <span className="block text-xs text-gray-500 mt-1">
-                    University, Bootcamp, or Online Course
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* ─── 4. Experience & Projects ─────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                <span className="material-symbols-outlined text-[20px]">work</span>
-              </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Experience & Projects
-              </h2>
-            </div>
-
-            <div className="space-y-4">
-              {workExperience.map((work, i) => (
-                <div
-                  key={i}
-                  className="relative p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3 group"
+                {/* Add button */}
+                <button
+                  type="button"
+                  onClick={addEducation}
+                  className="w-full group border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-6 md:p-8 flex flex-col items-center justify-center gap-2.5 hover:border-primary/50 hover:bg-primary/[0.03] dark:hover:bg-primary/5 transition-all duration-200 cursor-pointer"
                 >
-                  <button
-                    onClick={() => removeWork(i)}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
+                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-200">
+                    <span className="material-symbols-outlined text-gray-400 group-hover:text-primary text-[20px] transition-colors">
+                      add
+                    </span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors">
+                      Add Education
+                    </span>
+                    <span className="block text-xs text-gray-400 mt-0.5">
+                      University, Bootcamp, or Online Course
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </SectionCard>
+
+            {/* ═════════════════════════════════════════════════════════════════
+                4.  EXPERIENCE & PROJECTS
+            ═════════════════════════════════════════════════════════════════ */}
+            <SectionCard icon="work" title="Experience & Projects">
+              <div className="space-y-3">
+                {workExperience.map((work, i) => (
+                  <div
+                    key={i}
+                    className="group relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:border-primary/30 transition-all duration-200"
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldInput
-                      label="Company"
-                      value={work.company}
-                      onChange={(v) => updateWork(i, 'company', v)}
-                      placeholder="e.g. Google"
-                    />
-                    <FieldInput
-                      label="Role / Position"
-                      value={work.role}
-                      onChange={(v) => updateWork(i, 'role', v)}
-                      placeholder="e.g. Software Engineer Intern"
-                    />
+                    {editingWork !== i ? (
+                      <div
+                        className="flex items-center gap-4 p-4 cursor-pointer"
+                        onClick={() => setEditingWork(i)}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-[20px]">
+                            work
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {work.role || work.company || 'Untitled Experience'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {[work.company, work.duration].filter(Boolean).join(' · ') ||
+                              'Click to edit'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingWork(i);
+                            }}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeWork(i);
+                            }}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                            Edit Experience
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => setEditingWork(null)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">check</span>
+                            </button>
+                            <button
+                              onClick={() => removeWork(i)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <InputField
+                            label="Company"
+                            value={work.company}
+                            onChange={(v) => updateWork(i, 'company', v)}
+                            placeholder="e.g. Google"
+                          />
+                          <InputField
+                            label="Role / Position"
+                            value={work.role}
+                            onChange={(v) => updateWork(i, 'role', v)}
+                            placeholder="e.g. Software Engineer Intern"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <InputField
+                            label="Duration"
+                            value={work.duration}
+                            onChange={(v) => updateWork(i, 'duration', v)}
+                            placeholder="e.g. Jun 2023 – Sep 2023"
+                          />
+                          <InputField
+                            label="Description"
+                            value={work.description}
+                            onChange={(v) => updateWork(i, 'description', v)}
+                            placeholder="Key achievements and responsibilities..."
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldInput
-                      label="Duration"
-                      value={work.duration}
-                      onChange={(v) => updateWork(i, 'duration', v)}
-                      placeholder="e.g. Jun 2023 - Sep 2023"
-                    />
-                    <FieldInput
-                      label="Description"
-                      value={work.description}
-                      onChange={(v) => updateWork(i, 'description', v)}
-                      placeholder="Key responsibilities..."
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Add Experience Button */}
-              <button
-                type="button"
-                onClick={addWork}
-                className="w-full group border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all cursor-pointer"
-              >
-                <div className="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                  <span className="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-blue-600">
-                    add
+                <button
+                  type="button"
+                  onClick={addWork}
+                  className="w-full group border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-6 md:p-8 flex flex-col items-center justify-center gap-2.5 hover:border-primary/50 hover:bg-primary/[0.03] dark:hover:bg-primary/5 transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-200">
+                    <span className="material-symbols-outlined text-gray-400 group-hover:text-primary text-[20px] transition-colors">
+                      add
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors">
+                    Add Experience
                   </span>
-                </div>
-                <span className="block text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">
-                  Add Experience
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* ─── 5. Skills & Interests ────────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                <span className="material-symbols-outlined text-[20px]">psychology</span>
+                </button>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Skills & Interests
-              </h2>
-            </div>
+            </SectionCard>
 
-            <div className="space-y-6">
-              {/* Skills */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Professional Skills
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                    >
-                      {skill}
-                      <button
-                        onClick={() => handleRemoveSkill(skill)}
-                        className="text-blue-400 hover:text-blue-600"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </span>
-                  ))}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white transition-all"
-                      placeholder="Add skill..."
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
-                    />
+            {/* ═════════════════════════════════════════════════════════════════
+                5.  SKILLS
+            ═════════════════════════════════════════════════════════════════ */}
+            <SectionCard icon="code" title="Skills">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {skills.map((s) => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-150"
+                  >
+                    {s}
                     <button
-                      onClick={handleAddSkill}
-                      className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors"
+                      onClick={() => setSkills((p) => p.filter((x) => x !== s))}
+                      className="rounded p-0.5 hover:bg-blue-200/50 dark:hover:bg-blue-700/30 transition-colors cursor-pointer"
                     >
-                      Add
+                      <span className="material-symbols-outlined text-[14px] text-blue-500">
+                        close
+                      </span>
                     </button>
-                  </div>
-                </div>
+                  </span>
+                ))}
               </div>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-gray-900 dark:text-white"
+                  placeholder="Type a skill and press Enter..."
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                />
+                <button
+                  onClick={addSkill}
+                  className="px-4 py-2 text-sm font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-all duration-200 cursor-pointer whitespace-nowrap"
+                >
+                  Add
+                </button>
+              </div>
+            </SectionCard>
 
-              {/* Interests / Goals */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Interests & Goals
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {goals.map((goal) => (
-                    <span
-                      key={goal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border border-purple-100 dark:border-purple-800/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
-                    >
-                      {goal}
-                      <button
-                        onClick={() => handleRemoveGoal(goal)}
-                        className="text-purple-400 hover:text-purple-600"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </span>
-                  ))}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white transition-all"
-                      placeholder="Add interest..."
-                      value={newGoal}
-                      onChange={(e) => setNewGoal(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddGoal()}
-                    />
+            {/* ═════════════════════════════════════════════════════════════════
+                6.  INTERESTS & GOALS
+            ═════════════════════════════════════════════════════════════════ */}
+            <SectionCard icon="interests" title="Interests & Goals">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {goals.map((g) => (
+                  <span
+                    key={g}
+                    className="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-lg text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border border-purple-100 dark:border-purple-800/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors duration-150"
+                  >
+                    {g}
                     <button
-                      onClick={handleAddGoal}
-                      className="text-purple-600 text-sm font-semibold hover:text-purple-700 transition-colors"
+                      onClick={() => setGoals((p) => p.filter((x) => x !== g))}
+                      className="rounded p-0.5 hover:bg-purple-200/50 dark:hover:bg-purple-700/30 transition-colors cursor-pointer"
                     >
-                      Add
+                      <span className="material-symbols-outlined text-[14px] text-purple-500">
+                        close
+                      </span>
                     </button>
-                  </div>
-                </div>
+                  </span>
+                ))}
               </div>
-            </div>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-gray-900 dark:text-white"
+                  placeholder="Type an interest and press Enter..."
+                  value={newGoal}
+                  onChange={(e) => setNewGoal(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addGoal()}
+                />
+                <button
+                  onClick={addGoal}
+                  className="px-4 py-2 text-sm font-semibold text-purple-600 border border-purple-300 dark:border-purple-700 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 cursor-pointer whitespace-nowrap"
+                >
+                  Add
+                </button>
+              </div>
+            </SectionCard>
           </div>
         </div>
       </div>
@@ -486,22 +572,48 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   );
 }
 
-// ─── Reusable Sub-components ─────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════════
+   REUSABLE SUB-COMPONENTS
+═══════════════════════════════════════════════════════════════════════════ */
 
-function FieldInput({
+function SectionCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-7">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="p-2 bg-primary/10 rounded-xl">
+          <span className="material-symbols-outlined text-primary text-[20px]">{icon}</span>
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function InputField({
   label,
   value,
   onChange,
   placeholder,
+  bold,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  bold?: boolean;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
         {label}
       </label>
       <input
@@ -509,7 +621,7 @@ function FieldInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 text-gray-900 dark:text-white text-sm"
+        className={`w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 text-sm text-gray-900 dark:text-white placeholder-gray-400 ${bold ? 'font-semibold' : ''}`}
       />
     </div>
   );
