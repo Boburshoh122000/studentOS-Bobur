@@ -99,6 +99,14 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   };
   const handleRemoveGoal = (g: string) => setGoals((prev) => prev.filter((x) => x !== g));
 
+  // ─── Initials ──────────────────────────────────────────────────────────────
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
+
   // ─── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     try {
@@ -125,11 +133,11 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   const headerContent = (
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10 gap-3">
       <div className="flex flex-col justify-center">
-        <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">account_circle</span>
           My Portfolio
         </h2>
-        <p className="text-sm text-text-sub">
+        <p className="text-gray-500 mt-1 text-sm">
           Your professional profile visible to employers and recruiters.
         </p>
       </div>
@@ -137,7 +145,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 flex items-center gap-2 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="material-symbols-outlined text-[18px]">{saving ? 'sync' : 'save'}</span>
           {saving ? 'Saving...' : 'Save Changes'}
@@ -152,7 +160,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         <div className="flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-text-sub text-sm">Loading portfolio...</span>
+            <span className="text-gray-500 text-sm">Loading portfolio...</span>
           </div>
         </div>
       </DashboardLayout>
@@ -165,57 +173,89 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-12 pt-6 bg-[#fafafa] dark:bg-background-dark">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 dark:bg-background-dark">
         <div className="max-w-5xl mx-auto space-y-6">
-          {/* ─── Profile Header Card ─────────────────────────────────────── */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="h-24 bg-gradient-to-r from-primary via-blue-500 to-indigo-600" />
-            <div className="px-6 pb-6 -mt-12">
-              <div className="flex flex-col md:flex-row md:items-end gap-5">
-                <div
-                  className="size-24 rounded-2xl bg-gray-200 bg-cover bg-center border-4 border-white dark:border-gray-900 shadow-lg shrink-0"
-                  style={{
-                    backgroundImage: `url('https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || 'User')}&background=random&size=200')`,
-                  }}
-                />
-                <div className="flex-1 space-y-3 pt-2">
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your Full Name"
-                    className="text-2xl font-bold text-text-main dark:text-white bg-transparent border-none outline-none w-full placeholder-gray-300 dark:placeholder-gray-600"
-                  />
-                  <input
-                    type="text"
-                    value={headline}
-                    onChange={(e) => setHeadline(e.target.value)}
-                    placeholder="e.g. Junior Frontend Developer • UX Enthusiast"
-                    className="text-sm text-text-sub dark:text-gray-400 bg-transparent border-none outline-none w-full placeholder-gray-300 dark:placeholder-gray-600"
-                  />
+          {/* ─── 1. Profile Header Card ──────────────────────────────────── */}
+          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            {/* Banner */}
+            <div className="h-40 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-500 relative">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.3)_1px,transparent_1px)] bg-[length:20px_20px]" />
+            </div>
+
+            <div className="px-8 pb-8">
+              <div className="flex flex-col md:flex-row items-start gap-6">
+                {/* Avatar */}
+                <div className="-mt-12 relative">
+                  <div className="w-28 h-28 rounded-full bg-yellow-200 border-4 border-white dark:border-gray-900 flex items-center justify-center text-3xl font-bold text-yellow-800 shadow-md select-none">
+                    {getInitials(fullName)}
+                  </div>
+                </div>
+
+                {/* Name & Headline Inputs */}
+                <div className="flex-1 mt-4 md:mt-2 w-full space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Your Full Name"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Headline
+                      </label>
+                      <input
+                        type="text"
+                        value={headline}
+                        onChange={(e) => setHeadline(e.target.value)}
+                        placeholder="e.g. Junior Frontend Developer"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ─── About Me ────────────────────────────────────────────────── */}
-          <SectionCard title="About Me" icon="person">
+          {/* ─── 2. About Me ─────────────────────────────────────────────── */}
+          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <span className="material-symbols-outlined text-[20px]">person</span>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">About Me</h2>
+            </div>
             <textarea
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => setBio(e.target.value.slice(0, 500))}
               placeholder="Write a short professional summary about yourself..."
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-sm text-text-main dark:text-white resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              rows={5}
+              className="w-full p-4 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-gray-700 dark:text-gray-200 leading-relaxed bg-white dark:bg-gray-800"
             />
-          </SectionCard>
+            <p className="text-right text-xs text-gray-400 mt-2">{bio.length}/500 characters</p>
+          </div>
 
-          {/* ─── Education ───────────────────────────────────────────────── */}
-          <SectionCard title="Education" icon="school">
+          {/* ─── 3. Education ────────────────────────────────────────────── */}
+          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <span className="material-symbols-outlined text-[20px]">school</span>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Education</h2>
+            </div>
+
             <div className="space-y-4">
               {educationHistory.map((edu, i) => (
                 <div
                   key={i}
-                  className="relative p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50 space-y-3 group"
+                  className="relative p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3 group"
                 >
                   <button
                     onClick={() => removeEducation(i)}
@@ -253,17 +293,46 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   </div>
                 </div>
               ))}
-              <AddButton label="Add Education" onClick={addEducation} />
-            </div>
-          </SectionCard>
 
-          {/* ─── Work Experience ──────────────────────────────────────────── */}
-          <SectionCard title="Work Experience" icon="work">
+              {/* Add Education Button */}
+              <button
+                type="button"
+                onClick={addEducation}
+                className="w-full group border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all cursor-pointer"
+              >
+                <div className="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                  <span className="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-blue-600">
+                    add
+                  </span>
+                </div>
+                <div className="text-center">
+                  <span className="block text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">
+                    Add Education
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-1">
+                    University, Bootcamp, or Online Course
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* ─── 4. Experience & Projects ─────────────────────────────────── */}
+          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <span className="material-symbols-outlined text-[20px]">work</span>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Experience & Projects
+              </h2>
+            </div>
+
             <div className="space-y-4">
               {workExperience.map((work, i) => (
                 <div
                   key={i}
-                  className="relative p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50 space-y-3 group"
+                  className="relative p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3 group"
                 >
                   <button
                     onClick={() => removeWork(i)}
@@ -301,28 +370,52 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   </div>
                 </div>
               ))}
-              <AddButton label="Add Experience" onClick={addWork} />
-            </div>
-          </SectionCard>
 
-          {/* ─── Skills & Interests ───────────────────────────────────────── */}
-          <SectionCard title="Skills & Interests" icon="psychology">
+              {/* Add Experience Button */}
+              <button
+                type="button"
+                onClick={addWork}
+                className="w-full group border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all cursor-pointer"
+              >
+                <div className="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                  <span className="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-blue-600">
+                    add
+                  </span>
+                </div>
+                <span className="block text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">
+                  Add Experience
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* ─── 5. Skills & Interests ────────────────────────────────────── */}
+          <div className="bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <span className="material-symbols-outlined text-[20px]">psychology</span>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Skills & Interests
+              </h2>
+            </div>
+
             <div className="space-y-6">
               {/* Skills */}
               <div>
-                <label className="block text-xs font-bold text-text-sub uppercase mb-2 tracking-wider">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Professional Skills
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill) => (
                     <span
                       key={skill}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30 group cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                     >
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
-                        className="text-blue-400 hover:text-blue-600 dark:text-blue-500 dark:hover:text-blue-300"
+                        className="text-blue-400 hover:text-blue-600"
                       >
                         <span className="material-symbols-outlined text-[14px]">close</span>
                       </button>
@@ -331,7 +424,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-lg outline-none focus:border-primary text-text-main dark:text-white"
+                      className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white transition-all"
                       placeholder="Add skill..."
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
@@ -339,7 +432,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                     />
                     <button
                       onClick={handleAddSkill}
-                      className="text-primary text-sm font-bold hover:text-primary-dark transition-colors"
+                      className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors"
                     >
                       Add
                     </button>
@@ -349,19 +442,19 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
 
               {/* Interests / Goals */}
               <div>
-                <label className="block text-xs font-bold text-text-sub uppercase mb-2 tracking-wider">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Interests & Goals
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {goals.map((goal) => (
                     <span
                       key={goal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border border-purple-100 dark:border-purple-800/30 group cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border border-purple-100 dark:border-purple-800/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
                     >
                       {goal}
                       <button
                         onClick={() => handleRemoveGoal(goal)}
-                        className="text-purple-400 hover:text-purple-600 dark:text-purple-500 dark:hover:text-purple-300"
+                        className="text-purple-400 hover:text-purple-600"
                       >
                         <span className="material-symbols-outlined text-[14px]">close</span>
                       </button>
@@ -370,7 +463,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-lg outline-none focus:border-primary text-text-main dark:text-white"
+                      className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white transition-all"
                       placeholder="Add interest..."
                       value={newGoal}
                       onChange={(e) => setNewGoal(e.target.value)}
@@ -378,7 +471,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                     />
                     <button
                       onClick={handleAddGoal}
-                      className="text-purple-600 text-sm font-bold hover:text-purple-700 transition-colors"
+                      className="text-purple-600 text-sm font-semibold hover:text-purple-700 transition-colors"
                     >
                       Add
                     </button>
@@ -386,7 +479,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                 </div>
               </div>
             </div>
-          </SectionCard>
+          </div>
         </div>
       </div>
     </DashboardLayout>
@@ -394,26 +487,6 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
 }
 
 // ─── Reusable Sub-components ─────────────────────────────────────────────────
-
-function SectionCard({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-white dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-      <h3 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
-        <span className="material-symbols-outlined text-primary text-[22px]">{icon}</span>
-        {title}
-      </h3>
-      {children}
-    </div>
-  );
-}
 
 function FieldInput({
   label,
@@ -428,7 +501,7 @@ function FieldInput({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-text-sub dark:text-gray-400 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
       </label>
       <input
@@ -436,21 +509,8 @@ function FieldInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/80 text-sm text-text-main dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 text-gray-900 dark:text-white text-sm"
       />
     </div>
-  );
-}
-
-function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 text-sm font-medium hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
-    >
-      <span className="material-symbols-outlined text-[18px]">add</span>
-      {label}
-    </button>
   );
 }
