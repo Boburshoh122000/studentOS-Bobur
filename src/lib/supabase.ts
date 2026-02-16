@@ -97,6 +97,9 @@ export const supabase = {
   get auth() {
     return getSupabaseClient().auth;
   },
+  get storage() {
+    return getSupabaseClient().storage;
+  },
 };
 
 export default supabase;

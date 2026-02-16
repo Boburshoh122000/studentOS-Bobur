@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
+import { supabase } from '../src/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface TeamMember {
@@ -50,6 +51,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MemberForm>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -85,6 +89,8 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
   const openCreateModal = () => {
     setEditingId(null);
     setForm({ ...emptyForm, displayOrder: members.length });
+    setAvatarFile(null);
+    setAvatarPreview(null);
     setShowModal(true);
   };
 
@@ -99,7 +105,48 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
       socialWebsite: member.socialWebsite || '',
       displayOrder: member.displayOrder,
     });
+    setAvatarFile(null);
+    setAvatarPreview(null);
     setShowModal(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const uploadAvatarToStorage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    const { error } = await supabase.storage.from('team-avatars').upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+    if (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(filePath);
+
+    return urlData.publicUrl;
   };
 
   const handleSave = async () => {
@@ -109,10 +156,22 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
     }
     setIsSaving(true);
     try {
+      let avatarUrl = form.avatarUrl || undefined;
+
+      // Upload avatar file if selected
+      if (avatarFile) {
+        const uploadedUrl = await uploadAvatarToStorage(avatarFile);
+        if (!uploadedUrl) {
+          setIsSaving(false);
+          return;
+        }
+        avatarUrl = uploadedUrl;
+      }
+
       const payload = {
         fullName: form.fullName,
         role: form.role,
-        avatarUrl: form.avatarUrl || undefined,
+        avatarUrl,
         socialLinkedin: form.socialLinkedin || undefined,
         socialTwitter: form.socialTwitter || undefined,
         socialWebsite: form.socialWebsite || undefined,
@@ -491,31 +550,42 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               </button>
             </div>
             <div className="p-6 space-y-4">
-              {/* Avatar preview */}
-              <div className="flex items-center gap-4">
-                {form.avatarUrl ? (
-                  <img
-                    src={form.avatarUrl}
-                    alt="Preview"
-                    className="h-16 w-16 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
-                  />
-                ) : (
-                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-2xl">person</span>
+              {/* Avatar upload */}
+              <div className="flex flex-col items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-label="Upload avatar image"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative group h-24 w-24 rounded-full overflow-hidden border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary dark:hover:border-primary transition-colors cursor-pointer"
+                  title="Upload avatar"
+                >
+                  {avatarPreview || form.avatarUrl ? (
+                    <img
+                      src={avatarPreview || form.avatarUrl}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary">
+                      <span className="material-symbols-outlined text-3xl">person</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="material-symbols-outlined text-white text-xl">
+                      photo_camera
+                    </span>
                   </div>
-                )}
-                <div className="flex-1">
-                  <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
-                    Avatar URL
-                  </label>
-                  <input
-                    type="text"
-                    value={form.avatarUrl}
-                    onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  />
-                </div>
+                </button>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {avatarFile ? avatarFile.name : 'Click to upload photo'}
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
