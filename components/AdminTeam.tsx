@@ -109,11 +109,35 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
     setShowModal(true);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File, maxSize = 256): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          // Crop to square from center
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          canvas.width = maxSize;
+          canvas.height = maxSize;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type and size
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
@@ -123,20 +147,13 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
       return;
     }
 
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const uploadAvatarToStorage = async (file: File): Promise<string | null> => {
-    const { data, error } = await adminApi.uploadTeamAvatar(file);
-
-    if (error || !data?.url) {
-      console.error('Upload error:', error);
-      toast.error(error || 'Failed to upload image');
-      return null;
+    try {
+      const compressed = await compressImage(file);
+      setAvatarFile(file);
+      setAvatarPreview(compressed);
+    } catch {
+      toast.error('Failed to process image');
     }
-
-    return data.url;
   };
 
   const handleSave = async () => {
@@ -146,17 +163,8 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
     }
     setIsSaving(true);
     try {
-      let avatarUrl = form.avatarUrl || undefined;
-
-      // Upload avatar file if selected
-      if (avatarFile) {
-        const uploadedUrl = await uploadAvatarToStorage(avatarFile);
-        if (!uploadedUrl) {
-          setIsSaving(false);
-          return;
-        }
-        avatarUrl = uploadedUrl;
-      }
+      // Use compressed base64 preview if a new file was selected, otherwise keep existing URL
+      const avatarUrl = avatarPreview || form.avatarUrl || undefined;
 
       const payload = {
         fullName: form.fullName,
