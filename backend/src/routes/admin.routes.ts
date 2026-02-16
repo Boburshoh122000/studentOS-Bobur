@@ -1,11 +1,13 @@
 import { Router, Request } from 'express';
 import { z } from 'zod';
+import multer from 'multer';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { hashPassword } from '../services/auth.service.js';
 import { AppError } from '../middleware/error.middleware.js';
+import { getSupabaseAdmin } from '../config/supabase.js';
 
 const router = Router();
 
@@ -653,6 +655,66 @@ router.post('/grant-credits', async (req: AuthenticatedRequest, res, next) => {
 // =============================================================================
 // TEAM MEMBERS
 // =============================================================================
+
+// Configure multer for avatar uploads (memory storage, images only, 5MB limit)
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
+});
+
+// POST /api/admin/team/upload-avatar — Upload avatar image to Supabase Storage
+router.post(
+  '/team/upload-avatar',
+  avatarUpload.single('avatar'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      const supabase = getSupabaseAdmin();
+      if (!supabase) {
+        return res
+          .status(503)
+          .json({
+            error:
+              'Storage service not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+          });
+      }
+
+      const fileExt = req.file.originalname.split('.').pop() || 'jpg';
+      const fileName = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('team-avatars')
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+        return res
+          .status(500)
+          .json({ error: 'Failed to upload image', details: uploadError.message });
+      }
+
+      const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(fileName);
+
+      res.json({ url: urlData.publicUrl });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // GET /api/admin/team — List all team members
 router.get('/team', async (req: AuthenticatedRequest, res, next) => {

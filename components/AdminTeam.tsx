@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
-import { supabase } from '../src/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface TeamMember {
@@ -129,24 +128,15 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
   };
 
   const uploadAvatarToStorage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const { data, error } = await adminApi.uploadTeamAvatar(file);
 
-    const { error } = await supabase.storage.from('team-avatars').upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
-
-    if (error) {
+    if (error || !data?.url) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error(error || 'Failed to upload image');
       return null;
     }
 
-    const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(filePath);
-
-    return urlData.publicUrl;
+    return data.url;
   };
 
   const handleSave = async () => {

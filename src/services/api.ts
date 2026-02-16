@@ -538,6 +538,11 @@ export const adminApi = {
   updateTeamMember: (id: string, data: Record<string, unknown>) =>
     api.patch<any>(`/admin/team/${id}`, data),
   deleteTeamMember: (id: string) => api.delete<any>(`/admin/team/${id}`),
+  uploadTeamAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return api.postFormData<{ url: string }>('/admin/team/upload-avatar', formData);
+  },
 };
 
 // Team API (public)
