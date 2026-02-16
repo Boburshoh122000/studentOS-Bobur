@@ -337,12 +337,17 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
               </div>
 
               {isTeamLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex flex-col items-center text-center animate-pulse">
-                      <div className="w-32 h-32 mb-5 rounded-full bg-slate-200 dark:bg-slate-700" />
-                      <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
-                      <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                    <div
+                      key={i}
+                      className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden animate-pulse"
+                    >
+                      <div className="aspect-[3/4] bg-slate-200 dark:bg-slate-700" />
+                      <div className="p-4 space-y-2">
+                        <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+                        <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -352,19 +357,22 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                   <p>Team info coming soon.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {teamMembers.map((member) => (
-                    <div key={member.id} className="flex flex-col items-center text-center group">
-                      {/* Avatar with hover overlay */}
-                      <div className="relative w-32 h-32 mb-5 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                    <div
+                      key={member.id}
+                      className="group relative bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl overflow-hidden transition-shadow duration-300 h-full flex flex-col"
+                    >
+                      {/* Image area with hover social overlay */}
+                      <div className="relative aspect-[3/4] overflow-hidden">
                         {member.avatarUrl ? (
                           <img
                             src={member.avatarUrl}
                             alt={member.fullName}
-                            className="w-full h-full object-cover group-hover:brightness-75 transition-all duration-300"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold group-hover:brightness-75 transition-all duration-300">
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary text-4xl font-bold">
                             {member.fullName
                               .split(' ')
                               .map((n) => n[0])
@@ -373,20 +381,20 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                               .slice(0, 2)}
                           </div>
                         )}
-                        {/* Social overlay — slides in on hover */}
+                        {/* Social overlay — fades in on hover */}
                         {(member.socialLinkedin ||
                           member.socialTwitter ||
                           member.socialWebsite) && (
-                          <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             {member.socialLinkedin && (
                               <a
                                 href={member.socialLinkedin}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                className="p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-all duration-200 hover:scale-110"
                                 title="LinkedIn"
                               >
-                                <span className="material-symbols-outlined text-[18px]">link</span>
+                                <span className="material-symbols-outlined text-[20px]">link</span>
                               </a>
                             )}
                             {member.socialTwitter && (
@@ -394,10 +402,10 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                                 href={member.socialTwitter}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                className="p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-all duration-200 hover:scale-110"
                                 title="Twitter"
                               >
-                                <span className="material-symbols-outlined text-[18px]">
+                                <span className="material-symbols-outlined text-[20px]">
                                   public
                                 </span>
                               </a>
@@ -407,10 +415,10 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                                 href={member.socialWebsite}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-colors"
+                                className="p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-white hover:bg-primary hover:text-white shadow-lg transition-all duration-200 hover:scale-110"
                                 title="Website"
                               >
-                                <span className="material-symbols-outlined text-[18px]">
+                                <span className="material-symbols-outlined text-[20px]">
                                   language
                                 </span>
                               </a>
@@ -418,42 +426,47 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                           </div>
                         )}
                       </div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                        {member.fullName}
-                      </h3>
-                      <p className="text-sm font-medium text-primary mb-2">{member.role}</p>
-                      {/* Mobile: always show social links below */}
-                      <div className="flex gap-2 md:hidden">
-                        {member.socialLinkedin && (
-                          <a
-                            href={member.socialLinkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">link</span>
-                          </a>
-                        )}
-                        {member.socialTwitter && (
-                          <a
-                            href={member.socialTwitter}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">public</span>
-                          </a>
-                        )}
-                        {member.socialWebsite && (
-                          <a
-                            href={member.socialWebsite}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">language</span>
-                          </a>
-                        )}
+                      {/* Text block */}
+                      <div className="p-4 text-center flex flex-col items-center gap-1">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+                          {member.fullName}
+                        </h3>
+                        <p className="text-sm font-medium text-primary">{member.role}</p>
+                        {/* Mobile: always show social links below */}
+                        <div className="flex gap-2 mt-1 sm:hidden">
+                          {member.socialLinkedin && (
+                            <a
+                              href={member.socialLinkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-400 hover:text-primary transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">link</span>
+                            </a>
+                          )}
+                          {member.socialTwitter && (
+                            <a
+                              href={member.socialTwitter}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-400 hover:text-primary transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">public</span>
+                            </a>
+                          )}
+                          {member.socialWebsite && (
+                            <a
+                              href={member.socialWebsite}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-400 hover:text-primary transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">
+                                language
+                              </span>
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
