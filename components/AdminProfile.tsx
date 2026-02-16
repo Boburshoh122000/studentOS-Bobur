@@ -357,6 +357,16 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
               </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Team Management' : ''}
+              >
+                <span className="material-symbols-outlined">groups</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
+                )}
+              </button>
             </nav>
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">

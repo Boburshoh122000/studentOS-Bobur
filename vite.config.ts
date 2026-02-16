@@ -3,41 +3,16 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-<<<<<<< HEAD
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: Number(process.env.PORT) || 5173,
-        host: '0.0.0.0',
-      },
-        preview: {
-      host: '0.0.0.0',
-      port: Number(process.env.PORT) || 4173,
-allowedHosts: ['localhost', '.railway.app', '.studentos.uz'], // Allow Railway and custom domain
-    },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-                  'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-          'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-          'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
-                  'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-          'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-          'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
-=======
   const env = loadEnv(mode, '.', '');
   return {
     server: {
-      port: 3000,
+      port: Number(process.env.PORT) || 5173,
       host: '0.0.0.0',
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: Number(process.env.PORT) || 4173,
+      allowedHosts: ['localhost', '.railway.app', '.studentos.uz'],
     },
     plugins: [react()],
     define: {
@@ -56,5 +31,4 @@ allowedHosts: ['localhost', '.railway.app', '.studentos.uz'], // Allow Railway a
       },
     },
   };
->>>>>>> 60c9908 (fix: resolve network error - fix API URL port mismatch and vite.config.ts define block)
 });

@@ -137,6 +137,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
     { screen: Screen.ADMIN_BLOG, icon: 'article', label: 'Blog Management' },
     { screen: Screen.ADMIN_ROLES, icon: 'admin_panel_settings', label: 'Roles & Permissions' },
     { screen: Screen.ADMIN_NOTIFICATIONS, icon: 'notifications', label: 'Notifications' },
+    { screen: Screen.ADMIN_TEAM, icon: 'groups', label: 'Team Management' },
   ];
 
   return (
