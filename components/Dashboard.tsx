@@ -103,7 +103,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     </div>
                     <button
                       className="text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1"
-                      onClick={() => navigateTo(Screen.JOBS)}
+                      onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     >
                       View Board{' '}
                       <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -202,7 +202,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     Recent Applications
                   </h3>
                   <button
-                    onClick={() => navigateTo(Screen.JOBS)}
+                    onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     className="text-sm font-medium text-gray-500 hover:text-primary transition-colors"
                   >
                     View All

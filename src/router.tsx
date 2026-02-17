@@ -76,7 +76,7 @@ const AuthCallback = lazyRetry(() => import('../components/AuthCallback'));
 // App (Student)
 const Dashboard = withNavigate(lazyRetry(() => import('../components/Dashboard')));
 const ScholarshipFinder = withNavigate(lazyRetry(() => import('../components/ScholarshipFinder')));
-const JobFinder = withNavigate(lazyRetry(() => import('../components/JobFinder')));
+const CareerTracker = withNavigate(lazyRetry(() => import('../components/CareerTracker')));
 const CVChecker = withNavigate(lazyRetry(() => import('../components/CVChecker')));
 const PresentationMaker = withNavigate(lazyRetry(() => import('../components/PresentationMaker')));
 const LearningPlan = withNavigate(lazyRetry(() => import('../components/LearningPlan')));
@@ -231,6 +231,14 @@ export const router = createBrowserRouter([
           </Wrap>
         ),
       },
+      {
+        path: '/career-tracker',
+        element: (
+          <Wrap>
+            <CareerTracker />
+          </Wrap>
+        ),
+      },
 
       // ========================================
       // PROTECTED ROUTES - STUDENT
@@ -251,14 +259,7 @@ export const router = createBrowserRouter([
           </StudentRoute>
         ),
       },
-      {
-        path: '/app/jobs',
-        element: (
-          <StudentRoute>
-            <JobFinder />
-          </StudentRoute>
-        ),
-      },
+
       {
         path: '/app/cv-ats',
         element: (

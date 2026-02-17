@@ -13,7 +13,7 @@ export interface NavItem {
 export const STUDENT_NAV_ITEMS: NavItem[] = [
   { screen: Screen.DASHBOARD, icon: 'dashboard', label: 'Dashboard' },
   { screen: Screen.CV_ATS, icon: 'description', label: 'CV & ATS' },
-  { screen: Screen.JOBS, icon: 'work', label: 'Job Finder' },
+
   { screen: Screen.LEARNING_PLAN, icon: 'book_2', label: 'Learning Plan' },
   { screen: Screen.HABIT_TRACKER, icon: 'track_changes', label: 'Habit Tracker' },
   { screen: Screen.SCHOLARSHIPS, icon: 'emoji_events', label: 'Scholarships' },

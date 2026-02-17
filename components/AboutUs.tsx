@@ -79,7 +79,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                         </div>
                       </button>
                       <button
-                        onClick={() => navigateTo(Screen.JOBS)}
+                        onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                         className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                       >
                         <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">

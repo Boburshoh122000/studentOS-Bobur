@@ -188,7 +188,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
 
   return (
     <DashboardLayout
-      currentScreen={Screen.JOBS}
+      currentScreen={Screen.CAREER_TRACKER}
       navigateTo={navigateTo}
       headerContent={headerContent}
     >

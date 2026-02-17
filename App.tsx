@@ -45,7 +45,7 @@ export default function App() {
       {currentScreen === Screen.SIGNUP_STEP_2 && <SignUpStep2 />}
       {currentScreen === Screen.DASHBOARD && <Dashboard navigateTo={navigateTo} />}
       {currentScreen === Screen.SCHOLARSHIPS && <ScholarshipFinder navigateTo={navigateTo} />}
-      {currentScreen === Screen.JOBS && <JobFinder navigateTo={navigateTo} />}
+      {currentScreen === Screen.CAREER_TRACKER && <JobFinder navigateTo={navigateTo} />}
       {currentScreen === Screen.CV_ATS && <CVChecker navigateTo={navigateTo} />}
       {currentScreen === Screen.PRESENTATION && <PresentationMaker navigateTo={navigateTo} />}
       {currentScreen === Screen.LEARNING_PLAN && <LearningPlan navigateTo={navigateTo} />}

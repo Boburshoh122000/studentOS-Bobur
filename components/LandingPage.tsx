@@ -153,7 +153,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                       </div>
                     </button>
                     <button
-                      onClick={() => handleToolClick('/app/jobs')}
+                      onClick={() => navigate('/career-tracker')}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
                       <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
@@ -161,7 +161,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                       </span>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Job Finder
+                          Career Tracker
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
                           Internships & graduate roles
@@ -255,10 +255,10 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               </div>
             </div>
             <button
-              onClick={() => handleToolClick('/app/community')}
+              onClick={() => navigate('/career-tracker')}
               className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
             >
-              Community
+              Career Tracker
             </button>
             <button
               onClick={() => navigate('/blog')}
@@ -747,11 +747,11 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               },
               {
                 icon: 'work_outline',
-                title: 'Job Finder',
+                title: 'Career Tracker',
                 desc: 'Smart filters specifically for student internships, part-time roles, and graduate programs.',
                 color: 'purple',
                 action: 'Find Jobs',
-                route: '/app/jobs',
+                route: '/career-tracker',
               },
               {
                 icon: 'gavel',

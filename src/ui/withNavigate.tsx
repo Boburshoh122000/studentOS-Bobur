@@ -13,7 +13,7 @@ const screenToPath: Record<Screen, string> = {
 
   [Screen.DASHBOARD]: '/app',
   [Screen.SCHOLARSHIPS]: '/app/scholarships',
-  [Screen.JOBS]: '/app/jobs',
+  [Screen.CAREER_TRACKER]: '/career-tracker',
   [Screen.CV_ATS]: '/app/cv-ats',
   [Screen.PRESENTATION]: '/app/presentation',
   [Screen.LEARNING_PLAN]: '/app/learning-plan',
