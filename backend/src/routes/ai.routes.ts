@@ -79,6 +79,60 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
   return false;
 };
 
+// ── Test endpoint (no auth required) ─────────────────────────────────────────
+router.get('/test', async (_req, res) => {
+  try {
+    const { env } = await import('../config/env.js');
+
+    if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
+      res.status(500).json({
+        success: false,
+        error: 'API Key is missing. Set GEMINI_API_KEY or OPENAI_API_KEY.',
+      });
+      return;
+    }
+
+    // Use the callAI abstraction from gemini.service via a simple import
+    const { default: OpenAI } = await import('openai');
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+
+    let message = '';
+    let provider = '';
+
+    if (env.GEMINI_API_KEY) {
+      provider = 'Google Gemini';
+      const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(
+        "Say exactly this: 'Hello! Your Gemini integration is working perfectly!'"
+      );
+      message = result.response.text();
+    } else if (env.OPENAI_API_KEY) {
+      provider = 'OpenAI';
+      const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: "Say exactly this: 'Hello! Your OpenAI integration is working perfectly!'",
+          },
+        ],
+        max_tokens: 50,
+      });
+      message = completion.choices[0]?.message?.content || '';
+    }
+
+    res.json({ success: true, provider, message });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error?.message || 'Unknown error',
+      code: error?.status || error?.code || null,
+    });
+  }
+});
+
 // All AI routes require authentication AND rate limiting (10 req/min)
 router.use(authenticate, aiRateLimit);
 
