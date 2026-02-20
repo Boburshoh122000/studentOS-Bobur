@@ -102,7 +102,7 @@ router.get('/test', async (_req, res) => {
     if (env.GEMINI_API_KEY) {
       provider = 'Google Gemini';
       const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       const result = await model.generateContent(
         "Say exactly this: 'Hello! Your Gemini integration is working perfectly!'"
       );

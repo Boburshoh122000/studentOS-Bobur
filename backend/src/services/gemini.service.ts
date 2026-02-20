@@ -48,7 +48,7 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
 
   if (genAI) {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       ...(useCVSafety ? { safetySettings: cvSafetySettings } : {}),
       generationConfig: { temperature, maxOutputTokens: maxTokens },
     });
@@ -325,7 +325,7 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
 
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       safetySettings: cvSafetySettings,
       generationConfig: {
         temperature: 0.1,
