@@ -438,7 +438,8 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
 
   // Fallback: use pdf-parse for text extraction (works without Gemini)
   try {
-    const pdfParse = (await import('pdf-parse')).default;
+    const pdfParseModule = await import('pdf-parse');
+    const pdfParse = (pdfParseModule as any).default || pdfParseModule;
     const buffer = Buffer.from(base64Content, 'base64');
     const pdfData = await pdfParse(buffer);
 
