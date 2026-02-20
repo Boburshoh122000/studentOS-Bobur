@@ -8,7 +8,7 @@ import {
   generateLearningPlan,
   checkPlagiarism,
   generatePresentationContent,
-} from '../services/gemini.service.js';
+} from '../services/ai.service.js';
 
 const router = Router();
 

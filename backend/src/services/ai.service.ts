@@ -1,91 +1,48 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import OpenAI from 'openai';
 import { env } from '../config/env.js';
 
-// ── Provider Initialization ──────────────────────────────────────────────────
-const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+// ── OpenAI Initialization ────────────────────────────────────────────────────
 const openai = env.OPENAI_API_KEY ? new OpenAI({ apiKey: env.OPENAI_API_KEY }) : null;
 
-const AI_PROVIDER = genAI ? 'gemini' : openai ? 'openai' : null;
-
-if (!AI_PROVIDER) {
-  console.warn(
-    '⚠️  No AI provider configured. Set GEMINI_API_KEY or OPENAI_API_KEY in environment.'
-  );
+if (!openai) {
+  console.warn('⚠️  No AI provider configured. Set OPENAI_API_KEY in environment.');
 }
 
-// Safety settings to allow CV/Resume content (which contains PII)
-// This prevents false positives on names, addresses, phone numbers
-const cvSafetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-];
-
-// ── Unified AI caller ────────────────────────────────────────────────────────
+// ── Unified AI caller (OpenAI only) ──────────────────────────────────────────
 interface CallAIOptions {
   temperature?: number;
   maxTokens?: number;
-  useCVSafety?: boolean;
-  jsonMode?: boolean; // Force JSON output (uses response_format for OpenAI)
+  jsonMode?: boolean; // Force JSON output via response_format
 }
 
 const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string> => {
-  const { temperature = 0.3, maxTokens = 4096, useCVSafety = false, jsonMode = false } = opts;
+  const { temperature = 0.3, maxTokens = 4096, jsonMode = false } = opts;
 
-  if (genAI) {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      ...(useCVSafety ? { safetySettings: cvSafetySettings } : {}),
-      generationConfig: { temperature, maxOutputTokens: maxTokens },
-    });
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    if (!response.candidates || response.candidates.length === 0) {
-      throw new Error('AI_SAFETY_BLOCK: Content was blocked by safety filters.');
-    }
-    return response.text();
+  if (!openai) {
+    throw new Error('AI_CONFIG_ERROR: No AI provider configured. Set OPENAI_API_KEY.');
   }
 
-  if (openai) {
-    const messages: { role: 'system' | 'user'; content: string }[] = [];
+  const messages: { role: 'system' | 'user'; content: string }[] = [];
 
-    if (jsonMode) {
-      messages.push({
-        role: 'system',
-        content:
-          'You are a helpful assistant. Always respond with valid JSON only. No markdown, no code fences, no explanation outside the JSON.',
-      });
-    }
-
-    messages.push({ role: 'user', content: prompt });
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      ...(jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
+  if (jsonMode) {
+    messages.push({
+      role: 'system',
+      content:
+        'You are a helpful assistant. Always respond with valid JSON only. No markdown, no code fences, no explanation outside the JSON.',
     });
-    return completion.choices[0]?.message?.content || '';
   }
 
-  throw new Error(
-    'AI_CONFIG_ERROR: No AI provider configured. Set GEMINI_API_KEY or OPENAI_API_KEY.'
-  );
+  messages.push({ role: 'user', content: prompt });
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    ...(jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
+  });
+
+  return completion.choices[0]?.message?.content || '';
 };
 
 // ── Utility: clean JSON from AI response ─────────────────────────────────────
@@ -95,12 +52,12 @@ const cleanJSON = (raw: string): string =>
     .replace(/```\n?/g, '')
     .trim();
 
-// Helper to handle AI errors with user-friendly messages
+// ── Error handler ────────────────────────────────────────────────────────────
 const handleAIError = (error: any): never => {
   const msg = error?.message || '';
   const status = error?.status || error?.statusCode || 0;
 
-  // Rate limits (both Gemini and OpenAI)
+  // Rate limits
   if (
     status === 429 ||
     msg.includes('429') ||
@@ -124,14 +81,16 @@ const handleAIError = (error: any): never => {
       'AI_CONFIG_ERROR: AI service is not properly configured. Please contact support.'
     );
   }
-  // Safety blocks
-  if (msg.includes('SAFETY') || msg.includes('blocked') || msg.includes('content_policy')) {
+  // Content policy
+  if (msg.includes('content_policy') || msg.includes('blocked')) {
     throw new Error(
       'AI_SAFETY_BLOCK: The content was blocked by safety filters. Please try again with different content.'
     );
   }
   throw error;
 };
+
+// ── Exported AI Functions ────────────────────────────────────────────────────
 
 export const analyzeCV = async (
   cvText: string,
@@ -147,7 +106,7 @@ export const analyzeCV = async (
 }> => {
   try {
     const sanitizedCV = cvText
-      .replace(/[^\w\s@.,\-():/+#&'"\n]/g, ' ')
+      .replace(/[^\w\s@.,\-():/+#&'"\\n]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
@@ -174,7 +133,6 @@ Return ONLY valid JSON. No markdown formatting.`;
     const responseText = await callAI(prompt, {
       temperature: 0.3,
       maxTokens: 2048,
-      useCVSafety: true,
       jsonMode: true,
     });
 
@@ -228,7 +186,9 @@ Write a compelling, personalized cover letter that:
 1. Shows enthusiasm for the role
 2. Highlights relevant skills
 3. Is professional but not generic
-4. Is approximately 300-400 words`;
+4. Is between 250-400 words
+
+Return ONLY the cover letter text. No extra formatting.`;
 
     return await callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
   } catch (error) {
@@ -395,48 +355,7 @@ Respond ONLY with valid JSON, no markdown.`;
 };
 
 export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
-  // Try Gemini first (multimodal PDF extraction = best quality)
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash',
-        safetySettings: cvSafetySettings,
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-        },
-      });
-
-      const result = await model.generateContent([
-        {
-          inlineData: {
-            mimeType: 'application/pdf',
-            data: base64Content,
-          },
-        },
-        'TASK: Extract all text content from this professional resume/CV PDF document. Return only the plain text content, preserving the structure and sections. This is a standard job application document.',
-      ]);
-
-      const response = result.response;
-
-      if (!response.candidates || response.candidates.length === 0) {
-        console.error('PDF extraction blocked by content filter');
-        throw new Error(
-          'AI_SAFETY_BLOCK: Could not process this PDF. Please try pasting the text directly.'
-        );
-      }
-
-      return response.text();
-    } catch (error: any) {
-      if (error?.message?.includes('AI_')) {
-        throw error;
-      }
-      // Fall through to pdf-parse fallback
-      console.warn('Gemini PDF extraction failed, falling back to pdf-parse:', error.message);
-    }
-  }
-
-  // Fallback: use pdf-parse for text extraction (works without Gemini)
+  // Use pdf-parse for text extraction
   try {
     const pdfParseModule = await import('pdf-parse');
     const pdfParse = (pdfParseModule as any).default || pdfParseModule;

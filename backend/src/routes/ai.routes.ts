@@ -10,7 +10,7 @@ import {
   checkPlagiarism,
   generatePresentationContent,
   extractTextFromPDF,
-} from '../services/gemini.service.js';
+} from '../services/ai.service.js';
 
 // Configure multer for memory storage (for PDF processing)
 const upload = multer({
@@ -34,7 +34,7 @@ const router = Router();
 const handleAIError = (error: any, res: Response, next: NextFunction): boolean => {
   const errorMessage = error?.message || '';
 
-  // Handle rate limit errors (Gemini + OpenAI)
+  // Handle rate limit errors
   if (
     errorMessage.includes('AI_RATE_LIMIT') ||
     errorMessage.includes('429') ||
@@ -49,7 +49,7 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     return true;
   }
 
-  // Handle API key / configuration errors (Gemini + OpenAI)
+  // Handle API key / configuration errors
   if (
     errorMessage.includes('API key') ||
     errorMessage.includes('AI_CONFIG') ||
@@ -64,9 +64,8 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     return true;
   }
 
-  // Handle safety / content blocks (Gemini + OpenAI)
+  // Handle safety / content blocks
   if (
-    errorMessage.includes('GoogleGenerativeAI') ||
     errorMessage.includes('SAFETY') ||
     errorMessage.includes('AI_SAFETY_BLOCK') ||
     errorMessage.includes('content_policy')
@@ -89,46 +88,29 @@ router.get('/test', async (_req, res) => {
   try {
     const { env } = await import('../config/env.js');
 
-    if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
+    if (!env.OPENAI_API_KEY) {
       res.status(500).json({
         success: false,
-        error: 'API Key is missing. Set GEMINI_API_KEY or OPENAI_API_KEY.',
+        error: 'API Key is missing. Set OPENAI_API_KEY.',
       });
       return;
     }
 
-    // Use the callAI abstraction from gemini.service via a simple import
     const { default: OpenAI } = await import('openai');
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: "Say exactly this: 'Hello! Your OpenAI integration is working perfectly!'",
+        },
+      ],
+      max_tokens: 50,
+    });
+    const message = completion.choices[0]?.message?.content || '';
 
-    let message = '';
-    let provider = '';
-
-    if (env.GEMINI_API_KEY) {
-      provider = 'Google Gemini';
-      const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const result = await model.generateContent(
-        "Say exactly this: 'Hello! Your Gemini integration is working perfectly!'"
-      );
-      message = result.response.text();
-    } else if (env.OPENAI_API_KEY) {
-      provider = 'OpenAI';
-      const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'user',
-            content: "Say exactly this: 'Hello! Your OpenAI integration is working perfectly!'",
-          },
-        ],
-        max_tokens: 50,
-      });
-      message = completion.choices[0]?.message?.content || '';
-    }
-
-    res.json({ success: true, provider, message });
+    res.json({ success: true, provider: 'OpenAI', message });
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -262,7 +244,7 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
     // Convert file buffer to base64
     const base64Content = req.file.buffer.toString('base64');
 
-    // Extract text from PDF using Gemini
+    // Extract text from PDF
     const extractedText = await extractTextFromPDF(base64Content);
 
     // Analyze the CV

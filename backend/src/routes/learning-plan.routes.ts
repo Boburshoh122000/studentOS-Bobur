@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
-import { generateLearningPlan } from '../services/gemini.service.js';
+import { generateLearningPlan } from '../services/ai.service.js';
 
 const router = Router();
 
@@ -44,7 +44,7 @@ router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
     });
 
-    // Generate via Gemini (returns flat weeks format)
+    // Generate via OpenAI (returns flat weeks format)
     let generated: any;
     try {
       generated = await generateLearningPlan(
@@ -53,7 +53,7 @@ router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
         `${durationWeeks} weeks`
       );
     } catch {
-      // Fallback mock if Gemini unavailable
+      // Fallback mock if AI unavailable
       generated = null;
     }
 
@@ -166,7 +166,7 @@ router.delete('/:id', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
-// ─── Helper: transform Gemini output to phases ──────────────────────────────
+// ─── Helper: transform AI output to phases ──────────────────────────────
 
 interface PhaseInput {
   title: string;
@@ -174,14 +174,14 @@ interface PhaseInput {
   resources: { title: string; type: 'VIDEO' | 'ARTICLE'; url?: string; durationText?: string }[];
 }
 
-function transformToPhases(topic: string, geminiResult: any, durationWeeks: number): PhaseInput[] {
-  // If Gemini returned valid data, convert weeks → phases
-  if (geminiResult?.weeks?.length) {
-    const weeksPerPhase = Math.max(1, Math.ceil(geminiResult.weeks.length / 3));
+function transformToPhases(topic: string, aiResult: any, durationWeeks: number): PhaseInput[] {
+  // If AI returned valid data, convert weeks → phases
+  if (aiResult?.weeks?.length) {
+    const weeksPerPhase = Math.max(1, Math.ceil(aiResult.weeks.length / 3));
     const phases: PhaseInput[] = [];
 
-    for (let p = 0; p < 3 && p * weeksPerPhase < geminiResult.weeks.length; p++) {
-      const slice = geminiResult.weeks.slice(p * weeksPerPhase, (p + 1) * weeksPerPhase);
+    for (let p = 0; p < 3 && p * weeksPerPhase < aiResult.weeks.length; p++) {
+      const slice = aiResult.weeks.slice(p * weeksPerPhase, (p + 1) * weeksPerPhase);
       const allTopics = slice.flatMap((w: any) => w.topics || []);
       const allResources = slice.flatMap((w: any) => w.resources || []);
 
