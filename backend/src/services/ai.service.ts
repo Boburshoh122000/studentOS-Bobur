@@ -35,7 +35,7 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   messages.push({ role: 'user', content: prompt });
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
+    model: 'gpt-4o-mini',
     messages,
     temperature,
     max_tokens: maxTokens,
@@ -45,12 +45,31 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   return completion.choices[0]?.message?.content || '';
 };
 
-// ── Utility: clean JSON from AI response ─────────────────────────────────────
-const cleanJSON = (raw: string): string =>
-  raw
+const cleanJSON = (raw: string): string => {
+  // Strip markdown code fences
+  let cleaned = raw
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
     .trim();
+
+  // Extract the JSON object/array between first { or [ and last } or ]
+  const objStart = cleaned.indexOf('{');
+  const arrStart = cleaned.indexOf('[');
+  const objEnd = cleaned.lastIndexOf('}');
+  const arrEnd = cleaned.lastIndexOf(']');
+
+  if (objStart !== -1 && objEnd > objStart) {
+    // Prefer object if it starts before array
+    if (arrStart === -1 || objStart <= arrStart) {
+      return cleaned.substring(objStart, objEnd + 1);
+    }
+  }
+  if (arrStart !== -1 && arrEnd > arrStart) {
+    return cleaned.substring(arrStart, arrEnd + 1);
+  }
+
+  return cleaned;
+};
 
 // ── Error handler ────────────────────────────────────────────────────────────
 const handleAIError = (error: any): never => {
