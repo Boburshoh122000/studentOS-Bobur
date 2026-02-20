@@ -112,6 +112,31 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
+  // Upload files as multipart/form-data (no JSON Content-Type)
+  async postFormData<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+    const token = this.getToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    }
+    // Do NOT set Content-Type — browser sets multipart/form-data + boundary
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        return { error: data.error || 'An error occurred' };
+      }
+      return { data };
+    } catch (error) {
+      console.error(`[API] FormData request failed: ${this.baseUrl}${endpoint}`, error);
+      return { error: 'Network error. Please check your connection.' };
+    }
+  }
+
   async put<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
@@ -364,6 +389,16 @@ export const communityApi = {
 export const aiApi = {
   analyzeCV: (cvText: string, jobDescription?: string) =>
     api.post('/ai/analyze-cv', { cvText, jobDescription }),
+  extractText: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.postFormData<{
+      extractedText: string;
+      fileName: string;
+      fileSize: number;
+      truncated: boolean;
+    }>('/ai/extract-text', formData);
+  },
   uploadCV: (file: File, jobDescription?: string) => {
     const formData = new FormData();
     formData.append('file', file);

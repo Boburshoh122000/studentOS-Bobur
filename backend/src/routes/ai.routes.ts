@@ -9,21 +9,22 @@ import {
   generateLearningPlan,
   checkPlagiarism,
   generatePresentationContent,
-  extractTextFromPDF,
+  extractTextFromFile,
 } from '../services/ai.service.js';
 
 // Configure multer for memory storage (for PDF processing)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (_req, file, cb) => {
     if (
       file.mimetype === 'application/pdf' ||
-      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.mimetype === 'text/plain'
     ) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF and DOCX files are allowed'));
+      cb(new Error('Only PDF, DOCX, and TXT files are allowed'));
     }
   },
 });
@@ -223,7 +224,45 @@ router.post('/plagiarism-check', async (req: AuthenticatedRequest, res, next) =>
   }
 });
 
-// CV Upload with PDF Text Extraction
+// Text Extraction Only (no analysis) — for file upload → preview → analyze flow
+router.post(
+  '/extract-text',
+  upload.single('file'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
+
+      let extractedText: string;
+
+      if (req.file.mimetype === 'text/plain') {
+        // Plain text files — just read the buffer
+        extractedText = req.file.buffer.toString('utf-8');
+      } else {
+        // PDF or DOCX — use extractTextFromFile
+        extractedText = await extractTextFromFile(req.file.buffer, req.file.mimetype);
+      }
+
+      // Truncate to 20,000 characters to prevent token overflow
+      if (extractedText.length > 20000) {
+        extractedText = extractedText.substring(0, 20000);
+      }
+
+      res.json({
+        extractedText,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        truncated: extractedText.length >= 20000,
+      });
+    } catch (error: any) {
+      handleAIError(error, res, next);
+    }
+  }
+);
+
+// CV Upload with PDF/DOCX Text Extraction + Analysis (legacy endpoint)
 router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedRequest, res, next) => {
   try {
     if (!req.file) {
@@ -233,11 +272,17 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
 
     const { jobDescription } = req.body;
 
-    // Convert file buffer to base64
-    const base64Content = req.file.buffer.toString('base64');
+    let extractedText: string;
+    if (req.file.mimetype === 'text/plain') {
+      extractedText = req.file.buffer.toString('utf-8');
+    } else {
+      extractedText = await extractTextFromFile(req.file.buffer, req.file.mimetype);
+    }
 
-    // Extract text from PDF
-    const extractedText = await extractTextFromPDF(base64Content);
+    // Truncate to 20,000 characters
+    if (extractedText.length > 20000) {
+      extractedText = extractedText.substring(0, 20000);
+    }
 
     // Analyze the CV
     const analysis = await analyzeCV(extractedText, jobDescription);

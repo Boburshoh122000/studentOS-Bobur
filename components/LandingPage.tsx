@@ -1,311 +1,317 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
-const TypingAnimation = () => {
-  const [text, setText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [loopNum, setLoopNum] = useState(0);
-  const [typingSpeed, setTypingSpeed] = useState(150);
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATION CONFIGURATION — Exact Framer Motion Variants
+   ═══════════════════════════════════════════════════════════════ */
 
-  const phrases = ['while you study', 'with ease', 'like a pro', 'for your future'];
-
-  useEffect(() => {
-    const handleTyping = () => {
-      const i = loopNum % phrases.length;
-      const fullText = phrases[i];
-
-      setText(
-        isDeleting ? fullText.substring(0, text.length - 1) : fullText.substring(0, text.length + 1)
-      );
-
-      setTypingSpeed(isDeleting ? 30 : 150);
-
-      if (!isDeleting && text === fullText) {
-        setTimeout(() => setIsDeleting(true), 1500);
-      } else if (isDeleting && text === '') {
-        setIsDeleting(false);
-        setLoopNum(loopNum + 1);
-      }
-    };
-
-    const timer = setTimeout(handleTyping, typingSpeed);
-    return () => clearTimeout(timer);
-  }, [text, isDeleting, loopNum, typingSpeed]);
-
-  return (
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-      {text}
-      <span className="animate-pulse border-r-2 border-purple-600 ml-1"></span>
-    </span>
-  );
+/** Stagger container — wrap around children that need sequential entrance */
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.15,
+      staggerChildren: 0.1,
+    },
+  },
 };
+
+/** Fade-up with spring physics */
+const springUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
+  },
+};
+
+/** Soft scale-in */
+const scaleReveal = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: 'spring' as const, stiffness: 120, damping: 24 },
+  },
+};
+
+/** Staggered pop for integration icons */
+const popIn = {
+  hidden: { opacity: 0, scale: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring' as const, stiffness: 260, damping: 20 },
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO NODE CONFIG — Positions, icons, delays for connected nodes
+   ═══════════════════════════════════════════════════════════════ */
+
+interface HeroNode {
+  id: string;
+  icon: string;
+  label: string;
+  /** Position as percentage of the container */
+  x: string;
+  y: string;
+  /** SVG endpoint for the connecting line (in viewBox coords 0-1000) */
+  svgX: number;
+  svgY: number;
+  /** Floating animation delay in seconds */
+  delay: number;
+  /** Floating range in px */
+  yRange: number;
+  /** Duration of one float cycle */
+  duration: number;
+  /** Gradient colors for the icon background */
+  from: string;
+  to: string;
+}
+
+const heroNodes: HeroNode[] = [
+  {
+    id: 'cv',
+    icon: 'description',
+    label: 'CV Builder',
+    x: '8%',
+    y: '18%',
+    svgX: 130,
+    svgY: 220,
+    delay: 0,
+    yRange: 15,
+    duration: 4.0,
+    from: 'from-violet-500',
+    to: 'to-purple-600',
+  },
+  {
+    id: 'career',
+    icon: 'work',
+    label: 'Career Tracker',
+    x: '82%',
+    y: '12%',
+    svgX: 870,
+    svgY: 170,
+    delay: 0.5,
+    yRange: 12,
+    duration: 3.5,
+    from: 'from-blue-500',
+    to: 'to-indigo-600',
+  },
+  {
+    id: 'habits',
+    icon: 'check_circle',
+    label: 'Habit Tracker',
+    x: '85%',
+    y: '68%',
+    svgX: 890,
+    svgY: 720,
+    delay: 1.2,
+    yRange: 14,
+    duration: 4.5,
+    from: 'from-emerald-500',
+    to: 'to-teal-600',
+  },
+  {
+    id: 'telegram',
+    icon: 'send',
+    label: 'Telegram Bot',
+    x: '5%',
+    y: '72%',
+    svgX: 100,
+    svgY: 760,
+    delay: 0.8,
+    yRange: 11,
+    duration: 3.8,
+    from: 'from-sky-500',
+    to: 'to-cyan-600',
+  },
+  {
+    id: 'learning',
+    icon: 'auto_stories',
+    label: 'Learning Plans',
+    x: '42%',
+    y: '85%',
+    svgX: 480,
+    svgY: 890,
+    delay: 1.5,
+    yRange: 10,
+    duration: 4.2,
+    from: 'from-amber-500',
+    to: 'to-orange-600',
+  },
+];
+
+const SVG_CENTER_X = 500;
+const SVG_CENTER_Y = 460;
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════ */
 
 export default function LandingPage({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Auth-guarded navigation for tools
   const handleToolClick = (toolPath: string) => {
     if (isAuthenticated) {
       navigate(toolPath);
     } else {
-      // Redirect to signup with intended destination
-      const redirectTo = encodeURIComponent(toolPath);
-      navigate(`/signup/step-1?redirect_to=${redirectTo}`);
+      navigate(`/signup/step-1?redirect_to=${encodeURIComponent(toolPath)}`);
     }
   };
 
-  useEffect(() => {
-    // Slide rotation
-    const slideTimer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 4);
-    }, 5000);
-
-    // Real-time clock update
-    const clockTimer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 60000); // Update every minute
-
-    return () => {
-      clearInterval(slideTimer);
-      clearInterval(clockTimer);
-    };
-  }, []);
-
-  const getGreeting = () => {
-    const hour = currentDate.getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const formattedDate = currentDate.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
+  /* Parallax refs for Section 2 */
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: parallaxRef,
+    offset: ['start end', 'end start'],
   });
-  const formattedTime = currentDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+
+  const parallaxY1 = useTransform(scrollYProgress, [0, 1], [60, -60]);
+  const parallaxY2 = useTransform(scrollYProgress, [0, 1], [40, -80]);
+  const parallaxY3 = useTransform(scrollYProgress, [0, 1], [80, -40]);
+  const parallaxY4 = useTransform(scrollYProgress, [0, 1], [30, -70]);
 
   return (
-    <div className="bg-[#f0f2f5] min-h-screen overflow-x-hidden selection:bg-primary/20 pt-20">
-      {/* Liquid Background Blobs */}
-      <div className="fixed inset-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
-
-      <header className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 h-20 transition-all duration-200">
+    <div className="bg-[#FAFAFA] min-h-screen overflow-x-hidden pt-20 font-sans selection:bg-indigo-200/60">
+      {/* ═══════════ HEADER ═══════════ */}
+      <header className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100/80 h-20">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
           <div
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2.5 cursor-pointer select-none"
             onClick={() => navigateTo(Screen.LANDING)}
           >
-            <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/20">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-400/25">
               <span className="material-symbols-outlined text-[20px]">school</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">StudentOS</span>
+            <span className="text-xl font-bold tracking-tight text-gray-900">StudentOS</span>
           </div>
+
           <nav className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => navigate('/')}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => navigate('/about')}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              About
-            </button>
-            <div className="group relative h-full flex items-center">
-              <button className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-primary transition-colors py-6 focus:outline-none">
+            {[
+              { label: 'Home', to: '/' },
+              { label: 'About', to: '/about' },
+              { label: 'Career Tracker', to: '/career-tracker' },
+              { label: 'Blog', to: '/blog' },
+              { label: 'Contact', to: '/contact' },
+            ].map((l) => (
+              <button
+                key={l.label}
+                onClick={() => navigate(l.to)}
+                className="text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors"
+              >
+                {l.label}
+              </button>
+            ))}
+
+            {/* Tools Dropdown */}
+            <div className="group relative flex items-center">
+              <button className="flex items-center gap-1 text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors py-6 focus:outline-none">
                 Tools
-                <span className="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:-rotate-180">
+                <span className="material-symbols-outlined text-[14px] transition-transform duration-300 group-hover:-rotate-180">
                   keyboard_arrow_down
                 </span>
               </button>
-              <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+              <div className="absolute left-1/2 top-[80%] z-50 w-[580px] -translate-x-1/2 translate-y-2 rounded-[1.5rem] bg-white/95 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    {
+                      icon: 'fact_check',
+                      label: 'CV & ATS Checker',
+                      desc: 'Optimize for ATS',
+                      onClick: () => handleToolClick('/app/cv-ats'),
+                    },
+                    {
+                      icon: 'work_outline',
+                      label: 'Career Tracker',
+                      desc: 'Jobs & internships',
+                      onClick: () => navigate('/career-tracker'),
+                    },
+                    {
+                      icon: 'gavel',
+                      label: 'Plagiarism Checker',
+                      desc: 'Academic integrity',
+                      onClick: () => handleToolClick('/app/plagiarism'),
+                    },
+                    {
+                      icon: 'co_present',
+                      label: 'Presentations',
+                      desc: 'AI-generated slides',
+                      onClick: () => handleToolClick('/app/presentation'),
+                    },
+                    {
+                      icon: 'school',
+                      label: 'Scholarships',
+                      desc: 'Find funding',
+                      onClick: () => handleToolClick('/app/scholarships'),
+                    },
+                    {
+                      icon: 'check_circle',
+                      label: 'Habit Tracker',
+                      desc: 'Daily consistency',
+                      onClick: () => handleToolClick('/app/habit-tracker'),
+                    },
+                    {
+                      icon: 'route',
+                      label: 'Learning Plans',
+                      desc: 'Custom roadmaps',
+                      onClick: () => handleToolClick('/app/learning-plan'),
+                    },
+                  ].map((t) => (
                     <button
-                      onClick={() => handleToolClick('/app/cv-ats')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
+                      key={t.label}
+                      onClick={t.onClick}
+                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-indigo-50/60 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        fact_check
+                      <span className="material-symbols-outlined text-indigo-600 mt-0.5 group-hover/item:scale-110 transition-transform text-[20px]">
+                        {t.icon}
                       </span>
                       <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          CV & ATS Checker
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Optimize for recruitment algorithms
-                        </div>
+                        <div className="font-semibold text-[13px] text-gray-800">{t.label}</div>
+                        <div className="text-[11px] text-gray-400">{t.desc}</div>
                       </div>
                     </button>
-                    <button
-                      onClick={() => navigate('/career-tracker')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        work_outline
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Career Tracker
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Internships & graduate roles
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleToolClick('/app/plagiarism')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        gavel
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Plagiarism & AI Checker
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Ensure academic integrity
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => handleToolClick('/app/presentation')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        co_present
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Presentation Maker
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Create slides in minutes
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleToolClick('/app/scholarships')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        school
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Scholarship Finder
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Find funding opportunities
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleToolClick('/app/habit-tracker')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        check_circle
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Habit Tracker
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Build study routines
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleToolClick('/app/learning-plan')}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        route
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          Learning Plan Builder
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Customized curriculum paths
-                        </div>
-                      </div>
-                    </button>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/career-tracker')}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              Career Tracker
-            </button>
-            <button
-              onClick={() => navigate('/blog')}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              Blog
-            </button>
-            <button
-              onClick={() => navigate('/contact')}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              Contact
-            </button>
           </nav>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                {/* User Avatar - shown when authenticated */}
                 <div
-                  className="size-9 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-gray-700 cursor-pointer hover:ring-primary transition-all flex-shrink-0 hidden sm:block"
+                  className="size-9 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white cursor-pointer hover:ring-indigo-400 transition-all hidden sm:block"
                   style={{
-                    backgroundImage: `url('${user?.profile?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.profile?.fullName || user?.email?.split('@')[0] || 'User')}&background=random`}')`,
+                    backgroundImage: `url('${user?.profile?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.profile?.fullName || user?.email?.split('@')[0] || 'U')}&background=random`}')`,
                   }}
                   onClick={() => navigate('/app/profile')}
-                  title="View Profile"
                 />
-                {/* Go to Dashboard button */}
                 <button
                   onClick={() => navigate('/app')}
-                  className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+                  className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
                 >
-                  Go to Dashboard
+                  Dashboard
                 </button>
               </>
             ) : (
               <>
-                {/* Sign In - guest only */}
                 <button
                   onClick={() => navigate('/signin')}
-                  className="hidden text-sm font-medium text-slate-900 hover:text-primary sm:block transition-colors"
+                  className="hidden sm:block text-[13px] font-medium text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   Sign In
                 </button>
-                {/* Get Started - guest only */}
                 <button
                   onClick={() => navigate('/signup/step-1')}
-                  className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-500/20 active:scale-95"
+                  className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
                 >
                   Get Started
                 </button>
@@ -314,561 +320,676 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
           </div>
         </div>
       </header>
-      <main className="flex flex-col items-center">
-        <section className="relative w-full px-4 py-16 sm:px-6 lg:px-8 lg:py-24 max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            <div className="flex flex-col gap-6 text-left relative z-10">
-              <div className="inline-flex w-fit items-center rounded-full border border-blue-200/50 bg-white/60 backdrop-blur-md px-3 py-1 text-sm font-medium text-primary shadow-sm">
-                <span className="mr-2 flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                </span>
-                New: AI Scholarship Finder
-              </div>
 
-              <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 sm:text-6xl drop-shadow-sm min-h-[140px] sm:min-h-[auto]">
-                Build your career <br />
-                <TypingAnimation />
-              </h1>
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 1 — HERO: Connected Nodes
+         ═══════════════════════════════════════════════════════════════ */}
+      <section className="relative w-full px-4 pt-16 pb-8 sm:pt-24 sm:pb-12 lg:pt-28 lg:pb-16">
+        {/* Centered headline */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-[1.05]">
+            All-in-one{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+              Student
+            </span>{' '}
+            platform
+          </h1>
+          <p className="mt-6 text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+            StudentOS is a modern, unified workspace designed to perfectly fit your academic and
+            career needs.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 mt-10">
+            <button
+              onClick={() => navigate('/signup/step-1')}
+              className="h-12 rounded-full bg-indigo-600 px-8 text-[15px] font-semibold text-white shadow-xl shadow-indigo-500/25 hover:bg-indigo-700 hover:shadow-indigo-500/35 transition-all active:scale-95"
+            >
+              Get Started
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById('features');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="h-12 rounded-full border-2 border-gray-200 bg-white px-8 text-[15px] font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
+            >
+              Learn more
+            </button>
+          </div>
+        </motion.div>
 
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button
-                  onClick={() => navigate('/signup/step-1')}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/30 hover:shadow-primary/40"
-                >
-                  Start free 3-day trial
-                </button>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById('features');
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="inline-flex h-12 items-center justify-center rounded-xl border border-white/60 bg-white/40 backdrop-blur-md px-6 text-base font-bold text-slate-700 transition-colors hover:bg-white/60 hover:text-slate-900 shadow-sm cursor-pointer"
-                >
-                  Explore tools
-                </button>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <span className="material-symbols-outlined text-[18px] text-green-500 filled">
-                  check_circle
-                </span>
-                <span>No credit card required</span>
+        {/* ── Connected Nodes Diagram ── */}
+        <div className="relative mx-auto mt-20 max-w-[680px] h-[420px] sm:h-[480px] lg:h-[520px]">
+          {/* Radial glow behind the center */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-indigo-400/[0.08] rounded-full blur-3xl pointer-events-none" />
+
+          {/* SVG Connecting Lines — drawn BEHIND the nodes */}
+          <svg
+            className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+            viewBox="0 0 1000 1000"
+            fill="none"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {heroNodes.map((node) => (
+              <line
+                key={node.id}
+                x1={SVG_CENTER_X}
+                y1={SVG_CENTER_Y}
+                x2={node.svgX}
+                y2={node.svgY}
+                stroke="#E5E7EB"
+                strokeWidth="1.5"
+                strokeDasharray="6 4"
+              />
+            ))}
+          </svg>
+
+          {/* Center Logo Element */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
+          >
+            <div className="flex size-20 sm:size-24 items-center justify-center rounded-[1.5rem] bg-white shadow-2xl shadow-indigo-500/20 border border-gray-100/80">
+              <div className="flex size-12 sm:size-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white">
+                <span className="material-symbols-outlined text-[28px] sm:text-[32px]">school</span>
               </div>
             </div>
+          </motion.div>
 
-            {/* 3D Floating Screen Container */}
-            <div className="relative lg:h-auto z-10 perspective-1000">
-              {/* Glass liquid glow behind screen */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 to-purple-500/30 blur-3xl rounded-full opacity-60 animate-blob"></div>
-
-              <div
-                className="relative overflow-hidden rounded-2xl border border-white/40 shadow-2xl bg-white/90 backdrop-blur-xl aspect-[4/3] w-full group transition-transform duration-700 ease-in-out hover:scale-[1.02]"
-                style={{
-                  transform: 'perspective(1000px) rotateY(-8deg) rotateX(4deg) scale(0.95)',
-                }}
-              >
-                {/* Glossy Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-transparent to-transparent z-20 pointer-events-none"></div>
-
-                {/* Status Bar */}
-                <div className="h-8 bg-white/50 backdrop-blur-sm border-b border-white/20 flex items-center justify-between px-4 gap-2">
-                  <div className="flex gap-2">
-                    <div className="size-3 rounded-full bg-red-400 shadow-inner"></div>
-                    <div className="size-3 rounded-full bg-amber-400 shadow-inner"></div>
-                    <div className="size-3 rounded-full bg-green-400 shadow-inner"></div>
-                  </div>
-                  <div className="text-[10px] font-medium text-slate-500 tracking-wide">
-                    {formattedTime}
+          {/* Floating Nodes */}
+          {heroNodes.map((node) => (
+            <motion.div
+              key={node.id}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: [0, -node.yRange, 0],
+              }}
+              transition={{
+                opacity: { duration: 0.5, delay: node.delay + 0.4 },
+                scale: {
+                  duration: 0.5,
+                  delay: node.delay + 0.4,
+                  type: 'spring' as const,
+                  stiffness: 200,
+                },
+                y: {
+                  duration: node.duration,
+                  repeat: Infinity,
+                  ease: 'easeInOut' as const,
+                  delay: node.delay,
+                },
+              }}
+              className="absolute z-10"
+              style={{ left: node.x, top: node.y }}
+            >
+              <div className="flex flex-col items-center gap-1.5 group cursor-default">
+                <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl backdrop-blur-md bg-white/80 border border-white shadow-lg shadow-gray-200/50 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                  <div
+                    className={`flex size-9 sm:size-10 items-center justify-center rounded-xl bg-gradient-to-br ${node.from} ${node.to} text-white`}
+                  >
+                    <span className="material-symbols-outlined text-[20px] sm:text-[22px]">
+                      {node.icon}
+                    </span>
                   </div>
                 </div>
-
-                {/* Carousel Container */}
-                <div className="relative w-full h-[calc(100%-32px)] bg-slate-50/50 overflow-hidden">
-                  {/* Slide 1: Dashboard Mock */}
-                  <div
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${activeSlide === 0 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} p-6 sm:p-8 flex flex-col`}
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-2xl font-bold text-slate-900">{getGreeting()}, Alex</h2>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[14px]">
-                            calendar_today
-                          </span>
-                          {formattedDate}
-                        </p>
-                      </div>
-
-                      {/* Search Bar - Real Data Component */}
-                      <div className="hidden sm:flex mx-6 flex-1 relative group">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] group-focus-within:text-primary transition-colors">
-                          search
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Search..."
-                          className="w-full bg-white border border-slate-200 rounded-full py-2 pl-10 pr-4 text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-700 placeholder:text-slate-400 shadow-sm"
-                        />
-                      </div>
-
-                      <div className="size-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-100 border-2 border-white shadow-sm overflow-hidden flex-shrink-0">
-                        <img
-                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhG4np0VVE22WojP2CGz7Ch6oi2UbBGvY215GNeJl-qbqiIkvVO0e4VJCR48HYD7zcjJ60KfnEAbHOCeMGlVJwochpZSwqE5sh6rBSYgIsX8LQz5UE6yBSk2CJMQ8HXNzUxgZG2yHaebJYk7QmIl7Z2KUZH1fL8p4S0iaspKV4wNVdgBRvRv1lXYD-NeEM5GHeF11YqbTWAvllHQzT4AqVhoA_CKzfcl5nPMHa4BOHNacdhm-S2FFPGfH8ZhQF4TdbUdOb1vS8lg0"
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="glass p-4 rounded-2xl border border-blue-100/50 bg-blue-50/50">
-                        <div className="text-blue-600 font-bold text-3xl">3.8</div>
-                        <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider">
-                          GPA
-                        </div>
-                      </div>
-                      <div className="glass p-4 rounded-2xl border border-green-100/50 bg-green-50/50">
-                        <div className="text-green-600 font-bold text-3xl">12</div>
-                        <div className="text-green-400 text-xs font-semibold uppercase tracking-wider">
-                          Applications
-                        </div>
-                      </div>
-                    </div>
-                    <div className="glass rounded-2xl p-5 shadow-sm flex-1 flex flex-col border border-white/60">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-slate-700 text-sm">Study Hours</h3>
-                        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
-                          This Week
-                        </span>
-                      </div>
-                      <div className="flex-1 flex items-end justify-between gap-2 px-2">
-                        {[40, 70, 45, 90, 60, 30, 50].map((h, i) => (
-                          <div
-                            key={i}
-                            className="w-full bg-primary/20 rounded-t-md relative group cursor-pointer hover:bg-primary/40 transition-colors"
-                            style={{ height: `${h}%` }}
-                          >
-                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                              {h}m
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Slide 2: Job Board Mock */}
-                  <div
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${activeSlide === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} p-6 sm:p-8 flex flex-col`}
-                  >
-                    <div className="flex items-center justify-between mb-6 border-b border-slate-200/50 pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-xl bg-blue-100/50 text-blue-600 flex items-center justify-center shadow-sm">
-                          <span className="material-symbols-outlined text-xl">work</span>
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800 text-lg">Job Board</div>
-                          <div className="text-xs text-slate-400 font-medium">
-                            Applications Pipeline
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-1 grid grid-cols-3 gap-3">
-                      <div className="bg-slate-100/50 rounded-xl p-2 space-y-2 border border-slate-200/50">
-                        <div className="flex justify-between items-center mb-1 px-1">
-                          <div className="text-[10px] font-bold text-slate-500 uppercase">
-                            Wishlist
-                          </div>
-                          <span className="bg-white text-slate-600 text-[10px] px-1.5 rounded-full font-bold shadow-sm">
-                            4
-                          </span>
-                        </div>
-                        <div className="glass-card p-2 rounded-lg shadow-sm border border-white/50">
-                          <div className="flex justify-between mb-1">
-                            <span className="font-bold text-xs text-slate-800">Product Intern</span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 flex items-center gap-1">
-                            <div className="size-1.5 rounded-full bg-green-500"></div> Spotify
-                          </div>
-                        </div>
-                        <div className="glass-card p-2 rounded-lg shadow-sm border border-white/50">
-                          <div className="flex justify-between mb-1">
-                            <span className="font-bold text-xs text-slate-800">UX Research</span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 flex items-center gap-1">
-                            <div className="size-1.5 rounded-full bg-orange-500"></div> Airbnb
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-slate-100/50 rounded-xl p-2 space-y-2 border border-slate-200/50">
-                        <div className="flex justify-between items-center mb-1 px-1">
-                          <div className="text-[10px] font-bold text-slate-500 uppercase">
-                            Applied
-                          </div>
-                          <span className="bg-blue-100 text-blue-600 text-[10px] px-1.5 rounded-full font-bold shadow-sm">
-                            12
-                          </span>
-                        </div>
-                        <div className="glass-card p-2 rounded-lg shadow-sm border border-white/50 border-l-2 border-l-blue-500">
-                          <div className="flex justify-between mb-1">
-                            <span className="font-bold text-xs text-slate-800">Frontend Dev</span>
-                          </div>
-                          <div className="text-[10px] text-slate-500">Linear</div>
-                        </div>
-                      </div>
-                      <div className="bg-slate-100/50 rounded-xl p-2 space-y-2 border border-slate-200/50">
-                        <div className="flex justify-between items-center mb-1 px-1">
-                          <div className="text-[10px] font-bold text-slate-500 uppercase">
-                            Interview
-                          </div>
-                          <span className="bg-green-100 text-green-600 text-[10px] px-1.5 rounded-full font-bold shadow-sm">
-                            2
-                          </span>
-                        </div>
-                        <div className="glass-card p-2 rounded-lg shadow-sm border border-white/50 border-l-2 border-l-green-500">
-                          <div className="flex justify-between mb-1">
-                            <span className="font-bold text-xs text-slate-800">Design Intern</span>
-                          </div>
-                          <div className="text-[10px] text-slate-500">Netflix</div>
-                          <div className="mt-1 bg-green-50/80 text-green-700 text-[9px] px-1.5 py-0.5 rounded w-fit font-bold backdrop-blur-sm">
-                            Tomorrow
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Slide 3: Learning Plan Mock */}
-                  <div
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${activeSlide === 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} p-6 sm:p-8 flex flex-col`}
-                  >
-                    <div className="flex items-center gap-5 mb-6 glass p-4 rounded-2xl border border-white/50">
-                      <div className="relative size-12 flex-shrink-0">
-                        <svg className="size-full -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            className="text-slate-100"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></path>
-                          <path
-                            className="text-green-500 drop-shadow-sm"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeDasharray="85, 100"
-                            strokeLinecap="round"
-                            strokeWidth="4"
-                          ></path>
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center text-green-600 font-bold text-xs">
-                          85%
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-bold text-lg text-slate-900">Weekly Progress</div>
-                        <div className="text-xs text-slate-500 font-medium">Just 2 tasks left!</div>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 glass-card rounded-xl shadow-sm hover:translate-x-1 transition-transform cursor-pointer">
-                        <div className="size-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm">
-                          <span className="material-symbols-outlined text-lg">menu_book</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-bold text-slate-800 text-xs">
-                            Read "Design of Everyday Things"
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-medium">Chapter 4</div>
-                        </div>
-                        <div className="size-4 rounded-full border-2 border-slate-200"></div>
-                      </div>
-                      <div className="flex items-center gap-3 p-3 bg-slate-50/50 border border-transparent rounded-xl opacity-60">
-                        <div className="size-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center grayscale">
-                          <span className="material-symbols-outlined text-lg">code</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-bold text-slate-800 text-xs line-through">
-                            React Assignment
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-medium">Module 3</div>
-                        </div>
-                        <div className="size-4 rounded-full bg-green-500 flex items-center justify-center text-white">
-                          <span className="material-symbols-outlined text-[10px] font-bold">
-                            check
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 p-3 glass-card rounded-xl shadow-sm hover:translate-x-1 transition-transform cursor-pointer">
-                        <div className="size-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shadow-sm">
-                          <span className="material-symbols-outlined text-lg">school</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-bold text-slate-800 text-xs">
-                            Apply for Scholarship
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-medium">
-                            Chevening 2026
-                          </div>
-                        </div>
-                        <div className="size-4 rounded-full border-2 border-slate-200"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Slide 4: CV Checker Mock */}
-                  <div
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${activeSlide === 3 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} p-6 sm:p-8 flex flex-col`}
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="size-10 rounded-xl bg-indigo-100/50 text-indigo-600 flex items-center justify-center shadow-sm">
-                        <span className="material-symbols-outlined text-xl">fact_check</span>
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-800 text-lg">CV Analysis</div>
-                        <div className="text-xs text-slate-400 font-medium">
-                          Resume vs Job Description
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 h-full">
-                      <div className="flex-1 glass border border-white/50 rounded-lg p-3 relative overflow-hidden group">
-                        <div className="space-y-2 opacity-30 blur-[1px] group-hover:blur-0 transition-all duration-500">
-                          <div className="h-4 w-1/2 bg-slate-400 rounded"></div>
-                          <div className="h-2 w-full bg-slate-300 rounded"></div>
-                          <div className="h-2 w-full bg-slate-300 rounded"></div>
-                          <div className="h-2 w-3/4 bg-slate-300 rounded"></div>
-                          <div className="h-20 w-full bg-slate-300 rounded mt-4"></div>
-                        </div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md shadow-xl rounded-full p-2 scale-110">
-                          <span className="material-symbols-outlined text-green-500 text-2xl">
-                            check_circle
-                          </span>
-                        </div>
-                      </div>
-                      <div className="w-1/3 flex flex-col gap-3">
-                        <div className="glass-card border border-white/60 shadow-sm rounded-xl p-3 flex flex-col items-center justify-center">
-                          <div className="text-3xl font-bold text-indigo-600 drop-shadow-sm">
-                            92%
-                          </div>
-                          <div className="text-[10px] text-slate-400 uppercase font-bold">
-                            Match Score
-                          </div>
-                        </div>
-                        <div className="flex-1 bg-red-50/50 border border-red-100/50 rounded-xl p-3 backdrop-blur-sm">
-                          <div className="text-[10px] font-bold text-red-400 uppercase mb-2">
-                            Missing Keywords
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            <span className="bg-white/80 text-red-600 text-[9px] px-1.5 py-0.5 rounded border border-red-100 shadow-sm">
-                              Figma
-                            </span>
-                            <span className="bg-white/80 text-red-600 text-[9px] px-1.5 py-0.5 rounded border border-red-100 shadow-sm">
-                              Agile
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Navigation Dots */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 p-1.5 bg-white/40 backdrop-blur-md rounded-full shadow-sm border border-white/20 ring-1 ring-black/5">
-                    {[0, 1, 2, 3].map((idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveSlide(idx)}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${activeSlide === idx ? 'w-6 bg-slate-800' : 'w-1.5 bg-slate-400 hover:bg-slate-600'}`}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {node.label}
+                </span>
               </div>
+            </motion.div>
+          ))}
 
-              {/* Floating Badge (Glass Card) */}
-              <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-3 rounded-2xl bg-white/70 backdrop-blur-xl p-4 shadow-2xl border border-white/50 animate-float z-20 ring-1 ring-black/5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100/80 text-green-600 shadow-sm">
-                  <span className="material-symbols-outlined">trending_up</span>
+          {/* Tiny decorative floating shapes */}
+          <motion.div
+            animate={{ y: [0, -8, 0], rotate: [0, 45, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' as const }}
+            className="absolute top-[30%] left-[30%] z-0"
+          >
+            <div className="w-3 h-3 rounded-sm bg-indigo-200/40 rotate-45" />
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 3.5, delay: 1, repeat: Infinity, ease: 'easeInOut' as const }}
+            className="absolute top-[55%] right-[25%] z-0"
+          >
+            <div className="w-2 h-2 rounded-full bg-violet-300/30" />
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, -5, 0], scale: [1, 1.3, 1] }}
+            transition={{ duration: 4, delay: 2, repeat: Infinity, ease: 'easeInOut' as const }}
+            className="absolute bottom-[25%] left-[22%] z-0"
+          >
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-200/40" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 2 — CORE SOLUTIONS (Parallax Scroll)
+         ═══════════════════════════════════════════════════════════════ */}
+      <section ref={parallaxRef} className="relative w-full py-32 sm:py-40 overflow-hidden">
+        {/* Section text */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={stagger}
+          className="mx-auto max-w-3xl text-center px-4 relative z-20"
+        >
+          <motion.p
+            variants={springUp}
+            className="text-[13px] font-bold uppercase tracking-[0.2em] text-indigo-600 mb-3"
+          >
+            Core Solutions
+          </motion.p>
+          <motion.h2
+            variants={springUp}
+            className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900"
+          >
+            Streamline your academic
+            <br className="hidden sm:block" /> and career journey
+          </motion.h2>
+          <motion.p variants={springUp} className="mt-5 text-base text-gray-400 max-w-lg mx-auto">
+            Tools designed by ambitious students, for ambitious students.
+          </motion.p>
+        </motion.div>
+
+        {/* Parallax floating cards */}
+        <div className="relative mx-auto max-w-5xl h-[360px] sm:h-[420px] mt-16">
+          {/* Card 1: ATS Score — Left, parallaxY1 */}
+          <motion.div
+            style={{ y: parallaxY1 }}
+            className="absolute top-4 left-[4%] sm:left-[8%] z-10"
+          >
+            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-52 sm:w-56 hover:shadow-2xl transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="size-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white">
+                  <span className="font-black text-sm">85</span>
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">GPA +0.4</p>
-                  <p className="text-xs text-slate-500">This semester</p>
+                  <div className="text-[13px] font-bold text-gray-800">ATS Score</div>
+                  <div className="text-[11px] text-emerald-500 font-semibold">Excellent Match</div>
                 </div>
               </div>
+              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full w-[85%] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+              </div>
             </div>
-          </div>
-        </section>
+          </motion.div>
 
-        <section className="w-full border-y border-white/30 bg-white/40 backdrop-blur-sm py-10">
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <p className="mb-6 text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Trusted by high-achievers at
+          {/* Card 2: Interview Passed — Top Right, parallaxY2 */}
+          <motion.div
+            style={{ y: parallaxY2 }}
+            className="absolute top-0 right-[4%] sm:right-[10%] z-10"
+          >
+            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-56 sm:w-60 hover:shadow-2xl transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="size-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-emerald-600 text-[20px]">
+                    verified
+                  </span>
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-gray-800">Interview Passed</div>
+                  <div className="text-[11px] text-gray-400">Google · UX Intern</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 mt-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-5 flex-1 bg-emerald-400/20 rounded" />
+                ))}
+                <div className="h-5 flex-1 bg-emerald-500 rounded" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Card 3: Habit Streak — Bottom Left, parallaxY3 */}
+          <motion.div
+            style={{ y: parallaxY3 }}
+            className="absolute bottom-4 left-[6%] sm:left-[14%] z-10"
+          >
+            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-48 sm:w-52 hover:shadow-2xl transition-shadow">
+              <div className="text-[13px] font-bold text-gray-800 mb-2">🔥 14-Day Streak</div>
+              <div className="text-[11px] text-gray-400 mb-3">Morning Study · 45 min</div>
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-4 rounded-md ${i < 12 ? 'bg-emerald-400/70' : 'bg-emerald-200/50'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Card 4: New Match — Bottom Right, parallaxY4 */}
+          <motion.div
+            style={{ y: parallaxY4 }}
+            className="absolute bottom-8 right-[4%] sm:right-[8%] z-10"
+          >
+            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-52 sm:w-56 hover:shadow-2xl transition-shadow">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="size-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-blue-600 text-[16px]">
+                    notifications
+                  </span>
+                </div>
+                <span className="text-[13px] font-bold text-gray-800">New Match</span>
+                <span className="text-[10px] text-gray-300 ml-auto">2m</span>
+              </div>
+              <div className="text-[11px] text-gray-500">UX Design Intern at Figma — 92% fit</div>
+            </div>
+          </motion.div>
+
+          {/* Center floating avatars */}
+          {[
+            { pos: 'top-[30%] left-[38%]', bg: 'E8B4B8', d: 3.5, dl: 0.3 },
+            { pos: 'top-[45%] right-[36%]', bg: 'B4D4E8', d: 4.2, dl: 1 },
+            { pos: 'top-[20%] left-[52%]', bg: 'D4E8B4', d: 3, dl: 1.8 },
+            { pos: 'bottom-[30%] right-[44%]', bg: 'E8D4B4', d: 3.8, dl: 0.5 },
+          ].map((a, i) => (
+            <motion.div
+              key={i}
+              animate={{ y: [0, -(8 + i * 2), 0] }}
+              transition={{
+                duration: a.d,
+                delay: a.dl,
+                repeat: Infinity,
+                ease: 'easeInOut' as const,
+              }}
+              className={`absolute ${a.pos} z-0`}
+            >
+              <div className="size-10 sm:size-12 rounded-full border-[3px] border-white shadow-lg overflow-hidden">
+                <img
+                  src={`https://ui-avatars.com/api/?name=S${i + 1}&background=${a.bg}&color=fff&bold=true&size=96`}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 3 — BENTO GRID ("Built for Ambitious Students")
+         ═══════════════════════════════════════════════════════════════ */}
+      <section id="features" className="w-full px-4 py-24 sm:py-32 sm:px-6 lg:px-8 scroll-mt-24">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-100px' }}
+          variants={stagger}
+          className="mx-auto max-w-6xl"
+        >
+          <motion.div variants={springUp} className="text-center mb-16">
+            <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-indigo-600 mb-3">
+              Platform Features
             </p>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale transition-all hover:grayscale-0">
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-600 hover:text-primary transition-colors cursor-default">
-                <span className="material-symbols-outlined">account_balance</span> Stanford
-              </div>
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-600 hover:text-primary transition-colors cursor-default">
-                <span className="material-symbols-outlined">school</span> MIT
-              </div>
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-600 hover:text-primary transition-colors cursor-default">
-                <span className="material-symbols-outlined">menu_book</span> Harvard
-              </div>
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-600 hover:text-primary transition-colors cursor-default">
-                <span className="material-symbols-outlined">local_library</span> Oxford
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="w-full px-4 py-20 sm:px-6 lg:px-8 max-w-7xl scroll-mt-32">
-          <div className="mb-16 flex flex-col items-center text-center">
-            <h2 className="mb-4 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-              Powerful tools for your future
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900">
+              Built for ambitious students
             </h2>
-            <p className="max-w-2xl text-lg text-slate-600">
-              Stop juggling spreadsheets and notes. StudentOS gives you a competitive edge with a
-              suite of professional-grade tools designed for students.
+            <p className="mt-4 text-base text-gray-400 max-w-lg mx-auto">
+              Everything you need to ace your academics and launch your career.
             </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Career Tracker (spans 2 cols on desktop) */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ type: 'spring' as const, stiffness: 100, damping: 20 }}
+              className="group md:col-span-2 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-black/[0.03] hover:shadow-2xl hover:shadow-black/[0.06] transition-all duration-500 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-50/60 to-transparent rounded-bl-full pointer-events-none" />
+              <div className="relative z-10">
+                <div className="size-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined text-blue-600 text-[28px]">
+                    view_kanban
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Career Tracker</h3>
+                <p className="text-sm text-gray-400 leading-relaxed mb-8 max-w-md">
+                  Manage job applications and track your career progress on a visual Kanban
+                  pipeline.
+                </p>
+                {/* Mini Kanban */}
+                <div className="flex gap-3 group-hover:scale-[1.02] transition-transform origin-top-left">
+                  {[
+                    { title: 'Applied', count: 3 },
+                    { title: 'Interview', count: 2 },
+                    { title: 'Offer', count: 1 },
+                  ].map((col) => (
+                    <div key={col.title} className="flex-1 bg-gray-50 rounded-xl p-2.5">
+                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        {col.title}
+                      </div>
+                      {Array.from({ length: col.count }).map((_, j) => (
+                        <div
+                          key={j}
+                          className="h-7 bg-white border border-gray-100 rounded-lg mb-1.5 shadow-sm"
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 2: Telegram */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ type: 'spring' as const, stiffness: 100, damping: 20, delay: 0.1 }}
+              className="group bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-black/[0.03] hover:shadow-2xl hover:shadow-black/[0.06] transition-all duration-500 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-sky-50/60 to-transparent rounded-bl-full pointer-events-none" />
+              <div className="relative z-10">
+                <div className="size-14 rounded-2xl bg-sky-100 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined text-sky-500 text-[28px]">send</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Telegram Bot</h3>
+                <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                  Get instant alerts and manage habits directly via Telegram.
+                </p>
+                <div className="space-y-2 group-hover:scale-[1.02] transition-transform origin-top-left">
+                  <div className="flex justify-end">
+                    <div className="bg-indigo-600 text-white text-[10px] px-3 py-1.5 rounded-2xl rounded-br-sm max-w-[150px]">
+                      Track habit ✅
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="bg-gray-100 text-gray-600 text-[10px] px-3 py-1.5 rounded-2xl rounded-bl-sm max-w-[170px]">
+                      🎉 Streak: 14 days!
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 3: CV Builder */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ type: 'spring' as const, stiffness: 100, damping: 20, delay: 0.2 }}
+              className="group bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-black/[0.03] hover:shadow-2xl hover:shadow-black/[0.06] transition-all duration-500 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-violet-50/60 to-transparent rounded-bl-full pointer-events-none" />
+              <div className="relative z-10">
+                <div className="size-14 rounded-2xl bg-violet-100 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined text-violet-600 text-[28px]">
+                    description
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">CV Builder & ATS</h3>
+                <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                  Create ATS-friendly resumes effortlessly.
+                </p>
+                <div className="bg-gray-50 rounded-xl p-3 group-hover:scale-[1.02] transition-transform origin-top-left">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="size-7 rounded-full bg-violet-200" />
+                    <div>
+                      <div className="h-2 w-16 bg-gray-200 rounded" />
+                      <div className="h-1.5 w-10 bg-gray-100 rounded mt-1" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 ml-9">
+                    <div className="h-1.5 w-full bg-gray-100 rounded" />
+                    <div className="h-1.5 w-4/5 bg-gray-100 rounded" />
+                    <div className="h-1.5 w-3/5 bg-gray-100 rounded" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 4: Habits & Learning (spans 2 cols) */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ type: 'spring' as const, stiffness: 100, damping: 20, delay: 0.3 }}
+              className="group md:col-span-2 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-black/[0.03] hover:shadow-2xl hover:shadow-black/[0.06] transition-all duration-500 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-emerald-50/60 to-transparent rounded-bl-full pointer-events-none" />
+              <div className="relative z-10">
+                <div className="size-14 rounded-2xl bg-emerald-100 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined text-emerald-600 text-[28px]">
+                    calendar_month
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Habits & Learning Plans</h3>
+                <p className="text-sm text-gray-400 leading-relaxed mb-8 max-w-md">
+                  Build consistent habits and generate AI-powered learning roadmaps tailored to your
+                  goals.
+                </p>
+                <div className="grid grid-cols-7 sm:grid-cols-14 gap-1.5 max-w-md group-hover:scale-[1.02] transition-transform origin-top-left">
+                  {Array.from({ length: 28 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-6 rounded-md transition-colors ${i < 22 ? 'bg-emerald-400/70 hover:bg-emerald-500' : 'bg-gray-100'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 4 — INTEGRATIONS (Neumorphic, Staggered)
+         ═══════════════════════════════════════════════════════════════ */}
+      <section className="w-full px-4 py-24 sm:py-32">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={stagger}
+          className="mx-auto max-w-4xl text-center"
+        >
+          <motion.p
+            variants={springUp}
+            className="text-[13px] font-bold uppercase tracking-[0.2em] text-indigo-600 mb-3"
+          >
+            Integrations
+          </motion.p>
+          <motion.h2
+            variants={springUp}
+            className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900"
+          >
+            Integrate with your
+            <br className="hidden sm:block" /> existing tools in seconds
+          </motion.h2>
+          <motion.p variants={springUp} className="mt-4 text-base text-gray-400 max-w-lg mx-auto">
+            Connect seamlessly and keep everything in sync.
+          </motion.p>
+
+          <motion.div
+            variants={stagger}
+            className="flex flex-wrap justify-center gap-6 sm:gap-8 mt-16"
+          >
+            {[
+              { name: 'Notion', emoji: '📝' },
+              { name: 'Google', emoji: '🔍' },
+              { name: 'Telegram', emoji: '✈️' },
+              { name: 'Railway', emoji: '🚂' },
+              { name: 'Discord', emoji: '💬' },
+            ].map((tool) => (
+              <motion.div
+                key={tool.name}
+                variants={popIn}
+                whileHover={{ y: -4, scale: 1.05 }}
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-[1.5rem] bg-white border border-gray-100 shadow-[6px_6px_12px_#e8e8e8,-6px_-6px_12px_#ffffff] flex flex-col items-center justify-center gap-2 cursor-default transition-shadow hover:shadow-[8px_8px_16px_#e0e0e0,-8px_-8px_16px_#ffffff]"
+              >
+                <span className="text-3xl sm:text-4xl">{tool.emoji}</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-gray-500">
+                  {tool.name}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 5 — TESTIMONIALS
+         ═══════════════════════════════════════════════════════════════ */}
+      <section className="w-full px-4 py-24 sm:py-32">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={stagger}
+          className="mx-auto max-w-6xl"
+        >
+          <motion.div variants={springUp} className="text-center mb-14">
+            <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-indigo-600 mb-3">
+              Testimonials
+            </p>
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900">
+              Words of appreciation
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: 'fact_check',
-                title: 'CV & ATS Checker',
-                desc: 'AI-powered analysis to ensure your resume passes Applicant Tracking Systems and gets seen by recruiters.',
-                color: 'blue',
-                action: 'Check CV',
-                route: '/app/cv-ats',
+                name: 'Sarah Johnson',
+                role: 'CS at Stanford',
+                quote:
+                  'StudentOS helped me track 12 internship applications simultaneously. I landed my dream role at Google thanks to the ATS checker.',
+                bg: 'F0C4C4',
               },
               {
-                icon: 'work_outline',
-                title: 'Career Tracker',
-                desc: 'Smart filters specifically for student internships, part-time roles, and graduate programs.',
-                color: 'purple',
-                action: 'Find Jobs',
-                route: '/career-tracker',
+                name: 'Arjun Patel',
+                role: 'Engineering at MIT',
+                quote:
+                  'The habit tracker with Telegram bot is a game-changer. My study consistency went from 40% to 92% in one semester.',
+                bg: 'C4D4F0',
               },
               {
-                icon: 'gavel',
-                title: 'Plagiarism & AI Checker',
-                desc: 'Verify your essays are original and citation-compliant before you hit submit.',
-                color: 'orange',
-                action: 'Check Work',
-                route: '/app/plagiarism',
+                name: 'Aisha Karimova',
+                role: 'Business at Harvard',
+                quote:
+                  "The scholarship finder matched me with $15k in funding I didn't know existed. Essential for every ambitious student.",
+                bg: 'D4F0C4',
               },
-              {
-                icon: 'school',
-                title: 'Scholarship Finder',
-                desc: 'Match with thousands of scholarships based on your unique profile and academic interests.',
-                color: 'teal',
-                action: 'Find Funds',
-                route: '/app/scholarships',
-              },
-              {
-                icon: 'co_present',
-                title: 'Presentation Maker',
-                desc: 'AI-generated slides in multiple languages.',
-                color: 'rose',
-                action: 'Create Slides',
-                route: '/app/presentation',
-              },
-              {
-                icon: 'calendar_today',
-                title: 'Habit Tracker',
-                desc: 'Daily consistency with Telegram integration.',
-                color: 'emerald',
-                action: 'Start Tracking',
-                route: '/app/habit-tracker',
-              },
-              {
-                icon: 'map',
-                title: 'Learning Plan Builder',
-                desc: 'Customized academic and career roadmaps.',
-                color: 'indigo',
-                action: 'Build Plan',
-                route: '/app/learning-plan',
-              },
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="glass-card group relative flex flex-col rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:bg-white/60"
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{
+                  type: 'spring' as const,
+                  stiffness: 100,
+                  damping: 20,
+                  delay: i * 0.1,
+                }}
+                className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-xl shadow-black/[0.03] hover:shadow-2xl hover:shadow-black/[0.06] transition-all duration-300"
               >
-                <div
-                  className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-${feature.color}-50 text-${feature.color === 'blue' ? 'primary' : feature.color + '-600'} shadow-sm border border-${feature.color}-100`}
-                >
-                  <span
-                    className={`material-symbols-outlined ${feature.color === 'blue' ? 'text-primary' : `text-${feature.color}-600`}`}
-                  >
-                    {feature.icon}
-                  </span>
+                <div className="flex items-center gap-0.5 mb-5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <svg
+                      key={s}
+                      className="w-[18px] h-[18px] text-amber-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-slate-900">{feature.title}</h3>
-                <p className="mb-4 flex-1 text-sm leading-relaxed text-slate-500">{feature.desc}</p>
-                <button
-                  onClick={() => navigate(feature.route)}
-                  className="inline-flex items-center text-sm font-bold text-primary hover:text-primary-dark transition-colors"
-                >
-                  {feature.action}{' '}
-                  <span className="material-symbols-outlined ml-1 text-[16px] transition-transform group-hover:translate-x-1">
-                    arrow_forward
-                  </span>
-                </button>
+                <p className="text-sm text-gray-500 leading-relaxed mb-8">"{t.quote}"</p>
+                <div className="flex items-center gap-3 pt-5 border-t border-gray-50">
+                  <div className="size-11 rounded-full overflow-hidden border-2 border-white shadow-md">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=${t.bg}&color=fff&bold=true&size=88`}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-bold text-gray-800">{t.name}</div>
+                    <div className="text-[11px] text-gray-400">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+         SECTION 6 — FOOTER WITH BLURRED WATERMARK
+         ═══════════════════════════════════════════════════════════════ */}
+      <footer className="relative w-full bg-[#0e0e1a] text-white pt-20 pb-8 overflow-hidden">
+        {/* 🔥 WATERMARK — Massive blurred background text */}
+        <div
+          className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          <div
+            className="text-[15vw] font-black tracking-tighter text-indigo-600 opacity-10 whitespace-nowrap leading-none"
+            style={{ filter: 'blur(8px)' }}
+          >
+            StudentOS
+          </div>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
+            {[
+              {
+                title: 'Product',
+                items: ['Dashboard', 'Career Tracker', 'CV Builder', 'Habit Tracker'],
+              },
+              {
+                title: 'Features',
+                items: ['ATS Checker', 'Presentations', 'Scholarships', 'Learning Plans'],
+              },
+              { title: 'Resources', items: ['Blog', 'Documentation', 'Support', 'FAQ'] },
+              { title: 'Follow Us', items: ['Twitter', 'LinkedIn', 'Instagram', 'Telegram'] },
+            ].map((col) => (
+              <div key={col.title}>
+                <h4 className="text-[12px] font-bold text-white/60 uppercase tracking-[0.15em] mb-5">
+                  {col.title}
+                </h4>
+                <ul className="space-y-3">
+                  {col.items.map((item) => (
+                    <li key={item}>
+                      <button className="text-[13px] text-white/35 hover:text-white transition-colors duration-200">
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
-        </section>
-      </main>
-      <footer className="w-full border-t border-white/20 bg-white/40 backdrop-blur-md py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-6 items-center justify-center rounded bg-gradient-to-br from-primary to-blue-600 text-white shadow-md">
+
+          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-white">
                 <span className="material-symbols-outlined text-[14px]">school</span>
               </div>
-              <span className="text-lg font-bold text-slate-900">StudentOS</span>
+              <span className="text-sm font-bold">StudentOS</span>
             </div>
-            <div className="flex flex-wrap justify-center gap-8">
-              <a
-                href="/privacy"
-                className="text-sm text-slate-500 hover:text-primary transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="/terms"
-                className="text-sm text-slate-500 hover:text-primary transition-colors"
-              >
-                Terms of Service
-              </a>
-              <button
-                onClick={() => navigate('/contact')}
-                className="text-sm text-slate-500 hover:text-primary transition-colors"
-              >
-                Contact Support
-              </button>
-            </div>
-            <div className="flex gap-4">
-              <a
-                href="#"
-                className="text-slate-400 hover:text-primary transition-colors p-2 hover:bg-white/50 rounded-full"
-              >
-                <span className="material-symbols-outlined">share</span>
-              </a>
-              <a
-                href="#"
-                className="text-slate-400 hover:text-primary transition-colors p-2 hover:bg-white/50 rounded-full"
-              >
-                <span className="material-symbols-outlined">alternate_email</span>
-              </a>
-            </div>
-          </div>
-          <div className="mt-8 text-center text-sm text-slate-400">
-            © 2023 StudentOS Inc. All rights reserved.
+            <p className="text-[11px] text-white/25">
+              © {new Date().getFullYear()} StudentOS. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

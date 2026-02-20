@@ -83,57 +83,50 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setAnalysisResult(null);
-      setError(null);
-    }
-  };
+  const [isExtracting, setIsExtracting] = useState(false);
 
-  const handleAnalyzeUpload = async () => {
-    if (!selectedFile) {
-      setError('Please upload a CV file first');
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 5MB size limit
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File is too large. Maximum size is 5MB.');
       return;
     }
 
-    // Check credits before proceeding (skip for free tools)
-    if (toolInfo && toolInfo.creditCost > 0) {
-      const result = await executeTransaction();
-      if (!result.success) {
-        if (result.error === 'INSUFFICIENT_CREDITS' && result.data) {
-          setCreditErrorData({
-            required: result.data.required || toolInfo.creditCost,
-            available: result.data.available || 0,
-            shortfall: result.data.shortfall || toolInfo.creditCost,
-            toolName: result.data.toolName || toolInfo.name,
-          });
-          setShowInsufficientModal(true);
-        } else {
-          setError(result.error || 'Failed to process credits');
-        }
-        return;
-      }
-    }
-
-    setIsAnalyzing(true);
+    setSelectedFile(file);
+    setAnalysisResult(null);
     setError(null);
+    setIsExtracting(true);
 
     try {
-      const response = await aiApi.uploadCV(selectedFile, jobDescription || undefined);
+      // For plain text files, read directly on the client
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        const text = await file.text();
+        setCvText(text.substring(0, 20000));
+        setInputMode('text'); // Switch to text mode to show extracted text
+        setIsExtracting(false);
+        return;
+      }
+
+      // For PDF/DOCX, call the backend extract-text endpoint
+      const response = await aiApi.extractText(file);
       if (response.error) {
         throw new Error(response.error);
       }
-      const data = response.data as { extractedText: string; analysis: CVAnalysisResult };
+      const data = response.data!;
       setCvText(data.extractedText);
-      setAnalysisResult(data.analysis);
+      setInputMode('text'); // Switch to text mode so user can verify/edit
     } catch (err: unknown) {
-      console.error('Failed to upload CV:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to upload and analyze CV.';
+      console.error('Failed to extract text from file:', err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to extract text from file. Please try pasting the text directly.';
       setError(errorMessage);
     } finally {
-      setIsAnalyzing(false);
+      setIsExtracting(false);
     }
   };
 
@@ -400,8 +393,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
                 {inputMode === 'upload' ? (
                   <div
-                    onClick={() => !isAnalyzing && fileInputRef.current?.click()}
-                    className={`bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed ${isAnalyzing ? 'border-slate-300' : 'border-primary/40 hover:bg-primary/10 cursor-pointer'} bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all group relative overflow-hidden shadow-sm`}
+                    onClick={() => !isExtracting && !isAnalyzing && fileInputRef.current?.click()}
+                    className={`bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed ${isExtracting ? 'border-primary/60' : isAnalyzing ? 'border-slate-300' : 'border-primary/40 hover:bg-primary/10 cursor-pointer'} bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all group relative overflow-hidden shadow-sm`}
                   >
                     <input
                       ref={fileInputRef}
@@ -410,9 +403,23 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       onChange={handleFileSelect}
                       className="hidden"
                       aria-label="Upload CV file"
-                      disabled={isAnalyzing}
+                      disabled={isExtracting || isAnalyzing}
                     />
-                    {isAnalyzing ? (
+                    {isExtracting ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary text-3xl animate-spin">
+                            sync
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                          Extracting text from file...
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          {selectedFile?.name || 'Processing...'}
+                        </p>
+                      </div>
+                    ) : isAnalyzing ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="material-symbols-outlined text-primary text-3xl animate-spin">
@@ -463,7 +470,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                             <span className="text-primary font-medium hover:underline">browse</span>
                           </p>
                         </div>
-                        <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 10MB</p>
+                        <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 5MB</p>
                       </>
                     )}
                   </div>
@@ -538,47 +545,27 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* Job Description Input + Analyze Button for Upload Mode */}
+                {/* Job Description Input for Upload Mode */}
                 {inputMode === 'upload' && (
-                  <>
-                    <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
-                      <label
-                        htmlFor="job-desc-upload"
-                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
-                      >
-                        Target Job Description (Optional)
-                      </label>
-                      <textarea
-                        id="job-desc-upload"
-                        value={jobDescription}
-                        onChange={(e) => setJobDescription(e.target.value)}
-                        placeholder="Paste a job description for targeted keyword analysis..."
-                        className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      />
-                    </div>
-
-                    <button
-                      onClick={handleAnalyzeUpload}
-                      disabled={isAnalyzing || !selectedFile}
-                      className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                    <label
+                      htmlFor="job-desc-upload"
+                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
                     >
-                      {isAnalyzing ? (
-                        <>
-                          <span className="material-symbols-outlined animate-spin text-[18px]">
-                            sync
-                          </span>
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-[18px]">
-                            search_check
-                          </span>
-                          Analyze CV
-                        </>
-                      )}
-                    </button>
-                  </>
+                      Target Job Description (Optional)
+                    </label>
+                    <textarea
+                      id="job-desc-upload"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder="Paste a job description for targeted keyword analysis..."
+                      className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    />
+                    <p className="text-xs text-slate-400 mt-2">
+                      Upload a file above. Text will be extracted and shown for you to verify before
+                      analyzing.
+                    </p>
+                  </div>
                 )}
               </div>
 

@@ -373,12 +373,41 @@ Respond ONLY with valid JSON, no markdown.`;
   }
 };
 
-export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
-  // Use pdf-parse for text extraction
+/**
+ * Extract text from a file buffer (PDF or DOCX).
+ * Returns the raw text string.
+ */
+export const extractTextFromFile = async (buffer: Buffer, mimeType: string): Promise<string> => {
+  // ── DOCX extraction via mammoth ──
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    mimeType === 'application/docx'
+  ) {
+    try {
+      const mammothModule = await import('mammoth');
+      const mammoth = (mammothModule as any).default || mammothModule;
+      const result = await mammoth.extractRawText({ buffer });
+      const text = result.value?.trim();
+
+      if (!text || text.length < 10) {
+        throw new Error(
+          'AI_SAFETY_BLOCK: Could not extract text from this DOCX file. Please try pasting the text directly.'
+        );
+      }
+      return text;
+    } catch (error: any) {
+      if (error?.message?.includes('AI_')) throw error;
+      console.error('mammoth extraction failed:', error.message);
+      throw new Error(
+        'AI_CONFIG_ERROR: Failed to extract text from DOCX. Please try pasting the text directly.'
+      );
+    }
+  }
+
+  // ── PDF extraction via pdf-parse ──
   try {
     const pdfParseModule = await import('pdf-parse');
     const pdfParse = (pdfParseModule as any).default || pdfParseModule;
-    const buffer = Buffer.from(base64Content, 'base64');
     const pdfData = await pdfParse(buffer);
 
     if (!pdfData.text || pdfData.text.trim().length < 10) {
@@ -389,12 +418,14 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
 
     return pdfData.text;
   } catch (error: any) {
-    if (error?.message?.includes('AI_')) {
-      throw error;
-    }
+    if (error?.message?.includes('AI_')) throw error;
     console.error('pdf-parse extraction failed:', error.message);
     throw new Error(
       'AI_CONFIG_ERROR: Failed to extract text from PDF. Please try pasting the text directly.'
     );
   }
 };
+
+// Backward-compatible alias
+export const extractTextFromPDF = async (base64Content: string): Promise<string> =>
+  extractTextFromFile(Buffer.from(base64Content, 'base64'), 'application/pdf');
