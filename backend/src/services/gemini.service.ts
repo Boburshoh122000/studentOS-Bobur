@@ -275,31 +275,70 @@ Respond ONLY with valid JSON, no markdown.`;
 export const checkPlagiarism = async (
   text: string
 ): Promise<{
-  score: number;
-  analysis: string;
-  suggestions: string[];
+  originalityScore: number;
+  aiScore: number;
+  citationQuality: string;
+  readabilityLevel: string;
+  sourcesFound: number;
+  isOriginal: boolean;
+  summary: string;
+  matchedSources: string[];
 }> => {
   try {
-    const prompt = `Analyze this text for potential plagiarism indicators and writing quality:
+    const prompt = `You are an advanced plagiarism and AI-content detection tool. Analyze the following text thoroughly.
 
-"${text}"
+TEXT TO ANALYZE:
+"""
+${text}
+"""
 
-Note: This is not a full plagiarism check against a database, but an analysis of writing patterns.
+Evaluate the text for:
+1. Originality — how likely the text is original vs copied from known sources
+2. AI-generated content probability — how likely this was written by an AI
+3. Citation quality — whether the text includes proper citations/references
+4. Readability level — the academic/reading level of the text
+5. Potential source matches — common sources this text may originate from
 
-Provide a JSON response with:
-1. "score": Originality score from 0-100 (100 being fully original)
-2. "analysis": Brief analysis of the writing style and potential concerns
-3. "suggestions": Array of suggestions to improve originality
+You MUST respond with strictly valid JSON matching this exact structure:
+{
+  "originalityScore": <number 0-100, where 100 is fully original>,
+  "aiScore": <number 0-100, probability the text is AI-generated>,
+  "citationQuality": <"Good" | "Average" | "Poor" | "None">,
+  "readabilityLevel": <"Elementary" | "Middle School" | "High School" | "College" | "Graduate" | "Professional">,
+  "sourcesFound": <number of potential source matches found>,
+  "isOriginal": <true if originalityScore >= 70, false otherwise>,
+  "summary": "<brief 1-2 sentence explanation of findings>",
+  "matchedSources": ["<source name 1>", "<source name 2>"]
+}
 
 Respond ONLY with valid JSON, no markdown.`;
 
     const response = await callAI(prompt, { temperature: 0.3, maxTokens: 2048, jsonMode: true });
 
     try {
-      return JSON.parse(cleanJSON(response));
+      const parsed = JSON.parse(cleanJSON(response));
+      return {
+        originalityScore: parsed.originalityScore ?? 50,
+        aiScore: parsed.aiScore ?? 0,
+        citationQuality: parsed.citationQuality ?? 'None',
+        readabilityLevel: parsed.readabilityLevel ?? 'College',
+        sourcesFound: parsed.sourcesFound ?? 0,
+        isOriginal: parsed.isOriginal ?? (parsed.originalityScore ?? 50) >= 70,
+        summary: parsed.summary ?? 'Analysis complete.',
+        matchedSources: parsed.matchedSources ?? [],
+      };
     } catch {
       console.error('Failed to parse plagiarism response:', response.slice(0, 200));
-      return { score: 50, analysis: 'Unable to analyze', suggestions: [] };
+      return {
+        originalityScore: 50,
+        aiScore: 0,
+        citationQuality: 'None',
+        readabilityLevel: 'College',
+        sourcesFound: 0,
+        isOriginal: false,
+        summary: 'Unable to fully analyze the text. Please try again.',
+        matchedSources: [],
+      };
     }
   } catch (error) {
     return handleAIError(error);
