@@ -105,7 +105,6 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         const text = await file.text();
         setCvText(text.substring(0, 20000));
-        setInputMode('text'); // Switch to text mode to show extracted text
         setIsExtracting(false);
         return;
       }
@@ -117,7 +116,6 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       }
       const data = response.data!;
       setCvText(data.extractedText);
-      setInputMode('text'); // Switch to text mode so user can verify/edit
     } catch (err: unknown) {
       console.error('Failed to extract text from file:', err);
       const errorMessage =
@@ -564,12 +562,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       />
                     </div>
                     <button
-                      onClick={() => {
-                        if (!selectedFile) {
-                          fileInputRef.current?.click();
-                        }
-                      }}
-                      disabled={isExtracting}
+                      onClick={handleAnalyzeCV}
+                      disabled={isExtracting || isAnalyzing || !cvText.trim()}
                       className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
                       {isExtracting ? (
@@ -579,12 +573,19 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           </span>
                           Extracting text...
                         </>
+                      ) : isAnalyzing ? (
+                        <>
+                          <span className="material-symbols-outlined animate-spin text-[18px]">
+                            sync
+                          </span>
+                          Analyzing...
+                        </>
                       ) : (
                         <>
                           <span className="material-symbols-outlined text-[18px]">
-                            {selectedFile ? 'search_check' : 'upload_file'}
+                            search_check
                           </span>
-                          {selectedFile ? 'Analyze CV' : 'Upload & Analyze CV'}
+                          Analyze CV
                         </>
                       )}
                     </button>
