@@ -111,7 +111,7 @@ router.get('/test', async (_req, res) => {
       provider = 'OpenAI';
       const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'user',
