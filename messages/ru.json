@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "home": "Главная",
+    "about": "О нас",
+    "career_tracker": "Карьера",
+    "blog": "Блог",
+    "contact": "Контакты",
+    "tools": "Инструменты",
+    "sign_in": "Войти",
+    "get_started": "Начать",
+    "dashboard": "Панель",
+    "language": "Язык"
+  },
+  "Tools": {
+    "cv_ats": "CV и ATS проверка",
+    "cv_ats_desc": "Оптимизация для ATS",
+    "career_tracker": "Карьера",
+    "career_tracker_desc": "Вакансии и стажировки",
+    "plagiarism": "Проверка плагиата",
+    "plagiarism_desc": "Академическая честность",
+    "presentations": "Презентации",
+    "presentations_desc": "Слайды с ИИ",
+    "scholarships": "Стипендии",
+    "scholarships_desc": "Поиск финансирования",
+    "habits": "Трекер привычек",
+    "habits_desc": "Ежедневная дисциплина",
+    "learning_plans": "Планы обучения",
+    "learning_plans_desc": "Индивидуальные маршруты"
+  },
+  "Sidebar": {
+    "dashboard": "Панель",
+    "cv_ats": "CV и ATS",
+    "learning_plan": "План обучения",
+    "habit_tracker": "Привычки",
+    "scholarships": "Стипендии",
+    "presentations": "Презентации",
+    "plagiarism": "Плагиат",
+    "settings": "Настройки",
+    "log_out": "Выйти",
+    "logging_out": "Выходим...",
+    "credits": "Кредиты"
+  },
+  "Hero": {
+    "title_1": "Единая",
+    "title_2": "студенческая",
+    "title_3": "платформа",
+    "subtitle": "StudentOS — современное рабочее пространство, созданное для учёбы и карьеры.",
+    "cta_start": "Начать",
+    "cta_learn": "Узнать больше"
+  },
+  "Sections": {
+    "core_solutions": "Ключевые решения",
+    "core_title": "Упростите свой академический",
+    "core_title_2": "и карьерный путь",
+    "core_subtitle": "Инструменты, созданные амбициозными студентами для амбициозных студентов.",
+    "features": "Возможности",
+    "features_title": "Для амбициозных студентов",
+    "features_subtitle": "Всё для успешной учёбы и карьерного роста.",
+    "integrations": "Интеграции",
+    "integrations_title": "Работает с вашими любимыми инструментами",
+    "integrations_subtitle": "Бесшовная интеграция с платформами, которые вы уже используете.",
+    "cta_title": "Готовы к новому уровню?",
+    "cta_subtitle": "Присоединяйтесь к тысячам студентов, которые уже используют StudentOS.",
+    "cta_button": "Создать аккаунт"
+  },
+  "FeatureCards": {
+    "career_tracker": "Карьера",
+    "career_tracker_desc": "Управляйте заявками на работу и отслеживайте прогресс на визуальной доске Kanban.",
+    "telegram_bot": "Telegram Бот",
+    "telegram_bot_desc": "Получайте уведомления и управляйте привычками через Telegram.",
+    "cv_builder": "CV и ATS",
+    "cv_builder_desc": "Создавайте резюме, оптимизированные для ATS.",
+    "habits_learning": "Привычки и планы обучения",
+    "habits_learning_desc": "Формируйте привычки и создавайте маршруты обучения с помощью ИИ."
+  },
+  "Footer": {
+    "product": "Продукт",
+    "company": "Компания",
+    "legal": "Правовая информация",
+    "pricing": "Цены",
+    "terms": "Условия использования",
+    "privacy": "Политика конфиденциальности",
+    "all_rights": "Все права защищены."
+  },
+  "Common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "confirm": "Подтвердить",
+    "search": "Поиск",
+    "back": "Назад",
+    "next": "Далее",
+    "page_not_found": "Страница не найдена",
+    "go_home": "На главную"
+  }
+}

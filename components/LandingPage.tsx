@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import LanguageSwitcher from './LanguageSwitcher';
 
 /* ═══════════════════════════════════════════════════════════════
    ANIMATION CONFIGURATION — Exact Framer Motion Variants
@@ -158,6 +160,7 @@ const SVG_CENTER_Y = 460;
 export default function LandingPage({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { t } = useTranslation();
 
   const handleToolClick = (toolPath: string) => {
     if (isAuthenticated) {
@@ -196,14 +199,14 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
 
           <nav className="hidden md:flex items-center gap-8">
             {[
-              { label: 'Home', to: '/' },
-              { label: 'About', to: '/about' },
-              { label: 'Career Tracker', to: '/career-tracker' },
-              { label: 'Blog', to: '/blog' },
-              { label: 'Contact', to: '/contact' },
+              { label: t('Header.home'), to: '/' },
+              { label: t('Header.about'), to: '/about' },
+              { label: t('Header.career_tracker'), to: '/career-tracker' },
+              { label: t('Header.blog'), to: '/blog' },
+              { label: t('Header.contact'), to: '/contact' },
             ].map((l) => (
               <button
-                key={l.label}
+                key={l.to}
                 onClick={() => navigate(l.to)}
                 className="text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors"
               >
@@ -214,7 +217,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
             {/* Tools Dropdown */}
             <div className="group relative flex items-center">
               <button className="flex items-center gap-1 text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors py-6 focus:outline-none">
-                Tools
+                {t('Header.tools')}
                 <span className="material-symbols-outlined text-[14px] transition-transform duration-300 group-hover:-rotate-180">
                   keyboard_arrow_down
                 </span>
@@ -224,44 +227,44 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                   {[
                     {
                       icon: 'fact_check',
-                      label: 'CV & ATS Checker',
-                      desc: 'Optimize for ATS',
+                      label: t('Tools.cv_ats'),
+                      desc: t('Tools.cv_ats_desc'),
                       onClick: () => handleToolClick('/app/cv-ats'),
                     },
                     {
                       icon: 'work_outline',
-                      label: 'Career Tracker',
-                      desc: 'Jobs & internships',
+                      label: t('Tools.career_tracker'),
+                      desc: t('Tools.career_tracker_desc'),
                       onClick: () => navigate('/career-tracker'),
                     },
                     {
                       icon: 'gavel',
-                      label: 'Plagiarism Checker',
-                      desc: 'Academic integrity',
+                      label: t('Tools.plagiarism'),
+                      desc: t('Tools.plagiarism_desc'),
                       onClick: () => handleToolClick('/app/plagiarism'),
                     },
                     {
                       icon: 'co_present',
-                      label: 'Presentations',
-                      desc: 'AI-generated slides',
+                      label: t('Tools.presentations'),
+                      desc: t('Tools.presentations_desc'),
                       onClick: () => handleToolClick('/app/presentation'),
                     },
                     {
                       icon: 'school',
-                      label: 'Scholarships',
-                      desc: 'Find funding',
+                      label: t('Tools.scholarships'),
+                      desc: t('Tools.scholarships_desc'),
                       onClick: () => handleToolClick('/app/scholarships'),
                     },
                     {
                       icon: 'check_circle',
-                      label: 'Habit Tracker',
-                      desc: 'Daily consistency',
+                      label: t('Tools.habits'),
+                      desc: t('Tools.habits_desc'),
                       onClick: () => handleToolClick('/app/habit-tracker'),
                     },
                     {
                       icon: 'route',
-                      label: 'Learning Plans',
-                      desc: 'Custom roadmaps',
+                      label: t('Tools.learning_plans'),
+                      desc: t('Tools.learning_plans_desc'),
                       onClick: () => handleToolClick('/app/learning-plan'),
                     },
                   ].map((t) => (
@@ -285,6 +288,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
           </nav>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {isAuthenticated ? (
               <>
                 <div
@@ -298,7 +302,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                   onClick={() => navigate('/app')}
                   className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
                 >
-                  Dashboard
+                  {t('Header.dashboard')}
                 </button>
               </>
             ) : (
@@ -307,13 +311,13 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
                   onClick={() => navigate('/signin')}
                   className="hidden sm:block text-[13px] font-medium text-gray-600 hover:text-indigo-600 transition-colors"
                 >
-                  Sign In
+                  {t('Header.sign_in')}
                 </button>
                 <button
                   onClick={() => navigate('/signup/step-1')}
                   className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
                 >
-                  Get Started
+                  {t('Header.get_started')}
                 </button>
               </>
             )}
@@ -333,22 +337,21 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
           className="mx-auto max-w-3xl text-center"
         >
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-[1.05]">
-            All-in-one{' '}
+            {t('Hero.title_1')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-              Student
+              {t('Hero.title_2')}
             </span>{' '}
-            platform
+            {t('Hero.title_3')}
           </h1>
           <p className="mt-6 text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
-            StudentOS is a modern, unified workspace designed to perfectly fit your academic and
-            career needs.
+            {t('Hero.subtitle')}
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-10">
             <button
               onClick={() => navigate('/signup/step-1')}
               className="h-12 rounded-full bg-indigo-600 px-8 text-[15px] font-semibold text-white shadow-xl shadow-indigo-500/25 hover:bg-indigo-700 hover:shadow-indigo-500/35 transition-all active:scale-95"
             >
-              Get Started
+              {t('Hero.cta_start')}
             </button>
             <button
               onClick={() => {
@@ -357,7 +360,7 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
               }}
               className="h-12 rounded-full border-2 border-gray-200 bg-white px-8 text-[15px] font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
             >
-              Learn more
+              {t('Hero.cta_learn')}
             </button>
           </div>
         </motion.div>

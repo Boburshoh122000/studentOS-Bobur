@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../types';
 import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface SidebarProps {
   currentScreen: Screen;
@@ -30,10 +32,23 @@ export default function Sidebar({
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { balance, isLoading: isLoadingCredits } = useCredits();
+  const { t } = useTranslation();
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Map Screen enum to sidebar translation keys
+  const sidebarLabelKeys: Partial<Record<Screen, string>> = {
+    [Screen.DASHBOARD]: 'Sidebar.dashboard',
+    [Screen.CV_ATS]: 'Sidebar.cv_ats',
+    [Screen.LEARNING_PLAN]: 'Sidebar.learning_plan',
+    [Screen.HABIT_TRACKER]: 'Sidebar.habit_tracker',
+    [Screen.SCHOLARSHIPS]: 'Sidebar.scholarships',
+    [Screen.PRESENTATION]: 'Sidebar.presentations',
+    [Screen.PLAGIARISM]: 'Sidebar.plagiarism',
+    [Screen.SETTINGS]: 'Sidebar.settings',
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -105,7 +120,7 @@ export default function Sidebar({
                 <>
                   <span className="text-sm">💎</span>
                   <span className="font-semibold text-primary">{balance.toLocaleString()}</span>
-                  <span>Credits</span>
+                  <span>{t('Sidebar.credits')}</span>
                 </>
               )}
             </p>
@@ -131,11 +146,13 @@ export default function Sidebar({
                   {item.icon}
                 </span>
                 {expanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
+                  <span className="text-sm font-medium whitespace-nowrap">
+                    {sidebarLabelKeys[item.screen] ? t(sidebarLabelKeys[item.screen]) : item.label}
+                  </span>
                 )}
                 {!expanded && (
                   <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                    {item.label}
+                    {sidebarLabelKeys[item.screen] ? t(sidebarLabelKeys[item.screen]) : item.label}
                   </span>
                 )}
               </button>
@@ -148,12 +165,15 @@ export default function Sidebar({
       <div
         className={`flex flex-col ${expanded ? 'items-stretch px-4' : 'items-center px-2'} space-y-2 w-full mt-auto`}
       >
+        {/* Language Switcher */}
+        <LanguageSwitcher compact={!expanded} />
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative text-text-sub hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400`}
-          title={!expanded ? 'Log Out' : ''}
+          title={!expanded ? t('Sidebar.log_out') : ''}
         >
           <span
             className={`material-symbols-outlined ${isLoggingOut ? 'animate-spin' : ''} ${!expanded ? 'text-2xl' : 'text-[20px]'}`}
@@ -162,12 +182,12 @@ export default function Sidebar({
           </span>
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">
-              {isLoggingOut ? 'Logging out...' : 'Log Out'}
+              {isLoggingOut ? t('Sidebar.logging_out') : t('Sidebar.log_out')}
             </span>
           )}
           {!expanded && (
             <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-              Log Out
+              {t('Sidebar.log_out')}
             </span>
           )}
         </button>

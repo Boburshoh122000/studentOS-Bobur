@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "home": "Home",
+    "about": "About",
+    "career_tracker": "Career Tracker",
+    "blog": "Blog",
+    "contact": "Contact",
+    "tools": "Tools",
+    "sign_in": "Sign In",
+    "get_started": "Get Started",
+    "dashboard": "Dashboard",
+    "language": "Language"
+  },
+  "Tools": {
+    "cv_ats": "CV & ATS Checker",
+    "cv_ats_desc": "Optimize for ATS",
+    "career_tracker": "Career Tracker",
+    "career_tracker_desc": "Jobs & internships",
+    "plagiarism": "Plagiarism Checker",
+    "plagiarism_desc": "Academic integrity",
+    "presentations": "Presentations",
+    "presentations_desc": "AI-generated slides",
+    "scholarships": "Scholarships",
+    "scholarships_desc": "Find funding",
+    "habits": "Habit Tracker",
+    "habits_desc": "Daily consistency",
+    "learning_plans": "Learning Plans",
+    "learning_plans_desc": "Custom roadmaps"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "cv_ats": "CV & ATS",
+    "learning_plan": "Learning Plan",
+    "habit_tracker": "Habit Tracker",
+    "scholarships": "Scholarships",
+    "presentations": "Presentation Maker",
+    "plagiarism": "Plagiarism Checker",
+    "settings": "Settings",
+    "log_out": "Log Out",
+    "logging_out": "Logging out...",
+    "credits": "Credits"
+  },
+  "Hero": {
+    "title_1": "All-in-one",
+    "title_2": "Student",
+    "title_3": "platform",
+    "subtitle": "StudentOS is a modern, unified workspace designed to perfectly fit your academic and career needs.",
+    "cta_start": "Get Started",
+    "cta_learn": "Learn more"
+  },
+  "Sections": {
+    "core_solutions": "Core Solutions",
+    "core_title": "Streamline your academic",
+    "core_title_2": "and career journey",
+    "core_subtitle": "Tools designed by ambitious students, for ambitious students.",
+    "features": "Platform Features",
+    "features_title": "Built for ambitious students",
+    "features_subtitle": "Everything you need to ace your academics and launch your career.",
+    "integrations": "Integrations",
+    "integrations_title": "Works with your favorite tools",
+    "integrations_subtitle": "Seamlessly connected with the platforms you already use.",
+    "cta_title": "Ready to level up?",
+    "cta_subtitle": "Join thousands of students who are already using StudentOS to supercharge their academic journey.",
+    "cta_button": "Create Free Account"
+  },
+  "FeatureCards": {
+    "career_tracker": "Career Tracker",
+    "career_tracker_desc": "Manage job applications and track your career progress on a visual Kanban pipeline.",
+    "telegram_bot": "Telegram Bot",
+    "telegram_bot_desc": "Get instant alerts and manage habits directly via Telegram.",
+    "cv_builder": "CV Builder & ATS",
+    "cv_builder_desc": "Create ATS-friendly resumes effortlessly.",
+    "habits_learning": "Habits & Learning Plans",
+    "habits_learning_desc": "Build consistent habits and generate AI-powered learning roadmaps tailored to your goals."
+  },
+  "Footer": {
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "pricing": "Pricing",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "all_rights": "All rights reserved."
+  },
+  "Common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "page_not_found": "Page not found",
+    "go_home": "Go back home"
+  }
+}

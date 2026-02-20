@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "home": "Asosiy",
+    "about": "Biz haqimizda",
+    "career_tracker": "Karyera",
+    "blog": "Blog",
+    "contact": "Aloqa",
+    "tools": "Asboblar",
+    "sign_in": "Kirish",
+    "get_started": "Boshlash",
+    "dashboard": "Boshqaruv paneli",
+    "language": "Til"
+  },
+  "Tools": {
+    "cv_ats": "CV va ATS tekshiruv",
+    "cv_ats_desc": "ATS uchun optimallashtirish",
+    "career_tracker": "Karyera kuzatuv",
+    "career_tracker_desc": "Ish va stajirovkalar",
+    "plagiarism": "Plagiat tekshiruv",
+    "plagiarism_desc": "Akademik halollik",
+    "presentations": "Taqdimotlar",
+    "presentations_desc": "Sun'iy intellekt slaydlari",
+    "scholarships": "Stipendiyalar",
+    "scholarships_desc": "Moliyalashtirish topish",
+    "habits": "Odat kuzatuv",
+    "habits_desc": "Kundalik intizom",
+    "learning_plans": "O'quv rejalari",
+    "learning_plans_desc": "Shaxsiy yo'l xaritalari"
+  },
+  "Sidebar": {
+    "dashboard": "Boshqaruv paneli",
+    "cv_ats": "CV va ATS",
+    "learning_plan": "O'quv rejasi",
+    "habit_tracker": "Odatlar",
+    "scholarships": "Stipendiyalar",
+    "presentations": "Taqdimotlar",
+    "plagiarism": "Plagiat",
+    "settings": "Sozlamalar",
+    "log_out": "Chiqish",
+    "logging_out": "Chiqilmoqda...",
+    "credits": "Kreditlar"
+  },
+  "Hero": {
+    "title_1": "Yagona",
+    "title_2": "talaba",
+    "title_3": "platformasi",
+    "subtitle": "StudentOS — o'qish va karerangiz uchun mo'ljallangan zamonaviy ish maydoni.",
+    "cta_start": "Boshlash",
+    "cta_learn": "Batafsil"
+  },
+  "Sections": {
+    "core_solutions": "Asosiy yechimlar",
+    "core_title": "Akademik va karyera",
+    "core_title_2": "yo'lingizni soddalashtiring",
+    "core_subtitle": "Ambitsiyali talabalar tomonidan ambitsiyali talabalar uchun yaratilgan asboblar.",
+    "features": "Imkoniyatlar",
+    "features_title": "Ambitsiyali talabalar uchun",
+    "features_subtitle": "O'qish va karyerada muvaffaqiyat uchun barcha kerakli narsalar.",
+    "integrations": "Integratsiyalar",
+    "integrations_title": "Sevimli asboblaringiz bilan ishlaydi",
+    "integrations_subtitle": "Siz allaqachon foydalanadigan platformalar bilan uzluksiz bog'langan.",
+    "cta_title": "Yangi darajaga tayyormisiz?",
+    "cta_subtitle": "StudentOS dan foydalanayotgan minglab talabalarga qo'shiling.",
+    "cta_button": "Bepul hisob yarating"
+  },
+  "FeatureCards": {
+    "career_tracker": "Karyera kuzatuv",
+    "career_tracker_desc": "Ish arizalarini boshqaring va karerangizni vizual Kanban doskasida kuzating.",
+    "telegram_bot": "Telegram Bot",
+    "telegram_bot_desc": "Bildirishnomalar oling va odatlarni Telegram orqali boshqaring.",
+    "cv_builder": "CV va ATS",
+    "cv_builder_desc": "ATS uchun optimallashtirilgan rezyumelarni oson yarating.",
+    "habits_learning": "Odatlar va o'quv rejalari",
+    "habits_learning_desc": "Odatlarni shakllantiring va sun'iy intellekt yordamida o'quv yo'nalishlarini yarating."
+  },
+  "Footer": {
+    "product": "Mahsulot",
+    "company": "Kompaniya",
+    "legal": "Huquqiy ma'lumot",
+    "pricing": "Narxlar",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik siyosati",
+    "all_rights": "Barcha huquqlar himoyalangan."
+  },
+  "Common": {
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "delete": "O'chirish",
+    "confirm": "Tasdiqlash",
+    "search": "Qidirish",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "page_not_found": "Sahifa topilmadi",
+    "go_home": "Bosh sahifaga"
+  }
+}
