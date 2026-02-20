@@ -83,8 +83,20 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
-    setSelectedFile(file);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setAnalysisResult(null);
+      setError(null);
+    }
+  };
+
+  const handleAnalyzeUpload = async () => {
+    if (!selectedFile) {
+      setError('Please upload a CV file first');
+      return;
+    }
 
     // Check credits before proceeding (skip for free tools)
     if (toolInfo && toolInfo.creditCost > 0) {
@@ -109,7 +121,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     setError(null);
 
     try {
-      const response = await aiApi.uploadCV(file, jobDescription || undefined);
+      const response = await aiApi.uploadCV(selectedFile, jobDescription || undefined);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -122,13 +134,6 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       setError(errorMessage);
     } finally {
       setIsAnalyzing(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
     }
   };
 
@@ -421,16 +426,23 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           {selectedFile?.name || 'Processing...'}
                         </p>
                       </div>
-                    ) : selectedFile && analysisResult ? (
+                    ) : selectedFile ? (
                       <div className="flex flex-col items-center gap-3">
-                        <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-green-600 text-3xl">
-                            check_circle
+                        <div
+                          className={`size-16 rounded-full flex items-center justify-center ${analysisResult ? 'bg-green-100 dark:bg-green-900/30' : 'bg-primary/10'}`}
+                        >
+                          <span
+                            className={`material-symbols-outlined text-3xl ${analysisResult ? 'text-green-600' : 'text-primary'}`}
+                          >
+                            {analysisResult ? 'check_circle' : 'description'}
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           {selectedFile.name}
                         </h3>
+                        <p className="text-xs text-slate-400">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </p>
                         <p className="text-sm text-primary cursor-pointer hover:underline">
                           Click to upload a different file
                         </p>
@@ -526,23 +538,47 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* Job Description Input for Upload Mode */}
+                {/* Job Description Input + Analyze Button for Upload Mode */}
                 {inputMode === 'upload' && (
-                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
-                    <label
-                      htmlFor="job-desc-upload"
-                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                  <>
+                    <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                      <label
+                        htmlFor="job-desc-upload"
+                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                      >
+                        Target Job Description (Optional)
+                      </label>
+                      <textarea
+                        id="job-desc-upload"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste a job description for targeted keyword analysis..."
+                        className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleAnalyzeUpload}
+                      disabled={isAnalyzing || !selectedFile}
+                      className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
-                      Target Job Description (Optional)
-                    </label>
-                    <textarea
-                      id="job-desc-upload"
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Paste a job description for targeted keyword analysis..."
-                      className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                  </div>
+                      {isAnalyzing ? (
+                        <>
+                          <span className="material-symbols-outlined animate-spin text-[18px]">
+                            sync
+                          </span>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">
+                            search_check
+                          </span>
+                          Analyze CV
+                        </>
+                      )}
+                    </button>
+                  </>
                 )}
               </div>
 
