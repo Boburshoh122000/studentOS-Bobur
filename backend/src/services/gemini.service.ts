@@ -1,7 +1,18 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { env } from '../config/env.js';
 
+// ── Provider Initialization ──────────────────────────────────────────────────
 const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+const openai = env.OPENAI_API_KEY ? new OpenAI({ apiKey: env.OPENAI_API_KEY }) : null;
+
+const AI_PROVIDER = genAI ? 'gemini' : openai ? 'openai' : null;
+
+if (!AI_PROVIDER) {
+  console.warn(
+    '⚠️  No AI provider configured. Set GEMINI_API_KEY or OPENAI_API_KEY in environment.'
+  );
+}
 
 // Safety settings to allow CV/Resume content (which contains PII)
 // This prevents false positives on names, addresses, phone numbers
@@ -24,7 +35,47 @@ const cvSafetySettings = [
   },
 ];
 
-// Helper to handle Gemini API errors with user-friendly messages
+// ── Unified AI caller ────────────────────────────────────────────────────────
+// Calls Gemini if available, otherwise OpenAI. Throws if neither is configured.
+interface CallAIOptions {
+  temperature?: number;
+  maxTokens?: number;
+  useCVSafety?: boolean;
+}
+
+const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string> => {
+  const { temperature = 0.3, maxTokens = 4096, useCVSafety = false } = opts;
+
+  if (genAI) {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      ...(useCVSafety ? { safetySettings: cvSafetySettings } : {}),
+      generationConfig: { temperature, maxOutputTokens: maxTokens },
+    });
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    if (!response.candidates || response.candidates.length === 0) {
+      throw new Error('AI_SAFETY_BLOCK: Content was blocked by safety filters.');
+    }
+    return response.text();
+  }
+
+  if (openai) {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature,
+      max_tokens: maxTokens,
+    });
+    return completion.choices[0]?.message?.content || '';
+  }
+
+  throw new Error(
+    'AI_CONFIG_ERROR: No AI provider configured. Set GEMINI_API_KEY or OPENAI_API_KEY.'
+  );
+};
+
+// Helper to handle AI errors with user-friendly messages
 const handleGeminiError = (error: any): never => {
   if (
     error?.status === 429 ||
@@ -56,26 +107,11 @@ export const analyzeCV = async (
   missing_keywords: string[];
   weaknesses: string[];
   actionable_fixes: string[];
-  // Keep legacy fields for backward compatibility
   feedback?: string[];
   suggestions?: string[];
   keywords?: { found: string[]; missing: string[] };
 }> => {
-  if (!genAI) {
-    throw new Error('AI_CONFIG_ERROR: Gemini API key not configured');
-  }
-
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      safetySettings: cvSafetySettings,
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2048,
-      },
-    });
-
-    // Sanitize the CV text - remove excessive special characters that might trigger filters
     const sanitizedCV = cvText
       .replace(/[^\w\s@.,\-():/+#&'"\n]/g, ' ')
       .replace(/\s+/g, ' ')
@@ -101,40 +137,24 @@ Respond with a JSON object containing:
 
 Return ONLY valid JSON. No markdown formatting.`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-
-    // Check if content was blocked
-    if (!response.candidates || response.candidates.length === 0) {
-      console.error('Gemini returned no candidates - possible content filter');
-      return {
-        score: 50,
-        missing_keywords: [],
-        weaknesses: ['Analysis could not be completed'],
-        actionable_fixes: ['Please try again with a simplified version of your CV'],
-        feedback: ['Analysis could not be completed'],
-        suggestions: ['Please try again'],
-        keywords: { found: [], missing: [] },
-      };
-    }
-
-    const responseText = response.text();
+    const responseText = await callAI(prompt, {
+      temperature: 0.3,
+      maxTokens: 2048,
+      useCVSafety: true,
+    });
 
     try {
-      // Clean response of any markdown formatting
       const cleanedResponse = responseText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
         .trim();
       const parsed = JSON.parse(cleanedResponse);
 
-      // Ensure all required fields exist
       return {
         score: parsed.score ?? 50,
         missing_keywords: parsed.missing_keywords ?? [],
         weaknesses: parsed.weaknesses ?? [],
         actionable_fixes: parsed.actionable_fixes ?? [],
-        // Legacy compatibility
         feedback: parsed.weaknesses ?? [],
         suggestions: parsed.actionable_fixes ?? [],
         keywords: { found: [], missing: parsed.missing_keywords ?? [] },
@@ -161,12 +181,6 @@ export const generateCoverLetter = async (
   jobDescription: string,
   userProfile: { name: string; skills: string[]; experience?: string }
 ): Promise<string> => {
-  if (!genAI) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
   const prompt = `Write a professional cover letter for this job application:
 
 Position: ${jobTitle}
@@ -184,8 +198,7 @@ Write a compelling, personalized cover letter that:
 3. Is professional but not generic
 4. Is approximately 300-400 words`;
 
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  return callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
 };
 
 export const generateLearningPlan = async (
@@ -197,12 +210,6 @@ export const generateLearningPlan = async (
   weeks: { week: number; topics: string[]; resources: string[] }[];
   milestones: string[];
 }> => {
-  if (!genAI) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
   const prompt = `Create a personalized learning plan:
 
 Goal: ${goal}
@@ -216,17 +223,16 @@ Provide a JSON response with:
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
+  const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096 });
 
   try {
-    return JSON.parse(response);
+    const cleaned = response
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    return JSON.parse(cleaned);
   } catch {
-    return {
-      title: 'Learning Plan',
-      weeks: [],
-      milestones: [],
-    };
+    return { title: 'Learning Plan', weeks: [], milestones: [] };
   }
 };
 
@@ -237,12 +243,6 @@ export const checkPlagiarism = async (
   analysis: string;
   suggestions: string[];
 }> => {
-  if (!genAI) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
   const prompt = `Analyze this text for potential plagiarism indicators and writing quality:
 
 "${text}"
@@ -256,17 +256,16 @@ Provide a JSON response with:
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
+  const response = await callAI(prompt, { temperature: 0.3, maxTokens: 2048 });
 
   try {
-    return JSON.parse(response);
+    const cleaned = response
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    return JSON.parse(cleaned);
   } catch {
-    return {
-      score: 50,
-      analysis: 'Unable to analyze',
-      suggestions: [],
-    };
+    return { score: 50, analysis: 'Unable to analyze', suggestions: [] };
   }
 };
 
@@ -280,12 +279,6 @@ export const generatePresentationContent = async (
   slides: { slideNumber: number; title: string; bulletPoints: string[]; notes?: string }[];
   theme: { primaryColor: string; accentColor: string };
 }> => {
-  if (!genAI) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
   const prompt = `Create a presentation outline for this topic:
 
 Topic: ${topic}
@@ -306,11 +299,14 @@ Make the content engaging, informative, and well-structured for ${style} present
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
+  const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096 });
 
   try {
-    return JSON.parse(response);
+    const cleaned = response
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    return JSON.parse(cleaned);
   } catch {
     return {
       title: topic,
@@ -322,8 +318,9 @@ Respond ONLY with valid JSON, no markdown.`;
 };
 
 export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
+  // PDF extraction requires Gemini's inline data capability
   if (!genAI) {
-    throw new Error('AI_CONFIG_ERROR: Gemini API key not configured');
+    throw new Error('AI_CONFIG_ERROR: PDF extraction requires Gemini API key. Set GEMINI_API_KEY.');
   }
 
   try {
@@ -336,7 +333,6 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
       },
     });
 
-    // Gemini can process PDFs directly via file data
     const result = await model.generateContent([
       {
         inlineData: {
@@ -349,7 +345,6 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
 
     const response = result.response;
 
-    // Check if content was blocked
     if (!response.candidates || response.candidates.length === 0) {
       console.error('PDF extraction blocked by content filter');
       throw new Error(
@@ -359,7 +354,6 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
 
     return response.text();
   } catch (error: any) {
-    // If it's already our error, rethrow
     if (error?.message?.includes('AI_')) {
       throw error;
     }
