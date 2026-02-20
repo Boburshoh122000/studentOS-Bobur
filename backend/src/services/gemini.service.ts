@@ -36,15 +36,15 @@ const cvSafetySettings = [
 ];
 
 // ── Unified AI caller ────────────────────────────────────────────────────────
-// Calls Gemini if available, otherwise OpenAI. Throws if neither is configured.
 interface CallAIOptions {
   temperature?: number;
   maxTokens?: number;
   useCVSafety?: boolean;
+  jsonMode?: boolean; // Force JSON output (uses response_format for OpenAI)
 }
 
 const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string> => {
-  const { temperature = 0.3, maxTokens = 4096, useCVSafety = false } = opts;
+  const { temperature = 0.3, maxTokens = 4096, useCVSafety = false, jsonMode = false } = opts;
 
   if (genAI) {
     const model = genAI.getGenerativeModel({
@@ -61,11 +61,24 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   }
 
   if (openai) {
+    const messages: { role: 'system' | 'user'; content: string }[] = [];
+
+    if (jsonMode) {
+      messages.push({
+        role: 'system',
+        content:
+          'You are a helpful assistant. Always respond with valid JSON only. No markdown, no code fences, no explanation outside the JSON.',
+      });
+    }
+
+    messages.push({ role: 'user', content: prompt });
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
+      messages,
       temperature,
       max_tokens: maxTokens,
+      ...(jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
     });
     return completion.choices[0]?.message?.content || '';
   }
@@ -75,23 +88,44 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   );
 };
 
+// ── Utility: clean JSON from AI response ─────────────────────────────────────
+const cleanJSON = (raw: string): string =>
+  raw
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim();
+
 // Helper to handle AI errors with user-friendly messages
-const handleGeminiError = (error: any): never => {
+const handleAIError = (error: any): never => {
+  const msg = error?.message || '';
+  const status = error?.status || error?.statusCode || 0;
+
+  // Rate limits (both Gemini and OpenAI)
   if (
-    error?.status === 429 ||
-    error?.message?.includes('429') ||
-    error?.message?.includes('quota')
+    status === 429 ||
+    msg.includes('429') ||
+    msg.includes('quota') ||
+    msg.includes('rate_limit') ||
+    msg.includes('insufficient_quota')
   ) {
     throw new Error(
       'AI_RATE_LIMIT: You have exceeded the AI request limit. Please wait a moment and try again.'
     );
   }
-  if (error?.message?.includes('API key')) {
+  // Auth / permission errors
+  if (
+    status === 401 ||
+    status === 403 ||
+    msg.includes('API key') ||
+    msg.includes('Incorrect API key') ||
+    msg.includes('does not have access')
+  ) {
     throw new Error(
       'AI_CONFIG_ERROR: AI service is not properly configured. Please contact support.'
     );
   }
-  if (error?.message?.includes('SAFETY') || error?.message?.includes('blocked')) {
+  // Safety blocks
+  if (msg.includes('SAFETY') || msg.includes('blocked') || msg.includes('content_policy')) {
     throw new Error(
       'AI_SAFETY_BLOCK: The content was blocked by safety filters. Please try again with different content.'
     );
@@ -141,15 +175,11 @@ Return ONLY valid JSON. No markdown formatting.`;
       temperature: 0.3,
       maxTokens: 2048,
       useCVSafety: true,
+      jsonMode: true,
     });
 
     try {
-      const cleanedResponse = responseText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-      const parsed = JSON.parse(cleanedResponse);
-
+      const parsed = JSON.parse(cleanJSON(responseText));
       return {
         score: parsed.score ?? 50,
         missing_keywords: parsed.missing_keywords ?? [],
@@ -160,6 +190,7 @@ Return ONLY valid JSON. No markdown formatting.`;
         keywords: { found: [], missing: parsed.missing_keywords ?? [] },
       };
     } catch {
+      console.error('Failed to parse CV analysis response:', responseText.slice(0, 200));
       return {
         score: 50,
         missing_keywords: [],
@@ -171,7 +202,7 @@ Return ONLY valid JSON. No markdown formatting.`;
       };
     }
   } catch (error) {
-    return handleGeminiError(error);
+    return handleAIError(error);
   }
 };
 
@@ -181,7 +212,8 @@ export const generateCoverLetter = async (
   jobDescription: string,
   userProfile: { name: string; skills: string[]; experience?: string }
 ): Promise<string> => {
-  const prompt = `Write a professional cover letter for this job application:
+  try {
+    const prompt = `Write a professional cover letter for this job application:
 
 Position: ${jobTitle}
 Company: ${company}
@@ -198,7 +230,10 @@ Write a compelling, personalized cover letter that:
 3. Is professional but not generic
 4. Is approximately 300-400 words`;
 
-  return callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
+    return await callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
+  } catch (error) {
+    return handleAIError(error);
+  }
 };
 
 export const generateLearningPlan = async (
@@ -210,7 +245,8 @@ export const generateLearningPlan = async (
   weeks: { week: number; topics: string[]; resources: string[] }[];
   milestones: string[];
 }> => {
-  const prompt = `Create a personalized learning plan:
+  try {
+    const prompt = `Create a personalized learning plan:
 
 Goal: ${goal}
 Current Skills: ${currentSkills.join(', ')}
@@ -223,16 +259,16 @@ Provide a JSON response with:
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096 });
+    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096, jsonMode: true });
 
-  try {
-    const cleaned = response
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    return JSON.parse(cleaned);
-  } catch {
-    return { title: 'Learning Plan', weeks: [], milestones: [] };
+    try {
+      return JSON.parse(cleanJSON(response));
+    } catch {
+      console.error('Failed to parse learning plan response:', response.slice(0, 200));
+      return { title: 'Learning Plan', weeks: [], milestones: [] };
+    }
+  } catch (error) {
+    return handleAIError(error);
   }
 };
 
@@ -243,7 +279,8 @@ export const checkPlagiarism = async (
   analysis: string;
   suggestions: string[];
 }> => {
-  const prompt = `Analyze this text for potential plagiarism indicators and writing quality:
+  try {
+    const prompt = `Analyze this text for potential plagiarism indicators and writing quality:
 
 "${text}"
 
@@ -256,16 +293,16 @@ Provide a JSON response with:
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const response = await callAI(prompt, { temperature: 0.3, maxTokens: 2048 });
+    const response = await callAI(prompt, { temperature: 0.3, maxTokens: 2048, jsonMode: true });
 
-  try {
-    const cleaned = response
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    return JSON.parse(cleaned);
-  } catch {
-    return { score: 50, analysis: 'Unable to analyze', suggestions: [] };
+    try {
+      return JSON.parse(cleanJSON(response));
+    } catch {
+      console.error('Failed to parse plagiarism response:', response.slice(0, 200));
+      return { score: 50, analysis: 'Unable to analyze', suggestions: [] };
+    }
+  } catch (error) {
+    return handleAIError(error);
   }
 };
 
@@ -279,7 +316,8 @@ export const generatePresentationContent = async (
   slides: { slideNumber: number; title: string; bulletPoints: string[]; notes?: string }[];
   theme: { primaryColor: string; accentColor: string };
 }> => {
-  const prompt = `Create a presentation outline for this topic:
+  try {
+    const prompt = `Create a presentation outline for this topic:
 
 Topic: ${topic}
 Number of slides: ${slideCount}
@@ -299,21 +337,21 @@ Make the content engaging, informative, and well-structured for ${style} present
 
 Respond ONLY with valid JSON, no markdown.`;
 
-  const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096 });
+    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096, jsonMode: true });
 
-  try {
-    const cleaned = response
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    return JSON.parse(cleaned);
-  } catch {
-    return {
-      title: topic,
-      author: '',
-      slides: [{ slideNumber: 1, title: topic, bulletPoints: ['Unable to generate content'] }],
-      theme: { primaryColor: '#4F46E5', accentColor: '#7C3AED' },
-    };
+    try {
+      return JSON.parse(cleanJSON(response));
+    } catch {
+      console.error('Failed to parse presentation response:', response.slice(0, 200));
+      return {
+        title: topic,
+        author: '',
+        slides: [{ slideNumber: 1, title: topic, bulletPoints: ['Unable to generate content'] }],
+        theme: { primaryColor: '#4F46E5', accentColor: '#7C3AED' },
+      };
+    }
+  } catch (error) {
+    return handleAIError(error);
   }
 };
 
@@ -357,6 +395,6 @@ export const extractTextFromPDF = async (base64Content: string): Promise<string>
     if (error?.message?.includes('AI_')) {
       throw error;
     }
-    return handleGeminiError(error);
+    return handleAIError(error);
   }
 };

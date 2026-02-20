@@ -34,11 +34,13 @@ const router = Router();
 const handleAIError = (error: any, res: Response, next: NextFunction): boolean => {
   const errorMessage = error?.message || '';
 
-  // Handle rate limit errors
+  // Handle rate limit errors (Gemini + OpenAI)
   if (
     errorMessage.includes('AI_RATE_LIMIT') ||
     errorMessage.includes('429') ||
-    errorMessage.includes('quota')
+    errorMessage.includes('quota') ||
+    errorMessage.includes('insufficient_quota') ||
+    errorMessage.includes('rate_limit')
   ) {
     res.status(429).json({
       error: 'Rate limit exceeded',
@@ -47,11 +49,13 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     return true;
   }
 
-  // Handle API key / configuration errors
+  // Handle API key / configuration errors (Gemini + OpenAI)
   if (
     errorMessage.includes('API key') ||
     errorMessage.includes('AI_CONFIG') ||
-    errorMessage.includes('not configured')
+    errorMessage.includes('not configured') ||
+    errorMessage.includes('does not have access') ||
+    errorMessage.includes('Incorrect API key')
   ) {
     res.status(503).json({
       error: 'Service unavailable',
@@ -60,11 +64,12 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     return true;
   }
 
-  // Handle Google AI safety blocks
+  // Handle safety / content blocks (Gemini + OpenAI)
   if (
     errorMessage.includes('GoogleGenerativeAI') ||
     errorMessage.includes('SAFETY') ||
-    errorMessage.includes('AI_SAFETY_BLOCK')
+    errorMessage.includes('AI_SAFETY_BLOCK') ||
+    errorMessage.includes('content_policy')
   ) {
     res.status(400).json({
       error: 'Content processing issue',
