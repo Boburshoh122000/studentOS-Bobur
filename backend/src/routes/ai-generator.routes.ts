@@ -206,29 +206,46 @@ router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunc
       }
     }
   } catch (error: any) {
-    // Handle Gemini API rate limit errors gracefully
-    if (error.message?.includes('AI_RATE_LIMIT')) {
+    const errorMessage = error.message || 'An unexpected error occurred';
+
+    // Handle rate limit errors
+    if (
+      errorMessage.includes('AI_RATE_LIMIT') ||
+      errorMessage.includes('429') ||
+      errorMessage.includes('rate_limit')
+    ) {
       res.status(429).json({
         success: false,
-        error: 'Rate limit exceeded',
-        message: 'You have made too many AI requests. Please wait a moment and try again.',
+        error: 'You have made too many AI requests. Please wait a moment and try again.',
         retryAfter: 60,
       });
       return;
     }
 
     // Handle configuration errors
-    if (error.message?.includes('AI_CONFIG_ERROR')) {
+    if (errorMessage.includes('AI_CONFIG_ERROR') || errorMessage.includes('API key')) {
       res.status(503).json({
         success: false,
-        error: 'Service unavailable',
-        message: 'AI service is temporarily unavailable. Please try again later.',
+        error: 'AI service is temporarily unavailable. Please try again later.',
       });
       return;
     }
 
-    // Pass other errors to the error handler
-    next(error);
+    // Handle safety blocks
+    if (errorMessage.includes('AI_SAFETY_BLOCK') || errorMessage.includes('content_policy')) {
+      res.status(400).json({
+        success: false,
+        error: 'The AI had trouble processing this content. Please try different input.',
+      });
+      return;
+    }
+
+    // Unknown error — return actual message
+    console.error('AI generator error:', error);
+    res.status(500).json({
+      success: false,
+      error: errorMessage,
+    });
   }
 });
 

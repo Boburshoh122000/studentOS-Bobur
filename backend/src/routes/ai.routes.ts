@@ -30,9 +30,9 @@ const upload = multer({
 
 const router = Router();
 
-// Helper function to handle AI errors gracefully
-const handleAIError = (error: any, res: Response, next: NextFunction): boolean => {
-  const errorMessage = error?.message || '';
+// Helper function to handle AI errors gracefully — always responds to client
+const handleAIError = (error: any, res: Response, _next: NextFunction): void => {
+  const errorMessage = error?.message || 'An unexpected error occurred';
 
   // Handle rate limit errors
   if (
@@ -43,10 +43,9 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     errorMessage.includes('rate_limit')
   ) {
     res.status(429).json({
-      error: 'Rate limit exceeded',
-      message: 'Too many AI requests. Please wait a moment and try again.',
+      error: 'Too many AI requests. Please wait a moment and try again.',
     });
-    return true;
+    return;
   }
 
   // Handle API key / configuration errors
@@ -58,10 +57,9 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     errorMessage.includes('Incorrect API key')
   ) {
     res.status(503).json({
-      error: 'Service unavailable',
-      message: 'AI service is temporarily unavailable. Please try again later.',
+      error: 'AI service is temporarily unavailable. Please try again later.',
     });
-    return true;
+    return;
   }
 
   // Handle safety / content blocks
@@ -71,16 +69,18 @@ const handleAIError = (error: any, res: Response, next: NextFunction): boolean =
     errorMessage.includes('content_policy')
   ) {
     res.status(400).json({
-      error: 'Content processing issue',
-      message: errorMessage.includes('PDF')
+      error: errorMessage.includes('PDF')
         ? 'Could not process this PDF file. Please try using the "Paste Text" option instead.'
         : 'The AI had trouble processing this content. Please try simplifying the text or use the "Paste Text" option.',
     });
-    return true;
+    return;
   }
 
-  // Not an AI-specific error, pass to default handler
-  return false;
+  // Unknown error — still respond with the actual message
+  console.error('Unhandled AI route error:', error);
+  res.status(500).json({
+    error: errorMessage,
+  });
 };
 
 // ── Test endpoint (no auth required) ─────────────────────────────────────────
@@ -152,9 +152,7 @@ router.post('/analyze-cv', async (req: AuthenticatedRequest, res, next) => {
 
     res.json(analysis);
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
@@ -181,9 +179,7 @@ router.post('/cover-letter', async (req: AuthenticatedRequest, res, next) => {
 
     res.json({ coverLetter });
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
@@ -206,9 +202,7 @@ router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
 
     res.json(plan);
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
@@ -225,9 +219,7 @@ router.post('/plagiarism-check', async (req: AuthenticatedRequest, res, next) =>
     const result = await checkPlagiarism(text);
     res.json(result);
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
@@ -270,9 +262,7 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
       analysis,
     });
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
@@ -298,9 +288,7 @@ router.post('/generate-presentation', async (req: AuthenticatedRequest, res, nex
 
     res.json(presentation);
   } catch (error: any) {
-    if (!handleAIError(error, res, next)) {
-      next(error);
-    }
+    handleAIError(error, res, next);
   }
 });
 
