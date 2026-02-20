@@ -405,9 +405,9 @@ export const extractTextFromFile = async (buffer: Buffer, mimeType: string): Pro
   }
 
   // ── PDF extraction via pdf-parse ──
+  // Import from lib/pdf-parse.js directly to avoid the test-file loading bug in index.js
   try {
-    const pdfParseModule = await import('pdf-parse');
-    const pdfParse = (pdfParseModule as any).default || pdfParseModule;
+    const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default;
     const pdfData = await pdfParse(buffer);
 
     if (!pdfData.text || pdfData.text.trim().length < 10) {
