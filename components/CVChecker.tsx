@@ -68,6 +68,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
     try {
       const response = await aiApi.analyzeCV(cvText, jobDescription || undefined);
+      if (response.error) {
+        throw new Error(response.error);
+      }
       const data = response.data as CVAnalysisResult;
       setAnalysisResult(data);
     } catch (err: unknown) {
@@ -108,12 +111,11 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     try {
       const response = await aiApi.uploadCV(file, jobDescription || undefined);
       if (response.error) {
-        setError(response.error);
-      } else {
-        const data = response.data as { extractedText: string; analysis: CVAnalysisResult };
-        setCvText(data.extractedText);
-        setAnalysisResult(data.analysis);
+        throw new Error(response.error);
       }
+      const data = response.data as { extractedText: string; analysis: CVAnalysisResult };
+      setCvText(data.extractedText);
+      setAnalysisResult(data.analysis);
     } catch (err: unknown) {
       console.error('Failed to upload CV:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to upload and analyze CV.';

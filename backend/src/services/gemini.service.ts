@@ -395,45 +395,67 @@ Respond ONLY with valid JSON, no markdown.`;
 };
 
 export const extractTextFromPDF = async (base64Content: string): Promise<string> => {
-  // PDF extraction requires Gemini's inline data capability
-  if (!genAI) {
-    throw new Error('AI_CONFIG_ERROR: PDF extraction requires Gemini API key. Set GEMINI_API_KEY.');
+  // Try Gemini first (multimodal PDF extraction = best quality)
+  if (genAI) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash',
+        safetySettings: cvSafetySettings,
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+        },
+      });
+
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: 'application/pdf',
+            data: base64Content,
+          },
+        },
+        'TASK: Extract all text content from this professional resume/CV PDF document. Return only the plain text content, preserving the structure and sections. This is a standard job application document.',
+      ]);
+
+      const response = result.response;
+
+      if (!response.candidates || response.candidates.length === 0) {
+        console.error('PDF extraction blocked by content filter');
+        throw new Error(
+          'AI_SAFETY_BLOCK: Could not process this PDF. Please try pasting the text directly.'
+        );
+      }
+
+      return response.text();
+    } catch (error: any) {
+      if (error?.message?.includes('AI_')) {
+        throw error;
+      }
+      // Fall through to pdf-parse fallback
+      console.warn('Gemini PDF extraction failed, falling back to pdf-parse:', error.message);
+    }
   }
 
+  // Fallback: use pdf-parse for text extraction (works without Gemini)
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      safetySettings: cvSafetySettings,
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 8192,
-      },
-    });
+    const pdfParse = (await import('pdf-parse')).default;
+    const buffer = Buffer.from(base64Content, 'base64');
+    const pdfData = await pdfParse(buffer);
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          mimeType: 'application/pdf',
-          data: base64Content,
-        },
-      },
-      'TASK: Extract all text content from this professional resume/CV PDF document. Return only the plain text content, preserving the structure and sections. This is a standard job application document.',
-    ]);
-
-    const response = result.response;
-
-    if (!response.candidates || response.candidates.length === 0) {
-      console.error('PDF extraction blocked by content filter');
+    if (!pdfData.text || pdfData.text.trim().length < 10) {
       throw new Error(
-        'AI_SAFETY_BLOCK: Could not process this PDF. Please try pasting the text directly.'
+        'AI_SAFETY_BLOCK: Could not extract text from this PDF. The file may be image-based. Please try pasting the text directly.'
       );
     }
 
-    return response.text();
+    return pdfData.text;
   } catch (error: any) {
     if (error?.message?.includes('AI_')) {
       throw error;
     }
-    return handleAIError(error);
+    console.error('pdf-parse extraction failed:', error.message);
+    throw new Error(
+      'AI_CONFIG_ERROR: Failed to extract text from PDF. Please try pasting the text directly.'
+    );
   }
 };
