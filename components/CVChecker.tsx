@@ -545,26 +545,49 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* Job Description Input for Upload Mode */}
+                {/* Job Description Input + Analyze Button for Upload Mode */}
                 {inputMode === 'upload' && (
-                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
-                    <label
-                      htmlFor="job-desc-upload"
-                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                  <div className="flex flex-col gap-3">
+                    <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                      <label
+                        htmlFor="job-desc-upload"
+                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                      >
+                        Target Job Description (Optional)
+                      </label>
+                      <textarea
+                        id="job-desc-upload"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste a job description for targeted keyword analysis..."
+                        className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!selectedFile) {
+                          fileInputRef.current?.click();
+                        }
+                      }}
+                      disabled={isExtracting}
+                      className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
-                      Target Job Description (Optional)
-                    </label>
-                    <textarea
-                      id="job-desc-upload"
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Paste a job description for targeted keyword analysis..."
-                      className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                    <p className="text-xs text-slate-400 mt-2">
-                      Upload a file above. Text will be extracted and shown for you to verify before
-                      analyzing.
-                    </p>
+                      {isExtracting ? (
+                        <>
+                          <span className="material-symbols-outlined animate-spin text-[18px]">
+                            sync
+                          </span>
+                          Extracting text...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">
+                            {selectedFile ? 'search_check' : 'upload_file'}
+                          </span>
+                          {selectedFile ? 'Analyze CV' : 'Upload & Analyze CV'}
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
               </div>
