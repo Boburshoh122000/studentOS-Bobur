@@ -1,10 +1,11 @@
+'use client';
+
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Screen, NavigationProps } from '../types';
-import { useAuth } from '../src/contexts/AuthContext';
+import { NavigationProps } from '../types';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import LanguageSwitcher from './LanguageSwitcher';
+import Navbar from './Navbar';
 
 /* ═══════════════════════════════════════════════════════════════
    ANIMATION CONFIGURATION — Exact Framer Motion Variants
@@ -31,16 +32,6 @@ const springUp = {
   },
 };
 
-/** Soft scale-in */
-const scaleReveal = {
-  hidden: { opacity: 0, scale: 0.92 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { type: 'spring' as const, stiffness: 120, damping: 24 },
-  },
-};
-
 /** Staggered pop for integration icons */
 const popIn = {
   hidden: { opacity: 0, scale: 0, y: 20 },
@@ -58,100 +49,107 @@ const popIn = {
 
 interface HeroNode {
   id: string;
-  icon: string;
-  label: string;
-  /** Position as percentage of the container */
+  type: 'icon' | 'avatar' | 'white-icon';
+  content: string;
   x: string;
   y: string;
-  /** SVG endpoint for the connecting line (in viewBox coords 0-1000) */
   svgX: number;
   svgY: number;
-  /** Floating animation delay in seconds */
   delay: number;
-  /** Floating range in px */
   yRange: number;
-  /** Duration of one float cycle */
   duration: number;
-  /** Gradient colors for the icon background */
-  from: string;
-  to: string;
+  bgClass?: string;
+  textClass?: string;
 }
 
 const heroNodes: HeroNode[] = [
+  // Top Left - Yellow (Lightbulb)
   {
-    id: 'cv',
-    icon: 'description',
-    label: 'CV Builder',
-    x: '8%',
-    y: '18%',
-    svgX: 130,
-    svgY: 220,
+    id: 'idea',
+    type: 'icon',
+    content: 'lightbulb',
+    x: '12%',
+    y: '16%',
+    svgX: 180,
+    svgY: 150,
     delay: 0,
     yRange: 15,
-    duration: 4.0,
-    from: 'from-violet-500',
-    to: 'to-purple-600',
+    duration: 4.2,
+    bgClass: 'bg-gradient-to-br from-yellow-300 to-amber-400',
+    textClass: 'text-amber-800',
   },
+  // Mid Left - Avatar
   {
-    id: 'career',
-    icon: 'work',
-    label: 'Career Tracker',
-    x: '82%',
-    y: '12%',
-    svgX: 870,
-    svgY: 170,
-    delay: 0.5,
-    yRange: 12,
-    duration: 3.5,
-    from: 'from-blue-500',
-    to: 'to-indigo-600',
-  },
-  {
-    id: 'habits',
-    icon: 'check_circle',
-    label: 'Habit Tracker',
-    x: '85%',
-    y: '68%',
-    svgX: 890,
-    svgY: 720,
-    delay: 1.2,
-    yRange: 14,
-    duration: 4.5,
-    from: 'from-emerald-500',
-    to: 'to-teal-600',
-  },
-  {
-    id: 'telegram',
-    icon: 'send',
-    label: 'Telegram Bot',
+    id: 'avatar1',
+    type: 'avatar',
+    content: 'https://ui-avatars.com/api/?name=Student+A&background=e2e8f0',
     x: '5%',
-    y: '72%',
+    y: '45%',
     svgX: 100,
-    svgY: 760,
+    svgY: 480,
     delay: 0.8,
-    yRange: 11,
+    yRange: 12,
     duration: 3.8,
-    from: 'from-sky-500',
-    to: 'to-cyan-600',
   },
+  // Bottom Left - Blue (Book/Learning)
   {
     id: 'learning',
-    icon: 'auto_stories',
-    label: 'Learning Plans',
-    x: '42%',
-    y: '85%',
-    svgX: 480,
-    svgY: 890,
+    type: 'icon',
+    content: 'auto_stories',
+    x: '18%',
+    y: '68%',
+    svgX: 250,
+    svgY: 660,
     delay: 1.5,
+    yRange: 14,
+    duration: 4.5,
+    bgClass: 'bg-gradient-to-br from-sky-400 to-blue-500',
+    textClass: 'text-white',
+  },
+  // Top Right - Red (Shield/Tracker)
+  {
+    id: 'tracker',
+    type: 'icon',
+    content: 'track_changes',
+    x: '68%',
+    y: '18%',
+    svgX: 720,
+    svgY: 180,
+    delay: 0.5,
     yRange: 10,
-    duration: 4.2,
-    from: 'from-amber-500',
-    to: 'to-orange-600',
+    duration: 3.5,
+    bgClass: 'bg-gradient-to-br from-orange-400 to-red-500',
+    textClass: 'text-white',
+  },
+  // Far Right - White (CV/Document)
+  {
+    id: 'cv',
+    type: 'white-icon',
+    content: 'visibility',
+    x: '82%',
+    y: '42%',
+    svgX: 860,
+    svgY: 440,
+    delay: 1.2,
+    yRange: 12,
+    duration: 4.0,
+    bgClass: 'bg-white border-2 border-gray-100',
+    textClass: 'text-gray-900',
+  },
+  // Bottom Right - Avatar
+  {
+    id: 'avatar2',
+    type: 'avatar',
+    content: 'https://ui-avatars.com/api/?name=Student+B&background=dcfce3',
+    x: '72%',
+    y: '72%',
+    svgX: 780,
+    svgY: 760,
+    delay: 2.0,
+    yRange: 13,
+    duration: 4.3,
   },
 ];
-
-const SVG_CENTER_X = 500;
-const SVG_CENTER_Y = 460;
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -159,16 +157,7 @@ const SVG_CENTER_Y = 460;
 
 export default function LandingPage({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
-
-  const handleToolClick = (toolPath: string) => {
-    if (isAuthenticated) {
-      navigate(toolPath);
-    } else {
-      navigate(`/signup/step-1?redirect_to=${encodeURIComponent(toolPath)}`);
-    }
-  };
 
   /* Parallax refs for Section 2 */
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -177,448 +166,437 @@ export default function LandingPage({ navigateTo }: NavigationProps) {
     offset: ['start end', 'end start'],
   });
 
-  const parallaxY1 = useTransform(scrollYProgress, [0, 1], [60, -60]);
-  const parallaxY2 = useTransform(scrollYProgress, [0, 1], [40, -80]);
-  const parallaxY3 = useTransform(scrollYProgress, [0, 1], [80, -40]);
-  const parallaxY4 = useTransform(scrollYProgress, [0, 1], [30, -70]);
-
   return (
-    <div className="bg-[#FAFAFA] min-h-screen overflow-x-hidden pt-20 font-sans selection:bg-indigo-200/60">
-      {/* ═══════════ HEADER ═══════════ */}
-      <header className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100/80 h-20">
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
-          <div
-            className="flex items-center gap-2.5 cursor-pointer select-none"
-            onClick={() => navigateTo(Screen.LANDING)}
-          >
-            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-400/25">
-              <span className="material-symbols-outlined text-[20px]">school</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-gray-900">StudentOS</span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8">
-            {[
-              { label: t('Header.home'), to: '/' },
-              { label: t('Header.about'), to: '/about' },
-              { label: t('Header.career_tracker'), to: '/career-tracker' },
-              { label: t('Header.blog'), to: '/blog' },
-              { label: t('Header.contact'), to: '/contact' },
-            ].map((l) => (
-              <button
-                key={l.to}
-                onClick={() => navigate(l.to)}
-                className="text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors"
-              >
-                {l.label}
-              </button>
-            ))}
-
-            {/* Tools Dropdown */}
-            <div className="group relative flex items-center">
-              <button className="flex items-center gap-1 text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors py-6 focus:outline-none">
-                {t('Header.tools')}
-                <span className="material-symbols-outlined text-[14px] transition-transform duration-300 group-hover:-rotate-180">
-                  keyboard_arrow_down
-                </span>
-              </button>
-              <div className="absolute left-1/2 top-[80%] z-50 w-[580px] -translate-x-1/2 translate-y-2 rounded-[1.5rem] bg-white/95 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100">
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    {
-                      icon: 'fact_check',
-                      label: t('Tools.cv_ats'),
-                      desc: t('Tools.cv_ats_desc'),
-                      onClick: () => handleToolClick('/app/cv-ats'),
-                    },
-                    {
-                      icon: 'work_outline',
-                      label: t('Tools.career_tracker'),
-                      desc: t('Tools.career_tracker_desc'),
-                      onClick: () => navigate('/career-tracker'),
-                    },
-                    {
-                      icon: 'gavel',
-                      label: t('Tools.plagiarism'),
-                      desc: t('Tools.plagiarism_desc'),
-                      onClick: () => handleToolClick('/app/plagiarism'),
-                    },
-                    {
-                      icon: 'co_present',
-                      label: t('Tools.presentations'),
-                      desc: t('Tools.presentations_desc'),
-                      onClick: () => handleToolClick('/app/presentation'),
-                    },
-                    {
-                      icon: 'school',
-                      label: t('Tools.scholarships'),
-                      desc: t('Tools.scholarships_desc'),
-                      onClick: () => handleToolClick('/app/scholarships'),
-                    },
-                    {
-                      icon: 'check_circle',
-                      label: t('Tools.habits'),
-                      desc: t('Tools.habits_desc'),
-                      onClick: () => handleToolClick('/app/habit-tracker'),
-                    },
-                    {
-                      icon: 'route',
-                      label: t('Tools.learning_plans'),
-                      desc: t('Tools.learning_plans_desc'),
-                      onClick: () => handleToolClick('/app/learning-plan'),
-                    },
-                  ].map((t) => (
-                    <button
-                      key={t.label}
-                      onClick={t.onClick}
-                      className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-indigo-50/60 transition-colors group/item"
-                    >
-                      <span className="material-symbols-outlined text-indigo-600 mt-0.5 group-hover/item:scale-110 transition-transform text-[20px]">
-                        {t.icon}
-                      </span>
-                      <div>
-                        <div className="font-semibold text-[13px] text-gray-800">{t.label}</div>
-                        <div className="text-[11px] text-gray-400">{t.desc}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            {isAuthenticated ? (
-              <>
-                <div
-                  className="size-9 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white cursor-pointer hover:ring-indigo-400 transition-all hidden sm:block"
-                  style={{
-                    backgroundImage: `url('${user?.profile?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.profile?.fullName || user?.email?.split('@')[0] || 'U')}&background=random`}')`,
-                  }}
-                  onClick={() => navigate('/app/profile')}
-                />
-                <button
-                  onClick={() => navigate('/app')}
-                  className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
-                >
-                  {t('Header.dashboard')}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => navigate('/signin')}
-                  className="hidden sm:block text-[13px] font-medium text-gray-600 hover:text-indigo-600 transition-colors"
-                >
-                  {t('Header.sign_in')}
-                </button>
-                <button
-                  onClick={() => navigate('/signup/step-1')}
-                  className="rounded-full bg-indigo-600 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-400/20"
-                >
-                  {t('Header.get_started')}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="bg-[#FAFAFA] min-h-screen overflow-x-hidden pt-28 font-sans selection:bg-indigo-200/60">
+      <Navbar navigateTo={navigateTo} />
 
       {/* ═══════════════════════════════════════════════════════════════
-         SECTION 1 — HERO: Connected Nodes
+         SECTION 1 — HERO: Connected Nodes Graphic (Top)
          ═══════════════════════════════════════════════════════════════ */}
-      <section className="relative w-full px-4 pt-16 pb-8 sm:pt-24 sm:pb-12 lg:pt-28 lg:pb-16">
-        {/* Centered headline */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto max-w-3xl text-center"
-        >
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-[1.05]">
-            {t('Hero.title_1')}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-              {t('Hero.title_2')}
-            </span>{' '}
-            {t('Hero.title_3')}
-          </h1>
-          <p className="mt-6 text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
-            {t('Hero.subtitle')}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 mt-10">
-            <button
-              onClick={() => navigate('/signup/step-1')}
-              className="h-12 rounded-full bg-indigo-600 px-8 text-[15px] font-semibold text-white shadow-xl shadow-indigo-500/25 hover:bg-indigo-700 hover:shadow-indigo-500/35 transition-all active:scale-95"
-            >
-              {t('Hero.cta_start')}
-            </button>
-            <button
-              onClick={() => {
-                const el = document.getElementById('features');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="h-12 rounded-full border-2 border-gray-200 bg-white px-8 text-[15px] font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
-            >
-              {t('Hero.cta_learn')}
-            </button>
-          </div>
-        </motion.div>
-
+      <section className="relative w-full px-4 pt-4 pb-8 lg:pt-8 flex flex-col items-center overflow-hidden">
         {/* ── Connected Nodes Diagram ── */}
-        <div className="relative mx-auto mt-20 max-w-[680px] h-[420px] sm:h-[480px] lg:h-[520px]">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1, delayChildren: 0 },
+            },
+          }}
+          className="relative mx-auto w-full max-w-[800px] h-[350px] sm:h-[450px] lg:h-[480px]"
+        >
           {/* Radial glow behind the center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-indigo-400/[0.08] rounded-full blur-3xl pointer-events-none" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/[0.12] rounded-full blur-3xl pointer-events-none"
+          />
 
           {/* SVG Connecting Lines — drawn BEHIND the nodes */}
-          <svg
+          <motion.svg
+            variants={{
+              hidden: { opacity: 0, pathLength: 0 },
+              visible: {
+                opacity: 1,
+                pathLength: 1,
+                transition: { duration: 1.2, ease: 'easeInOut' },
+              },
+            }}
             className="absolute inset-0 w-full h-full z-0 pointer-events-none"
             viewBox="0 0 1000 1000"
             fill="none"
             preserveAspectRatio="xMidYMid meet"
           >
-            {heroNodes.map((node) => (
-              <line
-                key={node.id}
-                x1={SVG_CENTER_X}
-                y1={SVG_CENTER_Y}
-                x2={node.svgX}
-                y2={node.svgY}
-                stroke="#E5E7EB"
-                strokeWidth="1.5"
-                strokeDasharray="6 4"
-              />
-            ))}
-          </svg>
+            {/* Main horizontal center line matching the image */}
+            <motion.line
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1.5, ease: 'easeInOut', delay: 0.2 }}
+              x1="200"
+              y1={460}
+              x2="800"
+              y2={460}
+              stroke="#E5E7EB"
+              strokeWidth="1.5"
+            />
 
-          {/* Center Logo Element */}
+            {/* Diagonal lines branching out */}
+            {heroNodes.map((node) => {
+              // Determine branch origin: If on left side, branch from x=350, if right, branch from x=650
+              const branchX = node.svgX > 500 ? 650 : 350;
+              // Don't draw line if it's the center horizontal nodes (the avatars in this setup are loosely horizontal)
+              if (node.svgX === 100 || node.svgX === 780 || node.svgX === 860) {
+                // Direct horizontal line connection
+                return (
+                  <motion.line
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 + node.delay * 0.5 }}
+                    key={node.id}
+                    x1={node.svgX > 500 ? 550 : 450}
+                    y1={460}
+                    x2={node.svgX}
+                    y2={node.svgY}
+                    stroke="#E5E7EB"
+                    strokeWidth="1.5"
+                  />
+                );
+              }
+              return (
+                <motion.line
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 + node.delay * 0.5 }}
+                  key={node.id}
+                  x1={branchX}
+                  y1={460}
+                  x2={node.svgX}
+                  y2={node.svgY}
+                  stroke="#E5E7EB"
+                  strokeWidth="1.5"
+                />
+              );
+            })}
+          </motion.svg>
+
+          {/* Center Logo Element (The massive blue/indigo squircle) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            variants={{
+              hidden: { opacity: 0, scale: 0.5, y: -220, x: '-50%' }, // Note: Need absolute centering offset via x/y if possible, but framer allows x/y arrays. We'll use style positioning and just animate scale/opacity/y.
+              visible: {
+                opacity: 1,
+                scale: 1,
+                y: -220, // Initial static position -50% (-230px ish depending on height)
+                x: '-50%',
+                transition: { duration: 0.8, type: 'spring', bounce: 0.4 },
+              },
+            }}
+            // Here we chain the entrance animation to an infinite continuous loop
+            // Because x/y transform logic can get messy mixing CSS -translate and Framer y, we wrap the position in a div, and float the inner content.
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
           >
-            <div className="flex size-20 sm:size-24 items-center justify-center rounded-[1.5rem] bg-white shadow-2xl shadow-indigo-500/20 border border-gray-100/80">
-              <div className="flex size-12 sm:size-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white">
-                <span className="material-symbols-outlined text-[28px] sm:text-[32px]">school</span>
-              </div>
-            </div>
+            <motion.div
+              animate={{ y: [-8, 8, -8] }}
+              transition={{
+                duration: 6, // Very slow, heavy float
+                repeat: Infinity,
+                repeatType: 'mirror',
+                ease: 'easeInOut',
+              }}
+              className="flex size-28 sm:size-36 items-center justify-center rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-blue-500 shadow-2xl shadow-indigo-500/40"
+            >
+              <span className="material-symbols-outlined text-[48px] sm:text-[56px] text-white">
+                check_circle
+              </span>
+            </motion.div>
           </motion.div>
 
           {/* Floating Nodes */}
           {heroNodes.map((node) => (
             <motion.div
               key={node.id}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: [0, -node.yRange, 0],
-              }}
-              transition={{
-                opacity: { duration: 0.5, delay: node.delay + 0.4 },
-                scale: {
-                  duration: 0.5,
-                  delay: node.delay + 0.4,
-                  type: 'spring' as const,
-                  stiffness: 200,
-                },
-                y: {
-                  duration: node.duration,
-                  repeat: Infinity,
-                  ease: 'easeInOut' as const,
-                  delay: node.delay,
+              variants={{
+                hidden: { opacity: 0, scale: 0 },
+                visible: {
+                  opacity: 1,
+                  scale: 1,
+                  transition: {
+                    type: 'spring',
+                    bounce: 0.5,
+                    duration: 0.8,
+                    delay: node.delay + 0.3,
+                  },
                 },
               }}
               className="absolute z-10"
               style={{ left: node.x, top: node.y }}
             >
-              <div className="flex flex-col items-center gap-1.5 group cursor-default">
-                <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl backdrop-blur-md bg-white/80 border border-white shadow-lg shadow-gray-200/50 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+              {/* The inner motion.div handles the continuous organic floating AFTER entrance */}
+              <motion.div
+                animate={{ y: [-node.yRange, node.yRange, -node.yRange] }}
+                transition={{
+                  duration: node.duration, // 3s - 5s
+                  repeat: Infinity,
+                  repeatType: 'mirror',
+                  ease: 'easeInOut',
+                  delay: node.delay + 0.2, // Stagger the start of the float
+                }}
+              >
+                {node.type === 'avatar' ? (
+                  <div className="size-16 sm:size-20 rounded-[1.5rem] shadow-xl shadow-black/5 overflow-hidden border border-white">
+                    <img src={node.content} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
                   <div
-                    className={`flex size-9 sm:size-10 items-center justify-center rounded-xl bg-gradient-to-br ${node.from} ${node.to} text-white`}
+                    className={`flex size-14 sm:size-16 items-center justify-center rounded-[1.25rem] shadow-xl shadow-black/5 ${node.bgClass}`}
                   >
-                    <span className="material-symbols-outlined text-[20px] sm:text-[22px]">
-                      {node.icon}
+                    <span
+                      className={`material-symbols-outlined text-[24px] sm:text-[28px] ${node.textClass}`}
+                    >
+                      {node.content}
                     </span>
                   </div>
-                </div>
-                <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {node.label}
-                </span>
-              </div>
+                )}
+              </motion.div>
             </motion.div>
           ))}
+        </motion.div>
 
-          {/* Tiny decorative floating shapes */}
-          <motion.div
-            animate={{ y: [0, -8, 0], rotate: [0, 45, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' as const }}
-            className="absolute top-[30%] left-[30%] z-0"
+        {/* ── Hero Typography & CTA (Bottom) ── */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.2, delayChildren: 0.8 }, // Start after diagram entrance
+            },
+          }}
+          className="mx-auto max-w-4xl text-center -mt-4 sm:-mt-8 relative z-30"
+        >
+          <motion.h1
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { type: 'spring', damping: 20, stiffness: 100 },
+              },
+            }}
+            className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-gray-900 leading-[1.05]"
           >
-            <div className="w-3 h-3 rounded-sm bg-indigo-200/40 rotate-45" />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 3.5, delay: 1, repeat: Infinity, ease: 'easeInOut' as const }}
-            className="absolute top-[55%] right-[25%] z-0"
+            {t('Hero.title_1')} <span className="text-gray-900">{t('Hero.title_2')}</span>{' '}
+            {t('Hero.title_3')}
+          </motion.h1>
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { type: 'spring', damping: 20, stiffness: 100 },
+              },
+            }}
+            className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed"
           >
-            <div className="w-2 h-2 rounded-full bg-violet-300/30" />
-          </motion.div>
+            {t('Hero.subtitle')}
+          </motion.p>
           <motion.div
-            animate={{ y: [0, -5, 0], scale: [1, 1.3, 1] }}
-            transition={{ duration: 4, delay: 2, repeat: Infinity, ease: 'easeInOut' as const }}
-            className="absolute bottom-[25%] left-[22%] z-0"
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { type: 'spring', damping: 20, stiffness: 100 },
+              },
+            }}
+            className="flex justify-center mt-8 sm:mt-10"
           >
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-200/40" />
+            <button
+              onClick={() => navigate('/signup/step-1')}
+              className="rounded-full bg-indigo-600 px-10 py-4 text-[16px] font-bold text-white shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 hover:shadow-indigo-500/40 hover:scale-[1.03] transition-all duration-300 active:scale-95"
+            >
+              {t('Hero.cta_start')}
+            </button>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
          SECTION 2 — CORE SOLUTIONS (Parallax Scroll)
          ═══════════════════════════════════════════════════════════════ */}
-      <section ref={parallaxRef} className="relative w-full py-32 sm:py-40 overflow-hidden">
-        {/* Section text */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-80px' }}
-          variants={stagger}
-          className="mx-auto max-w-3xl text-center px-4 relative z-20"
-        >
-          <motion.p
-            variants={springUp}
-            className="text-[13px] font-bold uppercase tracking-[0.2em] text-indigo-600 mb-3"
-          >
-            Core Solutions
-          </motion.p>
-          <motion.h2
-            variants={springUp}
-            className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900"
-          >
-            Streamline your academic
-            <br className="hidden sm:block" /> and career journey
-          </motion.h2>
-          <motion.p variants={springUp} className="mt-5 text-base text-gray-400 max-w-lg mx-auto">
-            Tools designed by ambitious students, for ambitious students.
-          </motion.p>
-        </motion.div>
-
-        {/* Parallax floating cards */}
-        <div className="relative mx-auto max-w-5xl h-[360px] sm:h-[420px] mt-16">
-          {/* Card 1: ATS Score — Left, parallaxY1 */}
+      <section ref={parallaxRef} className="relative w-full h-[150vh] bg-[#FAFAFA] overflow-hidden">
+        {/* Sticky Center Content Container */}
+        <div className="sticky top-0 h-screen w-full flex items-center justify-center pointer-events-none z-20">
+          {/* Centered Text Block */}
           <motion.div
-            style={{ y: parallaxY1 }}
-            className="absolute top-4 left-[4%] sm:left-[8%] z-10"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="relative flex flex-col items-center justify-center text-center px-4 max-w-[600px] pointer-events-auto"
           >
-            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-52 sm:w-56 hover:shadow-2xl transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="size-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white">
-                  <span className="font-black text-sm">85</span>
-                </div>
-                <div>
-                  <div className="text-[13px] font-bold text-gray-800">ATS Score</div>
-                  <div className="text-[11px] text-emerald-500 font-semibold">Excellent Match</div>
-                </div>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full w-[85%] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
-              </div>
+            <div className="size-12 rounded-2xl bg-white shadow-xl shadow-black/[0.04] border border-gray-100 flex items-center justify-center mb-5">
+              <span className="material-symbols-outlined text-[24px] text-indigo-500">
+                category
+              </span>
             </div>
-          </motion.div>
-
-          {/* Card 2: Interview Passed — Top Right, parallaxY2 */}
-          <motion.div
-            style={{ y: parallaxY2 }}
-            className="absolute top-0 right-[4%] sm:right-[10%] z-10"
-          >
-            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-56 sm:w-60 hover:shadow-2xl transition-shadow">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="size-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-emerald-600 text-[20px]">
-                    verified
-                  </span>
-                </div>
-                <div>
-                  <div className="text-[13px] font-bold text-gray-800">Interview Passed</div>
-                  <div className="text-[11px] text-gray-400">Google · UX Intern</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 mt-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-5 flex-1 bg-emerald-400/20 rounded" />
-                ))}
-                <div className="h-5 flex-1 bg-emerald-500 rounded" />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Card 3: Habit Streak — Bottom Left, parallaxY3 */}
-          <motion.div
-            style={{ y: parallaxY3 }}
-            className="absolute bottom-4 left-[6%] sm:left-[14%] z-10"
-          >
-            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-48 sm:w-52 hover:shadow-2xl transition-shadow">
-              <div className="text-[13px] font-bold text-gray-800 mb-2">🔥 14-Day Streak</div>
-              <div className="text-[11px] text-gray-400 mb-3">Morning Study · 45 min</div>
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: 14 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-4 rounded-md ${i < 12 ? 'bg-emerald-400/70' : 'bg-emerald-200/50'}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Card 4: New Match — Bottom Right, parallaxY4 */}
-          <motion.div
-            style={{ y: parallaxY4 }}
-            className="absolute bottom-8 right-[4%] sm:right-[8%] z-10"
-          >
-            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-black/[0.04] border border-gray-100 p-5 w-52 sm:w-56 hover:shadow-2xl transition-shadow">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="size-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-blue-600 text-[16px]">
-                    notifications
-                  </span>
-                </div>
-                <span className="text-[13px] font-bold text-gray-800">New Match</span>
-                <span className="text-[10px] text-gray-300 ml-auto">2m</span>
-              </div>
-              <div className="text-[11px] text-gray-500">UX Design Intern at Figma — 92% fit</div>
-            </div>
-          </motion.div>
-
-          {/* Center floating avatars */}
-          {[
-            { pos: 'top-[30%] left-[38%]', bg: 'E8B4B8', d: 3.5, dl: 0.3 },
-            { pos: 'top-[45%] right-[36%]', bg: 'B4D4E8', d: 4.2, dl: 1 },
-            { pos: 'top-[20%] left-[52%]', bg: 'D4E8B4', d: 3, dl: 1.8 },
-            { pos: 'bottom-[30%] right-[44%]', bg: 'E8D4B4', d: 3.8, dl: 0.5 },
-          ].map((a, i) => (
-            <motion.div
-              key={i}
-              animate={{ y: [0, -(8 + i * 2), 0] }}
-              transition={{
-                duration: a.d,
-                delay: a.dl,
-                repeat: Infinity,
-                ease: 'easeInOut' as const,
-              }}
-              className={`absolute ${a.pos} z-0`}
+            <h2 className="text-[44px] sm:text-[56px] font-black tracking-tight text-gray-900 mb-5 leading-[1.05]">
+              Core Student solutions
+            </h2>
+            <p className="text-[16px] sm:text-[18px] text-gray-500 mb-8 max-w-[480px]">
+              Streamline your studies, habits, and career path in one centralized platform,
+              enhancing your productivity.
+            </p>
+            <button
+              onClick={() => navigate('/#features')}
+              className="rounded-full bg-indigo-600 px-8 py-3.5 text-[15px] font-bold text-white shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 hover:scale-[1.03] transition-all duration-300 active:scale-95"
             >
-              <div className="size-10 sm:size-12 rounded-full border-[3px] border-white shadow-lg overflow-hidden">
-                <img
-                  src={`https://ui-avatars.com/api/?name=S${i + 1}&background=${a.bg}&color=fff&bold=true&size=96`}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+              Explore tools
+            </button>
+          </motion.div>
+        </div>
+
+        {/* ── PARALLAX FLOATING CARDS ── */}
+        {/* Placed ABSOLUTELY to the 150vh section (outside the sticky container) so they naturally scroll. 
+            We use offset percentages to cluster them tightly around the text's mid-scroll state. */}
+        <div className="absolute inset-0 w-full max-w-[1200px] mx-auto pointer-events-none z-10">
+          {/* 1. ATS Checker (Top Left) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [-180, 180]) }}
+            className="absolute top-[15%] left-[5%] lg:left-[15%] hidden sm:block"
+          >
+            <motion.div
+              animate={{ y: [-10, 10, -10] }}
+              transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+              className="backdrop-blur-sm bg-white/90 rounded-[18px] p-3.5 shadow-xl shadow-indigo-500/5 border border-gray-100 w-52 transform -rotate-2 hover:rotate-0 transition-transform pointer-events-auto"
+            >
+              <div className="flex items-center gap-3 mb-2.5">
+                <div className="size-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/30">
+                  <span className="material-symbols-outlined text-[18px]">fact_check</span>
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-gray-900 leading-tight">
+                    ATS Checker
+                  </div>
+                  <div className="text-[11px] text-emerald-500 font-bold">95% Match</div>
+                </div>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                <div className="bg-emerald-500 h-1 rounded-full w-[95%]"></div>
               </div>
             </motion.div>
-          ))}
+          </motion.div>
+
+          {/* 2. Daily Habits (Mid Left) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [100, -100]) }}
+            className="absolute top-[42%] left-[2%] lg:left-[8%] hidden sm:block"
+          >
+            <motion.div
+              animate={{ y: [-8, 8, -8] }}
+              transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
+              className="backdrop-blur-sm bg-white/90 rounded-[18px] p-3.5 shadow-xl shadow-indigo-500/5 border border-gray-100 w-48 transform rotate-1 hover:-rotate-1 transition-transform pointer-events-auto"
+            >
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="size-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                  <span className="material-symbols-outlined text-[16px]">checklist</span>
+                </div>
+                <div className="text-[12px] font-bold text-gray-900">Daily Habits</div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 line-through text-gray-400 text-[10px]">
+                  <span className="size-3 rounded-sm bg-emerald-500 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[8px] text-white">check</span>
+                  </span>{' '}
+                  Leetcode
+                </div>
+                <div className="flex items-center gap-2 text-gray-600 text-[10px]">
+                  <span className="size-3 rounded-sm border border-gray-200"></span> Read 20 pages
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* 3. Originality (Bottom Left) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [-220, 220]) }}
+            className="absolute top-[75%] left-[10%] lg:left-[18%] hidden md:block"
+          >
+            <motion.div
+              animate={{ y: [-12, 12, -12] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+              className="backdrop-blur-sm bg-white/90 rounded-full pr-4 p-2 shadow-xl shadow-indigo-500/5 border border-gray-100 transform -rotate-3 hover:rotate-1 transition-transform pointer-events-auto flex items-center gap-2.5"
+            >
+              <div className="size-8 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+                <span className="material-symbols-outlined text-[16px]">gpp_good</span>
+              </div>
+              <div>
+                <div className="text-[12px] font-bold text-gray-900 leading-none mb-1">
+                  Originality
+                </div>
+                <div className="text-[10px] text-gray-400 leading-none">100% Unique</div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* 4. CV Builder (Top Right) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [150, -150]) }}
+            className="absolute top-[22%] right-[5%] lg:right-[15%] hidden sm:block"
+          >
+            <motion.div
+              animate={{ y: [-9, 9, -9] }}
+              transition={{ duration: 5.1, repeat: Infinity, ease: 'easeInOut', delay: 1.8 }}
+              className="backdrop-blur-sm bg-white/90 rounded-[18px] p-3.5 shadow-xl shadow-indigo-500/5 border border-gray-100 w-44 transform rotate-2 hover:-rotate-1 transition-transform pointer-events-auto"
+            >
+              <div className="flex items-start gap-3">
+                <div className="size-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">description</span>
+                </div>
+                <div className="w-full space-y-1.5 pt-1">
+                  <div className="h-1.5 bg-gray-200 rounded-full w-full"></div>
+                  <div className="h-1 bg-gray-100 rounded-full w-5/6"></div>
+                  <div className="h-1 bg-gray-100 rounded-full w-4/6"></div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* 5. Learning Plan (Mid Right) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [-120, 120]) }}
+            className="absolute top-[50%] right-[2%] lg:right-[10%] hidden sm:block"
+          >
+            <motion.div
+              animate={{ y: [-11, 11, -11] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+              className="backdrop-blur-sm bg-white/90 rounded-[18px] p-3.5 shadow-xl shadow-indigo-500/5 border border-gray-100 w-52 transform -rotate-1 hover:rotate-1 transition-transform pointer-events-auto"
+            >
+              <div className="flex justify-between items-center mb-2.5">
+                <div className="flex items-center gap-2 text-[12px] font-bold text-gray-900">
+                  <div className="size-6 bg-purple-50 rounded flex items-center justify-center">
+                    <span className="material-symbols-outlined text-purple-600 text-[14px]">
+                      psychology
+                    </span>
+                  </div>
+                  Learning
+                </div>
+                <span className="text-[9px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                  Wk 3
+                </span>
+              </div>
+              <div className="text-[10px] text-gray-500 leading-snug">
+                Mastering React Hooks & React Context.
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* 6. Job Finder (Bottom Right) */}
+          <motion.div
+            style={{ y: useTransform(scrollYProgress, [0, 1], [180, -180]) }}
+            className="absolute top-[78%] right-[8%] lg:right-[18%] hidden md:block"
+          >
+            <motion.div
+              animate={{ y: [-7, 7, -7] }}
+              transition={{ duration: 3.9, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+              className="backdrop-blur-sm bg-white/90 rounded-full pr-4 p-2 shadow-xl shadow-indigo-500/5 border border-gray-100 transform rotate-3 hover:rotate-0 transition-transform pointer-events-auto flex items-center gap-2.5"
+            >
+              <div className="size-8 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shrink-0">
+                <span className="material-symbols-outlined text-[16px]">work</span>
+              </div>
+              <div>
+                <div className="text-[12px] font-bold text-gray-900 leading-none mb-1">
+                  UX Intern
+                </div>
+                <div className="text-[10px] text-gray-400 leading-none">Microsoft · Remote</div>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
