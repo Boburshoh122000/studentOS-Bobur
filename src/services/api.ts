@@ -19,7 +19,12 @@ class ApiClient {
     return localStorage.getItem('accessToken');
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    _retryCount = 0
+  ): Promise<ApiResponse<T>> {
+    const MAX_RETRIES = 3;
     const token = this.getToken();
 
     const headers: HeadersInit = {
@@ -53,10 +58,20 @@ class ApiClient {
 
       return { data };
     } catch (error) {
+      // Auto-retry on network errors (server unreachable = cold start)
+      if (error instanceof TypeError && _retryCount < MAX_RETRIES) {
+        const delay = (_retryCount + 1) * 3000; // 3s, 6s, 9s
+        console.warn(
+          `[API] Server unreachable, retrying in ${delay / 1000}s... (attempt ${_retryCount + 1}/${MAX_RETRIES})`
+        );
+        await new Promise((r) => setTimeout(r, delay));
+        return this.request<T>(endpoint, options, _retryCount + 1);
+      }
+
       console.error(`[API] Request failed: ${this.baseUrl}${endpoint}`, error);
       const msg =
         error instanceof TypeError
-          ? `Cannot reach server at ${this.baseUrl}. Is the backend running?`
+          ? `Server is waking up but couldn't connect after ${MAX_RETRIES} retries. Please try again in a moment.`
           : 'Network error. Please check your connection.';
       return { error: msg };
     }
