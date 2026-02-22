@@ -175,7 +175,58 @@ interface PhaseInput {
 }
 
 function transformToPhases(topic: string, aiResult: any, durationWeeks: number): PhaseInput[] {
-  // If AI returned valid data, convert weeks → phases
+  // New format: AI returns { planTitle, description, phases: [...] }
+  if (aiResult?.phases?.length) {
+    return aiResult.phases.map((phase: any, i: number) => {
+      const resources: PhaseInput['resources'] = [];
+
+      // Convert actionItems into ARTICLE resources
+      if (phase.actionItems?.length) {
+        for (const item of phase.actionItems.slice(0, 2)) {
+          resources.push({
+            title: item,
+            type: 'ARTICLE' as const,
+            durationText: '10 min read',
+          });
+        }
+      }
+
+      // Convert AI resources with linkQuery into searchable URLs
+      if (phase.resources?.length) {
+        for (const r of phase.resources) {
+          const isVideo = r.type === 'video';
+          const searchUrl = isVideo
+            ? `https://www.youtube.com/results?search_query=${encodeURIComponent(r.linkQuery || r.title)}`
+            : `https://www.google.com/search?q=${encodeURIComponent(r.linkQuery || r.title)}`;
+
+          resources.push({
+            title: r.title,
+            type: isVideo ? 'VIDEO' : 'ARTICLE',
+            url: searchUrl,
+            durationText: isVideo ? '30 mins' : '15 min read',
+          });
+        }
+      }
+
+      return {
+        title: phase.title || `Week ${i + 1}`,
+        description: phase.focus || phase.description || '',
+        resources:
+          resources.length > 0
+            ? resources
+            : [
+                {
+                  title: `Introduction to ${topic}`,
+                  type: 'VIDEO' as const,
+                  durationText: '25 mins',
+                },
+                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+              ],
+      };
+    });
+  }
+
+  // Legacy format: AI returns { weeks: [...] }
   if (aiResult?.weeks?.length) {
     const weeksPerPhase = Math.max(1, Math.ceil(aiResult.weeks.length / 3));
     const phases: PhaseInput[] = [];
@@ -197,7 +248,6 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
       });
     }
 
-    // Ensure at least 2 resources per phase
     for (const phase of phases) {
       if (phase.resources.length === 0) {
         phase.resources = [

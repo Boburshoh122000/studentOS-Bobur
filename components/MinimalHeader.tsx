@@ -2,11 +2,19 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
-import { ChevronDown, FileText, ShieldCheck, Brain, CheckSquare, User, Globe } from 'lucide-react';
+import {
+  ChevronDown,
+  FileText,
+  ShieldCheck,
+  Brain,
+  CheckSquare,
+  Globe,
+  LogOut,
+  Settings,
+  LayoutDashboard,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-/* ─── Mock Auth State ───────────────────────────────────── */
-const isLoggedIn = true; // Toggle to false to test the logged-out state
+import { useAuth } from '../src/contexts/AuthContext';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
@@ -83,9 +91,14 @@ export default function MinimalHeader() {
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [activeLang, setActiveLang] = useState('EN');
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const avatarTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* Real auth state */
+  const { isAuthenticated, user, logout } = useAuth();
 
   useMotionValueEvent(scrollY, 'change', (y) => {
     if (y < 50) {
@@ -112,6 +125,26 @@ export default function MinimalHeader() {
   };
   const closeLang = () => {
     langTimeout.current = setTimeout(() => setLangOpen(false), 150);
+  };
+  const openAvatar = () => {
+    if (avatarTimeout.current) clearTimeout(avatarTimeout.current);
+    setAvatarOpen(true);
+  };
+  const closeAvatar = () => {
+    avatarTimeout.current = setTimeout(() => setAvatarOpen(false), 150);
+  };
+
+  /* Get user initials for avatar */
+  const getInitials = () => {
+    if (user?.profile?.fullName) {
+      return user.profile.fullName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return user?.email?.[0]?.toUpperCase() ?? 'U';
   };
 
   return (
@@ -242,18 +275,76 @@ export default function MinimalHeader() {
           <div className="hidden sm:block w-px h-5 bg-gray-200/80" />
 
           {/* Conditional Auth / Avatar */}
-          {isLoggedIn ? (
-            /* ── Logged In: Avatar ── */
-            <Link to="/app" className="flex-shrink-0">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg transition-shadow ring-2 ring-white/50 cursor-pointer"
-              >
-                <User className="w-4.5 h-4.5" />
-              </motion.div>
-            </Link>
+          {isAuthenticated ? (
+            /* ── Logged In: Avatar with Dropdown ── */
+            <div className="relative" onMouseEnter={openAvatar} onMouseLeave={closeAvatar}>
+              <button onClick={() => setAvatarOpen(!avatarOpen)} className="flex-shrink-0">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg transition-shadow ring-2 ring-white/50 cursor-pointer"
+                >
+                  {user?.profile?.avatarUrl ? (
+                    <img
+                      src={user.profile.avatarUrl}
+                      alt=""
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-semibold">{getInitials()}</span>
+                  )}
+                </motion.div>
+              </button>
+
+              <AnimatePresence>
+                {avatarOpen && (
+                  <motion.div
+                    variants={dropdownVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute top-full right-0 mt-3 bg-white/90 backdrop-blur-xl border border-gray-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl p-1.5 w-48 z-50"
+                  >
+                    {/* User info */}
+                    <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {user?.profile?.fullName ?? 'User'}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                    </div>
+
+                    <Link
+                      to="/app"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/app/settings"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setAvatarOpen(false);
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 font-medium transition-colors w-full text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           ) : (
             /* ── Logged Out: Sign In + Get Started ── */
             <>

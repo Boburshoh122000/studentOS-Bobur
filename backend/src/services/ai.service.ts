@@ -220,21 +220,55 @@ export const generateLearningPlan = async (
   currentSkills: string[],
   timeframe: string
 ): Promise<{
-  title: string;
-  weeks: { week: number; topics: string[]; resources: string[] }[];
-  milestones: string[];
+  planTitle: string;
+  description: string;
+  phases: {
+    week: string;
+    title: string;
+    focus: string;
+    actionItems: string[];
+    resources: { type: 'video' | 'article'; title: string; linkQuery: string }[];
+  }[];
 }> => {
   try {
-    const prompt = `Create a personalized learning plan:
+    const skillsContext = currentSkills.length
+      ? `\nThe learner already knows: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know.`
+      : '';
 
-Goal: ${goal}
-Current Skills: ${currentSkills.join(', ')}
-Timeframe: ${timeframe}
+    const prompt = `You are an expert curriculum designer and learning coach. Create a highly structured, phased learning roadmap.
 
-Provide a JSON response with:
-1. "title": A title for the learning plan
-2. "weeks": Array of weekly plans with "week" number, "topics" array, and "resources" array (links or book names)
-3. "milestones": Key milestones to achieve
+Goal: "${goal}"
+Timeframe: ${timeframe}${skillsContext}
+
+Return a JSON object with this EXACT structure:
+{
+  "planTitle": "A short, motivating title for this learning plan",
+  "description": "A 1-2 sentence overview of what the learner will achieve",
+  "phases": [
+    {
+      "week": "Week 1",
+      "title": "Phase title (e.g. Foundations & Setup)",
+      "focus": "One sentence describing the key focus area for this week",
+      "actionItems": [
+        "Specific actionable task 1",
+        "Specific actionable task 2",
+        "Specific actionable task 3"
+      ],
+      "resources": [
+        { "type": "video", "title": "Descriptive resource title", "linkQuery": "YouTube search keywords for this resource" },
+        { "type": "article", "title": "Descriptive resource title", "linkQuery": "Google search keywords for this resource" }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Create one phase per week based on the timeframe
+- Each phase must have 3-5 actionItems and 2-4 resources
+- Resources should alternate between "video" and "article" types
+- linkQuery should be realistic search terms that would find real content
+- Make the plan progressive: foundations → core skills → practice → advanced/portfolio
+- Be specific to the goal, not generic
 
 Respond ONLY with valid JSON, no markdown.`;
 
@@ -244,7 +278,7 @@ Respond ONLY with valid JSON, no markdown.`;
       return JSON.parse(cleanJSON(response));
     } catch {
       console.error('Failed to parse learning plan response:', response.slice(0, 200));
-      return { title: 'Learning Plan', weeks: [], milestones: [] };
+      return { planTitle: goal, description: '', phases: [] };
     }
   } catch (error) {
     return handleAIError(error);
