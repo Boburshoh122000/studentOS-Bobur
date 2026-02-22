@@ -323,14 +323,14 @@ router.post(
 
       if (role === 'student') {
         userRole = 'STUDENT';
-        redirectTo = '/dashboard';
+        redirectTo = '/app';
         await prisma.studentProfile.update({
           where: { userId },
           data: { university: university || null, major: major || null },
         });
       } else if (role === 'educator') {
         userRole = 'EDUCATOR';
-        redirectTo = '/educator-dashboard';
+        redirectTo = '/app';
         await prisma.studentProfile.update({
           where: { userId },
           data: { university: institution || null, major: department || null },
@@ -338,7 +338,7 @@ router.post(
       } else {
         // Organization -> create employer profile
         userRole = 'EMPLOYER';
-        redirectTo = '/verification-pending';
+        redirectTo = '/app';
 
         if (!companyName) {
           res.status(400).json({ error: 'Company name is required for organizations' });

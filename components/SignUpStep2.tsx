@@ -99,7 +99,7 @@ export default function SignUpStep2() {
       await refreshUser();
 
       toast.success('Profile setup complete!');
-      navigate(data?.redirectTo || '/dashboard', { replace: true });
+      navigate(data?.redirectTo || '/app', { replace: true });
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
