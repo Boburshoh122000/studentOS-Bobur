@@ -13,7 +13,7 @@ import {
   Settings,
   LayoutDashboard,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
@@ -87,6 +87,7 @@ function MagneticButton({
 /* ─── Main Header Component ─────────────────────────────── */
 export default function MinimalHeader() {
   const { scrollY } = useScroll();
+  const { pathname } = useLocation();
   const [hidden, setHidden] = useState(false);
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -169,9 +170,16 @@ export default function MinimalHeader() {
           {/* About */}
           <Link
             to={navLinks[0].href}
-            className="text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+            className={`text-sm font-medium transition-colors relative ${
+              pathname === navLinks[0].href
+                ? 'text-[#0A0A0A] font-semibold'
+                : 'text-gray-500 hover:text-[#0A0A0A]'
+            }`}
           >
             {navLinks[0].label}
+            {pathname === navLinks[0].href && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full" />
+            )}
           </Link>
 
           {/* Tools Dropdown */}
@@ -219,9 +227,16 @@ export default function MinimalHeader() {
             <Link
               key={link.label}
               to={link.href}
-              className="text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === link.href
+                  ? 'text-[#0A0A0A] font-semibold'
+                  : 'text-gray-500 hover:text-[#0A0A0A]'
+              }`}
             >
               {link.label}
+              {pathname === link.href && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full" />
+              )}
             </Link>
           ))}
         </div>
