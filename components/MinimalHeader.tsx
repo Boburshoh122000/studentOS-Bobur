@@ -1,9 +1,27 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { motion, useScroll, useMotionValueEvent, useSpring } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
+import { ChevronDown, FileText, ShieldCheck, Brain, CheckSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+/* ─── Tools dropdown items ──────────────────────────────── */
+const toolItems = [
+  { label: 'ATS Resume Checker', icon: FileText, href: '/app/cv-ats' },
+  { label: 'Plagiarism Check', icon: ShieldCheck, href: '/app/plagiarism' },
+  { label: 'Learning Plan', icon: Brain, href: '/app/learning-plan' },
+  { label: 'Habit Tracker', icon: CheckSquare, href: '/app/habit-tracker' },
+];
+
+/* ─── Nav links ─────────────────────────────────────────── */
+const navLinks = [
+  { label: 'About', href: '/about' },
+  { label: 'Career Tracker', href: '/career-tracker' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+];
+
+/* ─── Magnetic hover wrapper ────────────────────────────── */
 function MagneticButton({
   children,
   className = '',
@@ -19,10 +37,8 @@ function MagneticButton({
     if (!ref.current) return;
     const { clientX, clientY } = e;
     const { height, width, left, top } = ref.current.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    x.set(middleX * 0.3);
-    y.set(middleY * 0.3);
+    x.set((clientX - (left + width / 2)) * 0.3);
+    y.set((clientY - (top + height / 2)) * 0.3);
   };
 
   const reset = () => {
@@ -35,7 +51,7 @@ function MagneticButton({
       ref={ref}
       onMouseMove={handleMouse}
       onMouseLeave={reset}
-      animate={{ x: x.get(), y: y.get() }}
+      style={{ x, y }}
       className={className}
     >
       {children}
@@ -43,21 +59,33 @@ function MagneticButton({
   );
 }
 
+/* ─── Main Header Component ─────────────────────────────── */
 export default function MinimalHeader() {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [lastYPos, setLastYPos] = useState(0);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useMotionValueEvent(scrollY, 'change', (y) => {
     if (y < 50) {
       setHidden(false);
     } else if (y > lastYPos) {
-      setHidden(true); // scrolling down
+      setHidden(true);
     } else {
-      setHidden(false); // scrolling up
+      setHidden(false);
     }
     setLastYPos(y);
   });
+
+  /* Hover intent for dropdown */
+  const openTools = () => {
+    if (toolsTimeout.current) clearTimeout(toolsTimeout.current);
+    setToolsOpen(true);
+  };
+  const closeTools = () => {
+    toolsTimeout.current = setTimeout(() => setToolsOpen(false), 150);
+  };
 
   return (
     <div className="fixed top-6 left-0 w-full flex justify-center z-50 pointer-events-none">
@@ -69,38 +97,86 @@ export default function MinimalHeader() {
         initial={{ y: -100, opacity: 0 }}
         animate={hidden ? 'hidden' : 'visible'}
         transition={{ duration: 0.6, type: 'spring', stiffness: 100, damping: 20 }}
-        className="pointer-events-auto bg-white/70 backdrop-blur-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-6 py-3 flex items-center justify-between w-[95%] max-w-5xl"
+        className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-6 py-3 flex items-center justify-between w-[95%] max-w-5xl"
       >
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-[#0A0A0A] mr-4">StudentOS</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-          {['Product', 'Features', 'Pricing', 'Resources'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase().replace(' ', '-')}`}
+        {/* Center Navigation */}
+        <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+          {/* About */}
+          <Link
+            to={navLinks[0].href}
+            className="text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+          >
+            {navLinks[0].label}
+          </Link>
+
+          {/* Tools Dropdown */}
+          <div className="relative" onMouseEnter={openTools} onMouseLeave={closeTools}>
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+            >
+              Tools
+              <motion.span animate={{ rotate: toolsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </motion.span>
+            </button>
+
+            <AnimatePresence>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white border border-gray-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-2xl p-2 w-64 z-50"
+                >
+                  {toolItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      onClick={() => setToolsOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium cursor-pointer w-full"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      {item.label}
+                    </Link>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Career Tracker, Blog, Contact */}
+          {navLinks.slice(1).map((link) => (
+            <Link
+              key={link.label}
+              to={link.href}
               className="text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
             >
-              {item}
-            </a>
+              {link.label}
+            </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-6">
-          <button className="hidden sm:flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors">
-            GB EN <span className="text-[10px]">▼</span>
-          </button>
+        {/* Right Side: Auth Buttons */}
+        <div className="flex items-center gap-4">
           <Link
-            to="/login"
+            to="/signin"
             className="hidden sm:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
           >
             Sign In
           </Link>
           <MagneticButton>
             <Link
-              to="/signup"
-              className="px-5 py-2.5 rounded-full bg-[#4F46E5] text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-[#4338ca] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
+              to="/signup/step-1"
+              className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
             >
               Get Started
             </Link>
