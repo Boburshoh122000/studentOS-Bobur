@@ -6,7 +6,7 @@ import { ChevronDown, FileText, ShieldCheck, Brain, CheckSquare, User, Globe } f
 import { Link } from 'react-router-dom';
 
 /* ─── Mock Auth State ───────────────────────────────────── */
-const isLoggedIn = false; // Toggle to true to test the avatar state
+const isLoggedIn = true; // Toggle to false to test the logged-out state
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
