@@ -2,8 +2,11 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
-import { ChevronDown, FileText, ShieldCheck, Brain, CheckSquare } from 'lucide-react';
+import { ChevronDown, FileText, ShieldCheck, Brain, CheckSquare, User, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+/* ─── Mock Auth State ───────────────────────────────────── */
+const isLoggedIn = false; // Toggle to true to test the avatar state
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
@@ -20,6 +23,20 @@ const navLinks = [
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
 ];
+
+/* ─── Languages ─────────────────────────────────────────── */
+const languages = [
+  { code: 'EN', label: 'English' },
+  { code: 'UZ', label: "O'zbekcha" },
+  { code: 'RU', label: 'Русский' },
+];
+
+/* ─── Dropdown animation config ─────────────────────────── */
+const dropdownVariants = {
+  initial: { opacity: 0, y: 10, scale: 0.95 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 10, scale: 0.95 },
+};
 
 /* ─── Magnetic hover wrapper ────────────────────────────── */
 function MagneticButton({
@@ -65,7 +82,10 @@ export default function MinimalHeader() {
   const [hidden, setHidden] = useState(false);
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [activeLang, setActiveLang] = useState('EN');
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useMotionValueEvent(scrollY, 'change', (y) => {
     if (y < 50) {
@@ -78,13 +98,20 @@ export default function MinimalHeader() {
     setLastYPos(y);
   });
 
-  /* Hover intent for dropdown */
+  /* Hover intent helpers */
   const openTools = () => {
     if (toolsTimeout.current) clearTimeout(toolsTimeout.current);
     setToolsOpen(true);
   };
   const closeTools = () => {
     toolsTimeout.current = setTimeout(() => setToolsOpen(false), 150);
+  };
+  const openLang = () => {
+    if (langTimeout.current) clearTimeout(langTimeout.current);
+    setLangOpen(true);
+  };
+  const closeLang = () => {
+    langTimeout.current = setTimeout(() => setLangOpen(false), 150);
   };
 
   return (
@@ -99,12 +126,12 @@ export default function MinimalHeader() {
         transition={{ duration: 0.6, type: 'spring', stiffness: 100, damping: 20 }}
         className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-6 py-3 flex items-center justify-between w-[95%] max-w-5xl"
       >
-        {/* Logo */}
+        {/* ─── Logo ─── */}
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-[#0A0A0A] mr-4">StudentOS</span>
         </Link>
 
-        {/* Center Navigation */}
+        {/* ─── Center Navigation ─── */}
         <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
           {/* About */}
           <Link
@@ -129,9 +156,10 @@ export default function MinimalHeader() {
             <AnimatePresence>
               {toolsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  variants={dropdownVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white border border-gray-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-2xl p-2 w-64 z-50"
                 >
@@ -153,7 +181,7 @@ export default function MinimalHeader() {
             </AnimatePresence>
           </div>
 
-          {/* Career Tracker, Blog, Contact */}
+          {/* Remaining nav links */}
           {navLinks.slice(1).map((link) => (
             <Link
               key={link.label}
@@ -165,22 +193,86 @@ export default function MinimalHeader() {
           ))}
         </div>
 
-        {/* Right Side: Auth Buttons */}
-        <div className="flex items-center gap-4">
-          <Link
-            to="/signin"
-            className="hidden sm:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
-          >
-            Sign In
-          </Link>
-          <MagneticButton>
-            <Link
-              to="/signup/step-1"
-              className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
+        {/* ─── Right Side Actions ─── */}
+        <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <div className="relative" onMouseEnter={openLang} onMouseLeave={closeLang}>
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors px-2 py-1.5 rounded-full hover:bg-gray-100/60"
             >
-              Get Started
+              <Globe className="w-3.5 h-3.5" />
+              {activeLang}
+              <ChevronDown className="w-3 h-3" />
+            </button>
+
+            <AnimatePresence>
+              {langOpen && (
+                <motion.div
+                  variants={dropdownVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="absolute top-full right-0 mt-3 bg-white/90 backdrop-blur-xl border border-gray-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl p-1.5 w-44 z-50"
+                >
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setActiveLang(lang.code);
+                        setLangOpen(false);
+                      }}
+                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        activeLang === lang.code
+                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                          : 'text-gray-600 hover:bg-gray-50 font-medium'
+                      }`}
+                    >
+                      <span>{lang.label}</span>
+                      <span className="text-xs text-gray-400">{lang.code}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Thin divider */}
+          <div className="hidden sm:block w-px h-5 bg-gray-200/80" />
+
+          {/* Conditional Auth / Avatar */}
+          {isLoggedIn ? (
+            /* ── Logged In: Avatar ── */
+            <Link to="/app" className="flex-shrink-0">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg transition-shadow ring-2 ring-white/50 cursor-pointer"
+              >
+                <User className="w-4.5 h-4.5" />
+              </motion.div>
             </Link>
-          </MagneticButton>
+          ) : (
+            /* ── Logged Out: Sign In + Get Started ── */
+            <>
+              <Link
+                to="/signin"
+                className="hidden sm:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+              >
+                Sign In
+              </Link>
+              <MagneticButton>
+                <Link
+                  to="/signup/step-1"
+                  className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
+                >
+                  Get Started
+                </Link>
+              </MagneticButton>
+            </>
+          )}
         </div>
       </motion.nav>
     </div>
