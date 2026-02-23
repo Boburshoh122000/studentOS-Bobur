@@ -172,8 +172,8 @@ export default function Team() {
 
               return (
                 <motion.div key={member.id} variants={cardVariants} className="group">
-                  {/* ── Portrait (clean, no overlay) ── */}
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                  {/* ── Portrait with bottom social overlay ── */}
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 group">
                     {member.avatarUrl ? (
                       <img
                         src={member.avatarUrl}
@@ -193,6 +193,29 @@ export default function Team() {
                         </span>
                       </div>
                     )}
+
+                    {/* Bottom gradient overlay */}
+                    {socials.length > 0 && (
+                      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    )}
+
+                    {/* Social icons pinned to bottom-left inside image */}
+                    {socials.length > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 p-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        {socials.map((social) => (
+                          <a
+                            key={social.label}
+                            href={social.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={social.label}
+                            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-gray-800 flex items-center justify-center hover:bg-white hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg"
+                          >
+                            <social.icon size={16} strokeWidth={2} />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* ── Name ── */}
@@ -204,24 +227,6 @@ export default function Team() {
                   <p className="text-sm text-gray-500 dark:text-gray-400 font-mono tracking-tight mt-1">
                     {member.role}
                   </p>
-
-                  {/* ── Social Icons (below text) ── */}
-                  {socials.length > 0 && (
-                    <div className="flex items-center gap-3 mt-3">
-                      {socials.map((social) => (
-                        <a
-                          key={social.label}
-                          href={social.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={social.label}
-                          className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
-                        >
-                          <social.icon size={18} strokeWidth={1.8} />
-                        </a>
-                      ))}
-                    </div>
-                  )}
                 </motion.div>
               );
             })}
