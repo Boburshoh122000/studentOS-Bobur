@@ -85,34 +85,6 @@ const cardVariants = {
   },
 };
 
-/* ─── Social icon button ─────────────────────────────────── */
-function SocialButton({
-  href,
-  icon: Icon,
-  label,
-  delay = 0,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  delay?: number;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={label}
-      className="w-10 h-10 rounded-full bg-white text-gray-900 flex items-center justify-center
-                 shadow-lg hover:scale-110 active:scale-95 transition-all duration-300
-                 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      <Icon size={17} strokeWidth={2} />
-    </a>
-  );
-}
-
 /* ─── Main Component ─────────────────────────────────────── */
 export default function Team() {
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -199,12 +171,8 @@ export default function Team() {
               ].filter(Boolean) as { href: string; icon: React.ElementType; label: string }[];
 
               return (
-                <motion.div
-                  key={member.id}
-                  variants={cardVariants}
-                  className="group cursor-pointer"
-                >
-                  {/* ── Portrait ── */}
+                <motion.div key={member.id} variants={cardVariants} className="group">
+                  {/* ── Portrait (clean, no overlay) ── */}
                   <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                     {member.avatarUrl ? (
                       <img
@@ -225,34 +193,35 @@ export default function Team() {
                         </span>
                       </div>
                     )}
-
-                    {/* ── Hover overlay with socials ── */}
-                    {socials.length > 0 && (
-                      <div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]
-                                   opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                                   flex items-center justify-center gap-3"
-                      >
-                        {socials.map((social, idx) => (
-                          <SocialButton
-                            key={social.label}
-                            href={social.href}
-                            icon={social.icon}
-                            label={social.label}
-                            delay={idx * 60}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
 
-                  {/* ── Typography ── */}
+                  {/* ── Name ── */}
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-4 leading-snug">
                     {member.fullName}
                   </h3>
+
+                  {/* ── Role ── */}
                   <p className="text-sm text-gray-500 dark:text-gray-400 font-mono tracking-tight mt-1">
                     {member.role}
                   </p>
+
+                  {/* ── Social Icons (below text) ── */}
+                  {socials.length > 0 && (
+                    <div className="flex items-center gap-3 mt-3">
+                      {socials.map((social) => (
+                        <a
+                          key={social.label}
+                          href={social.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={social.label}
+                          className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
+                        >
+                          <social.icon size={18} strokeWidth={1.8} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
