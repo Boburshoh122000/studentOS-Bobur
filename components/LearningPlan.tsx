@@ -36,7 +36,7 @@ interface Plan {
 
 export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [topic, setTopic] = useState('');
-  const [weeks, setWeeks] = useState('4');
+  const [duration, setDuration] = useState('4 weeks');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +71,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await learningPlanApi.generate({ topic: topic.trim(), weeks });
+      const res = await learningPlanApi.generate({
+        topic: topic.trim(),
+        weeks: duration.trim() || '4 weeks',
+      });
       const data = res.data as any;
       if (data?.plan) {
         setPlan(data.plan);
@@ -180,17 +183,17 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           </button>
         ) : (
           /* Recent Plans pills */
-          <div className="flex items-center gap-2 flex-wrap justify-end max-w-md">
+          <div className="flex items-center gap-2 flex-wrap justify-end max-w-lg">
             {recentPlans.length > 0 && (
               <>
                 <span className="text-xs text-text-sub font-medium mr-1">Recent:</span>
-                {recentPlans.map((p) => (
+                {recentPlans.slice(0, 3).map((p) => (
                   <button
                     key={p}
                     onClick={() => setTopic(p)}
-                    className="px-3 py-1.5 text-sm rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-primary/30 transition-all cursor-pointer bg-white/60 dark:bg-card-dark/60 backdrop-blur-sm"
+                    className="px-3 py-1.5 text-xs rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-primary/5 dark:hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all cursor-pointer bg-white dark:bg-card-dark shadow-sm"
                   >
-                    {p.length > 24 ? `${p.slice(0, 24)}…` : p}
+                    {p.length > 20 ? `${p.slice(0, 20)}…` : p}
                   </button>
                 ))}
               </>
@@ -279,17 +282,14 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
                   />
                 </div>
-                <select
-                  value={weeks}
-                  onChange={(e) => setWeeks(e.target.value)}
-                  aria-label="Select duration"
-                  className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-text-main dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option value="2">2 weeks</option>
-                  <option value="4">4 weeks</option>
-                  <option value="8">8 weeks</option>
-                  <option value="12">12 weeks</option>
-                </select>
+                <input
+                  type="text"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  placeholder="e.g. 2 weeks"
+                  aria-label="Duration"
+                  className="w-28 bg-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none border-l border-gray-200 dark:border-gray-700 px-4 py-2"
+                />
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating || !topic.trim()}
@@ -311,7 +311,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 </button>
               </div>
               <p className="text-xs text-text-sub text-center mt-3">
-                Powered by GPT-4o · Generates phased roadmaps with curated videos & articles
+                Powered by AI · Generates phased roadmaps with curated videos & articles
               </p>
             </div>
           </div>
