@@ -30,32 +30,29 @@ router.get('/', async (req: AuthenticatedRequest, res, next) => {
 // ─── POST generate plan ──────────────────────────────────────────────────────
 router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { topic, weeks = '4' } = req.body;
+    const { topic } = req.body;
 
     if (!topic?.trim()) {
       res.status(400).json({ error: 'Topic is required' });
       return;
     }
 
-    const durationWeeks = parseInt(weeks, 10) || 4;
-
     // Get user skills for better plan
     const profile = await prisma.studentProfile.findUnique({
       where: { userId: req.user!.id },
     });
 
-    // Generate via OpenAI (returns flat weeks format)
+    // Generate via OpenAI — AI auto-determines optimal duration
     let generated: any;
     try {
-      generated = await generateLearningPlan(
-        topic.trim(),
-        profile?.skills || [],
-        `${durationWeeks} weeks`
-      );
+      generated = await generateLearningPlan(topic.trim(), profile?.skills || []);
     } catch {
       // Fallback mock if AI unavailable
       generated = null;
     }
+
+    // Derive duration from what the AI returned
+    const durationWeeks = generated?.roadmap?.length || 4;
 
     // Transform to phases + resources structure
     const phases = transformToPhases(topic.trim(), generated, durationWeeks);

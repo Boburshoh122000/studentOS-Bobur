@@ -36,7 +36,6 @@ interface Plan {
 
 export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [topic, setTopic] = useState('');
-  const [duration, setDuration] = useState('4 weeks');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,10 +70,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await learningPlanApi.generate({
-        topic: topic.trim(),
-        weeks: duration.trim() || '4 weeks',
-      });
+      const res = await learningPlanApi.generate({ topic: topic.trim() });
       const data = res.data as any;
       if (data?.plan) {
         setPlan(data.plan);
@@ -282,14 +278,6 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
                   />
                 </div>
-                <input
-                  type="text"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  placeholder="e.g. 2 weeks"
-                  aria-label="Duration"
-                  className="w-28 bg-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none border-l border-gray-200 dark:border-gray-700 px-4 py-2"
-                />
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating || !topic.trim()}

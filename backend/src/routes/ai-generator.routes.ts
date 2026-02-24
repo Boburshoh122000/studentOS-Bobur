@@ -135,14 +135,14 @@ router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunc
       }
 
       case 'learning_plan': {
-        const { goal, timeframe = '4 weeks' } = body;
+        const { goal } = body;
 
         if (!goal) {
           res.status(400).json({ error: 'Learning goal is required' });
           return;
         }
 
-        const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
+        const plan = await generateLearningPlan(goal, profile?.skills || []);
 
         res.json({
           success: true,

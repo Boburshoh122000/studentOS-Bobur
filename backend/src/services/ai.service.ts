@@ -217,8 +217,7 @@ Return ONLY the cover letter text. No extra formatting.`;
 
 export const generateLearningPlan = async (
   goal: string,
-  currentSkills: string[],
-  timeframe: string
+  currentSkills: string[]
 ): Promise<{
   title: string;
   overview: string;
@@ -239,8 +238,9 @@ export const generateLearningPlan = async (
 
     const prompt = `You are a Senior Curriculum Architect and expert resource curator with 15+ years of experience designing world-class learning programs. Your task is to create a highly structured, actionable learning roadmap with REAL, CLICKABLE resource links.
 
-Learning Goal: "${goal}"
-Timeframe: ${timeframe}${skillsContext}
+Learning Goal: "${goal}"${skillsContext}
+
+AUTOMATIC DURATION: Evaluate the complexity of the requested topic and AUTOMATICALLY determine the optimal number of weeks required to learn it realistically. Simple topics may need 2-3 weeks, moderate topics 4-6 weeks, and complex topics 8-12 weeks. Do not make it unnecessarily long, but be realistic about the time required. Structure your response into phases, where each phase represents one week.
 
 Return a JSON object with this EXACT structure:
 {
@@ -284,7 +284,7 @@ CRITICAL RULES FOR URLS:
 - Make search queries hyper-specific so the FIRST result is always the most relevant resource.
 
 GENERAL RULES:
-- Create exactly one phase per week based on the timeframe (e.g., 4 weeks = 4 phases).
+- Create one phase per week. The number of phases = the number of weeks YOU determine is optimal.
 - Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles in resources.
 - Make the plan progressive: foundations → core skills → hands-on practice → advanced techniques & portfolio.
 - Be deeply specific to the stated goal. Do NOT be generic.
