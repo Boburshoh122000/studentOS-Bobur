@@ -308,15 +308,15 @@ export const router = createBrowserRouter([
         path: '/app/profile',
         element: (
           <StudentRoute>
-            <ProfileSettings />
+            <UserProfile />
           </StudentRoute>
         ),
       },
       {
-        path: '/app/user-profile',
+        path: '/app/profile/edit',
         element: (
           <StudentRoute>
-            <UserProfile />
+            <ProfileSettings />
           </StudentRoute>
         ),
       },
