@@ -35,7 +35,7 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   messages.push({ role: 'user', content: prompt });
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-5.2',
     messages,
     temperature,
     max_tokens: maxTokens,
