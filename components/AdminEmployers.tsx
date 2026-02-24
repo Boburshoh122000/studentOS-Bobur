@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Employer {
@@ -654,8 +655,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                     {isLoading ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-16 text-center">
-                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-                          <p className="mt-3 text-sm text-slate-500">Loading employers…</p>
+                          <GlobalLoader fullScreen={false} />
                         </td>
                       </tr>
                     ) : employers.length === 0 ? (

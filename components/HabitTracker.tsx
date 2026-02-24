@@ -5,6 +5,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface Habit {
   id: string;
@@ -165,12 +166,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
       headerContent={headerContent}
     >
       {isLoading ? (
-        <div className="flex h-full items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-text-sub">Loading habits...</p>
-          </div>
-        </div>
+        <GlobalLoader fullScreen={false} />
       ) : (
         <div className="px-4 md:px-8 pb-8 pt-2">
           <div className="max-w-7xl mx-auto space-y-6">

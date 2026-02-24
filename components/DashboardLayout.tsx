@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface DashboardLayoutProps extends NavigationProps {
   currentScreen: Screen;
@@ -48,14 +49,7 @@ export default function DashboardLayout({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background-light dark:bg-background-dark">
-        <div className="flex flex-col items-center gap-3">
-          <div className="size-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-text-sub">Loading...</span>
-        </div>
-      </div>
-    );
+    return <GlobalLoader />;
   }
 
   return (

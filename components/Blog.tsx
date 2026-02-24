@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface BlogPost {
   id: string;
@@ -166,12 +167,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               </div>
 
               {/* Loading State */}
-              {loading && (
-                <div className="py-20 text-center">
-                  <div className="animate-spin w-10 h-10 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-slate-500 dark:text-slate-400">Loading articles...</p>
-                </div>
-              )}
+              {loading && <GlobalLoader fullScreen={false} />}
 
               {/* Error State */}
               {error && !loading && (

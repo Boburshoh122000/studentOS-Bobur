@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface BlogPostData {
   id: string;
@@ -54,7 +55,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -70,21 +71,54 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
         {/* Navigation */}
         <header className="fixed top-0 z-50 w-full bg-white/80 dark:bg-[#111421]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-20 transition-all duration-200">
           <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
-            <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => navigateTo(Screen.LANDING)}>
+            <div
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => navigateTo(Screen.LANDING)}
+            >
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">StudentOS</h2>
+              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                StudentOS
+              </h2>
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              <button onClick={() => navigateTo(Screen.LANDING)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Home</button>
-              <button onClick={() => navigateTo(Screen.COMMUNITY)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Community</button>
-              <button onClick={() => navigateTo(Screen.BLOG)} className="text-sm font-bold text-primary">Blog</button>
-              <button onClick={() => navigateTo(Screen.CONTACT)} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">Contact</button>
+              <button
+                onClick={() => navigateTo(Screen.LANDING)}
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.COMMUNITY)}
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Community
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.BLOG)}
+                className="text-sm font-bold text-primary"
+              >
+                Blog
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.CONTACT)}
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Contact
+              </button>
             </nav>
             <div className="flex items-center justify-end gap-4">
-              <button onClick={() => navigateTo(Screen.SIGN_IN)} className="hidden sm:flex text-sm font-medium hover:text-primary transition-colors text-slate-900 dark:text-white">Sign In</button>
-              <button onClick={() => navigateTo(Screen.SIGNUP_STEP_1)} className="flex items-center justify-center overflow-hidden rounded-xl h-10 px-5 bg-primary dark:bg-primary hover:bg-blue-700 dark:hover:bg-primary-dark transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95">
+              <button
+                onClick={() => navigateTo(Screen.SIGN_IN)}
+                className="hidden sm:flex text-sm font-medium hover:text-primary transition-colors text-slate-900 dark:text-white"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.SIGNUP_STEP_1)}
+                className="flex items-center justify-center overflow-hidden rounded-xl h-10 px-5 bg-primary dark:bg-primary hover:bg-blue-700 dark:hover:bg-primary-dark transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95"
+              >
                 <span className="truncate">Get Started</span>
               </button>
             </div>
@@ -94,7 +128,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
         <main className="flex-1 flex flex-col items-center py-8 px-4 md:px-10">
           <div className="w-full max-w-[800px] flex flex-col gap-8">
             {/* Back Button */}
-            <button 
+            <button
               onClick={() => navigate('/blog')}
               className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors self-start"
             >
@@ -103,12 +137,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
             </button>
 
             {/* Loading State */}
-            {loading && (
-              <div className="py-20 text-center">
-                <div className="animate-spin w-10 h-10 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-slate-500 dark:text-slate-400">Loading article...</p>
-              </div>
-            )}
+            {loading && <GlobalLoader fullScreen={false} />}
 
             {/* Error State */}
             {error && !loading && (
@@ -116,9 +145,11 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
                   <span className="material-symbols-outlined text-3xl text-red-500">error</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Article not found</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Article not found
+                </h3>
                 <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">{error}</p>
-                <button 
+                <button
                   onClick={() => navigate('/blog')}
                   className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
@@ -133,10 +164,17 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 {/* Header */}
                 <header className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
-                    {post.tags.slice(0, 1).map(tag => (
-                      <span key={tag} className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">{tag}</span>
+                    {post.tags.slice(0, 1).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full"
+                      >
+                        {tag}
+                      </span>
                     ))}
-                    <span className="text-sm text-slate-400">{estimateReadTime(post.content)} min read</span>
+                    <span className="text-sm text-slate-400">
+                      {estimateReadTime(post.content)} min read
+                    </span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">
                     {post.title}
@@ -144,14 +182,20 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       {post.author.avatar ? (
-                        <img src={post.author.avatar} alt={post.author.name} className="w-10 h-10 rounded-full object-cover" />
+                        <img
+                          src={post.author.avatar}
+                          alt={post.author.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
                           {post.author.name.charAt(0)}
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{post.author.name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {post.author.name}
+                        </p>
                         <p className="text-xs text-slate-500">{formatDate(post.publishedAt)}</p>
                       </div>
                     </div>
@@ -161,9 +205,9 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 {/* Cover Image */}
                 {post.coverImageUrl && (
                   <div className="rounded-2xl overflow-hidden aspect-[16/9] bg-slate-200 dark:bg-slate-800">
-                    <img 
-                      src={post.coverImageUrl} 
-                      alt={post.title} 
+                    <img
+                      src={post.coverImageUrl}
+                      alt={post.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -171,19 +215,26 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
 
                 {/* Content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
-                  {post.content.split('\n').map((paragraph, index) => (
-                    paragraph.trim() && (
-                      <p key={index} className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                        {paragraph}
-                      </p>
-                    )
-                  ))}
+                  {post.content.split('\n').map(
+                    (paragraph, index) =>
+                      paragraph.trim() && (
+                        <p
+                          key={index}
+                          className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4"
+                        >
+                          {paragraph}
+                        </p>
+                      )
+                  )}
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  {post.tags.map(tag => (
-                    <span key={tag} className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
+                  {post.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full"
+                    >
                       #{tag}
                     </span>
                   ))}
@@ -191,7 +242,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
 
                 {/* Share & Actions */}
                 <div className="flex items-center justify-between py-6 border-t border-slate-200 dark:border-slate-700">
-                  <button 
+                  <button
                     onClick={() => navigate('/blog')}
                     className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
                   >
@@ -199,8 +250,10 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                     Back to Blog
                   </button>
                   <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => navigator.share?.({ title: post.title, url: window.location.href })}
+                    <button
+                      onClick={() =>
+                        navigator.share?.({ title: post.title, url: window.location.href })
+                      }
                       className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
                     >
                       <span className="material-symbols-outlined text-[18px]">share</span>

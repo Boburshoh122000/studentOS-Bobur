@@ -6,6 +6,7 @@ import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
 import ApplyJobModal from './ApplyJobModal';
 import { toast } from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface Job {
   id: string;
@@ -344,10 +345,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
               </div>
 
               {isLoading ? (
-                <div className="text-center py-20">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-                  <p className="mt-4 text-gray-500">Loading jobs...</p>
-                </div>
+                <GlobalLoader fullScreen={false} />
               ) : jobs.length === 0 ? (
                 <div className="text-center py-20">
                   <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">

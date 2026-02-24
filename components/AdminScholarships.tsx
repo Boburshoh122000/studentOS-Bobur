@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface Scholarship {
   id: string;
@@ -605,8 +606,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                   {isLoading ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
-                        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                        <p className="mt-2 text-sm text-slate-500">Loading scholarships...</p>
+                        <GlobalLoader fullScreen={false} />
                       </td>
                     </tr>
                   ) : scholarships.length === 0 ? (

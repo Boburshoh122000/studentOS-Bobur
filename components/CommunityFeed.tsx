@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { communityApi } from '../src/services/api';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface Post {
   id: string;
@@ -240,12 +241,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
             </div>
 
             {/* Loading State */}
-            {loading && (
-              <div className="bg-white dark:bg-[#1F2937] rounded-xl p-8 shadow-sm border border-[#E5E7EB] dark:border-[#374151] text-center">
-                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-gray-500 dark:text-gray-400">Loading community posts...</p>
-              </div>
-            )}
+            {loading && <GlobalLoader fullScreen={false} />}
 
             {/* Error State */}
             {error && !loading && (

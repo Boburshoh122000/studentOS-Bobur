@@ -3,6 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 // Types
 interface Permission {
@@ -460,7 +461,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
         {/* ... Rest of the file remains same ... */}
         {loading ? (
           <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-100 border-t-[#4361EE]"></div>
+            <GlobalLoader fullScreen={false} />
           </div>
         ) : (
           <div className="flex gap-6">

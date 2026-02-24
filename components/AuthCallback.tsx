@@ -4,6 +4,7 @@ import { supabase } from '../src/lib/supabase';
 import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 /**
  * Auth Callback Page
@@ -112,14 +113,5 @@ export default function AuthCallback() {
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-          Completing sign in...
-        </p>
-      </div>
-    </div>
-  );
+  return <GlobalLoader />;
 }

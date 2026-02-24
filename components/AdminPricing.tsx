@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 // Types
 interface Tool {
@@ -641,7 +642,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             {/* Loading State */}
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-100 border-t-primary"></div>
+                <GlobalLoader fullScreen={false} />
               </div>
             ) : (
               <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm">

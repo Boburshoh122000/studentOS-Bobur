@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface BlogPost {
   id: string;
@@ -610,7 +611,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <GlobalLoader fullScreen={false} />
                     </div>
                   ) : filteredPosts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-slate-500">

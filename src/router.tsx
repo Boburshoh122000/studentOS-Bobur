@@ -4,29 +4,10 @@ import RootLayout from './ui/RootLayout';
 import { withNavigate } from './ui/withNavigate';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
+import { GlobalLoader } from '../components/ui/GlobalLoader';
+
 function Loader() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
-      <div className="flex gap-2.5">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="w-3 h-3 rounded-full bg-primary/80"
-            style={{
-              animation: 'dotBounce 0.6s ease-in-out infinite alternate',
-              animationDelay: `${i * 0.15}s`,
-            }}
-          />
-        ))}
-      </div>
-      <style>{`
-        @keyframes dotBounce {
-          0% { transform: translateY(0) scale(0.8); opacity: 0.3; }
-          100% { transform: translateY(-8px) scale(1); opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
+  return <GlobalLoader />;
 }
 
 function Wrap({ children }: { children: React.ReactNode }) {

@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { GlobalLoader } from './ui/GlobalLoader';
 
 interface SentNotification {
   id: string;
@@ -366,9 +367,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
             </div>
             <div className="overflow-x-auto">
               {isLoadingHistory ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="size-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
+                <GlobalLoader fullScreen={false} />
               ) : history.length === 0 ? (
                 <div className="text-center py-12 text-slate-500">
                   <span className="material-symbols-outlined text-4xl mb-2 block text-slate-300">
