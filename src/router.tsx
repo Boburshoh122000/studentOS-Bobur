@@ -79,6 +79,7 @@ const PlagiarismChecker = withNavigate(lazyRetry(() => import('../components/Pla
 const HabitTracker = withNavigate(lazyRetry(() => import('../components/HabitTracker')));
 const CommunityFeed = withNavigate(lazyRetry(() => import('../components/CommunityFeed')));
 const ProfileSettings = withNavigate(lazyRetry(() => import('../components/ProfileSettings')));
+const UserProfile = withNavigate(lazyRetry(() => import('../components/UserProfile')));
 const StudentSettings = withNavigate(lazyRetry(() => import('../components/StudentSettings')));
 
 // Admin
@@ -308,6 +309,14 @@ export const router = createBrowserRouter([
         element: (
           <StudentRoute>
             <ProfileSettings />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/user-profile',
+        element: (
+          <StudentRoute>
+            <UserProfile />
           </StudentRoute>
         ),
       },
