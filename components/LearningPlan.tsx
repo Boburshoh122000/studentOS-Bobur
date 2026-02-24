@@ -265,7 +265,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
             {/* ── Premium AI Prompt Bar ── */}
             <div className="w-full max-w-2xl mx-auto mt-16">
-              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center gap-2">
+              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center">
                 <div className="flex-1 flex items-center gap-2 pl-4">
                   <span className="material-symbols-outlined text-primary text-[20px]">
                     auto_awesome
@@ -276,15 +276,15 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     onChange={(e) => setTopic(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
                     placeholder="What do you want to learn? e.g. Become a Junior Product Designer"
-                    className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
+                    className="flex-1 bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
                   />
                 </div>
-                <div className="relative flex items-center border-l border-gray-200 dark:border-gray-700">
+                <div className="relative flex items-center border-l border-gray-100 dark:border-gray-700">
                   <select
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     aria-label="Duration"
-                    className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm outline-none cursor-pointer appearance-none pl-4 pr-7 py-2 hover:text-primary transition-colors relative z-10"
+                    className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm cursor-pointer appearance-none border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent pl-4 pr-8 py-2 hover:text-primary transition-colors"
                   >
                     <option value="1 week">1 week</option>
                     <option value="2 weeks">2 weeks</option>
@@ -294,7 +294,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     <option value="3 months">3 months</option>
                   </select>
                   <svg
-                    className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -302,7 +302,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
