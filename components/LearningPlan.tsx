@@ -535,46 +535,25 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         </div>
 
                         <div className="space-y-4">
-                          {phaseResources.map((resource) => (
-                            <div
-                              key={resource.id}
-                              className={`group/item flex items-start gap-4 p-4 rounded-xl border transition-all ${
-                                resource.isCompleted
-                                  ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                  : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-100 dark:border-gray-800'
-                              }`}
-                            >
-                              {/* Icon */}
-                              {resource.type === 'VIDEO' ? (
-                                <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
-                                  <span className="material-symbols-outlined">smart_display</span>
-                                </div>
-                              ) : (
-                                <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
-                                  <span className="material-symbols-outlined">article</span>
-                                </div>
-                              )}
+                          {phaseResources.map((resource) => {
+                            const isVideo = resource.type === 'VIDEO';
+                            const hasUrl = !!resource.url;
 
-                              {/* Content */}
-                              <div className="flex-1 min-w-0">
-                                {resource.url ? (
-                                  <a
-                                    href={resource.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={`text-base font-semibold transition-colors inline-flex items-center gap-1.5 ${
-                                      resource.isCompleted
-                                        ? 'text-gray-400 dark:text-gray-500 line-through'
-                                        : 'text-text-main dark:text-white hover:text-primary'
-                                    }`}
-                                  >
-                                    {resource.title}
-                                    <span className="material-symbols-outlined text-[14px] opacity-40 group-hover/item:opacity-100 transition-opacity">
-                                      open_in_new
-                                    </span>
-                                  </a>
+                            const resourceContent = (
+                              <>
+                                {/* Icon */}
+                                {isVideo ? (
+                                  <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined">smart_display</span>
+                                  </div>
                                 ) : (
+                                  <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined">article</span>
+                                  </div>
+                                )}
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
                                   <h4
                                     className={`text-base font-semibold transition-colors ${
                                       resource.isCompleted
@@ -584,33 +563,67 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                   >
                                     {resource.title}
                                   </h4>
-                                )}
-                                <p className="text-xs text-text-sub mt-1">
-                                  {resource.type === 'VIDEO' ? 'Video' : 'Article'}
-                                  {resource.durationText && ` • ${resource.durationText}`}
-                                  {resource.url && (
-                                    <span className="ml-1 text-primary/60">• click to open</span>
-                                  )}
-                                </p>
-                              </div>
+                                  <p className="text-xs text-text-sub mt-1">
+                                    {isVideo ? 'Video' : 'Article'}
+                                    {resource.durationText && ` • ${resource.durationText}`}
+                                  </p>
+                                </div>
 
-                              {/* Check */}
-                              <div
-                                className="flex-shrink-0 mt-2 cursor-pointer"
-                                onClick={() => handleToggleResource(resource.id)}
-                              >
-                                {resource.isCompleted ? (
-                                  <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white text-[16px]">
-                                      check
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />
+                                {/* External link indicator */}
+                                {hasUrl && (
+                                  <span className="material-symbols-outlined text-[16px] text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0 mt-1">
+                                    open_in_new
+                                  </span>
                                 )}
+                              </>
+                            );
+
+                            return (
+                              <div key={resource.id} className="flex items-start gap-3">
+                                {/* Clickable resource area */}
+                                {hasUrl ? (
+                                  <a
+                                    href={resource.url!}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                                      resource.isCompleted
+                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                        : 'border-gray-100 dark:border-gray-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-700/50'
+                                    }`}
+                                  >
+                                    {resourceContent}
+                                  </a>
+                                ) : (
+                                  <div
+                                    className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all ${
+                                      resource.isCompleted
+                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                        : 'border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                    }`}
+                                  >
+                                    {resourceContent}
+                                  </div>
+                                )}
+
+                                {/* Checkbox — outside the link */}
+                                <div
+                                  className="flex-shrink-0 mt-5 cursor-pointer"
+                                  onClick={() => handleToggleResource(resource.id)}
+                                >
+                                  {resource.isCompleted ? (
+                                    <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
+                                      <span className="material-symbols-outlined text-white text-[16px]">
+                                        check
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}

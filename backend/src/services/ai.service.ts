@@ -286,12 +286,15 @@ Return a JSON object with this EXACT structure:
   ]
 }
 
-CRITICAL RULES FOR URLS:
-- For EVERY video resource, you MUST provide a "url" field. Construct a YouTube search URL: https://www.youtube.com/results?search_query=<exact+keywords>. Use the most specific search terms possible to find the HIGHEST VIEWED, most authoritative video on that topic. Include channel name if known (e.g., "Traversy Media", "freeCodeCamp", "TED-Ed").
-- For EVERY article resource, you MUST provide a "url" field. Construct a Google search URL: https://www.google.com/search?q=<exact+keywords>. Target the MOST READ articles from authoritative sources (MDN, freeCodeCamp, Medium, Harvard, official docs).
-- For EVERY task, you MUST provide a "url" field pointing to a Google search URL with specific terms to find a guide/tutorial for completing that task.
-- NEVER leave a url empty or null. Every single item MUST have a url.
-- Make search queries hyper-specific so the FIRST result is always the most relevant resource.
+RESOURCE CURATION RULES (CRITICAL — ANTI-HALLUCINATION):
+1. You must act as an elite curator. Every resource must be from the HIGHEST QUALITY, MOST VIEWED, and MOST AUTHORITATIVE sources available.
+2. EVERY resource MUST have a valid, working "url" field. NEVER leave a url empty or null.
+3. ANTI-HALLUCINATION: Do NOT invent fake YouTube video IDs or fabricate Medium/blog URLs. If you know the exact, permanent URL of a world-famous resource (e.g., a specific freeCodeCamp course page, CS50 lecture, official documentation like MDN, React docs, Python docs), use that direct URL.
+4. GUARANTEED SEARCH URLS: If you do NOT know a reliable exact URL, you MUST construct a targeted search query URL that guarantees the top result is the best content:
+   - For Videos: https://www.youtube.com/results?search_query=highest+viewed+<specific+topic>+tutorial+<channel+name+if+known>
+   - For Articles: https://www.google.com/search?q=best+comprehensive+guide+to+<specific+topic>+<authoritative+source>
+   - For Tasks: https://www.google.com/search?q=step+by+step+tutorial+<specific+task+description>
+5. Make search queries HYPER-SPECIFIC. Include channel names (Traversy Media, freeCodeCamp, Fireship, TED-Ed), source names (MDN, W3Schools, official docs), and topic qualifiers so the FIRST search result is always the most relevant.
 
 GENERAL RULES:
 - Create one phase per week. The number of phases = the number of weeks YOU determine is optimal.
