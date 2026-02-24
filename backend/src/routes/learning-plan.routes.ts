@@ -30,7 +30,7 @@ router.get('/', async (req: AuthenticatedRequest, res, next) => {
 // ─── POST generate plan ──────────────────────────────────────────────────────
 router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { topic } = req.body;
+    const { topic, duration = '4 weeks' } = req.body;
 
     if (!topic?.trim()) {
       res.status(400).json({ error: 'Topic is required' });
@@ -42,10 +42,10 @@ router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
     });
 
-    // Generate via OpenAI — AI auto-determines optimal duration
+    // Generate via OpenAI with user-specified duration
     let generated: any;
     try {
-      generated = await generateLearningPlan(topic.trim(), profile?.skills || []);
+      generated = await generateLearningPlan(topic.trim(), profile?.skills || [], duration);
     } catch {
       // Fallback mock if AI unavailable
       generated = null;

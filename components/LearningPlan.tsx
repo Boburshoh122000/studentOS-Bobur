@@ -36,6 +36,7 @@ interface Plan {
 
 export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [topic, setTopic] = useState('');
+  const [duration, setDuration] = useState('4 weeks');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +71,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await learningPlanApi.generate({ topic: topic.trim() });
+      const res = await learningPlanApi.generate({ topic: topic.trim(), duration });
       const data = res.data as any;
       if (data?.plan) {
         setPlan(data.plan);
@@ -278,6 +279,19 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
                   />
                 </div>
+                <select
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  aria-label="Duration"
+                  className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm outline-none cursor-pointer appearance-none px-4 py-2 border-l border-gray-200 dark:border-gray-700 hover:text-primary transition-colors"
+                >
+                  <option value="1 week">1 week</option>
+                  <option value="2 weeks">2 weeks</option>
+                  <option value="3 weeks">3 weeks</option>
+                  <option value="4 weeks">4 weeks</option>
+                  <option value="2 months">2 months</option>
+                  <option value="3 months">3 months</option>
+                </select>
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating || !topic.trim()}

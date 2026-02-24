@@ -187,7 +187,7 @@ router.post('/cover-letter', async (req: AuthenticatedRequest, res, next) => {
 // Learning Plan Generation
 router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { goal } = req.body;
+    const { goal, timeframe = '4 weeks' } = req.body;
 
     if (!goal) {
       res.status(400).json({ error: 'Learning goal is required' });
@@ -199,7 +199,7 @@ router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
     });
 
-    const plan = await generateLearningPlan(goal, profile?.skills || []);
+    const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
 
     res.json(plan);
   } catch (error: any) {
