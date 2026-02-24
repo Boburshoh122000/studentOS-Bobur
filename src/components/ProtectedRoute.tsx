@@ -10,10 +10,24 @@ interface ProtectedRouteProps {
 function Loader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#111421]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Loading...</p>
+      <div className="flex gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-3 h-3 rounded-full bg-primary/80"
+            style={{
+              animation: 'dotBounce 0.6s ease-in-out infinite alternate',
+              animationDelay: `${i * 0.15}s`,
+            }}
+          />
+        ))}
       </div>
+      <style>{`
+        @keyframes dotBounce {
+          0% { transform: translateY(0) scale(0.8); opacity: 0.3; }
+          100% { transform: translateY(-8px) scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
