@@ -279,19 +279,34 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
                   />
                 </div>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  aria-label="Duration"
-                  className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm outline-none cursor-pointer appearance-none px-4 py-2 border-l border-gray-200 dark:border-gray-700 hover:text-primary transition-colors"
-                >
-                  <option value="1 week">1 week</option>
-                  <option value="2 weeks">2 weeks</option>
-                  <option value="3 weeks">3 weeks</option>
-                  <option value="4 weeks">4 weeks</option>
-                  <option value="2 months">2 months</option>
-                  <option value="3 months">3 months</option>
-                </select>
+                <div className="relative flex items-center border-l border-gray-200 dark:border-gray-700">
+                  <select
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    aria-label="Duration"
+                    className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm outline-none cursor-pointer appearance-none pl-4 pr-7 py-2 hover:text-primary transition-colors relative z-10"
+                  >
+                    <option value="1 week">1 week</option>
+                    <option value="2 weeks">2 weeks</option>
+                    <option value="3 weeks">3 weeks</option>
+                    <option value="4 weeks">4 weeks</option>
+                    <option value="2 months">2 months</option>
+                    <option value="3 months">3 months</option>
+                  </select>
+                  <svg
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating || !topic.trim()}
@@ -313,7 +328,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 </button>
               </div>
               <p className="text-xs text-text-sub text-center mt-3">
-                Powered by AI · Generates phased roadmaps with curated videos & articles
+                Powered by AI · Generates phased roadmaps with curated resources
               </p>
             </div>
           </div>
@@ -333,26 +348,79 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       >
         <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
           <div className="max-w-6xl mx-auto p-8">
+            {/* Thinking message */}
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white dark:bg-card-dark rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
+                <span className="material-symbols-outlined text-primary text-[20px] animate-spin">
+                  progress_activity
+                </span>
+                <span className="text-sm font-medium text-text-main dark:text-white">
+                  AI is structuring your learning journey...
+                </span>
+              </div>
+            </div>
+
             <div className="flex gap-8">
+              {/* Phase skeletons */}
               <div className="flex-1 space-y-8">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="relative pl-16">
-                    <div className="absolute left-0 top-0 size-14 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                    <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
-                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-3" />
-                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-64 mb-6" />
-                      <div className="space-y-4">
-                        <div className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl" />
-                        <div className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="relative pl-16"
+                    style={{ animationDelay: `${i * 200}ms` }}
+                  >
+                    {/* Phase number circle */}
+                    <div
+                      className="absolute left-0 top-0 size-14 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"
+                      style={{ animationDelay: `${i * 200}ms` }}
+                    />
+                    {/* Phase card */}
+                    <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                      <div
+                        className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2 animate-pulse"
+                        style={{ animationDelay: `${i * 200}ms` }}
+                      />
+                      <div
+                        className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-72 mb-6 animate-pulse"
+                        style={{ animationDelay: `${i * 200 + 100}ms` }}
+                      />
+                      <div className="space-y-3">
+                        {[0, 1, 2].map((j) => (
+                          <div
+                            key={j}
+                            className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 animate-pulse"
+                            style={{ animationDelay: `${i * 200 + j * 150}ms` }}
+                          >
+                            <div className="size-9 rounded-lg bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1.5" />
+                              <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                            </div>
+                            <div className="size-5 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="w-80 flex-shrink-0">
+
+              {/* Sidebar skeleton */}
+              <div className="w-80 flex-shrink-0 space-y-6">
                 <div className="bg-white dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28 mb-6" />
-                  <div className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+                  <div className="space-y-4">
+                    <div className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+                    <div className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+                  </div>
+                </div>
+                <div
+                  className="bg-white dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse"
+                  style={{ animationDelay: '300ms' }}
+                >
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4" />
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full mb-2" />
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-4/5" />
                 </div>
               </div>
             </div>

@@ -242,7 +242,15 @@ export const generateLearningPlan = async (
 Learning Goal: "${goal}"
 Duration: ${duration}${skillsContext}
 
-You MUST structure the learning plan to fit EXACTLY the duration of "${duration}". If the duration is "4 weeks", generate exactly 4 phases (Week 1 through Week 4). If it is "2 months", generate 8 phases. If it is "3 months", generate 12 phases. Each phase = 1 week.
+You MUST structure the learning plan to fit EXACTLY the duration of "${duration}".
+DURATION TO PHASES MAPPING (follow this EXACTLY):
+- "1 week" = 1 phase (Week 1)
+- "2 weeks" = 2 phases (Week 1, Week 2)
+- "3 weeks" = 3 phases (Week 1, Week 2, Week 3)
+- "4 weeks" = 4 phases (Week 1 through Week 4)
+- "2 months" = 8 phases (Week 1 through Week 8)
+- "3 months" = 12 phases (Week 1 through Week 12)
+Each phase represents exactly 1 week of study. The "phase" field must be labeled "Week N".
 
 Return a JSON object with this EXACT structure:
 {
