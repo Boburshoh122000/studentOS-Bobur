@@ -468,8 +468,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                           {phaseResources.map((resource) => (
                             <div
                               key={resource.id}
-                              onClick={() => handleToggleResource(resource.id)}
-                              className={`group/item flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer ${
+                              className={`group/item flex items-start gap-4 p-4 rounded-xl border transition-all ${
                                 resource.isCompleted
                                   ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
                                   : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-100 dark:border-gray-800'
@@ -488,23 +487,48 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <h4
-                                  className={`text-base font-semibold transition-colors ${
-                                    resource.isCompleted
-                                      ? 'text-gray-400 dark:text-gray-500 line-through'
-                                      : 'text-text-main dark:text-white group-hover/item:text-primary'
-                                  }`}
-                                >
-                                  {resource.title}
-                                </h4>
+                                {resource.url ? (
+                                  <a
+                                    href={resource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className={`text-base font-semibold transition-colors inline-flex items-center gap-1.5 ${
+                                      resource.isCompleted
+                                        ? 'text-gray-400 dark:text-gray-500 line-through'
+                                        : 'text-text-main dark:text-white hover:text-primary'
+                                    }`}
+                                  >
+                                    {resource.title}
+                                    <span className="material-symbols-outlined text-[14px] opacity-40 group-hover/item:opacity-100 transition-opacity">
+                                      open_in_new
+                                    </span>
+                                  </a>
+                                ) : (
+                                  <h4
+                                    className={`text-base font-semibold transition-colors ${
+                                      resource.isCompleted
+                                        ? 'text-gray-400 dark:text-gray-500 line-through'
+                                        : 'text-text-main dark:text-white group-hover/item:text-primary'
+                                    }`}
+                                  >
+                                    {resource.title}
+                                  </h4>
+                                )}
                                 <p className="text-xs text-text-sub mt-1">
                                   {resource.type === 'VIDEO' ? 'Video' : 'Article'}
                                   {resource.durationText && ` • ${resource.durationText}`}
+                                  {resource.url && (
+                                    <span className="ml-1 text-primary/60">• click to open</span>
+                                  )}
                                 </p>
                               </div>
 
                               {/* Check */}
-                              <div className="flex-shrink-0 mt-2">
+                              <div
+                                className="flex-shrink-0 mt-2 cursor-pointer"
+                                onClick={() => handleToggleResource(resource.id)}
+                              >
                                 {resource.isCompleted ? (
                                   <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-white text-[16px]">
@@ -512,7 +536,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                     </span>
                                   </div>
                                 ) : (
-                                  <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover/item:border-primary transition-colors" />
+                                  <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />
                                 )}
                               </div>
                             </div>

@@ -225,10 +225,10 @@ export const generateLearningPlan = async (
   roadmap: {
     phase: string;
     theme: string;
-    tasks: string[];
+    tasks: { title: string; type: 'task'; duration: string; url: string }[];
     resources: {
-      videos: { title: string; searchQuery: string }[];
-      articles: { title: string; searchQuery: string }[];
+      videos: { title: string; url: string }[];
+      articles: { title: string; url: string }[];
     };
   }[];
 }> => {
@@ -237,7 +237,7 @@ export const generateLearningPlan = async (
       ? `\nThe learner already has experience with: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know and focuses on growth areas.`
       : '';
 
-    const prompt = `You are a Senior Curriculum Architect with 15+ years of experience designing world-class learning programs for top universities and ed-tech platforms. Your task is to create a highly structured, actionable learning roadmap.
+    const prompt = `You are a Senior Curriculum Architect and expert resource curator with 15+ years of experience designing world-class learning programs. Your task is to create a highly structured, actionable learning roadmap with REAL, CLICKABLE resource links.
 
 Learning Goal: "${goal}"
 Timeframe: ${timeframe}${skillsContext}
@@ -245,34 +245,47 @@ Timeframe: ${timeframe}${skillsContext}
 Return a JSON object with this EXACT structure:
 {
   "title": "The Ultimate Guide to [topic] (a short, motivating title)",
-  "overview": "A short, encouraging 1-2 sentence summary of what the learner will achieve by the end of this plan.",
+  "overview": "A short, encouraging 1-2 sentence summary of what the learner will achieve.",
   "roadmap": [
     {
       "phase": "Week 1",
-      "theme": "A descriptive theme for this week (e.g., Foundations & Environment Setup)",
+      "theme": "A descriptive theme for this week",
       "tasks": [
-        "Specific actionable task 1 (e.g., Install VS Code and configure extensions)",
-        "Specific actionable task 2",
-        "Specific actionable task 3"
+        {
+          "title": "Specific actionable task description",
+          "type": "task",
+          "duration": "15 min",
+          "url": "https://www.google.com/search?q=highly+specific+search+terms+for+this+task"
+        }
       ],
       "resources": {
         "videos": [
-          { "title": "Descriptive video title", "searchQuery": "specific youtube search keywords to find this video" },
-          { "title": "Another video", "searchQuery": "specific youtube search keywords" }
+          {
+            "title": "Descriptive video title (channel name)",
+            "url": "https://www.youtube.com/results?search_query=exact+video+title+channel+name+topic"
+          }
         ],
         "articles": [
-          { "title": "Descriptive article title", "searchQuery": "specific google search keywords to find this article" },
-          { "title": "Another article", "searchQuery": "specific google search keywords" }
+          {
+            "title": "Article title (source name)",
+            "url": "https://www.google.com/search?q=exact+article+title+source+name"
+          }
         ]
       }
     }
   ]
 }
 
-CRITICAL RULES:
+CRITICAL RULES FOR URLS:
+- For EVERY video resource, you MUST provide a "url" field. Construct a YouTube search URL: https://www.youtube.com/results?search_query=<exact+keywords>. Use the most specific search terms possible to find the HIGHEST VIEWED, most authoritative video on that topic. Include channel name if known (e.g., "Traversy Media", "freeCodeCamp", "TED-Ed").
+- For EVERY article resource, you MUST provide a "url" field. Construct a Google search URL: https://www.google.com/search?q=<exact+keywords>. Target the MOST READ articles from authoritative sources (MDN, freeCodeCamp, Medium, Harvard, official docs).
+- For EVERY task, you MUST provide a "url" field pointing to a Google search URL with specific terms to find a guide/tutorial for completing that task.
+- NEVER leave a url empty or null. Every single item MUST have a url.
+- Make search queries hyper-specific so the FIRST result is always the most relevant resource.
+
+GENERAL RULES:
 - Create exactly one phase per week based on the timeframe (e.g., 4 weeks = 4 phases).
 - Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles in resources.
-- searchQuery values must be highly specific, realistic search terms that would find real educational content on YouTube/Google. Never use generic terms.
 - Make the plan progressive: foundations → core skills → hands-on practice → advanced techniques & portfolio.
 - Be deeply specific to the stated goal. Do NOT be generic.
 - Tasks should be concrete and completable (e.g., "Build a responsive navigation bar using Flexbox" not "Learn CSS").

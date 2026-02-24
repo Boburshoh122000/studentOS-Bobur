@@ -180,36 +180,48 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
     return aiResult.roadmap.map((entry: any, i: number) => {
       const resources: PhaseInput['resources'] = [];
 
-      // Map tasks → ARTICLE resources (actionable items)
+      // Map tasks → ARTICLE resources with URLs (actionable items)
       if (entry.tasks?.length) {
-        for (const task of entry.tasks.slice(0, 3)) {
+        for (const task of entry.tasks.slice(0, 5)) {
+          const taskTitle = typeof task === 'string' ? task : task.title;
+          const taskUrl =
+            typeof task === 'string'
+              ? `https://www.google.com/search?q=${encodeURIComponent(taskTitle)}`
+              : task.url || `https://www.google.com/search?q=${encodeURIComponent(task.title)}`;
+          const taskDuration =
+            typeof task === 'string' ? '15 min task' : task.duration || '15 min task';
           resources.push({
-            title: task,
+            title: taskTitle,
             type: 'ARTICLE' as const,
-            durationText: '15 min task',
+            url: taskUrl,
+            durationText: taskDuration,
           });
         }
       }
 
-      // Map resources.videos → VIDEO resources with YouTube search URLs
+      // Map resources.videos → VIDEO resources with direct URLs
       if (entry.resources?.videos?.length) {
         for (const v of entry.resources.videos) {
           resources.push({
             title: v.title,
             type: 'VIDEO' as const,
-            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(v.searchQuery || v.title)}`,
+            url:
+              v.url ||
+              `https://www.youtube.com/results?search_query=${encodeURIComponent(v.searchQuery || v.title)}`,
             durationText: '30 mins',
           });
         }
       }
 
-      // Map resources.articles → ARTICLE resources with Google search URLs
+      // Map resources.articles → ARTICLE resources with direct URLs
       if (entry.resources?.articles?.length) {
         for (const a of entry.resources.articles) {
           resources.push({
             title: a.title,
             type: 'ARTICLE' as const,
-            url: `https://www.google.com/search?q=${encodeURIComponent(a.searchQuery || a.title)}`,
+            url:
+              a.url ||
+              `https://www.google.com/search?q=${encodeURIComponent(a.searchQuery || a.title)}`,
             durationText: '15 min read',
           });
         }
