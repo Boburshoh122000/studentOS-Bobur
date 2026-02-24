@@ -237,71 +237,102 @@ export const generateLearningPlan = async (
       ? `\nThe learner already has experience with: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know and focuses on growth areas.`
       : '';
 
-    const prompt = `You are a Senior Curriculum Architect and expert resource curator with 15+ years of experience designing world-class learning programs. Your task is to create a highly structured, actionable learning roadmap with REAL, CLICKABLE resource links.
+    const prompt = `You are an elite Educational Curriculum Architect with 15+ years of experience designing world-class learning programs.
 
-Learning Goal: "${goal}"
-Duration: ${duration}${skillsContext}
+The user will provide a learning topic or a specific personal goal. Your task is to analyze their intent and create a highly structured, actionable learning roadmap with REAL, CLICKABLE resource links.
 
-You MUST structure the learning plan to fit EXACTLY the duration of "${duration}".
-DURATION TO PHASES MAPPING (follow this EXACTLY):
-- "1 week" = 1 phase (Week 1)
-- "2 weeks" = 2 phases (Week 1, Week 2)
-- "3 weeks" = 3 phases (Week 1, Week 2, Week 3)
-- "4 weeks" = 4 phases (Week 1 through Week 4)
-- "2 months" = 8 phases (Week 1 through Week 8)
-- "3 months" = 12 phases (Week 1 through Week 12)
-Each phase represents exactly 1 week of study. The "phase" field must be labeled "Week N".
+USER INPUT: "${goal}"
+DURATION: ${duration}${skillsContext}
+
+═══════════════════════════════════════════════
+RULE 1 — COMPREHENSION & SYNTHESIS (CRITICAL):
+═══════════════════════════════════════════════
+DO NOT ever copy-paste the user's raw input text into titles, phase names, or themes.
+You must ANALYZE and SYNTHESIZE the user's intent into clean, professional language.
+
+EXAMPLES:
+- User says "I have already IELTS 6.0 and i neednt basic info it so give me 7.0+ plan"
+  → Title: "Advanced IELTS 7.0+ Preparation Roadmap"
+  → Phase theme: "Mastering Task 2 Essay Structures for Band 7+"
+  → WRONG: "Mastering I have already IELTS 6.0 and i neednt basic info..."
+
+- User says "i wanna learn react but already know html css js"
+  → Title: "React Development Mastery Plan"
+  → Phase theme: "Component Architecture & JSX Fundamentals"
+  → WRONG: "Mastering i wanna learn react..."
+
+═══════════════════════════════════════════════
+RULE 2 — NO GENERIC TEMPLATES:
+═══════════════════════════════════════════════
+NEVER use lazy, generic phase titles like:
+- "[Topic] Core Concepts" / "[Topic] in Action" / "Getting Started with [Topic]" / "Advanced [Topic]"
+Instead, write HIGHLY SPECIFIC, level-appropriate titles relevant to the user's actual goal.
+
+═══════════════════════════════════════════════
+RULE 3 — DURATION MAPPING (STRICT):
+═══════════════════════════════════════════════
+Map "${duration}" to phases EXACTLY:
+- "1 week" = 1 phase | "2 weeks" = 2 phases | "3 weeks" = 3 phases
+- "4 weeks" = 4 phases | "2 months" = 8 phases | "3 months" = 12 phases
+Each phase = 1 week. Label each phase "Week N".
+
+═══════════════════════════════════════════════
+RULE 4 — MANDATORY CLICKABLE URLS (ZERO EXCEPTIONS):
+═══════════════════════════════════════════════
+EVERY task, video, and article MUST have a "url" field. No exceptions. NEVER leave url empty or null.
+ANTI-HALLUCINATION: Do NOT invent fake YouTube video IDs or fabricate URLs.
+
+Strategy:
+a) If you know the EXACT permanent URL (freeCodeCamp, CS50, MDN, official docs), use it directly.
+b) Otherwise, construct a GUARANTEED SEARCH URL:
+   - Videos: https://www.youtube.com/results?search_query=best+<specific+subtopic>+tutorial+<channel+if+known>
+   - Articles: https://www.google.com/search?q=comprehensive+guide+<specific+subtopic>+<source+if+known>
+   - Tasks: https://www.google.com/search?q=step+by+step+<specific+task>+tutorial
+c) Make queries HYPER-SPECIFIC with known channel/source names (Traversy Media, freeCodeCamp, Fireship, TED-Ed, MDN, W3Schools).
+
+═══════════════════════════════════════════════
+RULE 5 — CONTENT QUALITY:
+═══════════════════════════════════════════════
+- Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles.
+- Progressive plan: foundations → core skills → practice → advanced techniques & portfolio.
+- Tasks must be concrete (e.g., "Write a Band 7 Task 2 essay on technology" NOT "Practice writing").
+- Skip basics if the user indicates prior knowledge. Tailor to their stated level.
+
+═══════════════════════════════════════════════
 
 Return a JSON object with this EXACT structure:
 {
-  "title": "The Ultimate Guide to [topic] (a short, motivating title)",
+  "title": "A clean, synthesized, professional title (NOT the user's raw text)",
   "overview": "A short, encouraging 1-2 sentence summary of what the learner will achieve.",
   "roadmap": [
     {
       "phase": "Week 1",
-      "theme": "A descriptive theme for this week",
+      "theme": "A specific, descriptive theme (NOT generic)",
       "tasks": [
         {
-          "title": "Specific actionable task description",
+          "title": "Specific actionable task",
           "type": "task",
           "duration": "15 min",
-          "url": "https://www.google.com/search?q=highly+specific+search+terms+for+this+task"
+          "url": "https://www.google.com/search?q=specific+task+tutorial"
         }
       ],
       "resources": {
         "videos": [
           {
-            "title": "Descriptive video title (channel name)",
-            "url": "https://www.youtube.com/results?search_query=exact+video+title+channel+name+topic"
+            "title": "Specific video title (Channel Name)",
+            "url": "https://www.youtube.com/results?search_query=specific+topic+tutorial"
           }
         ],
         "articles": [
           {
-            "title": "Article title (source name)",
-            "url": "https://www.google.com/search?q=exact+article+title+source+name"
+            "title": "Article title (Source Name)",
+            "url": "https://www.google.com/search?q=specific+topic+guide"
           }
         ]
       }
     }
   ]
 }
-
-RESOURCE CURATION RULES (CRITICAL — ANTI-HALLUCINATION):
-1. You must act as an elite curator. Every resource must be from the HIGHEST QUALITY, MOST VIEWED, and MOST AUTHORITATIVE sources available.
-2. EVERY resource MUST have a valid, working "url" field. NEVER leave a url empty or null.
-3. ANTI-HALLUCINATION: Do NOT invent fake YouTube video IDs or fabricate Medium/blog URLs. If you know the exact, permanent URL of a world-famous resource (e.g., a specific freeCodeCamp course page, CS50 lecture, official documentation like MDN, React docs, Python docs), use that direct URL.
-4. GUARANTEED SEARCH URLS: If you do NOT know a reliable exact URL, you MUST construct a targeted search query URL that guarantees the top result is the best content:
-   - For Videos: https://www.youtube.com/results?search_query=highest+viewed+<specific+topic>+tutorial+<channel+name+if+known>
-   - For Articles: https://www.google.com/search?q=best+comprehensive+guide+to+<specific+topic>+<authoritative+source>
-   - For Tasks: https://www.google.com/search?q=step+by+step+tutorial+<specific+task+description>
-5. Make search queries HYPER-SPECIFIC. Include channel names (Traversy Media, freeCodeCamp, Fireship, TED-Ed), source names (MDN, W3Schools, official docs), and topic qualifiers so the FIRST search result is always the most relevant.
-
-GENERAL RULES:
-- Create one phase per week. The number of phases = the number of weeks YOU determine is optimal.
-- Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles in resources.
-- Make the plan progressive: foundations → core skills → hands-on practice → advanced techniques & portfolio.
-- Be deeply specific to the stated goal. Do NOT be generic.
-- Tasks should be concrete and completable (e.g., "Build a responsive navigation bar using Flexbox" not "Learn CSS").
 
 Respond ONLY with valid JSON. No markdown, no code fences, no explanation outside the JSON.`;
 
