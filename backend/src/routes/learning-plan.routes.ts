@@ -175,7 +175,65 @@ interface PhaseInput {
 }
 
 function transformToPhases(topic: string, aiResult: any, durationWeeks: number): PhaseInput[] {
-  // New format: AI returns { planTitle, description, phases: [...] }
+  // GPT-4o format: AI returns { title, overview, roadmap: [...] }
+  if (aiResult?.roadmap?.length) {
+    return aiResult.roadmap.map((entry: any, i: number) => {
+      const resources: PhaseInput['resources'] = [];
+
+      // Map tasks → ARTICLE resources (actionable items)
+      if (entry.tasks?.length) {
+        for (const task of entry.tasks.slice(0, 3)) {
+          resources.push({
+            title: task,
+            type: 'ARTICLE' as const,
+            durationText: '15 min task',
+          });
+        }
+      }
+
+      // Map resources.videos → VIDEO resources with YouTube search URLs
+      if (entry.resources?.videos?.length) {
+        for (const v of entry.resources.videos) {
+          resources.push({
+            title: v.title,
+            type: 'VIDEO' as const,
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(v.searchQuery || v.title)}`,
+            durationText: '30 mins',
+          });
+        }
+      }
+
+      // Map resources.articles → ARTICLE resources with Google search URLs
+      if (entry.resources?.articles?.length) {
+        for (const a of entry.resources.articles) {
+          resources.push({
+            title: a.title,
+            type: 'ARTICLE' as const,
+            url: `https://www.google.com/search?q=${encodeURIComponent(a.searchQuery || a.title)}`,
+            durationText: '15 min read',
+          });
+        }
+      }
+
+      return {
+        title: entry.phase || `Week ${i + 1}`,
+        description: entry.theme || '',
+        resources:
+          resources.length > 0
+            ? resources
+            : [
+                {
+                  title: `Introduction to ${topic}`,
+                  type: 'VIDEO' as const,
+                  durationText: '25 mins',
+                },
+                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+              ],
+      };
+    });
+  }
+
+  // Legacy format: AI returns { planTitle, description, phases: [...] }
   if (aiResult?.phases?.length) {
     return aiResult.phases.map((phase: any, i: number) => {
       const resources: PhaseInput['resources'] = [];

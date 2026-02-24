@@ -433,10 +433,10 @@ export const aiApi = {
 
 // Learning Plan API
 export const learningPlanApi = {
-  getActive: () => api.get('/learning-plan'),
-  generate: (data: { topic: string; weeks: number }) => api.post('/learning-plan/generate', data),
-  toggleResource: (id: string) => api.patch(`/learning-plan/resources/${id}/toggle`, {}),
-  deletePlan: (id: string) => api.delete(`/learning-plan/${id}`),
+  getActive: () => api.get('/learning-plans'),
+  generate: (data: { topic: string; weeks: string }) => api.post('/learning-plans/generate', data),
+  toggleResource: (id: string) => api.patch(`/learning-plans/resources/${id}/toggle`, {}),
+  deletePlan: (id: string) => api.delete(`/learning-plans/${id}`),
 };
 
 // Admin API

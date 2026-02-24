@@ -35,7 +35,7 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
   messages.push({ role: 'user', content: prompt });
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     messages,
     temperature,
     max_tokens: maxTokens,
@@ -220,65 +220,72 @@ export const generateLearningPlan = async (
   currentSkills: string[],
   timeframe: string
 ): Promise<{
-  planTitle: string;
-  description: string;
-  phases: {
-    week: string;
-    title: string;
-    focus: string;
-    actionItems: string[];
-    resources: { type: 'video' | 'article'; title: string; linkQuery: string }[];
+  title: string;
+  overview: string;
+  roadmap: {
+    phase: string;
+    theme: string;
+    tasks: string[];
+    resources: {
+      videos: { title: string; searchQuery: string }[];
+      articles: { title: string; searchQuery: string }[];
+    };
   }[];
 }> => {
   try {
     const skillsContext = currentSkills.length
-      ? `\nThe learner already knows: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know.`
+      ? `\nThe learner already has experience with: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know and focuses on growth areas.`
       : '';
 
-    const prompt = `You are an expert curriculum designer and learning coach. Create a highly structured, phased learning roadmap.
+    const prompt = `You are a Senior Curriculum Architect with 15+ years of experience designing world-class learning programs for top universities and ed-tech platforms. Your task is to create a highly structured, actionable learning roadmap.
 
-Goal: "${goal}"
+Learning Goal: "${goal}"
 Timeframe: ${timeframe}${skillsContext}
 
 Return a JSON object with this EXACT structure:
 {
-  "planTitle": "A short, motivating title for this learning plan",
-  "description": "A 1-2 sentence overview of what the learner will achieve",
-  "phases": [
+  "title": "The Ultimate Guide to [topic] (a short, motivating title)",
+  "overview": "A short, encouraging 1-2 sentence summary of what the learner will achieve by the end of this plan.",
+  "roadmap": [
     {
-      "week": "Week 1",
-      "title": "Phase title (e.g. Foundations & Setup)",
-      "focus": "One sentence describing the key focus area for this week",
-      "actionItems": [
-        "Specific actionable task 1",
+      "phase": "Week 1",
+      "theme": "A descriptive theme for this week (e.g., Foundations & Environment Setup)",
+      "tasks": [
+        "Specific actionable task 1 (e.g., Install VS Code and configure extensions)",
         "Specific actionable task 2",
         "Specific actionable task 3"
       ],
-      "resources": [
-        { "type": "video", "title": "Descriptive resource title", "linkQuery": "YouTube search keywords for this resource" },
-        { "type": "article", "title": "Descriptive resource title", "linkQuery": "Google search keywords for this resource" }
-      ]
+      "resources": {
+        "videos": [
+          { "title": "Descriptive video title", "searchQuery": "specific youtube search keywords to find this video" },
+          { "title": "Another video", "searchQuery": "specific youtube search keywords" }
+        ],
+        "articles": [
+          { "title": "Descriptive article title", "searchQuery": "specific google search keywords to find this article" },
+          { "title": "Another article", "searchQuery": "specific google search keywords" }
+        ]
+      }
     }
   ]
 }
 
-Rules:
-- Create one phase per week based on the timeframe
-- Each phase must have 3-5 actionItems and 2-4 resources
-- Resources should alternate between "video" and "article" types
-- linkQuery should be realistic search terms that would find real content
-- Make the plan progressive: foundations → core skills → practice → advanced/portfolio
-- Be specific to the goal, not generic
+CRITICAL RULES:
+- Create exactly one phase per week based on the timeframe (e.g., 4 weeks = 4 phases).
+- Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles in resources.
+- searchQuery values must be highly specific, realistic search terms that would find real educational content on YouTube/Google. Never use generic terms.
+- Make the plan progressive: foundations → core skills → hands-on practice → advanced techniques & portfolio.
+- Be deeply specific to the stated goal. Do NOT be generic.
+- Tasks should be concrete and completable (e.g., "Build a responsive navigation bar using Flexbox" not "Learn CSS").
 
-Respond ONLY with valid JSON, no markdown.`;
+Respond ONLY with valid JSON. No markdown, no code fences, no explanation outside the JSON.`;
 
-    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096, jsonMode: true });
+    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 8192, jsonMode: true });
 
     try {
       return JSON.parse(cleanJSON(response));
     } catch {
       console.error('Failed to parse learning plan response:', response.slice(0, 200));
-      return { planTitle: goal, description: '', phases: [] };
+      return { title: goal, overview: '', roadmap: [] };
     }
   } catch (error) {
     return handleAIError(error);
