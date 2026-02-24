@@ -41,6 +41,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [recentPlans, setRecentPlans] = useState<string[]>([]);
 
   // Fetch active plan on mount
   useEffect(() => {
@@ -74,6 +75,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       const data = res.data as any;
       if (data?.plan) {
         setPlan(data.plan);
+        // Add to recent plans history (max 5)
+        setRecentPlans((prev) => {
+          const updated = [topic.trim(), ...prev.filter((p) => p !== topic.trim())].slice(0, 5);
+          return updated;
+        });
         setTopic('');
       }
     } catch (err: any) {
@@ -173,43 +179,22 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             New Plan
           </button>
         ) : (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-              placeholder="e.g. Become a Junior Product Designer"
-              className="flex-1 px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary w-72 dark:text-white"
-            />
-            <select
-              value={weeks}
-              onChange={(e) => setWeeks(e.target.value)}
-              aria-label="Select duration"
-              className="px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-lg text-sm dark:text-white"
-            >
-              <option value="2">2 weeks</option>
-              <option value="4">4 weeks</option>
-              <option value="8">8 weeks</option>
-              <option value="12">12 weeks</option>
-            </select>
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || !topic.trim()}
-              className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-                  Generate Plan
-                </>
-              )}
-            </button>
+          /* Recent Plans pills */
+          <div className="flex items-center gap-2 flex-wrap justify-end max-w-md">
+            {recentPlans.length > 0 && (
+              <>
+                <span className="text-xs text-text-sub font-medium mr-1">Recent:</span>
+                {recentPlans.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setTopic(p)}
+                    className="px-3 py-1.5 text-sm rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-primary/30 transition-all cursor-pointer bg-white/60 dark:bg-card-dark/60 backdrop-blur-sm"
+                  >
+                    {p.length > 24 ? `${p.slice(0, 24)}…` : p}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -256,7 +241,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               Create Your Learning Plan
             </h3>
             <p className="text-text-sub text-center max-w-md mb-8">
-              Enter a topic above and our AI will generate a personalized, phased learning path with
+              Enter a topic below and our AI will generate a personalized, phased learning path with
               curated resources.
             </p>
             <div className="grid grid-cols-3 gap-6 w-full max-w-lg">
@@ -276,6 +261,58 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                   <p className="text-xs text-text-sub mt-1">{f.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* ── Premium AI Prompt Bar ── */}
+            <div className="w-full max-w-2xl mx-auto mt-16">
+              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-2 pl-4">
+                  <span className="material-symbols-outlined text-primary text-[20px]">
+                    auto_awesome
+                  </span>
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                    placeholder="What do you want to learn? e.g. Become a Junior Product Designer"
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
+                  />
+                </div>
+                <select
+                  value={weeks}
+                  onChange={(e) => setWeeks(e.target.value)}
+                  aria-label="Select duration"
+                  className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-text-main dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="2">2 weeks</option>
+                  <option value="4">4 weeks</option>
+                  <option value="8">8 weeks</option>
+                  <option value="12">12 weeks</option>
+                </select>
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !topic.trim()}
+                  className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
+                >
+                  {isGenerating ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin text-[16px]">
+                        sync
+                      </span>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      Generate
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-text-sub text-center mt-3">
+                Powered by GPT-4o · Generates phased roadmaps with curated videos & articles
+              </p>
             </div>
           </div>
         </div>
