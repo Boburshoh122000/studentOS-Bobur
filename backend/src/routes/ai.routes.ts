@@ -107,7 +107,7 @@ router.get('/test', async (_req, res) => {
           content: "Say exactly this: 'Hello! Your OpenAI integration is working perfectly!'",
         },
       ],
-      max_tokens: 50,
+      max_completion_tokens: 50,
     });
     const message = completion.choices[0]?.message?.content || '';
 

@@ -38,7 +38,7 @@ const callAI = async (prompt: string, opts: CallAIOptions = {}): Promise<string>
     model: 'gpt-5.2',
     messages,
     temperature,
-    max_tokens: maxTokens,
+    max_completion_tokens: maxTokens,
     ...(jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
   });
 
