@@ -23,6 +23,7 @@ const updateProfileSchema = z.object({
     headline: z.string().max(200).optional(),
     educationHistory: z.any().optional(),
     workExperience: z.any().optional(),
+    certificates: z.any().optional(),
   }),
 });
 
