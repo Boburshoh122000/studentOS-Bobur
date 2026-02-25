@@ -164,7 +164,29 @@ export default function Sidebar({
       <div
         className={`flex flex-col ${expanded ? 'items-stretch px-4' : 'items-center px-2'} space-y-2 w-full mt-auto`}
       >
-        {/* Settings */}
+        {/* 1. User Profile */}
+        <div
+          onClick={() => handleNavClick(Screen.PROFILE)}
+          className={`flex items-center ${expanded ? 'gap-3 px-3 py-2 w-full' : 'justify-center size-10'} rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer`}
+        >
+          <div
+            className="size-8 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-gray-700 flex-shrink-0"
+            style={{ backgroundImage: `url('${avatarUrl}')` }}
+          />
+          <div
+            className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
+          >
+            <span className="text-sm font-bold text-text-main dark:text-white truncate">
+              {fullName}
+            </span>
+            <span className="text-xs text-text-sub truncate">{email}</span>
+          </div>
+        </div>
+
+        {/* 2. Language Switcher */}
+        <LanguageSwitcher compact={!expanded} />
+
+        {/* 3. Settings */}
         <button
           onClick={() => handleNavClick(Screen.SETTINGS)}
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
@@ -185,10 +207,7 @@ export default function Sidebar({
           )}
         </button>
 
-        {/* Language Switcher */}
-        <LanguageSwitcher compact={!expanded} />
-
-        {/* Logout Button */}
+        {/* 4. Logout Button */}
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
@@ -211,25 +230,6 @@ export default function Sidebar({
             </span>
           )}
         </button>
-
-        {/* User Profile */}
-        <div
-          onClick={() => handleNavClick(Screen.PROFILE)}
-          className={`flex items-center ${expanded ? 'gap-3 px-3 py-2 w-full' : 'justify-center size-10'} rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer`}
-        >
-          <div
-            className="size-8 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-gray-700 flex-shrink-0"
-            style={{ backgroundImage: `url('${avatarUrl}')` }}
-          />
-          <div
-            className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
-          >
-            <span className="text-sm font-bold text-text-main dark:text-white truncate">
-              {fullName}
-            </span>
-            <span className="text-xs text-text-sub truncate">{email}</span>
-          </div>
-        </div>
       </div>
     </>
   );
