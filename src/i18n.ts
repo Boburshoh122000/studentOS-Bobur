@@ -10,9 +10,9 @@ export const supportedLocales = ['en', 'ru', 'uz'] as const;
 export type Locale = (typeof supportedLocales)[number];
 
 export const localeLabels: Record<Locale, { flag: string; label: string }> = {
-  en: { flag: '🇬🇧', label: 'EN' },
-  ru: { flag: '🇷🇺', label: 'RU' },
-  uz: { flag: '🇺🇿', label: 'UZ' },
+  en: { flag: '🇬🇧', label: 'English' },
+  ru: { flag: '🇷🇺', label: 'Русский' },
+  uz: { flag: '🇺🇿', label: "O'zbek" },
 };
 
 i18n

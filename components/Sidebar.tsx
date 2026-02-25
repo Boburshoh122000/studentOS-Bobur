@@ -45,7 +45,6 @@ export default function Sidebar({
     [Screen.LEARNING_PLAN]: 'Sidebar.learning_plan',
     [Screen.HABIT_TRACKER]: 'Sidebar.habit_tracker',
     [Screen.SCHOLARSHIPS]: 'Sidebar.scholarships',
-    [Screen.PRESENTATION]: 'Sidebar.presentations',
     [Screen.PLAGIARISM]: 'Sidebar.plagiarism',
     [Screen.SETTINGS]: 'Sidebar.settings',
   };
@@ -165,6 +164,27 @@ export default function Sidebar({
       <div
         className={`flex flex-col ${expanded ? 'items-stretch px-4' : 'items-center px-2'} space-y-2 w-full mt-auto`}
       >
+        {/* Settings */}
+        <button
+          onClick={() => handleNavClick(Screen.SETTINGS)}
+          className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
+          title={!expanded ? t('Sidebar.settings') : ''}
+        >
+          <span
+            className={`material-symbols-outlined ${currentScreen === Screen.SETTINGS ? 'icon-filled' : 'group-hover:text-primary'} ${!expanded ? 'text-2xl' : 'text-[20px]'}`}
+          >
+            settings
+          </span>
+          {expanded && (
+            <span className="text-sm font-medium whitespace-nowrap">{t('Sidebar.settings')}</span>
+          )}
+          {!expanded && (
+            <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              {t('Sidebar.settings')}
+            </span>
+          )}
+        </button>
+
         {/* Language Switcher */}
         <LanguageSwitcher compact={!expanded} />
 

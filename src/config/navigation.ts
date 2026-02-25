@@ -17,9 +17,7 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
   { screen: Screen.LEARNING_PLAN, icon: 'book_2', label: 'Learning Plan' },
   { screen: Screen.HABIT_TRACKER, icon: 'track_changes', label: 'Habit Tracker' },
   { screen: Screen.SCHOLARSHIPS, icon: 'emoji_events', label: 'Scholarships' },
-  { screen: Screen.PRESENTATION, icon: 'co_present', label: 'Presentation Maker' },
   { screen: Screen.PLAGIARISM, icon: 'plagiarism', label: 'Plagiarism Checker' },
-  { screen: Screen.SETTINGS, icon: 'settings', label: 'Settings' },
 ];
 
 /**
