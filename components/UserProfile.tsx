@@ -18,6 +18,8 @@ import {
   FileText,
   Image as ImageIcon,
   Check,
+  Download,
+  Eye,
 } from 'lucide-react';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -84,6 +86,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
   const [addingEdu, setAddingEdu] = useState(false);
   const [editingEduIdx, setEditingEduIdx] = useState<number | null>(null);
   const [addingCert, setAddingCert] = useState(false);
+  const [viewingCert, setViewingCert] = useState<CertificateEntry | null>(null);
 
   /* ── Profile data ──────────────────────────────────────── */
   const [fullName, setFullName] = useState('');
@@ -816,14 +819,12 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   {cert.fileUrl && (
-                    <a
-                      href={cert.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary font-medium hover:underline mr-2 opacity-0 group-hover:opacity-100 transition"
+                    <button
+                      onClick={() => setViewingCert(cert)}
+                      className="flex items-center gap-1 text-xs text-primary font-medium hover:underline mr-2 opacity-0 group-hover:opacity-100 transition"
                     >
-                      View
-                    </a>
+                      <Eye size={13} /> View
+                    </button>
                   )}
                   <button
                     onClick={() => deleteCert(i)}
@@ -890,6 +891,102 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
           )}
         </div>
       </div>
+
+      {/* ═══ MEDIA VIEWER MODAL ═══ */}
+      {viewingCert && (
+        <div className="fixed inset-0 z-[100] flex" onClick={() => setViewingCert(null)}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+
+          {/* Content */}
+          <div className="relative flex w-full h-full" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => setViewingCert(null)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 text-white hover:bg-black/70 transition"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Left — Media Preview */}
+            <div className="flex-1 flex items-center justify-center p-6 bg-black/40">
+              {viewingCert.fileName?.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={viewingCert.fileUrl}
+                  className="w-full max-w-2xl h-[80vh] rounded-lg border-0"
+                  title={viewingCert.name}
+                />
+              ) : (
+                <img
+                  src={viewingCert.fileUrl}
+                  alt={viewingCert.name}
+                  className="max-w-full max-h-[85vh] rounded-lg object-contain shadow-2xl"
+                />
+              )}
+            </div>
+
+            {/* Right — Details Panel */}
+            <div className="w-80 bg-white dark:bg-[#1a1f2e] border-l border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h2 className="text-base font-bold text-gray-900 dark:text-white">Media</h2>
+                <button
+                  onClick={() => setViewingCert(null)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded transition"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Details */}
+              <div className="px-5 py-5 flex-1 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                      {viewingCert.name || 'Certificate'}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{viewingCert.issuer}</p>
+                  </div>
+                </div>
+
+                {viewingCert.date && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      Date
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{viewingCert.date}</p>
+                  </div>
+                )}
+
+                {viewingCert.fileName && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      File
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 break-all">
+                      {viewingCert.fileName}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-800">
+                <a
+                  href={viewingCert.fileUrl}
+                  download={viewingCert.fileName || 'certificate'}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition"
+                >
+                  <Download size={16} /> Download
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
