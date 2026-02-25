@@ -5,7 +5,6 @@ import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Camera, ChevronLeft, ChevronRight, Globe, GraduationCap, Hourglass, Link, LogOut, Pencil, Trash2, User, UserPlus, Users, X } from 'lucide-react';
 
 interface TeamMember {
   id: string;
@@ -230,7 +229,26 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
     >
       <span className={`material-symbols-outlined ${isActive ? 'fill-1' : ''}`}>{icon}</span>
       {isSidebarExpanded && (
-        {isSidebarExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+        <span className={`text-sm whitespace-nowrap ${isActive ? 'font-semibold' : 'font-medium'}`}>
+          {label}
+        </span>
+      )}
+    </button>
+  );
+
+  return (
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
+      {/* Sidebar */}
+      <aside
+        className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}
+      >
+        <button
+          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+        >
+          <span className="material-symbols-outlined text-[14px]">
+            {isSidebarExpanded ? 'chevron_left' : 'chevron_right'}
+          </span>
         </button>
         <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
           <div className="flex flex-col gap-6">
@@ -239,7 +257,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <span className="material-symbols-outlined text-2xl">school</span>
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -288,7 +306,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               disabled={isLoggingOut}
               className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors justify-center ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isLoggingOut ? <Hourglass size={20} /> : <LogOut size={20} />}
+              <span className="material-symbols-outlined text-lg">
+                {isLoggingOut ? 'hourglass_empty' : 'logout'}
+              </span>
               {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
             </button>
           </div>
@@ -311,7 +331,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               onClick={openCreateModal}
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
             >
-              <UserPlus size={18} />
+              <span className="material-symbols-outlined text-lg">person_add</span>
               <span>Add Member</span>
             </button>
           </header>
@@ -323,7 +343,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Members
                 </p>
-                <Users size={20} className="text-primary" />
+                <span className="material-symbols-outlined text-primary/60 text-xl">groups</span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {members.length}
@@ -334,7 +354,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   With Avatar
                 </p>
-                <Camera size={20} className="text-emerald-500" />
+                <span className="material-symbols-outlined text-emerald-500/80 text-xl">
+                  photo_camera
+                </span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {members.filter((m) => m.avatarUrl).length}
@@ -345,7 +367,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   With Social Links
                 </p>
-                <Link size={20} className="text-blue-500" />
+                <span className="material-symbols-outlined text-blue-500/80 text-xl">link</span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {
@@ -364,7 +386,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               </div>
             ) : members.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-slate-500">
-                <UserPlus size={40} />
+                <span className="material-symbols-outlined text-5xl mb-3">group_add</span>
                 <p className="font-medium">No team members yet</p>
                 <button
                   onClick={openCreateModal}
@@ -442,7 +464,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-blue-600 transition-colors"
                                 title="LinkedIn"
                               >
-                                <Link size={18} />
+                                <span className="material-symbols-outlined text-[18px]">link</span>
                               </a>
                             )}
                             {member.socialTwitter && (
@@ -453,7 +475,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-sky-500 transition-colors"
                                 title="Twitter"
                               >
-                                <Globe size={18} />
+                                <span className="material-symbols-outlined text-[18px]">
+                                  public
+                                </span>
                               </a>
                             )}
                             {member.socialWebsite && (
@@ -464,7 +488,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-emerald-500 transition-colors"
                                 title="Website"
                               >
-                                <Globe size={18} />
+                                <span className="material-symbols-outlined text-[18px]">
+                                  language
+                                </span>
                               </a>
                             )}
                             {!member.socialLinkedin &&
@@ -481,14 +507,14 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                               title="Edit"
                             >
-                              <Pencil size={20} />
+                              <span className="material-symbols-outlined text-[20px]">edit</span>
                             </button>
                             <button
                               onClick={() => handleDelete(member.id)}
                               className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                               title="Delete"
                             >
-                              <Trash2 size={20} />
+                              <span className="material-symbols-outlined text-[20px]">delete</span>
                             </button>
                           </div>
                         </td>
@@ -519,7 +545,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 onClick={() => setShowModal(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <X size={20} />
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -547,11 +573,13 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                     />
                   ) : (
                     <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary">
-                      <User size={30} />
+                      <span className="material-symbols-outlined text-3xl">person</span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera size={20} className="text-white" />
+                    <span className="material-symbols-outlined text-white text-xl">
+                      photo_camera
+                    </span>
                   </div>
                 </button>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -603,7 +631,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Link size={20} className="text-slate-400" />
+                  <span className="material-symbols-outlined text-slate-400 text-[20px]">link</span>
                   <input
                     type="text"
                     value={form.socialLinkedin}
@@ -613,7 +641,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Globe size={20} className="text-slate-400" />
+                  <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                    public
+                  </span>
                   <input
                     type="text"
                     value={form.socialTwitter}
@@ -623,7 +653,9 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Globe size={20} className="text-slate-400" />
+                  <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                    language
+                  </span>
                   <input
                     type="text"
                     value={form.socialWebsite}

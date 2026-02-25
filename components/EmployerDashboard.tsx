@@ -6,7 +6,6 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../src/contexts/AuthContext';
 import PostJobModal from './PostJobModal';
 import ViewApplicantModal from './ViewApplicantModal';
-import { AlertTriangle, ArrowUpDown, Briefcase, Building2, Camera, ChevronRight, Clock, CloudUpload, Download, Eye, FileText, Filter, Globe, GraduationCap, LayoutDashboard, ListChecks, Loader2, Lock, LogOut, MapPin, Menu, MoreHorizontal, MoreVertical, Plus, Save, Search, Star, TrendingUp, User, UserPlus, Users, Video, X } from 'lucide-react';
 
 interface EmployerStats {
   activeJobs: number;
@@ -219,7 +218,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30">
-                <GraduationCap size={20} />
+                <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <div className="flex flex-col">
                 <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white tracking-tight">
@@ -236,7 +235,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 onClick={() => setActiveTab('dashboard')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all ${activeTab === 'dashboard' ? 'bg-primary/10 text-primary dark:text-white dark:bg-primary/20' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
               >
-                <LayoutDashboard size={20} className={`text-[20px] ${activeTab === 'dashboard' ? 'fill-1' : ''}`} />
+                <span
+                  className={`material-symbols-outlined text-[20px] ${activeTab === 'dashboard' ? 'fill-1' : ''}`}
+                >
+                  dashboard
+                </span>
                 <span
                   className={`text-sm ${activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'}`}
                 >
@@ -269,7 +272,78 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 >
                   person_search
                 </span>
-                {isLoggingOut ? <Loader2 size={20} /> : <LogOut size={20} />}
+                <span
+                  className={`text-sm ${activeTab === 'students' ? 'font-semibold' : 'font-medium'}`}
+                >
+                  Student Profiles
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('company')}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all ${activeTab === 'company' ? 'bg-primary/10 text-primary dark:text-white dark:bg-primary/20' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+              >
+                <span
+                  className={`material-symbols-outlined text-[20px] ${activeTab === 'company' ? 'fill-1' : ''}`}
+                >
+                  business
+                </span>
+                <span
+                  className={`text-sm ${activeTab === 'company' ? 'font-semibold' : 'font-medium'}`}
+                >
+                  Company Profile
+                </span>
+              </button>
+            </nav>
+          </div>
+
+          <div className="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-all cursor-pointer ${activeTab === 'profile' ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+            >
+              <div
+                className={`h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm border-2 ${activeTab === 'profile' ? 'border-primary' : 'border-white dark:border-slate-700'} shadow-sm`}
+              >
+                {getInitials(company.companyName || 'HR')}
+              </div>
+              <div className="flex flex-col overflow-hidden text-left">
+                <p
+                  className={`text-sm font-bold truncate ${activeTab === 'profile' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
+                >
+                  {company.companyName || 'TechFlow HR'}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Hiring Manager
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-[16px] text-slate-400 ml-auto">
+                chevron_right
+              </span>
+            </button>
+            <button
+              onClick={async () => {
+                setIsLoggingOut(true);
+                try {
+                  await logout();
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  toast.success('Logged out successfully');
+                  window.location.href = '/signin';
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                  toast.error('Logout failed');
+                  setIsLoggingOut(false);
+                }
+              }}
+              disabled={isLoggingOut}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-50 dark:bg-white/5 p-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+            >
+              <span
+                className={`material-symbols-outlined text-[18px] ${isLoggingOut ? 'animate-spin' : ''}`}
+              >
+                {isLoggingOut ? 'progress_activity' : 'logout'}
+              </span>
               {isLoggingOut ? 'Logging out...' : 'Logout'}
             </button>
           </div>
@@ -292,7 +366,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => navigateTo(Screen.LANDING)}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30">
-                      <GraduationCap size={20} />
+                      <span className="material-symbols-outlined text-[20px]">school</span>
                     </div>
                     <div className="flex flex-col">
                       <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white tracking-tight">
@@ -307,7 +381,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setIsMobileSidebarOpen(false)}
                     className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <X size={20} className="text-slate-500" />
+                    <span className="material-symbols-outlined text-slate-500">close</span>
                   </button>
                 </div>
 
@@ -331,7 +405,63 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       >
                         {item.icon}
                       </span>
-                      {isLoggingOut ? <Loader2 size={20} /> : <LogOut size={20} />}
+                      <span
+                        className={`text-sm ${activeTab === item.id ? 'font-semibold' : 'font-medium'}`}
+                      >
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <button
+                  onClick={() => {
+                    setActiveTab('profile');
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-all cursor-pointer ${activeTab === 'profile' ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                >
+                  <div
+                    className={`h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm border-2 ${activeTab === 'profile' ? 'border-primary' : 'border-white dark:border-slate-700'} shadow-sm`}
+                  >
+                    {getInitials(company.companyName || 'HR')}
+                  </div>
+                  <div className="flex flex-col overflow-hidden text-left">
+                    <p
+                      className={`text-sm font-bold truncate ${activeTab === 'profile' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
+                    >
+                      {company.companyName || 'TechFlow HR'}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      Hiring Manager
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsLoggingOut(true);
+                    try {
+                      await logout();
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      toast.success('Logged out successfully');
+                      window.location.href = '/signin';
+                    } catch (error) {
+                      console.error('Logout failed:', error);
+                      toast.error('Logout failed');
+                      setIsLoggingOut(false);
+                    }
+                  }}
+                  disabled={isLoggingOut}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-50 dark:bg-white/5 p-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                >
+                  <span
+                    className={`material-symbols-outlined text-[18px] ${isLoggingOut ? 'animate-spin' : ''}`}
+                  >
+                    {isLoggingOut ? 'progress_activity' : 'logout'}
+                  </span>
                   {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </button>
               </div>
@@ -348,11 +478,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Open menu"
           >
-            <Menu size={20} className="text-slate-900 text-white dark:text-white" />
+            <span className="material-symbols-outlined text-slate-900 dark:text-white">menu</span>
           </button>
           <div className="flex items-center gap-2">
             <div className="size-7 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-              <GraduationCap size={16} className="text-white" />
+              <span className="material-symbols-outlined text-white text-[16px]">school</span>
             </div>
             <span className="text-sm font-bold text-slate-900 dark:text-white">
               Employer Console
@@ -379,14 +509,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setActiveTab('company')}
                     className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm"
                   >
-                    <Building2 size={20} />
+                    <span className="material-symbols-outlined text-[20px]">domain</span>
                     <span>View Profile</span>
                   </button>
                   <button
                     onClick={() => setShowPostJobModal(true)}
                     className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg shadow-primary/30"
                   >
-                    <Plus size={20} />
+                    <span className="material-symbols-outlined text-[20px]">add</span>
                     <span>Post New Job</span>
                   </button>
                 </div>
@@ -401,7 +531,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Active Vacancies
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-primary dark:bg-primary/20 dark:text-primary-light">
-                      <ListChecks size={20} />
+                      <span className="material-symbols-outlined text-[20px]">list_alt</span>
                     </div>
                   </div>
                   <div>
@@ -410,7 +540,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <span className="material-symbols-outlined text-[16px] mr-0.5">
+                          trending_up
+                        </span>
                         2 New
                       </span>
                       <span className="text-slate-400 font-medium">this week</span>
@@ -424,7 +556,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Total Applicants
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300">
-                      <Users size={20} />
+                      <span className="material-symbols-outlined text-[20px]">group</span>
                     </div>
                   </div>
                   <div>
@@ -433,7 +565,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <span className="material-symbols-outlined text-[16px] mr-0.5">
+                          trending_up
+                        </span>
                         +45
                       </span>
                       <span className="text-slate-400 font-medium">since last login</span>
@@ -448,7 +582,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Shortlisted Candidates
                     </p>
                     <div className="p-2 rounded-lg bg-orange-50 text-orange-500 dark:bg-orange-900/20 dark:text-orange-400">
-                      <Star size={20} />
+                      <span className="material-symbols-outlined text-[20px] icon-filled">
+                        star
+                      </span>
                     </div>
                   </div>
                   <div className="relative z-10">
@@ -457,7 +593,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <span className="material-symbols-outlined text-[16px] mr-0.5">
+                          trending_up
+                        </span>
                         +5
                       </span>
                       <span className="text-slate-400 font-medium">this week</span>
@@ -471,7 +609,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       New Applications
                     </p>
                     <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300">
-                      <UserPlus size={20} />
+                      <span className="material-symbols-outlined text-[20px]">person_add</span>
                     </div>
                   </div>
                   <div>
@@ -561,7 +699,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         Application Trends
                       </h3>
                       <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
-                        <MoreHorizontal size={20} />
+                        <span className="material-symbols-outlined text-[20px]">more_horiz</span>
                       </button>
                     </div>
 
@@ -628,14 +766,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setActiveTab('company')}
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
                   >
-                    <Eye size={18} />
+                    <span className="material-symbols-outlined text-[18px]">visibility</span>
                     View Profile
                   </button>
                   <button
                     onClick={() => setShowPostJobModal(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
                   >
-                    <Plus size={18} />
+                    <span className="material-symbols-outlined text-[18px]">add</span>
                     Post New Job
                   </button>
                 </div>
@@ -647,13 +785,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Active Listings
                     </h3>
-                    <ListChecks size={20} className="text-primary" />
+                    <span className="material-symbols-outlined text-primary text-xl bg-blue-50 dark:bg-blue-900/20 p-1 rounded-lg">
+                      list_alt
+                    </span>
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">12</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <TrendingUp size={14} className="text-emerald-500" />
+                    <span className="material-symbols-outlined text-emerald-500 text-sm">
+                      trending_up
+                    </span>
                     <span className="text-emerald-500 font-medium">2 New</span>
                     <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
                       this week
@@ -665,13 +807,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Total Applicants
                     </h3>
-                    <Users size={20} className="text-primary" />
+                    <span className="material-symbols-outlined text-primary text-xl bg-blue-50 dark:bg-blue-900/20 p-1 rounded-lg">
+                      groups
+                    </span>
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">1,208</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <TrendingUp size={14} className="text-emerald-500" />
+                    <span className="material-symbols-outlined text-emerald-500 text-sm">
+                      trending_up
+                    </span>
                     <span className="text-emerald-500 font-medium">+45</span>
                     <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
                       since last login
@@ -684,13 +830,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       In Review
                     </h3>
-                    <Clock size={20} className="text-orange-500" />
+                    <span className="material-symbols-outlined text-orange-500 text-xl bg-orange-50 dark:bg-orange-900/20 p-1 rounded-lg">
+                      pending_actions
+                    </span>
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">3</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <Clock size={14} className="text-orange-500" />
+                    <span className="material-symbols-outlined text-orange-500 text-sm">
+                      schedule
+                    </span>
                     <span className="text-orange-500 font-medium">Pending Approval</span>
                   </div>
                 </div>
@@ -699,7 +849,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Interviews
                     </h3>
-                    <Video size={20} className="text-primary" />
+                    <span className="material-symbols-outlined text-primary text-xl bg-blue-50 dark:bg-blue-900/20 p-1 rounded-lg">
+                      videocam
+                    </span>
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">8</span>
@@ -726,7 +878,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full sm:w-96">
-                  <Search size={20} className="text-slate-400" />
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">
+                    search
+                  </span>
                   <input
                     className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white transition-all shadow-sm"
                     placeholder="Search job titles or locations..."
@@ -735,11 +889,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <Filter size={18} />
+                    <span className="material-symbols-outlined text-[18px]">filter_list</span>
                     Filter
                   </button>
                   <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <ArrowUpDown size={18} />
+                    <span className="material-symbols-outlined text-[18px]">sort</span>
                     Sort
                   </button>
                 </div>
@@ -776,7 +930,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                 <div
                                   className={`w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0`}
                                 >
-                                  <Briefcase size={20} />
+                                  <span className="material-symbols-outlined text-[20px]">
+                                    work
+                                  </span>
                                 </div>
                                 <div>
                                   <div className="font-bold text-slate-900 dark:text-white text-sm">
@@ -825,7 +981,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <button className="text-slate-400 hover:text-primary transition-colors">
-                                <MoreVertical size={20} />
+                                <span className="material-symbols-outlined">more_vert</span>
                               </button>
                             </td>
                           </tr>
@@ -878,11 +1034,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={handleExportApps}
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-700 dark:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-bold text-sm shadow-sm"
                   >
-                    <Download size={20} />
+                    <span className="material-symbols-outlined text-[20px]">download</span>
                     Export List
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-bold text-sm shadow-sm shadow-primary/30">
-                    <Plus size={20} />
+                    <span className="material-symbols-outlined text-[20px]">add</span>
                     Add Candidate
                   </button>
                 </div>
@@ -956,7 +1112,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </span>
                     </div>
                     <button className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-transparent dark:border-slate-700">
-                      <Filter size={20} />
+                      <span className="material-symbols-outlined text-[20px]">filter_list</span>
                     </button>
                   </div>
                 </div>
@@ -1007,15 +1163,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           </div>
                           <div className="space-y-3 mb-6">
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <Briefcase size={18} />
+                              <span className="material-symbols-outlined text-[18px]">work</span>
                               <span>{app.job.title}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <GraduationCap size={18} />
+                              <span className="material-symbols-outlined text-[18px]">school</span>
                               <span>{app.user.studentProfile?.university || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <MapPin size={18} />
+                              <span className="material-symbols-outlined text-[18px]">
+                                location_on
+                              </span>
                               <span>{app.user.studentProfile?.country || 'Remote'}</span>
                             </div>
                           </div>
@@ -1100,7 +1258,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex space-x-3">
                   <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
-                    <Eye size={18} />
+                    <span className="material-symbols-outlined text-[18px]">visibility</span>
                     View Public Profile
                   </button>
                   <button
@@ -1108,7 +1266,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     disabled={isLoading}
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-primary/30 disabled:opacity-50"
                   >
-                    <Save size={18} />
+                    <span className="material-symbols-outlined text-[18px]">save</span>
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
@@ -1121,7 +1279,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <h3 className="font-bold text-slate-900 dark:text-white">
                         General Information
                       </h3>
-                      <Building2 size={20} className="text-slate-400" />
+                      <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                        business
+                      </span>
                     </div>
                     <div className="p-6 space-y-6">
                       <div className="flex items-start gap-6">
@@ -1131,7 +1291,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           </label>
                           <div className="group relative w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary cursor-pointer bg-slate-50 dark:bg-slate-800/50 transition-colors flex flex-col items-center justify-center">
                             <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-2 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                              <CloudUpload size={24} className="text-slate-500 text-slate-400 text-primary dark:text-slate-400" />
+                              <span className="material-symbols-outlined text-[24px] text-slate-500 dark:text-slate-400 group-hover:text-primary">
+                                cloud_upload
+                              </span>
                             </div>
                             <span className="text-xs text-center text-slate-500 dark:text-slate-400 px-2 group-hover:text-primary">
                               Click to upload
@@ -1220,7 +1382,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">About Company</h3>
-                      <FileText size={20} className="text-slate-400" />
+                      <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                        description
+                      </span>
                     </div>
                     <div className="p-6">
                       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
@@ -1247,7 +1411,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">Headquarters</h3>
-                      <MapPin size={20} className="text-slate-400" />
+                      <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                        place
+                      </span>
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
@@ -1319,7 +1485,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">Online Presence</h3>
-                      <Globe size={20} className="text-slate-400" />
+                      <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                        public
+                      </span>
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
@@ -1331,7 +1499,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         </label>
                         <div className="relative rounded-md shadow-sm">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <Globe size={18} className="text-slate-400" />
+                            <span className="material-symbols-outlined text-slate-400 text-[18px]">
+                              language
+                            </span>
                           </div>
                           <input
                             className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1415,7 +1585,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <User size={20} className="text-primary" />
+                    <span className="material-symbols-outlined text-primary">person</span>
                     Profile Information
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -1431,7 +1601,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           {getInitials(company.companyName || 'HR')}
                         </div>
                         <button className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                          <Camera size={18} className="text-slate-600 text-slate-300 dark:text-slate-300" />
+                          <span className="material-symbols-outlined text-[18px] text-slate-600 dark:text-slate-300">
+                            photo_camera
+                          </span>
                         </button>
                       </div>
                       <button className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
@@ -1495,7 +1667,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Lock size={20} className="text-primary" />
+                    <span className="material-symbols-outlined text-primary">lock</span>
                     Security Settings
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -1567,7 +1739,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="mt-6 p-6 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
                 <div className="flex items-start gap-4">
                   <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                    <AlertTriangle size={20} className="text-red-600 text-red-400 dark:text-red-400" />
+                    <span className="material-symbols-outlined text-red-600 dark:text-red-400">
+                      warning
+                    </span>
                   </div>
                   <div className="flex-1">
                     <h4 className="font-bold text-red-800 dark:text-red-300">Danger Zone</h4>

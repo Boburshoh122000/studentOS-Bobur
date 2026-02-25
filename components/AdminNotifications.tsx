@@ -5,7 +5,6 @@ import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Bell, BellOff, GraduationCap, History, Loader2, LogOut, RefreshCw, Send } from 'lucide-react';
 
 interface SentNotification {
   id: string;
@@ -162,7 +161,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-              <GraduationCap size={24} />
+              <span className="material-symbols-outlined text-2xl">school</span>
             </div>
             <div
               className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -185,7 +184,39 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                   {item.icon}
                 </span>
                 {isSidebarExpanded && (
-                  {isLoggingOut ? <Loader2 size={20} /> : <LogOut size={20} />}
+                  <span
+                    className={`text-sm whitespace-nowrap ${item.screen === Screen.ADMIN_NOTIFICATIONS ? 'font-semibold' : 'font-medium'}`}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+          <button
+            onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
+            className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
+          >
+            <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+              AD
+            </div>
+            <div
+              className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
+            >
+              <p className="text-sm font-semibold whitespace-nowrap">Admin</p>
+              <p className="text-xs text-slate-500 whitespace-nowrap">Profile Settings</p>
+            </div>
+          </button>
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+          >
+            <span className="material-symbols-outlined">
+              {isLoggingOut ? 'progress_activity' : 'logout'}
+            </span>
             {isSidebarExpanded && (
               <span className="text-sm font-medium">
                 {isLoggingOut ? 'Logging out...' : 'Logout'}
@@ -201,7 +232,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <Bell size={20} className="text-primary" />
+                <span className="material-symbols-outlined text-primary">notifications</span>
                 Notifications
               </h2>
               <p className="text-sm text-slate-500 mt-1">
@@ -215,7 +246,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           {/* ── Send Notification Card ── */}
           <div className="bg-white dark:bg-[#1e2139] rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center gap-2">
-              <Send size={20} className="text-primary" />
+              <span className="material-symbols-outlined text-primary">send</span>
               <h3 className="text-lg font-bold">Send Notification</h3>
             </div>
             <div className="p-6 space-y-4">
@@ -306,7 +337,9 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                   className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center gap-2 shadow-sm"
                 >
                   {isSending && (
-                    <Loader2 size={16} className="animate-spin" />
+                    <span className="material-symbols-outlined text-[16px] animate-spin">
+                      progress_activity
+                    </span>
                   )}
                   {isSending
                     ? 'Sending...'
@@ -322,14 +355,14 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-[#1e2139] rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <History size={20} className="text-slate-400" />
+                <span className="material-symbols-outlined text-slate-400">history</span>
                 <h3 className="text-lg font-bold">Recently Sent</h3>
               </div>
               <button
                 onClick={fetchHistory}
                 className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1"
               >
-                <RefreshCw size={14} /> Refresh
+                <span className="material-symbols-outlined text-[14px]">refresh</span> Refresh
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -337,7 +370,9 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                 <GlobalLoader fullScreen={false} />
               ) : history.length === 0 ? (
                 <div className="text-center py-12 text-slate-500">
-                  <BellOff size={36} className="text-slate-300" />
+                  <span className="material-symbols-outlined text-4xl mb-2 block text-slate-300">
+                    notifications_off
+                  </span>
                   <p className="text-sm">No notifications sent yet</p>
                 </div>
               ) : (

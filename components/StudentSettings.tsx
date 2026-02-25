@@ -4,7 +4,6 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { userApi, authApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
 import DashboardLayout from './DashboardLayout';
-import { Check, CheckCircle, Copy, DollarSign, Loader2, Settings, Share2, Shield, User } from 'lucide-react';
 
 export default function StudentSettings({ navigateTo }: NavigationProps) {
   const { user, refreshUser } = useAuth();
@@ -137,7 +136,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10 gap-3">
       <div className="flex flex-col justify-center">
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
-          <Settings size={20} className="text-primary" />
+          <span className="material-symbols-outlined text-primary">settings</span>
           Settings
         </h2>
         <p className="text-sm text-text-sub">Manage your account, security, and earn credits</p>
@@ -157,7 +156,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <User size={20} className="text-primary" />
+                <span className="material-symbols-outlined text-primary text-xl">person</span>
                 Profile & Account
               </h3>
               <p className="text-sm text-gray-500 mt-1">Update your personal information</p>
@@ -194,7 +193,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                   className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm"
                 >
                   {isSavingProfile && (
-                    <Loader2 size={16} className="animate-spin" />
+                    <span className="material-symbols-outlined text-[16px] animate-spin">
+                      progress_activity
+                    </span>
                   )}
                   {isSavingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -206,7 +207,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Shield size={20} className="text-amber-500" />
+                <span className="material-symbols-outlined text-amber-500 text-xl">shield</span>
                 Security
               </h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -259,7 +260,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                   className="px-6 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm"
                 >
                   {isSavingPassword && (
-                    <Loader2 size={16} className="animate-spin" />
+                    <span className="material-symbols-outlined text-[16px] animate-spin">
+                      progress_activity
+                    </span>
                   )}
                   {isSavingPassword ? 'Updating...' : 'Update Password'}
                 </button>
@@ -271,7 +274,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <DollarSign size={20} className="text-green-500" />
+                <span className="material-symbols-outlined text-green-500 text-xl">
+                  monetization_on
+                </span>
                 Earn Credits & Referrals
               </h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -282,7 +287,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               {/* Referral Link */}
               <div className="bg-gradient-to-r from-primary/5 to-blue-50 dark:from-primary/10 dark:to-blue-900/10 rounded-xl p-5 border border-primary/10 dark:border-primary/20">
                 <div className="flex items-center gap-2 mb-3">
-                  <Share2 size={20} className="text-primary" />
+                  <span className="material-symbols-outlined text-primary">share</span>
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white">
                     Invite Friends
                   </h4>
@@ -306,7 +311,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                         : 'bg-primary text-white hover:bg-primary/90'
                     }`}
                   >
-                    {copied ? <Check size={20} /> : <Copy size={20} />}
+                    <span className="material-symbols-outlined text-[16px]">
+                      {copied ? 'check' : 'content_copy'}
+                    </span>
                     {copied ? 'Copied!' : 'Copy Link'}
                   </button>
                 </div>
@@ -346,12 +353,14 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                   >
                     {isClaiming ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" />
+                        <span className="material-symbols-outlined text-[16px] animate-spin">
+                          progress_activity
+                        </span>
                         Claiming...
                       </>
                     ) : telegramClaimed ? (
                       <>
-                        <CheckCircle size={16} />
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
                         Claimed!
                       </>
                     ) : (

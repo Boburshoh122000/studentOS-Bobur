@@ -5,7 +5,6 @@ import { adminApi } from '../src/services/api';
 import { downloadCSV } from '../src/utils/csv';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { AlertCircle, BadgeCheck, Bell, Briefcase, Calendar, ChevronLeft, ChevronRight, Circle, Clock, CreditCard, Download, FileText, GraduationCap, Hourglass, LayoutDashboard, LogOut, Receipt, ShieldCheck, TrendingUp, Users } from 'lucide-react';
 
 interface AdminStats {
   totalUsers: number;
@@ -118,7 +117,9 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
           onClick={() => setIsSidebarLocked(!isSidebarLocked)}
           className={`absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
         >
-          {isSidebarLocked ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+          <span className="material-symbols-outlined text-[14px]">
+            {isSidebarLocked ? 'chevron_left' : 'chevron_right'}
+          </span>
         </button>
 
         <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
@@ -128,7 +129,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <span className="material-symbols-outlined text-2xl">school</span>
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -147,9 +148,121 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <span className="material-symbols-outlined fill-1">dashboard</span>
                 {isSidebarExpanded && (
-                  {isLoggingOut ? <Hourglass size={20} /> : <LogOut size={20} />}
+                  <span className="text-sm font-semibold whitespace-nowrap">Dashboard</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Employers' : ''}
+              >
+                <span className="material-symbols-outlined">work</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Employers</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_PRICING)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Pricing' : ''}
+              >
+                <span className="material-symbols-outlined">payments</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_USERS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Users' : ''}
+              >
+                <span className="material-symbols-outlined">group</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Users</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Scholarships' : ''}
+              >
+                <span className="material-symbols-outlined">school</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Blog Management' : ''}
+              >
+                <span className="material-symbols-outlined">article</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_ROLES)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
+              >
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Notifications' : ''}
+              >
+                <span className="material-symbols-outlined">notifications</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Team Management' : ''}
+              >
+                <span className="material-symbols-outlined">groups</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
+                )}
+              </button>
+            </nav>
+          </div>
+          <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+            <button
+              onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
+            >
+              <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+                AD
+              </div>
+              <div
+                className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
+              >
+                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                  Admin
+                </p>
+                <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
+                  Profile Settings
+                </p>
+              </div>
+            </button>
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'} ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!isSidebarExpanded ? 'Logout' : ''}
+            >
+              <span className="material-symbols-outlined text-lg">
+                {isLoggingOut ? 'hourglass_empty' : 'logout'}
+              </span>
               {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
             </button>
           </div>
@@ -171,14 +284,14 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 onClick={handleDateFilter}
                 className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
-                <Calendar size={18} />
+                <span className="material-symbols-outlined text-lg">calendar_today</span>
                 <span>Oct 24 - Nov 24</span>
               </button>
               <button
                 onClick={handleExport}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
               >
-                <Download size={18} />
+                <span className="material-symbols-outlined text-lg">download</span>
                 <span>Export Report</span>
               </button>
             </div>
@@ -199,7 +312,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               </>
             ) : error ? (
               <div className="col-span-4 flex flex-col items-center justify-center py-8 text-center">
-                <AlertCircle size={36} className="text-red-400" />
+                <span className="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
                 <p className="text-red-600 dark:text-red-400">{error}</p>
                 <button
                   onClick={fetchStats}
@@ -215,13 +328,15 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Total Users
                     </p>
-                    <Users size={20} className="text-primary text-primary dark:text-primary-dark" />
+                    <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">
+                      group
+                    </span>
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.totalUsers?.toLocaleString() || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    <TrendingUp size={20} />
+                    <span className="material-symbols-outlined text-base">trending_up</span>
                     <span>+{stats?.newUsersThisWeek || 0}</span>
                     <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">
                       this week
@@ -233,13 +348,15 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Active Now
                     </p>
-                    <Circle size={20} className="text-emerald-500" />
+                    <span className="material-symbols-outlined text-emerald-500/80 text-xl">
+                      radio_button_checked
+                    </span>
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.activeUsers?.toLocaleString() || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    <Clock size={20} />
+                    <span className="material-symbols-outlined text-base">schedule</span>
                     <span className="font-normal text-slate-500 dark:text-slate-400">
                       in last 24 hours
                     </span>
@@ -250,13 +367,15 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Active Subscriptions
                     </p>
-                    <Receipt size={20} className="text-orange-500" />
+                    <span className="material-symbols-outlined text-orange-500/80 text-xl">
+                      receipt_long
+                    </span>
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.recentTransactions || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
-                    <BadgeCheck size={20} />
+                    <span className="material-symbols-outlined text-base">verified</span>
                     <span>Active</span>
                   </div>
                 </div>
@@ -265,7 +384,9 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Total Jobs
                     </p>
-                    <Briefcase size={20} className="text-primary text-primary dark:text-primary-dark" />
+                    <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">
+                      work
+                    </span>
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.totalJobs?.toLocaleString() || 0}

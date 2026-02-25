@@ -4,7 +4,6 @@ import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AlertCircle, ArrowRight, FileText, GraduationCap, Search } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -121,7 +120,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                       className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
                     >
                       Read Article{' '}
-                      <ArrowRight size={14} />
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
                   </div>
                 </div>
@@ -174,7 +173,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {error && !loading && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                    <AlertCircle size={30} className="text-red-500" />
+                    <span className="material-symbols-outlined text-3xl text-red-500">error</span>
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     Failed to load articles
@@ -195,7 +194,9 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {!loading && !error && filteredPosts.length === 0 && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-                    <Search size={30} className="text-slate-400" />
+                    <span className="material-symbols-outlined text-3xl text-slate-400">
+                      search_off
+                    </span>
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     No articles found
@@ -236,7 +237,9 @@ export default function Blog({ navigateTo }: NavigationProps) {
                           ></div>
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
-                            <FileText size={36} className="text-slate-400" />
+                            <span className="material-symbols-outlined text-4xl text-slate-400">
+                              article
+                            </span>
                           </div>
                         )}
                       </div>
@@ -321,7 +324,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               <div className="flex flex-col gap-4 max-w-xs">
                 <div className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-white">
-                    <GraduationCap size={16} />
+                    <span className="material-symbols-outlined text-[16px]">school</span>
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white">StudentOS</h3>
                 </div>

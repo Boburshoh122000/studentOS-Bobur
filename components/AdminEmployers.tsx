@@ -5,7 +5,6 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AlertTriangle, Bell, Briefcase, Building2, ChevronLeft, ChevronRight, ClipboardCheck, CreditCard, Download, FileText, GraduationCap, Hourglass, LayoutDashboard, LogOut, Pencil, Plus, Search, ShieldCheck, Star, Trash2, TrendingUp, Users, X } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Employer {
@@ -82,7 +81,239 @@ function StatusBadge({ status }: { status: string }) {
   const label = status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
-    {isSidebarExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${styles[status] || styles.pending}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${dotStyles[status] || dotStyles.pending}`}></span>
+      {label}
+    </span>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+export default function AdminEmployers({ navigateTo }: NavigationProps) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Data state
+  const [employers, setEmployers] = useState<Employer[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalEmployers: 0,
+    pendingApprovals: 0,
+    activeVacancies: 0,
+    featuredPartners: 0,
+  });
+  const [industries, setIndustries] = useState<string[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Filter state
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [editingEmployer, setEditingEmployer] = useState<Employer | null>(null);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    companyName: '',
+    email: '',
+    industry: '',
+    website: '',
+    repName: '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Fetch employers whenever filters change
+  useEffect(() => {
+    fetchEmployers();
+  }, [debouncedSearch, statusFilter, industryFilter, pagination.page]);
+
+  // Fetch stats on mount
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  // ─── API calls ─────────────────────────────────────────────────────
+  const fetchStats = async () => {
+    try {
+      const res = await adminApi.getEmployerStats();
+      if (res.data) setStats(res.data as Stats);
+    } catch {
+      console.error('Failed to fetch employer stats');
+    }
+  };
+
+  const fetchEmployers = async () => {
+    try {
+      setIsLoading(true);
+      const params: Record<string, string | number> = {
+        page: pagination.page,
+        limit: pagination.limit,
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (statusFilter) params.status = statusFilter;
+      if (industryFilter) params.industry = industryFilter;
+
+      const res = await adminApi.getEmployers(params);
+      const data = res.data as any;
+      if (data) {
+        setEmployers(data.employers || []);
+        if (data.industries) setIndustries(data.industries);
+        if (data.pagination) setPagination(data.pagination);
+      }
+    } catch {
+      toast.error('Failed to load employers');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!formData.email || !formData.companyName) {
+      toast.error('Email and company name are required');
+      return;
+    }
+    try {
+      setIsSaving(true);
+      await adminApi.createEmployer(formData);
+      toast.success('Employer created successfully');
+      setShowAddModal(false);
+      setFormData({ companyName: '', email: '', industry: '', website: '', repName: '' });
+      fetchEmployers();
+      fetchStats();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to create employer');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingEmployer) return;
+    try {
+      setIsSaving(true);
+      await adminApi.updateEmployer(editingEmployer.id, {
+        companyName: formData.companyName,
+        industry: formData.industry || null,
+        website: formData.website || null,
+      });
+      toast.success('Employer updated');
+      setShowEditModal(false);
+      setEditingEmployer(null);
+      fetchEmployers();
+    } catch {
+      toast.error('Failed to update employer');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleVerify = async (id: string) => {
+    try {
+      await adminApi.updateEmployer(id, { verificationStatus: 'verified' });
+      toast.success('Employer verified');
+      fetchEmployers();
+      fetchStats();
+    } catch {
+      toast.error('Failed to verify employer');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await adminApi.deleteEmployer(id);
+      toast.success('Employer deleted');
+      setShowDeleteConfirm(null);
+      fetchEmployers();
+      fetchStats();
+    } catch {
+      toast.error('Failed to delete employer');
+    }
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Company', 'Industry', 'Representative', 'Email', 'Status', 'Jobs', 'Created'];
+    const rows = employers.map((e) => [
+      e.companyName,
+      e.industry || '',
+      e.user.studentProfile?.fullName || '',
+      e.user.email,
+      e.verificationStatus,
+      e._count.jobs,
+      new Date(e.createdAt).toLocaleDateString(),
+    ]);
+    const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join(
+      '\n'
+    );
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'employers_export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  };
+
+  const openEditModal = (emp: Employer) => {
+    setEditingEmployer(emp);
+    setFormData({
+      companyName: emp.companyName,
+      email: emp.user.email,
+      industry: emp.industry || '',
+      website: emp.website || '',
+      repName: emp.user.studentProfile?.fullName || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate('/');
+    } catch {
+      toast.error('Logout failed. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════
+  // JSX
+  // ═══════════════════════════════════════════════════════════════════
+  return (
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
+      {/* ─── Sidebar (unchanged) ─────────────────────────────────── */}
+      <aside
+        className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}
+      >
+        <button
+          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
+        >
+          <span className="material-symbols-outlined text-[14px]">
+            {isSidebarExpanded ? 'chevron_left' : 'chevron_right'}
+          </span>
         </button>
 
         <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
@@ -92,7 +323,7 @@ function StatusBadge({ status }: { status: string }) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <span className="material-symbols-outlined text-2xl">school</span>
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -111,9 +342,121 @@ function StatusBadge({ status }: { status: string }) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <span className="material-symbols-outlined">dashboard</span>
                 {isSidebarExpanded && (
-                  {isLoggingOut ? <Hourglass size={20} /> : <LogOut size={20} />}
+                  <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
+                className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Employers' : ''}
+              >
+                <span className="material-symbols-outlined fill-1">work</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-semibold whitespace-nowrap">Employers</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_PRICING)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Pricing' : ''}
+              >
+                <span className="material-symbols-outlined">payments</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_USERS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Users' : ''}
+              >
+                <span className="material-symbols-outlined">group</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Users</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Scholarships' : ''}
+              >
+                <span className="material-symbols-outlined">school</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Blog Management' : ''}
+              >
+                <span className="material-symbols-outlined">article</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_ROLES)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
+              >
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Notifications' : ''}
+              >
+                <span className="material-symbols-outlined">notifications</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Team Management' : ''}
+              >
+                <span className="material-symbols-outlined">groups</span>
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
+                )}
+              </button>
+            </nav>
+          </div>
+          <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+            <button
+              onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
+            >
+              <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+                AD
+              </div>
+              <div
+                className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
+              >
+                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                  Admin
+                </p>
+                <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
+                  Profile Settings
+                </p>
+              </div>
+            </button>
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors justify-center ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!isSidebarExpanded ? 'Logout' : ''}
+            >
+              <span className="material-symbols-outlined text-lg">
+                {isLoggingOut ? 'hourglass_empty' : 'logout'}
+              </span>
               {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
             </button>
           </div>
@@ -135,7 +478,9 @@ function StatusBadge({ status }: { status: string }) {
             </div>
             <div className="flex flex-1 max-w-md mx-4">
               <div className="relative w-full">
-                <Search size={20} className="text-slate-500 text-slate-400 dark:text-slate-400" />
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-xl">
+                  search
+                </span>
                 <input
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
                   placeholder="Search employers, industries, or contact persons..."
@@ -159,7 +504,7 @@ function StatusBadge({ status }: { status: string }) {
                 }}
                 className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
               >
-                <Plus size={18} />
+                <span className="material-symbols-outlined text-lg">add</span>
                 <span>Add Employer</span>
               </button>
             </div>
@@ -172,13 +517,15 @@ function StatusBadge({ status }: { status: string }) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Employers
                 </p>
-                <Building2 size={20} className="text-primary text-primary dark:text-primary-dark" />
+                <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">
+                  corporate_fare
+                </span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.totalEmployers.toLocaleString()}
               </p>
               <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <TrendingUp size={20} />
+                <span className="material-symbols-outlined text-base">trending_up</span>
                 <span>Active</span>
               </div>
             </div>
@@ -187,7 +534,9 @@ function StatusBadge({ status }: { status: string }) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Pending Approvals
                 </p>
-                <Hourglass size={20} className="text-orange-500" />
+                <span className="material-symbols-outlined text-orange-500/80 text-xl">
+                  hourglass_empty
+                </span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.pendingApprovals}
@@ -201,13 +550,15 @@ function StatusBadge({ status }: { status: string }) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Active Vacancies
                 </p>
-                <ClipboardCheck size={20} className="text-emerald-500" />
+                <span className="material-symbols-outlined text-emerald-500/80 text-xl">
+                  assignment_turned_in
+                </span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.activeVacancies.toLocaleString()}
               </p>
               <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <TrendingUp size={20} />
+                <span className="material-symbols-outlined text-base">trending_up</span>
                 <span>Open positions</span>
               </div>
             </div>
@@ -216,7 +567,7 @@ function StatusBadge({ status }: { status: string }) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Featured Partners
                 </p>
-                <Star size={20} className="text-purple-500" />
+                <span className="material-symbols-outlined text-purple-500/80 text-xl">star</span>
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.featuredPartners}
@@ -271,7 +622,7 @@ function StatusBadge({ status }: { status: string }) {
                   onClick={handleExportCSV}
                   className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                 >
-                  <Download size={18} />
+                  <span className="material-symbols-outlined text-lg">download</span>
                   Export CSV
                 </button>
               </div>
@@ -310,7 +661,9 @@ function StatusBadge({ status }: { status: string }) {
                     ) : employers.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-16 text-center">
-                          <Building2 size={40} className="text-slate-300 text-slate-700 dark:text-slate-700" />
+                          <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-700">
+                            corporate_fare
+                          </span>
                           <p className="mt-3 text-sm text-slate-500">No employers found</p>
                         </td>
                       </tr>
@@ -389,13 +742,13 @@ function StatusBadge({ status }: { status: string }) {
                                   onClick={() => openEditModal(emp)}
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                                 >
-                                  <Pencil size={18} />
+                                  <span className="material-symbols-outlined text-lg">edit</span>
                                 </button>
                                 <button
                                   onClick={() => setShowDeleteConfirm(emp.id)}
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
                                 >
-                                  <Trash2 size={18} />
+                                  <span className="material-symbols-outlined text-lg">delete</span>
                                 </button>
                               </div>
                             </td>
@@ -450,7 +803,7 @@ function StatusBadge({ status }: { status: string }) {
                 onClick={() => setShowAddModal(false)}
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <X size={20} className="text-slate-500" />
+                <span className="material-symbols-outlined text-slate-500">close</span>
               </button>
             </div>
             <div className="space-y-4">
@@ -549,7 +902,7 @@ function StatusBadge({ status }: { status: string }) {
                 }}
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <X size={20} className="text-slate-500" />
+                <span className="material-symbols-outlined text-slate-500">close</span>
               </button>
             </div>
             <div className="space-y-4">
@@ -616,7 +969,9 @@ function StatusBadge({ status }: { status: string }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
             <div className="mx-auto h-14 w-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-              <AlertTriangle size={30} className="text-red-600 text-red-400 dark:text-red-400" />
+              <span className="material-symbols-outlined text-3xl text-red-600 dark:text-red-400">
+                warning
+              </span>
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Delete Employer?
