@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { AlertTriangle, Ban, Bell, Briefcase, Building2, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Download, Eye, FileText, GraduationCap, Hourglass, LayoutDashboard, LogOut, MoreVertical, Search, ShieldCheck, Trash2, User, UserX, Users, X } from 'lucide-react';
 
 // User type from backend
 interface User {
@@ -317,9 +318,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
           className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
           aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          <span className="material-symbols-outlined text-[14px]">
-            {isSidebarExpanded ? 'chevron_left' : 'chevron_right'}
-          </span>
+          {isSidebarExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
         </button>
 
         <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
@@ -329,7 +328,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <span className="material-symbols-outlined text-2xl">school</span>
+                <GraduationCap size={24} />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -348,121 +347,9 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <span className="material-symbols-outlined">dashboard</span>
+                <LayoutDashboard size={20} />
                 {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Employers' : ''}
-              >
-                <span className="material-symbols-outlined">work</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Employers</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_PRICING)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Pricing' : ''}
-              >
-                <span className="material-symbols-outlined">payments</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_USERS)}
-                className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Users' : ''}
-              >
-                <span className="material-symbols-outlined fill-1">group</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-semibold whitespace-nowrap">Users</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Scholarships' : ''}
-              >
-                <span className="material-symbols-outlined">school</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Blog Management' : ''}
-              >
-                <span className="material-symbols-outlined">article</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_ROLES)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
-              >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Notifications' : ''}
-              >
-                <span className="material-symbols-outlined">notifications</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Team Management' : ''}
-              >
-                <span className="material-symbols-outlined">groups</span>
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
-                )}
-              </button>
-            </nav>
-          </div>
-          <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
-            <button
-              onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
-            >
-              <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
-                AD
-              </div>
-              <div
-                className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
-              >
-                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                  Admin
-                </p>
-                <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
-                  Profile Settings
-                </p>
-              </div>
-            </button>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'} ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={!isSidebarExpanded ? 'Logout' : ''}
-            >
-              <span className="material-symbols-outlined text-lg">
-                {isLoggingOut ? 'hourglass_empty' : 'logout'}
-              </span>
+                  {isLoggingOut ? <Hourglass size={20} /> : <LogOut size={20} />}
               {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
             </button>
           </div>
@@ -485,9 +372,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
             <div className="flex flex-wrap items-center gap-3">
               {/* Search */}
               <div className="relative min-w-[300px]">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-xl">
-                  search
-                </span>
+                <Search size={20} className="text-slate-500 text-slate-400 dark:text-slate-400" />
                 <input
                   className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-slate-900 dark:text-white"
                   placeholder="Search users by name, email..."
@@ -526,7 +411,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm"
                 onClick={() => exportToCSV(filteredUsers)}
               >
-                <span className="material-symbols-outlined text-lg">download</span>
+                <Download size={18} />
                 Export Users
               </button>
             </div>
@@ -539,9 +424,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Users
                 </p>
-                <span className="material-symbols-outlined text-primary/80 text-xl bg-primary/10 p-1.5 rounded-lg">
-                  groups
-                </span>
+                <Users size={20} className="text-primary" />
               </div>
               <div className="flex items-end gap-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -554,9 +437,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Active Students
                 </p>
-                <span className="material-symbols-outlined text-emerald-500/80 text-xl bg-emerald-500/10 p-1.5 rounded-lg">
-                  person
-                </span>
+                <User size={20} className="text-emerald-500" />
               </div>
               <div className="flex items-end gap-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -572,9 +453,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Admins</p>
-                <span className="material-symbols-outlined text-orange-500/80 text-xl bg-orange-500/10 p-1.5 rounded-lg">
-                  admin_panel_settings
-                </span>
+                <ShieldCheck size={20} className="text-orange-500" />
               </div>
               <div className="flex items-end gap-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -585,9 +464,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Employers</p>
-                <span className="material-symbols-outlined text-purple-500/80 text-xl bg-purple-500/10 p-1.5 rounded-lg">
-                  corporate_fare
-                </span>
+                <Building2 size={20} className="text-purple-500" />
               </div>
               <div className="flex items-end gap-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -652,9 +529,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center gap-2">
-                          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">
-                            person_off
-                          </span>
+                          <UserX size={36} className="text-slate-300 text-slate-600 dark:text-slate-600" />
                           <p className="text-sm text-slate-500 dark:text-slate-400">
                             No users found
                           </p>
@@ -733,7 +608,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                               }
                               aria-label="More actions"
                             >
-                              <span className="material-symbols-outlined">more_vert</span>
+                              <MoreVertical size={20} />
                             </button>
                             {/* Action dropdown */}
                             {actionMenuOpen === user.id && (
@@ -748,9 +623,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                                     setActionMenuOpen(null);
                                   }}
                                 >
-                                  <span className="material-symbols-outlined text-lg">
-                                    visibility
-                                  </span>
+                                  <Eye size={18} />
                                   View Details
                                 </button>
                                 {user.isActive ? (
@@ -758,7 +631,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                                     onClick={() => handleBanUser(user.id)}
                                   >
-                                    <span className="material-symbols-outlined text-lg">block</span>
+                                    <Ban size={18} />
                                     Ban User
                                   </button>
                                 ) : (
@@ -766,9 +639,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                                     onClick={() => handleActivateUser(user.id)}
                                   >
-                                    <span className="material-symbols-outlined text-lg">
-                                      check_circle
-                                    </span>
+                                    <CheckCircle size={18} />
                                     Activate User
                                   </button>
                                 )}
@@ -779,7 +650,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                                     setActionMenuOpen(null);
                                   }}
                                 >
-                                  <span className="material-symbols-outlined text-lg">delete</span>
+                                  <Trash2 size={18} />
                                   Delete User
                                 </button>
                               </div>
@@ -863,9 +734,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-[#1e2330] rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <span className="material-symbols-outlined text-red-600 dark:text-red-400">
-                  warning
-                </span>
+                <AlertTriangle size={20} className="text-red-600 text-red-400 dark:text-red-400" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete User</h3>
             </div>
@@ -901,7 +770,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
                 className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                 onClick={() => setShowUserDetails(null)}
               >
-                <span className="material-symbols-outlined text-slate-500">close</span>
+                <X size={20} className="text-slate-500" />
               </button>
             </div>
             <div className="flex items-center gap-4 mb-6">

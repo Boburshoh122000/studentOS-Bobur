@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { employerApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
+import { BarChart3, BookOpen, Briefcase, CalendarDays, Code, ExternalLink, FileText, GraduationCap, Mail, MapPin, Star, User, Video, X } from 'lucide-react';
 
 interface Applicant {
   id: string;
@@ -132,7 +133,7 @@ export default function ViewApplicantModal({
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <span className="material-symbols-outlined text-slate-500">close</span>
+              <X size={20} className="text-slate-500" />
             </button>
           </div>
         </div>
@@ -143,7 +144,7 @@ export default function ViewApplicantModal({
           <div className="mb-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
-                <span className="material-symbols-outlined text-primary">work</span>
+                <Briefcase size={20} className="text-primary" />
               </div>
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -164,31 +165,25 @@ export default function ViewApplicantModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-4">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-primary">person</span>
+                <User size={20} className="text-primary" />
                 Profile Information
               </h3>
               <div className="space-y-3">
                 {profile?.university && (
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="material-symbols-outlined text-[18px] text-slate-400">
-                      school
-                    </span>
+                    <GraduationCap size={18} className="text-slate-400" />
                     <span className="text-slate-700 dark:text-slate-300">{profile.university}</span>
                   </div>
                 )}
                 {profile?.major && (
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="material-symbols-outlined text-[18px] text-slate-400">
-                      menu_book
-                    </span>
+                    <BookOpen size={18} className="text-slate-400" />
                     <span className="text-slate-700 dark:text-slate-300">{profile.major}</span>
                   </div>
                 )}
                 {profile?.graduationYear && (
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="material-symbols-outlined text-[18px] text-slate-400">
-                      calendar_month
-                    </span>
+                    <CalendarDays size={18} className="text-slate-400" />
                     <span className="text-slate-700 dark:text-slate-300">
                       Class of {profile.graduationYear}
                     </span>
@@ -196,9 +191,7 @@ export default function ViewApplicantModal({
                 )}
                 {profile?.country && (
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="material-symbols-outlined text-[18px] text-slate-400">
-                      location_on
-                    </span>
+                    <MapPin size={18} className="text-slate-400" />
                     <span className="text-slate-700 dark:text-slate-300">{profile.country}</span>
                   </div>
                 )}
@@ -207,7 +200,7 @@ export default function ViewApplicantModal({
 
             <div className="space-y-4">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-primary">code</span>
+                <Code size={20} className="text-primary" />
                 Skills
               </h3>
               {profile?.skills && profile.skills.length > 0 ? (
@@ -231,9 +224,7 @@ export default function ViewApplicantModal({
           {(applicant.cvUrl || profile?.cvUrl) && (
             <div className="mb-6">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
-                <span className="material-symbols-outlined text-[20px] text-primary">
-                  description
-                </span>
+                <FileText size={20} className="text-primary" />
                 Resume / CV
               </h3>
               <a
@@ -242,7 +233,7 @@ export default function ViewApplicantModal({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium text-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                <ExternalLink size={18} />
                 View Resume
               </a>
             </div>
@@ -252,7 +243,7 @@ export default function ViewApplicantModal({
           {applicant.coverLetter && (
             <div className="mb-6">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
-                <span className="material-symbols-outlined text-[20px] text-primary">mail</span>
+                <Mail size={20} className="text-primary" />
                 Cover Letter
               </h3>
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
@@ -269,9 +260,7 @@ export default function ViewApplicantModal({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400">
-                      analytics
-                    </span>
+                    <BarChart3 size={20} className="text-emerald-600 text-emerald-400 dark:text-emerald-400" />
                   </div>
                   <div>
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -300,7 +289,7 @@ export default function ViewApplicantModal({
             {isUpdating && activeAction === 'REJECTED' ? (
               <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
             ) : (
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <X size={18} />
             )}
             Reject
           </button>
@@ -314,7 +303,7 @@ export default function ViewApplicantModal({
               {isUpdating && activeAction === 'SCREENING' ? (
                 <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
               ) : (
-                <span className="material-symbols-outlined text-[18px]">rate_review</span>
+                <Star size={18} />
               )}
               Shortlist
             </button>
@@ -326,7 +315,7 @@ export default function ViewApplicantModal({
               {isUpdating && activeAction === 'INTERVIEW' ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <span className="material-symbols-outlined text-[18px]">videocam</span>
+                <Video size={18} />
               )}
               Schedule Interview
             </button>

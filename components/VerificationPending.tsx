@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
+import { Check, Clock, Hourglass, Lock, ShieldCheck } from 'lucide-react';
 
 export default function VerificationPending() {
   const { logout } = useAuth();
@@ -26,9 +27,7 @@ export default function VerificationPending() {
           <div className="w-full max-w-sm mx-auto text-center">
             {/* Animated icon */}
             <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center shadow-lg shadow-orange-100">
-              <span className="material-symbols-outlined text-orange-500 text-4xl animate-pulse">
-                hourglass_top
-              </span>
+              <Hourglass size={36} className="text-orange-500 animate-pulse" />
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 mb-3">
@@ -43,7 +42,7 @@ export default function VerificationPending() {
             <div className="text-left space-y-4 mb-8">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-emerald-600 text-lg">check</span>
+                  <Check size={18} className="text-emerald-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">Account created</p>
@@ -52,7 +51,7 @@ export default function VerificationPending() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 animate-pulse">
-                  <span className="material-symbols-outlined text-orange-500 text-lg">pending</span>
+                  <Clock size={18} className="text-orange-500" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">Under review</p>
@@ -61,7 +60,7 @@ export default function VerificationPending() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-slate-400 text-lg">lock</span>
+                  <Lock size={18} className="text-slate-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400">Full access</p>
@@ -109,9 +108,7 @@ export default function VerificationPending() {
         {/* Centered illustration */}
         <div className="relative z-10 text-center px-12">
           <div className="mx-auto mb-8 w-32 h-32 rounded-3xl bg-white/80 backdrop-blur-sm shadow-xl flex items-center justify-center">
-            <span className="material-symbols-outlined text-indigo-500 text-6xl">
-              verified_user
-            </span>
+            <ShieldCheck size={48} className="text-indigo-500" />
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-3">Almost There!</h2>
           <p className="text-slate-600 text-sm max-w-xs mx-auto leading-relaxed">

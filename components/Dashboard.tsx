@@ -4,6 +4,7 @@ import { userApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
+import { ArrowRight, Briefcase, CheckCircle, ClipboardCheck, FileText, Search, Send, Trophy, User } from 'lucide-react';
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
   // Data State
@@ -54,9 +55,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       </div>
       <div className="flex items-center gap-4">
         <div className="relative hidden sm:block">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">
-            search
-          </span>
+          <Search size={20} className="text-gray-400" />
           <input
             className="pl-10 pr-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all shadow-sm dark:text-white"
             placeholder="Search tools, jobs..."
@@ -106,7 +105,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     >
                       View Board{' '}
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      <ArrowRight size={16} />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -122,9 +121,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                           {stats.activeApplications}
                         </span>
                       </div>
-                      <span className="material-symbols-outlined absolute -bottom-2 -right-2 text-blue-200 dark:text-blue-800/20 text-[80px] group-hover:scale-110 transition-transform">
-                        send
-                      </span>
+                      <Send size={80} className="text-blue-200 text-blue-800 dark:text-blue-800 transition-transform" />
                     </div>
                     <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800/30 flex flex-col justify-between h-32 relative overflow-hidden group">
                       <div className="z-10 relative">
@@ -139,9 +136,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         </span>
                       </div>
                       <p className="text-xs text-green-600 dark:text-green-400 z-10">Today</p>
-                      <span className="material-symbols-outlined absolute -bottom-2 -right-2 text-green-200 dark:text-green-800/20 text-[80px] group-hover:scale-110 transition-transform">
-                        check_circle
-                      </span>
+                      <CheckCircle size={80} className="text-green-200 text-green-800 dark:text-green-800 transition-transform" />
                     </div>
                   </div>
                 </div>
@@ -155,7 +150,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       Evaluation
                     </h3>
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                      <span className="material-symbols-outlined text-[20px]">fact_check</span>
+                      <ClipboardCheck size={20} />
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col items-center justify-center z-10 my-2">
@@ -258,7 +253,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                             <div
                               className={`w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 flex-shrink-0`}
                             >
-                              <span className="material-symbols-outlined">work</span>
+                              <Briefcase size={20} />
                             </div>
                             <div>
                               <h4 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
@@ -302,7 +297,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     onClick={() => navigateTo(Screen.PROFILE)}
                     className="text-primary bg-primary/10 p-2 rounded-lg hover:bg-primary/20 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[20px]">person</span>
+                    <User size={20} />
                   </button>
                 </div>
 
@@ -353,9 +348,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                     >
-                      <span className="material-symbols-outlined text-amber-500 text-xl">
-                        emoji_events
-                      </span>
+                      <Trophy size={20} className="text-amber-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Find Scholarships
@@ -367,9 +360,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.CV_ATS)}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                     >
-                      <span className="material-symbols-outlined text-blue-500 text-xl">
-                        description
-                      </span>
+                      <FileText size={20} className="text-blue-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Improve Your CV
@@ -381,9 +372,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     {/* Connect Telegram */}
                     {dashboardData?.telegramConnected ? (
                       <div className="w-full flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
-                        <span className="material-symbols-outlined text-green-500 text-xl">
-                          check_circle
-                        </span>
+                        <CheckCircle size={20} className="text-green-500" />
                         <div>
                           <p className="text-sm font-medium text-green-800 dark:text-green-200">
                             Telegram Connected

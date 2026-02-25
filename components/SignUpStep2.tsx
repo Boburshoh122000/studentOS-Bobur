@@ -5,6 +5,7 @@ import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import ToolCard from './ToolCard';
 import toast from 'react-hot-toast';
+import { ArrowRight, BookOpen, Building2, Check, Globe, GraduationCap, Landmark, Shapes } from 'lucide-react';
 
 type Role = 'student' | 'educator' | 'organization' | null;
 
@@ -13,7 +14,7 @@ const ROLES = [
     id: 'student' as const,
     title: 'Student',
     desc: 'Access study tools, scholarships, and job opportunities',
-    icon: 'school',
+    Icon: GraduationCap,
     gradient: 'from-blue-500 to-indigo-600',
     lightBg: 'bg-blue-50',
     lightText: 'text-blue-600',
@@ -22,7 +23,7 @@ const ROLES = [
     id: 'educator' as const,
     title: 'Educator',
     desc: 'Manage courses, share resources, and mentor students',
-    icon: 'menu_book',
+    Icon: BookOpen,
     gradient: 'from-emerald-500 to-teal-600',
     lightBg: 'bg-emerald-50',
     lightText: 'text-emerald-600',
@@ -31,7 +32,7 @@ const ROLES = [
     id: 'organization' as const,
     title: 'Organization',
     desc: 'Post jobs, recruit talent, and partner with institutions',
-    icon: 'corporate_fare',
+    Icon: Building2,
     gradient: 'from-purple-500 to-violet-600',
     lightBg: 'bg-purple-50',
     lightText: 'text-purple-600',
@@ -144,32 +145,26 @@ export default function SignUpStep2() {
                       key={role.id}
                       type="button"
                       onClick={() => setSelectedRole(role.id)}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                      }`}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${isSelected
+                        ? 'border-blue-500 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                        }`}
                     >
                       <div
                         className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${role.gradient} shadow-md`}
                       >
-                        <span className="material-symbols-outlined text-white text-2xl">
-                          {role.icon}
-                        </span>
+                        <role.Icon size={24} className="text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-slate-900 text-sm">{role.title}</div>
                         <div className="text-xs text-slate-500 mt-0.5">{role.desc}</div>
                       </div>
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                          isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
-                        }`}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
+                          }`}
                       >
                         {isSelected && (
-                          <span className="material-symbols-outlined text-white text-sm">
-                            check
-                          </span>
+                          <Check size={14} className="text-white" />
                         )}
                       </div>
                     </button>
@@ -189,9 +184,7 @@ export default function SignUpStep2() {
                           University / School
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            account_balance
-                          </span>
+                          <Landmark size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={university}
@@ -206,9 +199,7 @@ export default function SignUpStep2() {
                           Field of Study / Major
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            class
-                          </span>
+                          <BookOpen size={20} className="text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
                             value={major}
@@ -228,9 +219,7 @@ export default function SignUpStep2() {
                           University / Institution
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            account_balance
-                          </span>
+                          <Landmark size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={institution}
@@ -245,9 +234,7 @@ export default function SignUpStep2() {
                           Department
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            domain
-                          </span>
+                          <Building2 size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={department}
@@ -267,9 +254,7 @@ export default function SignUpStep2() {
                           Organization Name <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            corporate_fare
-                          </span>
+                          <Building2 size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={companyName}
@@ -285,9 +270,7 @@ export default function SignUpStep2() {
                           Industry
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            category
-                          </span>
+                          <Shapes size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={industry}
@@ -302,9 +285,7 @@ export default function SignUpStep2() {
                           Website URL
                         </label>
                         <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
-                            language
-                          </span>
+                          <Globe size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="url"
                             value={website}
@@ -333,7 +314,7 @@ export default function SignUpStep2() {
                 ) : (
                   <>
                     Continue
-                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                    <ArrowRight size={18} />
                   </>
                 )}
               </button>

@@ -5,6 +5,7 @@ import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
 import { useCreditTransaction } from '../src/hooks/useCreditTransaction';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
+import { AlertCircle, BookOpen, Bot, FileUp, FolderOpen, Link, Quote, RefreshCw, Search, ShieldCheck, Type } from 'lucide-react';
 
 interface PlagiarismResult {
   originalityScore: number;
@@ -121,7 +122,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       <div className="flex items-center gap-3">
         <ThemeToggle />
         <button className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg">
-          <span className="material-symbols-outlined text-[18px]">folder_open</span>
+          <FolderOpen size={18} />
           My Reports
         </button>
       </div>
@@ -171,12 +172,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 ></textarea>
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                   <div className="flex items-center gap-2 text-xs text-text-sub">
-                    <span className="material-symbols-outlined text-sm">text_fields</span>
+                    <Type size={14} />
                     <span>{wordCount} words</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <button className="text-sm font-medium text-text-sub hover:text-primary transition-colors flex items-center gap-1">
-                      <span className="material-symbols-outlined text-lg">upload_file</span>
+                      <FileUp size={18} />
                       Upload File
                     </button>
                     <button
@@ -186,12 +187,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     >
                       {isChecking ? (
                         <>
-                          <span className="material-symbols-outlined animate-spin">sync</span>
+                          <RefreshCw size={20} className="animate-spin" />
                           Analyzing...
                         </>
                       ) : (
                         <>
-                          <span className="material-symbols-outlined">search_check</span>
+                          <Search size={20} />
                           Check Content
                         </>
                       )}
@@ -204,7 +205,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
             {/* Error Banner */}
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">error</span>
+                <AlertCircle size={18} />
                 {error}
               </div>
             )}
@@ -241,7 +242,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 {/* Originality Score */}
                 <div className="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center gap-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <span className="material-symbols-outlined text-9xl">verified_user</span>
+                    <ShieldCheck size={20} />
                   </div>
                   <h3 className="text-lg font-semibold text-text-main dark:text-white z-10">
                     Originality Score
@@ -290,7 +291,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <div className="bg-card-light dark:bg-card-dark rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-start justify-between mb-4">
                       <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600 dark:text-orange-400">
-                        <span className="material-symbols-outlined">smart_toy</span>
+                        <Bot size={20} />
                       </div>
                       <span className="text-2xl font-bold text-text-main dark:text-white">
                         {result.aiScore}%
@@ -314,7 +315,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <div className="bg-card-light dark:bg-card-dark rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-start justify-between mb-4">
                       <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
-                        <span className="material-symbols-outlined">format_quote</span>
+                        <Quote size={20} />
                       </div>
                       <span className="text-2xl font-bold text-text-main dark:text-white">
                         {result.citationQuality}
@@ -336,7 +337,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <div className="bg-card-light dark:bg-card-dark rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-start justify-between mb-4">
                       <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400">
-                        <span className="material-symbols-outlined">menu_book</span>
+                        <BookOpen size={20} />
                       </div>
                       <span className="text-2xl font-bold text-text-main dark:text-white">
                         {result.readabilityLevel}
@@ -361,7 +362,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <div className="bg-card-light dark:bg-card-dark rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-start justify-between mb-4">
                       <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
-                        <span className="material-symbols-outlined">link</span>
+                        <Link size={20} />
                       </div>
                       <span className="text-2xl font-bold text-text-main dark:text-white">
                         {result.matchedSources.length}

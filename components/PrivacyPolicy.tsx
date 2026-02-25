@@ -1,5 +1,6 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
+import { ArrowLeft } from 'lucide-react';
 
 export default function PrivacyPolicy({ navigateTo }: NavigationProps) {
   return (
@@ -11,7 +12,7 @@ export default function PrivacyPolicy({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.LANDING)}
             className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <ArrowLeft size={20} />
             Back to Home
           </button>
         </div>

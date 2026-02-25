@@ -1,23 +1,31 @@
 import { Screen } from '../../types';
+import {
+  LayoutDashboard,
+  FileText,
+  BookOpen,
+  Target,
+  Trophy,
+  ScanSearch,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * Single source of truth for student dashboard navigation items.
- * Used by Sidebar and any other components that need navigation consistency.
+ * Uses lucide-react components instead of Material Symbol strings.
  */
 export interface NavItem {
   screen: Screen;
-  icon: string;
+  icon: LucideIcon;
   label: string;
 }
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
-  { screen: Screen.DASHBOARD, icon: 'dashboard', label: 'Dashboard' },
-  { screen: Screen.CV_ATS, icon: 'description', label: 'CV & ATS' },
-
-  { screen: Screen.LEARNING_PLAN, icon: 'book_2', label: 'Learning Plan' },
-  { screen: Screen.HABIT_TRACKER, icon: 'track_changes', label: 'Habit Tracker' },
-  { screen: Screen.SCHOLARSHIPS, icon: 'emoji_events', label: 'Scholarships' },
-  { screen: Screen.PLAGIARISM, icon: 'plagiarism', label: 'Plagiarism Checker' },
+  { screen: Screen.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+  { screen: Screen.CV_ATS, icon: FileText, label: 'CV & ATS' },
+  { screen: Screen.LEARNING_PLAN, icon: BookOpen, label: 'Learning Plan' },
+  { screen: Screen.HABIT_TRACKER, icon: Target, label: 'Habit Tracker' },
+  { screen: Screen.SCHOLARSHIPS, icon: Trophy, label: 'Scholarships' },
+  { screen: Screen.PLAGIARISM, icon: ScanSearch, label: 'Plagiarism Checker' },
 ];
 
 /**

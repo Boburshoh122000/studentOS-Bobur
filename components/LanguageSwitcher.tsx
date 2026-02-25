@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedLocales, localeLabels, type Locale } from '../src/i18n';
+import { Check, ChevronDown } from 'lucide-react';
 
 interface LanguageSwitcherProps {
   /** Compact mode for collapsed sidebar — shows only the globe icon */
@@ -53,11 +54,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         {!compact && (
           <>
             <span className="font-semibold">{current.label}</span>
-            <span
-              className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`}
-            >
-              keyboard_arrow_down
-            </span>
+            <ChevronDown size={20} className={`text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`} />
           </>
         )}
       </button>
@@ -94,9 +91,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
                 <span className="text-lg leading-none">{flag}</span>
                 <span>{label}</span>
                 {isActive && (
-                  <span className="material-symbols-outlined text-[16px] ml-auto text-indigo-500">
-                    check
-                  </span>
+                  <Check size={16} className="text-indigo-500" />
                 )}
               </button>
             );

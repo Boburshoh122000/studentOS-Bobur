@@ -4,6 +4,7 @@ import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { useCreditTransaction } from '../src/hooks/useCreditTransaction';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
+import { ChevronDown, ChevronRight, Download, Image, Plus, Redo2, RefreshCw, Sparkles, Undo2, X, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface Slide {
   slideNumber: number;
@@ -94,7 +95,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-500">Presentation Maker</span>
-            <span className="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+            <ChevronRight size={14} className="text-gray-400" />
             <input
               className="bg-transparent border-none p-0 text-sm font-bold text-text-main dark:text-white focus:ring-0 w-64 hover:bg-gray-50 rounded px-1 transition-colors"
               type="text"
@@ -123,14 +124,14 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
           onClick={() => setShowGenerateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md shadow-indigo-200 dark:shadow-none"
         >
-          <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+          <Sparkles size={18} />
           AI Generate
         </button>
         <div className="relative group">
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-text-main dark:text-white transition-all">
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <Download size={18} />
             Download PPTX/PDF
-            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+            <ChevronDown size={18} />
           </button>
         </div>
       </div>
@@ -152,7 +153,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                 Slides (5)
               </span>
               <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-text-sub">
-                <span className="material-symbols-outlined text-lg">add</span>
+                <Plus size={18} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -165,7 +166,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                     {i}
                   </div>
                   <div className="flex items-center justify-center h-full text-gray-300">
-                    <span className="material-symbols-outlined text-4xl opacity-20">image</span>
+                    <Image size={36} />
                   </div>
                 </div>
               ))}
@@ -204,18 +205,18 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
             {/* Bottom Toolbar */}
             <div className="h-12 bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-4 px-4">
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <span className="material-symbols-outlined text-xl">undo</span>
+                <Undo2 size={20} />
               </button>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <span className="material-symbols-outlined text-xl">redo</span>
+                <Redo2 size={20} />
               </button>
               <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <span className="material-symbols-outlined text-xl">zoom_out</span>
+                <ZoomOut size={20} />
               </button>
               <span className="text-xs font-medium text-text-sub">Fit</span>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <span className="material-symbols-outlined text-xl">zoom_in</span>
+                <ZoomIn size={20} />
               </button>
             </div>
           </div>
@@ -278,7 +279,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                   <button className="size-6 rounded-full bg-emerald-500 border border-slate-200 dark:border-slate-700"></button>
                   <button className="size-6 rounded-full bg-orange-500 border border-slate-200 dark:border-slate-700"></button>
                   <button className="size-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary">
-                    <span className="material-symbols-outlined text-sm">add</span>
+                    <Plus size={14} />
                   </button>
                 </div>
               </div>
@@ -299,7 +300,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                   aria-label="Close modal"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <X size={20} />
                 </button>
               </div>
 
@@ -344,14 +345,12 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                 >
                   {isGenerating ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-[18px]">
-                        sync
-                      </span>
+                      <RefreshCw size={18} className="animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                      <Sparkles size={18} />
                       Generate Slides
                     </>
                   )}

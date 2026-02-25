@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { AlertCircle, ArrowLeft, GraduationCap, Share2 } from 'lucide-react';
 
 interface BlogPostData {
   id: string;
@@ -76,7 +77,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
-                <span className="material-symbols-outlined text-[20px]">school</span>
+                <GraduationCap size={20} />
               </div>
               <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 StudentOS
@@ -132,7 +133,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
               onClick={() => navigate('/blog')}
               className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors self-start"
             >
-              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              <ArrowLeft size={18} />
               Back to Blog
             </button>
 
@@ -143,7 +144,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
             {error && !loading && (
               <div className="py-20 text-center">
                 <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                  <span className="material-symbols-outlined text-3xl text-red-500">error</span>
+                  <AlertCircle size={30} className="text-red-500" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                   Article not found
@@ -246,7 +247,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                     onClick={() => navigate('/blog')}
                     className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <ArrowLeft size={18} />
                     Back to Blog
                   </button>
                   <div className="flex items-center gap-3">
@@ -256,7 +257,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                       }
                       className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
+                      <Share2 size={18} />
                       Share
                     </button>
                   </div>
@@ -272,7 +273,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-white">
-                  <span className="material-symbols-outlined text-[16px]">school</span>
+                  <GraduationCap size={16} />
                 </div>
                 <span className="font-bold text-slate-900 dark:text-white">StudentOS</span>
               </div>

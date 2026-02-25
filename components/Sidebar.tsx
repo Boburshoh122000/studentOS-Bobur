@@ -6,6 +6,7 @@ import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import { GraduationCap, Settings, X, LogOut, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
   currentScreen: Screen;
@@ -104,7 +105,7 @@ export default function Sidebar({
           onClick={() => handleNavClick(Screen.LANDING)}
         >
           <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer group hover:scale-105 transition-transform flex-shrink-0">
-            <span className="material-symbols-outlined text-white text-2xl">school</span>
+            <GraduationCap size={24} className="text-white" />
           </div>
           <div
             className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
@@ -139,11 +140,7 @@ export default function Sidebar({
                 className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${isActive ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
                 title={!expanded ? item.label : ''}
               >
-                <span
-                  className={`material-symbols-outlined ${isActive ? 'icon-filled' : 'group-hover:text-primary'} ${!expanded ? 'text-2xl' : 'text-[20px]'}`}
-                >
-                  {item.icon}
-                </span>
+                <item.icon size={!expanded ? 24 : 20} className={`flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
                 {expanded && (
                   <span className="text-sm font-medium whitespace-nowrap">
                     {sidebarLabelKeys[item.screen] ? t(sidebarLabelKeys[item.screen]) : item.label}
@@ -192,11 +189,7 @@ export default function Sidebar({
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
           title={!expanded ? t('Sidebar.settings') : ''}
         >
-          <span
-            className={`material-symbols-outlined ${currentScreen === Screen.SETTINGS ? 'icon-filled' : 'group-hover:text-primary'} ${!expanded ? 'text-2xl' : 'text-[20px]'}`}
-          >
-            settings
-          </span>
+          <Settings size={20} className={`${currentScreen === Screen.SETTINGS ? '' : 'group-hover:text-primary'} ${!expanded ? 'text-2xl' : 'text-[20px]'}`} />
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">{t('Sidebar.settings')}</span>
           )}
@@ -214,11 +207,11 @@ export default function Sidebar({
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative text-text-sub hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400`}
           title={!expanded ? t('Sidebar.log_out') : ''}
         >
-          <span
-            className={`material-symbols-outlined ${isLoggingOut ? 'animate-spin' : ''} ${!expanded ? 'text-2xl' : 'text-[20px]'}`}
-          >
-            {isLoggingOut ? 'progress_activity' : 'logout'}
-          </span>
+          {isLoggingOut ? (
+            <Loader2 size={!expanded ? 24 : 20} className="animate-spin flex-shrink-0" />
+          ) : (
+            <LogOut size={!expanded ? 24 : 20} className="flex-shrink-0" />
+          )}
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">
               {isLoggingOut ? t('Sidebar.logging_out') : t('Sidebar.log_out')}
@@ -248,9 +241,7 @@ export default function Sidebar({
           className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
           title={isSidebarLocked ? 'Unlock Sidebar' : 'Lock Sidebar Open'}
         >
-          <span className="material-symbols-outlined text-[14px]">
-            {isSidebarLocked ? 'chevron_left' : 'chevron_right'}
-          </span>
+          {isSidebarLocked ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
         </button>
 
         {sidebarContent(isSidebarExpanded)}
@@ -268,7 +259,7 @@ export default function Sidebar({
               onClick={onCloseMobile}
               className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <span className="material-symbols-outlined text-text-sub">close</span>
+              <X size={20} className="text-text-sub" />
             </button>
             {sidebarContent(true)}
           </aside>

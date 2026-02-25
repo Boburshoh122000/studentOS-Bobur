@@ -3,6 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { GraduationCap, Menu } from 'lucide-react';
 
 interface DashboardLayoutProps extends NavigationProps {
   currentScreen: Screen;
@@ -69,11 +70,11 @@ export default function DashboardLayout({
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Open navigation menu"
           >
-            <span className="material-symbols-outlined text-text-main dark:text-white">menu</span>
+            <Menu size={20} className="text-white dark:text-white" />
           </button>
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-              <span className="material-symbols-outlined text-white text-[18px]">school</span>
+              <GraduationCap size={18} className="text-white" />
             </div>
             <span className="text-base font-bold text-text-main dark:text-white tracking-tight">
               StudentOS

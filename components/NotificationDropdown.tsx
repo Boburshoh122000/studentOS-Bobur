@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { notificationApi } from '../src/services/api';
 import toast from 'react-hot-toast';
+import { Bell, BellOff, CheckCircle } from 'lucide-react';
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,7 +73,7 @@ export function NotificationDropdown() {
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-full bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
       >
-        <span className="material-symbols-outlined">notifications</span>
+        <Bell size={20} />
         {unreadCount > 0 && (
             <span className="absolute top-0 right-0 size-3 bg-red-500 rounded-full border-2 border-white dark:border-card-dark animate-pulse" />
         )}
@@ -95,7 +96,7 @@ export function NotificationDropdown() {
           <div className="max-h-[400px] overflow-y-auto">
             {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                    <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">notifications_off</span>
+                    <BellOff size={36} className="text-gray-300" />
                     <p className="text-sm">No notifications yet</p>
                 </div>
             ) : (
@@ -125,7 +126,7 @@ export function NotificationDropdown() {
                                     className="absolute top-4 right-4 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                     title="Mark as read"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                                    <CheckCircle size={16} />
                                 </button>
                             )}
                         </div>

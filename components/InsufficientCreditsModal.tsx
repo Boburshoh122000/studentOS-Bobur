@@ -1,3 +1,4 @@
+import { Info, PlusCircle, Wallet } from 'lucide-react';
 import React from 'react';
 
 interface InsufficientCreditsModalProps {
@@ -26,9 +27,7 @@ export default function InsufficientCreditsModal({
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-2xl">
-                account_balance_wallet
-              </span>
+              <Wallet size={24} className="text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Insufficient Credits</h3>
@@ -78,7 +77,7 @@ export default function InsufficientCreditsModal({
           {/* Info box */}
           <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
             <div className="flex gap-2">
-              <span className="material-symbols-outlined text-blue-500 text-lg">info</span>
+              <Info size={18} className="text-blue-500" />
               <p className="text-sm text-blue-700 dark:text-blue-300">
                 Invite friends to earn credits! Every referral gives you bonus credits.
               </p>
@@ -101,7 +100,7 @@ export default function InsufficientCreditsModal({
             }}
             className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-primary to-primary-dark text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined text-lg">add_circle</span>
+            <PlusCircle size={18} />
             Get Credits
           </button>
         </div>

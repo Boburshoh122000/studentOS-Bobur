@@ -4,6 +4,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { financeApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
+import { Plus, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
 
 export default function FinanceTracker({ navigateTo }: NavigationProps) {
   // State
@@ -104,7 +105,7 @@ export default function FinanceTracker({ navigateTo }: NavigationProps) {
           onClick={() => setIsAddModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors shadow-md shadow-primary/20"
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+          <Plus size={18} />
           Add Transaction
         </button>
       </div>
@@ -127,7 +128,7 @@ export default function FinanceTracker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="size-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                    <span className="material-symbols-outlined">trending_up</span>
+                    <TrendingUp size={20} />
                   </div>
                   <div>
                     <p className="text-sm text-text-sub">Total Income</p>
@@ -140,7 +141,7 @@ export default function FinanceTracker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="size-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                    <span className="material-symbols-outlined">trending_down</span>
+                    <TrendingDown size={20} />
                   </div>
                   <div>
                     <p className="text-sm text-text-sub">Total Expenses</p>
@@ -153,7 +154,7 @@ export default function FinanceTracker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                    <span className="material-symbols-outlined">account_balance_wallet</span>
+                    <Wallet size={20} />
                   </div>
                   <div>
                     <p className="text-sm text-text-sub">Current Balance</p>
@@ -224,7 +225,7 @@ export default function FinanceTracker({ navigateTo }: NavigationProps) {
                 onClick={() => setIsAddModalOpen(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
-                <span className="material-symbols-outlined">close</span>
+                <X size={20} />
               </button>
             </div>
 
