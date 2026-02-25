@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { AlertCircle, ArrowRight, FileText, GraduationCap, Search } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -120,7 +121,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                       className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
                     >
                       Read Article{' '}
-                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
@@ -145,9 +146,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                 ))}
               </div>
               <div className="relative w-full md:w-72 shrink-0">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">
-                  search
-                </span>
+                <Search size={20} className="text-slate-400" />
                 <input
                   className="h-10 w-full rounded-full border-0 bg-white dark:bg-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm"
                   placeholder="Search articles..."
@@ -173,7 +172,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {error && !loading && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                    <span className="material-symbols-outlined text-3xl text-red-500">error</span>
+                    <AlertCircle size={30} className="text-red-500" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     Failed to load articles
@@ -194,9 +193,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {!loading && !error && filteredPosts.length === 0 && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-                    <span className="material-symbols-outlined text-3xl text-slate-400">
-                      search_off
-                    </span>
+                    <Search size={30} className="text-slate-400" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     No articles found
@@ -237,9 +234,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                           ></div>
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl text-slate-400">
-                              article
-                            </span>
+                            <FileText size={36} className="text-slate-400" />
                           </div>
                         )}
                       </div>
@@ -324,7 +319,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               <div className="flex flex-col gap-4 max-w-xs">
                 <div className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-white">
-                    <span className="material-symbols-outlined text-[16px]">school</span>
+                    <GraduationCap size={16} />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white">StudentOS</h3>
                 </div>

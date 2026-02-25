@@ -5,6 +5,7 @@ import { blogApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { ArrowLeft, Bell, Briefcase, CheckCircle, CreditCard, FileText, GraduationCap, Image, LayoutDashboard, NotebookPen, Pencil, Plus, Search, ShieldCheck, Trash2, TrendingUp, Users, X } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -340,7 +341,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <span className="material-symbols-outlined text-2xl">school</span>
+                <GraduationCap size={24} />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -359,7 +360,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <span className="material-symbols-outlined">dashboard</span>
+                <LayoutDashboard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -369,7 +370,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <span className="material-symbols-outlined">work</span>
+                <Briefcase size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -379,7 +380,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <span className="material-symbols-outlined">payments</span>
+                <CreditCard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -389,7 +390,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <span className="material-symbols-outlined">group</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -399,7 +400,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <span className="material-symbols-outlined">school</span>
+                <GraduationCap size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -409,7 +410,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <span className="material-symbols-outlined fill-1">article</span>
+                <FileText size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Blog Management</span>
                 )}
@@ -419,7 +420,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
+                <ShieldCheck size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -429,7 +430,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <span className="material-symbols-outlined">notifications</span>
+                <Bell size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -439,7 +440,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <span className="material-symbols-outlined">groups</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -497,7 +498,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     onClick={handleCreateNew}
                     className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
                   >
-                    <span className="material-symbols-outlined text-lg">add</span>
+                    <Plus size={18} />
                     <span>Create New Post</span>
                   </button>
                 </div>
@@ -508,15 +509,13 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Total Posts
                     </p>
-                    <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">
-                      description
-                    </span>
+                    <FileText size={20} className="text-primary/60 dark:text-primary-dark/60" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {posts.length}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    <span className="material-symbols-outlined text-base">trending_up</span>
+                    <TrendingUp size={20} />
                     <span>
                       +
                       {
@@ -536,9 +535,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Published
                     </p>
-                    <span className="material-symbols-outlined text-emerald-500/80 text-xl">
-                      check_circle
-                    </span>
+                    <CheckCircle size={20} className="text-emerald-500/80" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {posts.filter((p) => p.status === 'PUBLISHED').length}
@@ -550,9 +547,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Drafts</p>
-                    <span className="material-symbols-outlined text-orange-500/80 text-xl">
-                      edit_note
-                    </span>
+                    <NotebookPen size={20} className="text-orange-500/80" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {posts.filter((p) => p.status === 'DRAFT').length}
@@ -596,9 +591,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-4 py-2">
                   <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
-                    <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">
-                      search
-                    </span>
+                    <Search size={20} className="text-slate-500 dark:text-slate-400" />
                     <input
                       className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
                       placeholder="Search posts..."
@@ -615,7 +608,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     </div>
                   ) : filteredPosts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                      <span className="material-symbols-outlined text-4xl mb-2">article</span>
+                      <FileText size={36} />
                       <p>No posts found</p>
                       <button
                         onClick={handleCreateNew}
@@ -706,9 +699,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                       className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                                       title="Edit"
                                     >
-                                      <span className="material-symbols-outlined text-[20px]">
-                                        edit
-                                      </span>
+                                      <Pencil size={20} />
                                     </button>
                                     <button
                                       onClick={() => handleToggleStatus(post)}
@@ -724,9 +715,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                       className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                       title="Delete"
                                     >
-                                      <span className="material-symbols-outlined text-[20px]">
-                                        delete
-                                      </span>
+                                      <Trash2 size={20} />
                                     </button>
                                   </div>
                                 </td>
@@ -755,7 +744,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     onClick={() => setView('list')}
                     className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-400"
                   >
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <ArrowLeft size={20} />
                   </button>
                   <div className="flex flex-col gap-1">
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -900,14 +889,12 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                 }}
                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                               >
-                                <span className="material-symbols-outlined text-sm">close</span>
+                                <X size={14} />
                               </button>
                             </div>
                           ) : (
                             <>
-                              <span className="material-symbols-outlined text-slate-400 text-3xl mb-2">
-                                image
-                              </span>
+                              <Image size={30} className="text-slate-400" />
                               <span className="text-xs text-slate-500">
                                 Click to upload cover image
                               </span>

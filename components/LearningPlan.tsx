@@ -3,6 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
+import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, GraduationCap, Loader2, Lock, Monitor, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 
@@ -158,7 +159,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           className="flex items-center gap-2 text-text-sub mb-1 cursor-pointer"
           onClick={() => navigateTo(Screen.DASHBOARD)}
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <ArrowLeft size={18} />
           <span className="text-sm font-medium">Back to Dashboard</span>
         </div>
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
@@ -175,7 +176,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             onClick={handleDeletePlan}
             className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
+            <Trash2 size={18} />
             New Plan
           </button>
         ) : (
@@ -208,9 +209,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       <DashboardLayout currentScreen={Screen.LEARNING_PLAN} navigateTo={navigateTo}>
         <div className="flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined animate-spin text-primary text-[32px]">
-              progress_activity
-            </span>
+            <Loader2 size={32} className="text-primary animate-spin" />
             <p className="text-sm text-text-sub">Loading your learning plan...</p>
           </div>
         </div>
@@ -235,7 +234,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               </div>
             )}
             <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-primary text-[40px]">school</span>
+              <GraduationCap size={40} className="text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">
               Create Your Learning Plan
@@ -267,9 +266,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             <div className="w-full max-w-2xl mx-auto mt-16">
               <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center">
                 <div className="flex-1 flex items-center gap-2 pl-4">
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    auto_awesome
-                  </span>
+                  <Sparkles size={20} className="text-primary" />
                   <input
                     type="text"
                     value={topic}
@@ -314,14 +311,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 >
                   {isGenerating ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-[16px]">
-                        sync
-                      </span>
+                      <RefreshCw size={16} className="animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      <ArrowRight size={16} />
                       Generate
                     </>
                   )}
@@ -351,9 +346,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             {/* Thinking message */}
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white dark:bg-card-dark rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
-                <span className="material-symbols-outlined text-primary text-[20px] animate-spin">
-                  progress_activity
-                </span>
+                <Loader2 size={20} className="text-primary animate-spin" />
                 <span className="text-sm font-medium text-text-main dark:text-white">
                   AI is structuring your learning journey...
                 </span>
@@ -467,9 +460,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     {/* Phase circle */}
                     {isCompleted ? (
                       <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-green-500 flex items-center justify-center shadow-sm z-10">
-                        <span className="material-symbols-outlined text-white text-[28px]">
-                          check
-                        </span>
+                        <Check size={28} className="text-white" />
                       </div>
                     ) : isCurrent ? (
                       <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10">
@@ -477,9 +468,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                       </div>
                     ) : (
                       <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-gray-200 dark:bg-gray-700 flex items-center justify-center shadow-sm z-10">
-                        <span className="material-symbols-outlined text-gray-500 dark:text-gray-400 text-[24px]">
-                          lock
-                        </span>
+                        <Lock size={24} className="text-gray-500 dark:text-gray-400" />
                       </div>
                     )}
 
@@ -544,11 +533,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                 {/* Icon */}
                                 {isVideo ? (
                                   <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                    <span className="material-symbols-outlined">smart_display</span>
+                                    <Monitor size={20} />
                                   </div>
                                 ) : (
                                   <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                    <span className="material-symbols-outlined">article</span>
+                                    <FileText size={20} />
                                   </div>
                                 )}
 
@@ -571,9 +560,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
                                 {/* External link indicator */}
                                 {hasUrl && (
-                                  <span className="material-symbols-outlined text-[16px] text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0 mt-1">
-                                    open_in_new
-                                  </span>
+                                  <ExternalLink size={16} className="text-gray-400" />
                                 )}
                               </>
                             );
@@ -613,9 +600,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                 >
                                   {resource.isCompleted ? (
                                     <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
-                                      <span className="material-symbols-outlined text-white text-[16px]">
-                                        check
-                                      </span>
+                                      <Check size={16} className="text-white" />
                                     </div>
                                   ) : (
                                     <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />

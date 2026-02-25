@@ -4,6 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { authApi, userApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { Bell, Briefcase, Check, CreditCard, FileText, GraduationCap, Info, LayoutDashboard, Lock, Mail, RefreshCw, ShieldCheck, User, Users } from 'lucide-react';
 
 interface ProfileData {
   id: string;
@@ -263,7 +264,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <span className="material-symbols-outlined text-2xl">school</span>
+                <GraduationCap size={24} />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -282,7 +283,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <span className="material-symbols-outlined">dashboard</span>
+                <LayoutDashboard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -292,7 +293,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <span className="material-symbols-outlined">work</span>
+                <Briefcase size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -302,7 +303,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <span className="material-symbols-outlined">payments</span>
+                <CreditCard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -312,7 +313,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <span className="material-symbols-outlined">group</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -322,7 +323,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <span className="material-symbols-outlined">school</span>
+                <GraduationCap size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -332,7 +333,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <span className="material-symbols-outlined">article</span>
+                <FileText size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -342,7 +343,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
+                <ShieldCheck size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -352,7 +353,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <span className="material-symbols-outlined">notifications</span>
+                <Bell size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -362,7 +363,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <span className="material-symbols-outlined">groups</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -451,7 +452,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               <section className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">person</span>
+                    <User size={20} className="text-primary" />
                     Public Profile
                   </h3>
                 </div>
@@ -522,14 +523,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                         >
                           {isSavingProfile ? (
                             <>
-                              <span className="material-symbols-outlined animate-spin text-lg">
-                                sync
-                              </span>
+                              <RefreshCw size={18} className="animate-spin" />
                               Saving...
                             </>
                           ) : (
                             <>
-                              <span className="material-symbols-outlined text-lg">check</span>
+                              <Check size={18} />
                               Save Changes
                             </>
                           )}
@@ -544,7 +543,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               <section className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">security</span>
+                    <ShieldCheck size={20} className="text-primary" />
                     Security Settings
                   </h3>
                 </div>
@@ -596,14 +595,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       >
                         {isSavingEmail ? (
                           <>
-                            <span className="material-symbols-outlined animate-spin text-lg">
-                              sync
-                            </span>
+                            <RefreshCw size={18} className="animate-spin" />
                             Updating...
                           </>
                         ) : (
                           <>
-                            <span className="material-symbols-outlined text-lg">mail</span>
+                            <Mail size={18} />
                             Update Email
                           </>
                         )}
@@ -699,9 +696,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                         <div className="flex items-start gap-2">
-                          <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-lg mt-0.5">
-                            info
-                          </span>
+                          <Info size={18} className="text-amber-600 dark:text-amber-400" />
                           <div className="text-xs text-amber-800 dark:text-amber-300">
                             <p className="font-medium mb-1">Password Requirements:</p>
                             <ul className="list-disc pl-4 space-y-0.5">
@@ -727,14 +722,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       >
                         {isSavingPassword ? (
                           <>
-                            <span className="material-symbols-outlined animate-spin text-lg">
-                              sync
-                            </span>
+                            <RefreshCw size={18} className="animate-spin" />
                             Updating...
                           </>
                         ) : (
                           <>
-                            <span className="material-symbols-outlined text-lg">lock</span>
+                            <Lock size={18} />
                             Update Password
                           </>
                         )}

@@ -7,6 +7,7 @@ import DashboardLayout from './DashboardLayout';
 import ApplyJobModal from './ApplyJobModal';
 import { toast } from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { Briefcase, CheckCircle, Filter, LayoutGrid, List, Search } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -172,11 +173,11 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
       <div className="flex items-center gap-6">
         <div className="bg-gray-100 dark:bg-card-dark p-1 rounded-lg flex items-center border border-gray-200 dark:border-gray-700">
           <button className="px-3 py-1.5 rounded-md bg-white dark:bg-gray-700 text-text-main dark:text-white shadow-sm text-sm font-medium flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            <LayoutGrid size={18} />
             <span className="hidden sm:inline">Board</span>
           </button>
           <button className="px-3 py-1.5 rounded-md text-text-sub hover:text-text-main dark:hover:text-white transition-colors text-sm font-medium flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">view_list</span>
+            <List size={18} />
             <span className="hidden sm:inline">List</span>
           </button>
         </div>
@@ -199,7 +200,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
           <div className="p-5">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-text-main dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">filter_list</span>
+                <Filter size={20} className="text-primary" />
                 Filters
               </h3>
               {(filters.search ||
@@ -219,9 +220,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
             <div className="mb-6">
               <label className="block text-sm font-medium text-text-sub mb-2">Search</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">
-                  search
-                </span>
+                <Search size={18} className="text-gray-400" />
                 <input
                   type="text"
                   placeholder="Job title or company..."
@@ -348,9 +347,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
                 <GlobalLoader fullScreen={false} />
               ) : jobs.length === 0 ? (
                 <div className="text-center py-20">
-                  <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">
-                    work_off
-                  </span>
+                  <Briefcase size={20} className="text-gray-300 dark:text-gray-700" />
                   <p className="mt-4 text-gray-500 dark:text-gray-400">
                     No jobs found matching your criteria
                   </p>
@@ -423,9 +420,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                         {job.hasApplied ? (
                           <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">
-                              check_circle
-                            </span>
+                            <CheckCircle size={16} />
                             Applied
                           </span>
                         ) : (

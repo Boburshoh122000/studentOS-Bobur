@@ -5,6 +5,7 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { Bell, Briefcase, CreditCard, FileText, Gift, GraduationCap, History, LayoutDashboard, Pencil, Plus, Search, ShieldCheck, Users, Wallet } from 'lucide-react';
 
 // Types
 interface Tool {
@@ -273,7 +274,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <span className="material-symbols-outlined text-2xl">school</span>
+                <GraduationCap size={24} />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -292,7 +293,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <span className="material-symbols-outlined">dashboard</span>
+                <LayoutDashboard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -302,7 +303,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <span className="material-symbols-outlined">work</span>
+                <Briefcase size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -312,7 +313,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <span className="material-symbols-outlined fill-1">payments</span>
+                <CreditCard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
                 )}
@@ -322,7 +323,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <span className="material-symbols-outlined">group</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -332,7 +333,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <span className="material-symbols-outlined">school</span>
+                <GraduationCap size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -342,7 +343,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <span className="material-symbols-outlined">article</span>
+                <FileText size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -352,7 +353,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
+                <ShieldCheck size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -362,7 +363,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <span className="material-symbols-outlined">notifications</span>
+                <Bell size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -372,7 +373,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <span className="material-symbols-outlined">groups</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -428,14 +429,14 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
                 className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
-                <span className="material-symbols-outlined text-lg">history</span>
+                <History size={18} />
                 <span>View Audit Log</span>
               </button>
               <button
                 onClick={() => setShowAddToolModal(true)}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
               >
-                <span className="material-symbols-outlined text-lg">add</span>
+                <Plus size={18} />
                 <span>Add New Tool</span>
               </button>
             </div>
@@ -445,9 +446,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
           <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
             <div className="mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">
-                  account_balance_wallet
-                </span>
+                <Wallet size={20} className="text-primary" />
                 Manual Credit Allocation
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -510,7 +509,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                   }}
                   className="w-full px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-lg">redeem</span>
+                  <Gift size={18} />
                   Grant Credits
                 </button>
               </div>
@@ -615,9 +614,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             {/* Search and Filter */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
-                <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">
-                  search
-                </span>
+                <Search size={20} className="text-slate-500 dark:text-slate-400" />
                 <input
                   className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
                   placeholder="Search tools..."
@@ -745,7 +742,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                                   className="rounded-lg p-1.5 text-primary hover:bg-indigo-50 dark:text-primary dark:hover:bg-indigo-900/20 transition-colors"
                                   title="Edit Credit Cost"
                                 >
-                                  <span className="material-symbols-outlined">edit</span>
+                                  <Pencil size={20} />
                                 </button>
                                 <div className="flex items-center">
                                   <label className="relative inline-flex cursor-pointer items-center">

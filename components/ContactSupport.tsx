@@ -1,5 +1,6 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
+import { Briefcase, CheckCircle, ChevronDown, ClipboardCheck, GraduationCap, Mail, MapPin, Menu, Route, Scale, Send, Users } from 'lucide-react';
 
 export default function ContactSupport({ navigateTo }: NavigationProps) {
   return (
@@ -12,7 +13,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.LANDING)}
           >
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-[20px]">school</span>
+              <GraduationCap size={20} />
             </div>
             <h2 className="text-xl font-bold leading-tight tracking-tight text-text-main dark:text-white">
               StudentOS
@@ -34,9 +35,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
             <div className="group relative h-full flex items-center">
               <button className="flex items-center gap-1 text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors focus:outline-none py-6">
                 Tools
-                <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:-rotate-180">
-                  keyboard_arrow_down
-                </span>
+                <ChevronDown size={14} />
               </button>
               <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
                 <div className="grid grid-cols-2 gap-4">
@@ -45,9 +44,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.CV_ATS)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        fact_check
-                      </span>
+                      <ClipboardCheck size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           CV & ATS Checker
@@ -61,9 +58,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        work_outline
-                      </span>
+                      <Briefcase size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Job Finder
@@ -77,9 +72,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.PLAGIARISM)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        gavel
-                      </span>
+                      <Scale size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Plagiarism & AI Checker
@@ -93,9 +86,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.PRESENTATION)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        co_present
-                      </span>
+                      <Users size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Presentation Maker
@@ -111,9 +102,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        school
-                      </span>
+                      <GraduationCap size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Scholarship Finder
@@ -127,9 +116,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.HABIT_TRACKER)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        check_circle
-                      </span>
+                      <CheckCircle size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Habit Tracker
@@ -143,9 +130,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.LEARNING_PLAN)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
-                      <span className="material-symbols-outlined text-primary mt-1 group-hover/item:scale-110 transition-transform">
-                        route
-                      </span>
+                      <Route size={20} className="text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
                           Learning Plan Builder
@@ -194,7 +179,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
           </div>
           <div className="md:hidden">
             <button className="text-text-main dark:text-white">
-              <span className="material-symbols-outlined">menu</span>
+              <Menu size={20} />
             </button>
           </div>
         </div>
@@ -227,7 +212,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                 {/* Email Item */}
                 <div className="flex items-start gap-4 group">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                    <span className="material-symbols-outlined">mail</span>
+                    <Mail size={20} />
                   </div>
                   <div className="flex flex-col pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-text-sub dark:text-gray-500 mb-1">
@@ -244,7 +229,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                 {/* Location Item */}
                 <div className="flex items-start gap-4 group">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                    <span className="material-symbols-outlined">location_on</span>
+                    <MapPin size={20} />
                   </div>
                   <div className="flex flex-col pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-text-sub dark:text-gray-500 mb-1">
@@ -371,7 +356,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                         <option>Partnership</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-text-sub dark:text-gray-400">
-                        <span className="material-symbols-outlined">expand_more</span>
+                        <ChevronDown size={20} />
                       </div>
                     </div>
                   </div>
@@ -395,7 +380,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       type="submit"
                     >
                       <span>Send Message</span>
-                      <span className="material-symbols-outlined ml-2 text-sm">send</span>
+                      <Send size={14} />
                     </button>
                   </div>
                 </form>
@@ -413,9 +398,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
                   <span>How do I upgrade to StudentOS Pro?</span>
-                  <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">
-                    expand_more
-                  </span>
+                  <ChevronDown size={20} />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
                   You can upgrade to Pro directly from your dashboard settings. Click on the
@@ -426,9 +409,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
                   <span>Is there a discount for students?</span>
-                  <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">
-                    expand_more
-                  </span>
+                  <ChevronDown size={20} />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
                   Yes! We offer a 50% discount for all verified students. Simply sign up with your
@@ -439,9 +420,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
                   <span>How do I reset my password?</span>
-                  <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">
-                    expand_more
-                  </span>
+                  <ChevronDown size={20} />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
                   If you've forgotten your password, go to the login page and click "Forgot

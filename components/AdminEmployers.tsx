@@ -5,6 +5,7 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+import { AlertTriangle, Bell, Briefcase, Building2, ClipboardCheck, CreditCard, Download, FileText, GraduationCap, Hourglass, LayoutDashboard, Pencil, Plus, Search, ShieldCheck, Star, Trash2, TrendingUp, Users, X } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Employer {
@@ -323,7 +324,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <span className="material-symbols-outlined text-2xl">school</span>
+                <GraduationCap size={24} />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -342,7 +343,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <span className="material-symbols-outlined">dashboard</span>
+                <LayoutDashboard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -352,7 +353,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <span className="material-symbols-outlined fill-1">work</span>
+                <Briefcase size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Employers</span>
                 )}
@@ -362,7 +363,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <span className="material-symbols-outlined">payments</span>
+                <CreditCard size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -372,7 +373,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <span className="material-symbols-outlined">group</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -382,7 +383,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <span className="material-symbols-outlined">school</span>
+                <GraduationCap size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -392,7 +393,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <span className="material-symbols-outlined">article</span>
+                <FileText size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -402,7 +403,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <span className="material-symbols-outlined">admin_panel_settings</span>
+                <ShieldCheck size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -412,7 +413,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <span className="material-symbols-outlined">notifications</span>
+                <Bell size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -422,7 +423,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <span className="material-symbols-outlined">groups</span>
+                <Users size={20} />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -478,9 +479,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
             </div>
             <div className="flex flex-1 max-w-md mx-4">
               <div className="relative w-full">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-xl">
-                  search
-                </span>
+                <Search size={20} className="text-slate-500 dark:text-slate-400" />
                 <input
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
                   placeholder="Search employers, industries, or contact persons..."
@@ -504,7 +503,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 }}
                 className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
               >
-                <span className="material-symbols-outlined text-lg">add</span>
+                <Plus size={18} />
                 <span>Add Employer</span>
               </button>
             </div>
@@ -517,15 +516,13 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Employers
                 </p>
-                <span className="material-symbols-outlined text-primary/60 dark:text-primary-dark/60 text-xl">
-                  corporate_fare
-                </span>
+                <Building2 size={20} className="text-primary/60 dark:text-primary-dark/60" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.totalEmployers.toLocaleString()}
               </p>
               <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="material-symbols-outlined text-base">trending_up</span>
+                <TrendingUp size={20} />
                 <span>Active</span>
               </div>
             </div>
@@ -534,9 +531,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Pending Approvals
                 </p>
-                <span className="material-symbols-outlined text-orange-500/80 text-xl">
-                  hourglass_empty
-                </span>
+                <Hourglass size={20} className="text-orange-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.pendingApprovals}
@@ -550,15 +545,13 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Active Vacancies
                 </p>
-                <span className="material-symbols-outlined text-emerald-500/80 text-xl">
-                  assignment_turned_in
-                </span>
+                <ClipboardCheck size={20} className="text-emerald-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.activeVacancies.toLocaleString()}
               </p>
               <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="material-symbols-outlined text-base">trending_up</span>
+                <TrendingUp size={20} />
                 <span>Open positions</span>
               </div>
             </div>
@@ -567,7 +560,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Featured Partners
                 </p>
-                <span className="material-symbols-outlined text-purple-500/80 text-xl">star</span>
+                <Star size={20} className="text-purple-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.featuredPartners}
@@ -622,7 +615,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                   onClick={handleExportCSV}
                   className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-lg">download</span>
+                  <Download size={18} />
                   Export CSV
                 </button>
               </div>
@@ -661,9 +654,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                     ) : employers.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-16 text-center">
-                          <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-700">
-                            corporate_fare
-                          </span>
+                          <Building2 size={20} className="text-slate-300 dark:text-slate-700" />
                           <p className="mt-3 text-sm text-slate-500">No employers found</p>
                         </td>
                       </tr>
@@ -742,13 +733,13 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                                   onClick={() => openEditModal(emp)}
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                                 >
-                                  <span className="material-symbols-outlined text-lg">edit</span>
+                                  <Pencil size={18} />
                                 </button>
                                 <button
                                   onClick={() => setShowDeleteConfirm(emp.id)}
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
                                 >
-                                  <span className="material-symbols-outlined text-lg">delete</span>
+                                  <Trash2 size={18} />
                                 </button>
                               </div>
                             </td>
@@ -803,7 +794,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 onClick={() => setShowAddModal(false)}
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <span className="material-symbols-outlined text-slate-500">close</span>
+                <X size={20} className="text-slate-500" />
               </button>
             </div>
             <div className="space-y-4">
@@ -902,7 +893,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 }}
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <span className="material-symbols-outlined text-slate-500">close</span>
+                <X size={20} className="text-slate-500" />
               </button>
             </div>
             <div className="space-y-4">
@@ -969,9 +960,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
             <div className="mx-auto h-14 w-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-3xl text-red-600 dark:text-red-400">
-                warning
-              </span>
+              <AlertTriangle size={30} className="text-red-600 dark:text-red-400" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Delete Employer?
