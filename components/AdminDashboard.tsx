@@ -6,6 +6,7 @@ import { downloadCSV } from '../src/utils/csv';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { AlertCircle, BadgeCheck, Bell, Briefcase, Calendar, Circle, Clock, CreditCard, Download, FileText, GraduationCap, LayoutDashboard, Receipt, ShieldCheck, TrendingUp, Users } from 'lucide-react';
+import UserDemographics from './UserDemographics';
 
 interface AdminStats {
   totalUsers: number;
@@ -462,6 +463,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 </svg>
               </div>
             </div>
+            <UserDemographics />
           </section>
         </div>
       </main>
