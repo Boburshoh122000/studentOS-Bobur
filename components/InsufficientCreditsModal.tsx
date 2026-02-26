@@ -1,4 +1,4 @@
-import { X, Lock, Zap, ArrowRight, Sparkles } from 'lucide-react';
+import { X, Zap, Gift, ArrowUpRight } from 'lucide-react';
 import React from 'react';
 
 interface InsufficientCreditsModalProps {
@@ -20,79 +20,108 @@ export default function InsufficientCreditsModal({
 }: InsufficientCreditsModalProps) {
   if (!isOpen) return null;
 
+  const pct = required > 0 ? Math.round((available / required) * 100) : 0;
+
   return (
     <div
-      className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={onClose}
     >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50" />
+
       <div
-        className="bg-white dark:bg-[#0f111a] rounded-[24px] shadow-2xl w-full max-w-[400px] relative overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Subtle top gradient glow */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-indigo-500/10 dark:from-indigo-500/20 to-transparent pointer-events-none" />
+        {/* Colored top band */}
+        <div className="relative h-36 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 flex items-center justify-center overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+          <div className="absolute -bottom-14 -left-8 w-44 h-44 bg-white/5 rounded-full" />
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          aria-label="Close modal"
-          className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-all z-10"
-        >
-          <X size={18} strokeWidth={2.5} />
-        </button>
+          {/* Close */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition"
+          >
+            <X size={18} />
+          </button>
 
-        <div className="px-8 pt-8 pb-6 text-center relative z-10">
-          {/* Icon */}
-          <div className="relative mx-auto w-16 h-16 mb-5">
-            <div className="absolute inset-0 bg-indigo-500/20 dark:bg-indigo-500/30 rounded-2xl blur-xl" />
-            <div className="relative w-full h-full bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 border border-white/20">
-              <Lock size={28} className="text-white" strokeWidth={2} />
+          {/* Big credit coin */}
+          <div className="relative flex flex-col items-center gap-1">
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+              <Zap size={30} className="text-white" fill="white" />
             </div>
+            <span className="text-white/90 text-sm font-medium mt-1">{toolName}</span>
           </div>
+        </div>
 
-          <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-            Unlock {toolName}
-          </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
-            You need <strong className="text-slate-700 dark:text-slate-300 font-semibold">{shortfall} more credits</strong> to access this feature. Top up your balance to continue.
-          </p>
-
-          {/* Clean minimal breakdown */}
-          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 mb-8 border border-slate-100 dark:border-white/5">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Required</span>
-              <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                {required} <Zap size={14} className="text-amber-500" fill="currentColor" />
+        {/* Body */}
+        <div className="px-6 pt-6 pb-7 -mt-4 bg-white dark:bg-gray-900 rounded-t-3xl relative z-10">
+          {/* Progress bar section */}
+          <div className="mb-6">
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                Credits needed
+              </span>
+              <span className="text-xs text-gray-400">
+                {available} / {required}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Balance</span>
-              <span className="text-sm font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                {available} <Zap size={14} className="text-slate-400" />
-              </span>
+
+            {/* Bar */}
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-red-400 to-amber-400 transition-all duration-700"
+                style={{ width: `${pct}%` }}
+              />
             </div>
+
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+              You're <strong className="text-gray-600 dark:text-gray-300">{shortfall}</strong> credits short to use this tool.
+            </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
+          {/* Two action cards */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
             <button
-              onClick={() => {
-                // Future: Navigate to credits page
-                onClose();
-              }}
-              className="w-full h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm transition-all hover:scale-[1.02] hover:shadow-lg flex items-center justify-center gap-2 group"
+              onClick={() => { onClose(); }}
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 border border-violet-100 dark:border-violet-800/30 hover:shadow-md hover:scale-[1.02] transition-all group"
             >
-              <Sparkles size={16} className="text-indigo-400 dark:text-indigo-600" />
-              Get More Credits
-              <ArrowRight size={16} className="opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-800/40 flex items-center justify-center group-hover:bg-violet-200 dark:group-hover:bg-violet-700/40 transition">
+                <Zap size={18} className="text-violet-600 dark:text-violet-400" />
+              </div>
+              <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">Buy Credits</span>
             </button>
+
             <button
-              onClick={onClose}
-              className="w-full h-12 rounded-xl bg-transparent text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+              onClick={() => { onClose(); }}
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30 hover:shadow-md hover:scale-[1.02] transition-all group"
             >
-              Maybe Later
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-700/40 transition">
+                <Gift size={18} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Invite & Earn</span>
             </button>
           </div>
+
+          {/* Primary CTA */}
+          <button
+            onClick={() => { onClose(); }}
+            className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all active:scale-[0.98]"
+          >
+            Top Up {shortfall} Credits
+            <ArrowUpRight size={16} />
+          </button>
+
+          <button
+            onClick={onClose}
+            className="w-full mt-3 text-center text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition py-1"
+          >
+            Not now
+          </button>
         </div>
       </div>
     </div>
