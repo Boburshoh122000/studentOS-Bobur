@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
-import { userApi, authApi } from '../src/services/api';
+import { userApi, authApi, creditsApi, notificationApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
 import DashboardLayout from './DashboardLayout';
+import { GlobalLoader } from './ui/GlobalLoader';
 import {
   AlertTriangle,
   Bell,
@@ -13,19 +14,47 @@ import {
   CreditCard,
   Gift,
   Loader2,
-  Lock,
   MapPin,
   Pencil,
   Send,
-  Settings,
-  Shield,
   Trash2,
   TrendingDown,
   TrendingUp,
   User,
+  Shield,
+  Eye,
+  EyeOff,
+  Check,
+  X,
 } from 'lucide-react';
 
 type SettingsTab = 'profile' | 'security' | 'notifications' | 'billing' | 'earn' | 'delete';
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string | null;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface CreditHistoryItem {
+  id: string;
+  tool: { name: string; slug: string; icon: string; category: string };
+  credits: number;
+  usedAt: string;
+}
+
+interface ProfileData {
+  fullName?: string;
+  bio?: string;
+  country?: string;
+  avatarUrl?: string;
+  university?: string;
+  major?: string;
+  headline?: string;
+}
 
 // ─── Tab Configuration ───────────────────────────────────────────────
 const TABS: { id: SettingsTab; label: string; icon: React.ElementType; danger?: boolean }[] = [
@@ -37,46 +66,21 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType; danger?: 
   { id: 'delete', label: 'Delete Account', icon: Trash2, danger: true },
 ];
 
-// ─── Mock Data ───────────────────────────────────────────────────────
-const MOCK_NOTIFICATIONS = [
-  { id: 1, title: 'Welcome to StudentOS!', desc: 'Your account has been created successfully. Start exploring tools now.', time: '2 hours ago', read: false },
-  { id: 2, title: 'Your CV was analyzed', desc: 'Your resume scored 78/100 on ATS compatibility. Check the results.', time: '1 day ago', read: true },
-  { id: 3, title: 'New scholarship match', desc: 'We found 3 new scholarships that match your profile.', time: '3 days ago', read: true },
-  { id: 4, title: 'System maintenance', desc: 'Scheduled maintenance tomorrow from 2:00 AM to 4:00 AM UTC.', time: '5 days ago', read: true },
-];
-
-const MOCK_TRANSACTIONS = [
-  { id: 1, type: 'credit' as const, amount: 100, desc: 'Welcome Bonus', date: 'Feb 25, 2026' },
-  { id: 2, type: 'debit' as const, amount: 10, desc: 'Generated Learning Plan', date: 'Feb 24, 2026' },
-  { id: 3, type: 'credit' as const, amount: 50, desc: 'Earned via Telegram', date: 'Feb 23, 2026' },
-  { id: 4, type: 'debit' as const, amount: 15, desc: 'CV ATS Analysis', date: 'Feb 22, 2026' },
-  { id: 5, type: 'debit' as const, amount: 10, desc: 'Plagiarism Check', date: 'Feb 21, 2026' },
-  { id: 6, type: 'credit' as const, amount: 50, desc: 'Referral Reward', date: 'Feb 20, 2026' },
-];
-
 // ─── Reusable Card ───────────────────────────────────────────────────
 function SettingsCard({
   title,
-  onEdit,
+  action,
   children,
 }: {
   title: string;
-  onEdit?: () => void;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-6 shadow-sm">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors font-medium"
-          >
-            <Pencil size={14} />
-            Edit
-          </button>
-        )}
+        {action}
       </div>
       {children}
     </div>
@@ -92,14 +96,35 @@ function InfoField({ label, value }: { label: string; value: string }) {
   );
 }
 
+function EditButton({ onClick, loading }: { onClick: () => void; loading?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors font-medium disabled:opacity-50"
+    >
+      {loading ? <Loader2 size={14} className="animate-spin" /> : <Pencil size={14} />}
+      {loading ? 'Saving...' : 'Edit'}
+    </button>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────
 export default function StudentSettings({ navigateTo }: NavigationProps) {
-  const { user, refreshUser } = useAuth();
-  const { balance } = useCredits();
+  const { user, refreshUser, logout } = useAuth();
+  const { balance, refreshBalance } = useCredits();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
-  // Profile state
-  const [fullName, setFullName] = useState('');
+  // ── Loading States ──
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // ── Profile state ──
+  const [profile, setProfile] = useState<ProfileData>({});
+  const [editingSection, setEditingSection] = useState<'personal' | 'address' | null>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
@@ -108,35 +133,107 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   const [postalCode, setPostalCode] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Security state
+  // ── Security state ──
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
 
-  // Credits state
+  // ── Notifications state ──
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // ── Billing state ──
+  const [creditHistory, setCreditHistory] = useState<CreditHistoryItem[]>([]);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  // ── Earn Credits state ──
   const [isClaiming, setIsClaiming] = useState(false);
   const [telegramClaimed, setTelegramClaimed] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Delete state
+  // ── Delete state ──
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  // ── Fetch Profile ──
+  const fetchProfile = useCallback(async () => {
+    setIsLoadingProfile(true);
+    try {
+      const { data, error } = await userApi.getProfile();
+      if (error) throw new Error(error);
+      if (data) {
+        const p = data as ProfileData;
+        setProfile(p);
+        const nameParts = (p.fullName || '').split(' ');
+        setFirstName(nameParts[0] || '');
+        setLastName(nameParts.slice(1).join(' ') || '');
+        setBio(p.bio || '');
+        setCountry(p.country || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  }, []);
+
+  // ── Fetch Notifications ──
+  const fetchNotifications = useCallback(async () => {
+    setIsLoadingNotifications(true);
+    try {
+      const { data, error } = await notificationApi.list();
+      if (error) throw new Error(error);
+      if (data) {
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, []);
+
+  // ── Fetch Credit History + Balance ──
+  const fetchCreditData = useCallback(async () => {
+    setIsLoadingHistory(true);
+    try {
+      const [histRes, balRes] = await Promise.all([
+        creditsApi.getHistory({ limit: 20 }),
+        creditsApi.getBalance(),
+      ]);
+      if (histRes.data?.data) setCreditHistory(histRes.data.data.history);
+      if (balRes.data?.data) setReferralCode(balRes.data.data.referralCode);
+    } catch (err) {
+      console.error('Failed to fetch credit data:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
+
+  // ── Initial fetch ──
   useEffect(() => {
     if (user) {
-      setFullName(user.profile?.fullName || '');
       setEmail(user.email || '');
+      fetchProfile();
     }
-  }, [user]);
+  }, [user, fetchProfile]);
 
-  const firstName = fullName.split(' ')[0] || '';
-  const lastName = fullName.split(' ').slice(1).join(' ') || '';
-  const initials = fullName
+  // ── Lazy fetch on tab change ──
+  useEffect(() => {
+    if (activeTab === 'notifications' && notifications.length === 0) fetchNotifications();
+    if ((activeTab === 'billing' || activeTab === 'earn') && creditHistory.length === 0) fetchCreditData();
+  }, [activeTab, notifications.length, creditHistory.length, fetchNotifications, fetchCreditData]);
+
+  const initials = (profile.fullName || 'U')
     .split(' ')
     .map((n: string) => n[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2) || 'U';
+    .slice(0, 2);
 
   // ── Profile Save ──
   const handleSaveProfile = async () => {
@@ -144,16 +241,15 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     if (!name) { toast.error('Name cannot be empty'); return; }
     setIsSavingProfile(true);
     try {
-      const { error } = await userApi.updateProfile({ fullName: name });
+      const { error } = await userApi.updateProfile({
+        fullName: name,
+        bio: bio.trim() || undefined,
+        country: country.trim() || undefined,
+      });
       if (error) throw new Error(error);
-      if (email !== user?.email && email.trim()) {
-        const emailRes = await authApi.updateEmail({ newEmail: email.trim(), password: '' });
-        if (emailRes.error) toast.error(`Profile saved, but email update failed: ${emailRes.error}`);
-        else toast.success('Profile and email updated!');
-      } else {
-        toast.success('Profile updated successfully!');
-      }
-      await refreshUser();
+      toast.success('Profile updated successfully!');
+      setEditingSection(null);
+      await Promise.all([fetchProfile(), refreshUser()]);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
@@ -163,6 +259,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
   // ── Password Change ──
   const handleChangePassword = async () => {
+    if (!currentPassword) { toast.error('Please enter your current password'); return; }
     if (!newPassword || !confirmPassword) { toast.error('Please fill in both password fields'); return; }
     if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
@@ -179,8 +276,26 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     }
   };
 
+  // ── Mark Notification Read ──
+  const handleMarkRead = async (id: string) => {
+    try {
+      await notificationApi.markRead(id);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch { toast.error('Failed to mark as read'); }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationApi.markAllRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast.success('All notifications marked as read');
+    } catch { toast.error('Failed to mark all as read'); }
+  };
+
   // ── Copy Referral Link ──
-  const referralLink = `studentos.uz/ref/${user?.email?.split('@')[0] || user?.id || 'invite'}`;
+  const referralLink = `studentos.uz/ref/${referralCode || user?.email?.split('@')[0] || 'invite'}`;
   const handleCopyReferral = async () => {
     try {
       await navigator.clipboard.writeText(`https://${referralLink}`);
@@ -198,69 +313,179 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       const { data, error } = await userApi.claimTelegramCredits();
       if (error) { toast.error(error); return; }
       if (data) {
-        toast.success('🎉 +50 Credits added to your account!');
+        toast.success('🎉 +50 Credits added!');
         setTelegramClaimed(true);
-        await refreshUser();
+        await Promise.all([refreshUser(), refreshBalance()]);
       }
     } catch { toast.error('Failed to claim credits'); }
     finally { setIsClaiming(false); }
   };
 
+  // ── Delete Account ──
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return;
+    if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await authApi.deleteAccount();
+      if (error) throw new Error(error);
+      toast.success('Account deleted. Goodbye!');
+      await logout();
+      navigateTo(Screen.LANDING);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // ── Time helpers ──
+  const timeAgo = (dateStr: string) => {
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
   // ─── Header ────────────────────────────────────────────────────────
   const headerContent = (
     <header className="h-auto min-h-[4.5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-[#1e2330] border-b border-gray-200 dark:border-gray-800 z-10">
       <div className="flex flex-col justify-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-          Account Settings
-        </h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Account Settings</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">Manage your profile, security, and preferences</p>
       </div>
     </header>
   );
 
+  // Loading state
+  if (isLoadingProfile) {
+    return (
+      <DashboardLayout currentScreen={Screen.SETTINGS} navigateTo={navigateTo} headerContent={headerContent}>
+        <div className="flex items-center justify-center h-full py-20">
+          <GlobalLoader fullScreen={false} />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   // ─── Tab Panels ────────────────────────────────────────────────────
   const renderProfile = () => (
     <>
       {/* Avatar & Basic Info */}
-      <SettingsCard title="My Profile" onEdit={() => toast('Edit profile modal coming soon', { icon: '✏️' })}>
+      <SettingsCard title="My Profile" action={<EditButton onClick={() => setEditingSection('personal')} />}>
         <div className="flex items-center gap-5">
-          {user?.profile?.avatarUrl ? (
-            <img src={user.profile.avatarUrl} alt={fullName} className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md" />
+          {profile.avatarUrl ? (
+            <img src={profile.avatarUrl} alt={profile.fullName || ''} className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md" />
           ) : (
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center text-white text-xl font-bold shadow-md">
               {initials}
             </div>
           )}
           <div>
-            <h4 className="text-base font-semibold text-gray-900 dark:text-white">{fullName || 'User'}</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{user?.role === 'STUDENT' ? 'Student' : user?.role || 'Member'}</p>
+            <h4 className="text-base font-semibold text-gray-900 dark:text-white">{profile.fullName || email}</h4>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{profile.headline || (user?.role === 'STUDENT' ? 'Student' : user?.role || 'Member')}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
-              <MapPin size={12} /> Tashkent, Uzbekistan
+              <MapPin size={12} /> {profile.country || 'Not set'}
             </p>
           </div>
         </div>
       </SettingsCard>
 
       {/* Personal Info */}
-      <SettingsCard title="Personal Information" onEdit={handleSaveProfile}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
-          <InfoField label="First Name" value={firstName} />
-          <InfoField label="Last Name" value={lastName} />
-          <InfoField label="Email Address" value={email} />
-          <InfoField label="Phone" value={phone || '+998-XX-XXX-XX-XX'} />
-          <div className="sm:col-span-2">
-            <InfoField label="Bio" value={bio || 'Student'} />
+      <SettingsCard
+        title="Personal Information"
+        action={
+          editingSection === 'personal' ? (
+            <div className="flex gap-2">
+              <button onClick={() => setEditingSection(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"><X size={16} /></button>
+              <button onClick={handleSaveProfile} disabled={isSavingProfile} className="flex items-center gap-1.5 text-sm text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50">
+                {isSavingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                Save
+              </button>
+            </div>
+          ) : (
+            <EditButton onClick={() => setEditingSection('personal')} />
+          )
+        }
+      >
+        {editingSection === 'personal' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">First Name</label>
+              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Last Name</label>
+              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Email Address</label>
+              <input type="email" value={email} disabled
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 text-sm cursor-not-allowed" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Phone</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998-XX-XXX-XX-XX"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Bio</label>
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself" rows={2}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none" />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
+            <InfoField label="First Name" value={firstName} />
+            <InfoField label="Last Name" value={lastName} />
+            <InfoField label="Email Address" value={email} />
+            <InfoField label="Phone" value={phone || '—'} />
+            <div className="sm:col-span-2">
+              <InfoField label="Bio" value={bio || '—'} />
+            </div>
+          </div>
+        )}
       </SettingsCard>
 
       {/* Address */}
-      <SettingsCard title="Address" onEdit={() => toast('Address editing coming soon', { icon: '📍' })}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
-          <InfoField label="Country" value={country || 'Uzbekistan'} />
-          <InfoField label="City/State" value={city || 'Tashkent'} />
-          <InfoField label="Postal Code" value={postalCode || '100000'} />
-        </div>
+      <SettingsCard title="Address" action={<EditButton onClick={() => setEditingSection(editingSection === 'address' ? null : 'address' as 'address')} />}>
+        {editingSection === 'address' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Country</label>
+              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Country"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">City/State</label>
+              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Postal Code</label>
+              <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="100000"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            </div>
+            <div className="flex items-end">
+              <button onClick={handleSaveProfile} disabled={isSavingProfile} className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center gap-2">
+                {isSavingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
+            <InfoField label="Country" value={country || '—'} />
+            <InfoField label="City/State" value={city || '—'} />
+            <InfoField label="Postal Code" value={postalCode || '—'} />
+          </div>
+        )}
       </SettingsCard>
     </>
   );
@@ -270,40 +495,32 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       <div className="space-y-4 max-w-lg">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Current Password</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter current password"
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-          />
+          <div className="relative">
+            <input type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password"
+              className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Min 6 characters"
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-          />
+          <div className="relative">
+            <input type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min 6 characters"
+              className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+            <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Confirm New Password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Re-enter new password"
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-          />
+          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="flex justify-end pt-3">
-          <button
-            onClick={handleChangePassword}
-            disabled={isSavingPassword}
-            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm"
-          >
+          <button onClick={handleChangePassword} disabled={isSavingPassword}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm">
             {isSavingPassword && <Loader2 size={16} className="animate-spin" />}
             {isSavingPassword ? 'Updating...' : 'Update Password'}
           </button>
@@ -313,21 +530,39 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   );
 
   const renderNotifications = () => (
-    <SettingsCard title="Recent Notifications">
-      <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
-        {MOCK_NOTIFICATIONS.map((n) => (
-          <div key={n.id} className={`flex items-start gap-3.5 px-1 py-4 first:pt-0 last:pb-0 ${!n.read ? 'bg-blue-50/50 dark:bg-blue-900/10 -mx-2 px-3 rounded-xl' : ''}`}>
-            <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${!n.read ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${!n.read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
-                {n.title}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{n.desc}</p>
+    <SettingsCard
+      title={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+      action={unreadCount > 0 ? (
+        <button onClick={handleMarkAllRead} className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
+          Mark all as read
+        </button>
+      ) : undefined}
+    >
+      {isLoadingNotifications ? (
+        <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-blue-500" /></div>
+      ) : notifications.length === 0 ? (
+        <div className="text-center py-8">
+          <Bell size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
+          {notifications.map((n) => (
+            <div
+              key={n.id}
+              onClick={() => !n.isRead && handleMarkRead(n.id)}
+              className={`flex items-start gap-3.5 px-1 py-4 first:pt-0 last:pb-0 cursor-pointer transition-colors ${!n.isRead ? 'bg-blue-50/50 dark:bg-blue-900/10 -mx-2 px-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/15' : 'hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg'}`}
+            >
+              <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${!n.isRead ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>{n.title}</p>
+                {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{n.message}</p>}
+              </div>
+              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap shrink-0">{timeAgo(n.createdAt)}</span>
             </div>
-            <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap shrink-0">{n.time}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </SettingsCard>
   );
 
@@ -340,28 +575,34 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       </div>
 
       {/* Transaction History */}
-      <SettingsCard title="Credit History">
-        <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
-          {MOCK_TRANSACTIONS.map((t) => (
-            <div key={t.id} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 px-1">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${t.type === 'credit' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                  {t.type === 'credit'
-                    ? <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
-                    : <TrendingDown size={16} className="text-gray-500 dark:text-gray-400" />
-                  }
+      <SettingsCard title="Credit Usage History">
+        {isLoadingHistory ? (
+          <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-blue-500" /></div>
+        ) : creditHistory.length === 0 ? (
+          <div className="text-center py-8">
+            <CreditCard size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No transactions yet</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
+            {creditHistory.map((t) => (
+              <div key={t.id} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 px-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    <TrendingDown size={16} className="text-gray-500 dark:text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{t.tool.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(t.usedAt)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{t.desc}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{t.date}</p>
-                </div>
+                <span className="text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
+                  −{t.credits}
+                </span>
               </div>
-              <span className={`text-sm font-bold tabular-nums ${t.type === 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                {t.type === 'credit' ? '+' : '−'}{t.amount}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </SettingsCard>
     </>
   );
@@ -380,20 +621,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             Invite a friend and get <strong>50 credits</strong> when they sign up.
           </p>
           <div className="flex items-center gap-2">
-            <input
-              type="text"
-              readOnly
-              value={referralLink}
-              aria-label="Referral link"
-              className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 text-xs font-mono focus:outline-none truncate"
-            />
-            <button
-              onClick={handleCopyReferral}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm ${copied
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-            >
+            <input type="text" readOnly value={referralLink} aria-label="Referral link"
+              className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 text-xs font-mono focus:outline-none truncate" />
+            <button onClick={handleCopyReferral}
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm ${copied ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
               {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
               {copied ? 'Copied!' : 'Copy'}
             </button>
@@ -411,25 +642,11 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white">Join Our Telegram</h4>
                 <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">+20 Credits</span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Join our official Telegram channel for <strong>20 free credits</strong>.
-              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Join our official Telegram channel for <strong>20 free credits</strong>.</p>
             </div>
-            <button
-              onClick={handleClaimTelegram}
-              disabled={isClaiming || telegramClaimed}
-              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shadow-sm ${telegramClaimed
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 cursor-default'
-                  : 'bg-[#229ED9] text-white hover:bg-[#1e8ec5] disabled:opacity-50'
-                }`}
-            >
-              {isClaiming ? (
-                <><Loader2 size={16} className="animate-spin" /> Joining...</>
-              ) : telegramClaimed ? (
-                <><CheckCircle size={16} /> Claimed!</>
-              ) : (
-                <><Send size={16} /> Join Channel</>
-              )}
+            <button onClick={handleClaimTelegram} disabled={isClaiming || telegramClaimed}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shadow-sm ${telegramClaimed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 cursor-default' : 'bg-[#229ED9] text-white hover:bg-[#1e8ec5] disabled:opacity-50'}`}>
+              {isClaiming ? (<><Loader2 size={16} className="animate-spin" /> Joining...</>) : telegramClaimed ? (<><CheckCircle size={16} /> Claimed!</>) : (<><Send size={16} /> Join Channel</>)}
             </button>
           </div>
         </div>
@@ -450,27 +667,19 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       </div>
       <div className="bg-red-50 dark:bg-red-900/10 rounded-xl p-4 mb-5 border border-red-100 dark:border-red-900/30">
         <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">
-          Once you delete your account, there is no going back. All of your data, credits, and progress will be
-          permanently removed. Please be certain.
+          Once you delete your account, there is no going back. All of your data, credits, and progress will be permanently removed.
         </p>
       </div>
       <div className="max-w-md">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           Type <strong className="text-red-600">DELETE</strong> to confirm
         </label>
-        <input
-          type="text"
-          value={deleteConfirm}
-          onChange={(e) => setDeleteConfirm(e.target.value)}
-          placeholder='Type "DELETE"'
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all mb-4"
-        />
-        <button
-          disabled={deleteConfirm !== 'DELETE'}
-          onClick={() => toast.error('Account deletion is disabled in this demo.')}
-          className="px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-        >
-          Delete My Account
+        <input type="text" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder='Type "DELETE"'
+          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all mb-4" />
+        <button disabled={deleteConfirm !== 'DELETE' || isDeleting} onClick={handleDeleteAccount}
+          className="px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2">
+          {isDeleting && <Loader2 size={16} className="animate-spin" />}
+          {isDeleting ? 'Deleting...' : 'Delete My Account'}
         </button>
       </div>
     </div>
@@ -487,11 +696,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
   // ─── Render ────────────────────────────────────────────────────────
   return (
-    <DashboardLayout
-      currentScreen={Screen.SETTINGS}
-      navigateTo={navigateTo}
-      headerContent={headerContent}
-    >
+    <DashboardLayout currentScreen={Screen.SETTINGS} navigateTo={navigateTo} headerContent={headerContent}>
       <div className="px-4 md:px-8 pb-8 pt-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
           {/* ── Left Settings Nav ── */}
@@ -514,6 +719,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                       >
                         <Icon size={18} className={isActive && !tab.danger ? 'text-blue-600 dark:text-blue-400' : tab.danger ? 'text-red-400' : 'text-gray-400 dark:text-gray-500'} />
                         <span className="hidden md:inline">{tab.label}</span>
+                        {tab.id === 'notifications' && unreadCount > 0 && (
+                          <span className="ml-auto hidden md:inline-flex w-5 h-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">{unreadCount}</span>
+                        )}
                       </button>
                     </li>
                   );
@@ -524,14 +732,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
           {/* ── Right Content ── */}
           <div className="flex-1 min-w-0">
-            {/* Section Title */}
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {TABS.find((t) => t.id === activeTab)?.label}
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{TABS.find((t) => t.id === activeTab)?.label}</h2>
             </div>
-
-            {/* Tab Content */}
             {tabContent[activeTab]()}
           </div>
         </div>

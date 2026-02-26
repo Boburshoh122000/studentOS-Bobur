@@ -602,4 +602,31 @@ router.post('/google-callback', validate(googleCallbackSchema), async (req, res,
   }
 });
 
+// Delete account (soft-delete: deactivate + revoke tokens)
+router.delete(
+  '/account',
+  authenticate,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.user!.id;
+
+      // Soft-delete: deactivate the account
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isActive: false },
+      });
+
+      // Revoke all refresh tokens
+      await revokeAllUserTokens(userId);
+
+      // Clear auth cookies
+      clearAuthCookies(res);
+
+      res.json({ message: 'Account deleted successfully.' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;

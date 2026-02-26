@@ -247,6 +247,9 @@ export const authApi = {
   updateEmail: (data: { newEmail: string; password: string }) =>
     api.post<{ message: string }>('/auth/update-email', data),
 
+  deleteAccount: () =>
+    api.delete<{ message: string }>('/auth/account'),
+
   googleCallback: async (data: {
     supabaseAccessToken: string;
     email: string;
