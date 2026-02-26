@@ -4,7 +4,7 @@ import { authApi } from '../services/api';
 interface User {
   id: string;
   email: string;
-  role: 'STUDENT' | 'EMPLOYER' | 'ADMIN';
+  role: 'STUDENT' | 'EMPLOYER' | 'EDUCATOR' | 'ADMIN';
   profile: {
     fullName?: string;
     avatarUrl?: string;

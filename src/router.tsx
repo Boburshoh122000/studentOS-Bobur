@@ -46,7 +46,7 @@ const lazyRetry = (importFn: () => Promise<any>) => {
           sessionStorage.setItem(storageKey, 'true');
           window.location.reload();
           // Return a never-resolving promise to wait for reload
-          return new Promise(() => {});
+          return new Promise(() => { });
         }
       }
       throw error;
@@ -102,7 +102,7 @@ const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/Emp
 // Helper component to wrap protected routes
 function StudentRoute({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
+    <ProtectedRoute allowedRoles={['STUDENT', 'EDUCATOR', 'ADMIN']}>
       <Wrap>{children}</Wrap>
     </ProtectedRoute>
   );

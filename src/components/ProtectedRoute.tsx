@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('STUDENT' | 'EMPLOYER' | 'ADMIN')[];
+  allowedRoles?: ('STUDENT' | 'EMPLOYER' | 'EDUCATOR' | 'ADMIN')[];
 }
 
 import { GlobalLoader } from '../../components/ui/GlobalLoader';
@@ -45,7 +45,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const onboardingPaths = ['/signup/step-2', '/verification-pending'];
   const isOnOnboarding = onboardingPaths.some((p) => location.pathname.startsWith(p));
 
-  if (!isOnOnboarding && user.role === 'STUDENT') {
+  if (!isOnOnboarding && (user.role === 'STUDENT' || user.role === 'EDUCATOR')) {
     const profile = user.profile;
     const hasCompletedOnboarding = profile && (profile.university || profile.major);
     if (!hasCompletedOnboarding) {
@@ -57,7 +57,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   if (isOnOnboarding && location.pathname === '/signup/step-2') {
     const profile = user.profile;
     const hasCompletedOnboarding =
-      user.role !== 'STUDENT' || (profile && (profile.university || profile.major));
+      (user.role !== 'STUDENT' && user.role !== 'EDUCATOR') || (profile && (profile.university || profile.major));
     if (hasCompletedOnboarding) {
       return <Navigate to={getRoleDefaultRoute(user.role)} replace />;
     }
