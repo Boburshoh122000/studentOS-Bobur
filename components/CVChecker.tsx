@@ -3,7 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { AlertCircle, AlertTriangle, CheckCircle, CloudUpload, FileText, KeyRound, Minus, NotebookPen, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, Clock, CloudUpload, FileText, History, KeyRound, Minus, NotebookPen, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
 
 interface CVAnalysisResult {
   score: number;
@@ -337,9 +337,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
         headerContent={headerContent}
       >
         <div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6">
-          <div className={`mx-auto transition-all duration-500 ease-in-out ${analysisResult ? 'max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6' : 'max-w-2xl'}`}>
+          <div className={`mx-auto transition-all duration-500 ease-in-out ${analysisResult ? 'max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6' : 'max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-6'}`}>
             {/* Left Panel - Input */}
-            <div className={`flex flex-col gap-5 ${analysisResult ? 'lg:col-span-4 h-full overflow-y-auto hide-scrollbar pb-10' : ''}`}>
+            <div className={`flex flex-col gap-5 ${analysisResult ? 'lg:col-span-4 h-full overflow-y-auto hide-scrollbar pb-10' : 'lg:col-span-2'}`}>
 
               {/* Card wrapper for input section */}
               <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-6 md:p-8 shadow-sm">
@@ -551,6 +551,64 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
             {analysisResult && (
               <div className="lg:col-span-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
                 <ResultsPanel />
+              </div>
+            )}
+
+            {/* Right Sidebar - Recent Scans (only when no results) */}
+            {!analysisResult && (
+              <div className="lg:col-span-1 space-y-5">
+                {/* Recent Scans Card */}
+                <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <History size={18} className="text-indigo-500" />
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Scans</h3>
+                  </div>
+
+                  {(() => {
+                    const recentScans = [
+                      { id: 1, role: 'Frontend Developer', score: 85, date: '2 hours ago' },
+                      { id: 2, role: 'UI/UX Designer', score: 62, date: '1 day ago' },
+                      { id: 3, role: 'Product Manager', score: 91, date: '3 days ago' },
+                    ];
+                    return (
+                      <div className="space-y-1.5">
+                        {recentScans.map((scan) => (
+                          <div
+                            key={scan.id}
+                            className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <FileText size={15} className="text-gray-400 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{scan.role}</p>
+                                <p className="text-xs text-gray-400 flex items-center gap-1">
+                                  <Clock size={10} />
+                                  {scan.date}
+                                </p>
+                              </div>
+                            </div>
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${scan.score >= 80
+                                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
+                                  : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
+                                }`}
+                            >
+                              {scan.score}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Pro Tip Card */}
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-xl p-5">
+                  <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-1">💡 Pro Tip</h4>
+                  <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
+                    Tailoring your resume to the specific job description keywords can increase your ATS match rate by up to 50%.
+                  </p>
+                </div>
               </div>
             )}
           </div>
