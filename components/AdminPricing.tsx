@@ -28,6 +28,14 @@ interface AppSettings {
   default_welcome_credits?: string;
 }
 
+const AVAILABLE_TOOLS = [
+  { name: 'Select a tool...', slug: '', category: '' },
+  { name: 'ATS Checker', slug: 'ats-checker', category: 'Career' },
+  { name: 'Learning Plan', slug: 'learning-plan', category: 'Education' },
+  { name: 'Plagiarism Checker', slug: 'plagiarism-checker', category: 'Productivity' },
+];
+
+
 export default function AdminPricing({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -786,14 +794,28 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Tool Name
                 </label>
-                <input
-                  type="text"
+                <select
                   value={newTool.name}
-                  onChange={(e) => setNewTool({ ...newTool, name: e.target.value })}
+                  onChange={(e) => {
+                    const selected = AVAILABLE_TOOLS.find((t) => t.name === e.target.value);
+                    if (selected) {
+                      setNewTool({
+                        ...newTool,
+                        name: selected.name,
+                        slug: selected.slug,
+                        category: selected.category || newTool.category,
+                      });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white"
-                  placeholder="e.g., Grammar Checker"
                   required
-                />
+                >
+                  {AVAILABLE_TOOLS.map((t) => (
+                    <option key={t.slug || '__placeholder'} value={t.name} disabled={!t.slug}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -802,27 +824,22 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 <input
                   type="text"
                   value={newTool.slug}
-                  onChange={(e) => setNewTool({ ...newTool, slug: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white"
-                  placeholder="e.g., grammar-checker"
-                  required
+                  readOnly
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                  placeholder="Auto-generated from tool selection"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Category
                 </label>
-                <select
+                <input
+                  type="text"
                   value={newTool.category}
-                  onChange={(e) => setNewTool({ ...newTool, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white"
-                >
-                  <option value="Productivity">Productivity</option>
-                  <option value="Career Tools">Career Tools</option>
-                  <option value="Academic">Academic</option>
-                  <option value="Education">Education</option>
-                  <option value="Recruitment">Recruitment</option>
-                </select>
+                  readOnly
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                  placeholder="Auto-set from tool selection"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
