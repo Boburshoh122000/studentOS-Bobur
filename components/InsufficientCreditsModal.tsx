@@ -1,4 +1,4 @@
-import { X, Coins, Sparkles, Users } from 'lucide-react';
+import { X, Lock, Zap, ArrowRight, Sparkles } from 'lucide-react';
 import React from 'react';
 
 interface InsufficientCreditsModalProps {
@@ -22,81 +22,77 @@ export default function InsufficientCreditsModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        className="bg-white dark:bg-[#0f111a] rounded-[24px] shadow-2xl w-full max-w-[400px] relative overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <div className="flex justify-end p-4 pb-0">
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        {/* Subtle top gradient glow */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-indigo-500/10 dark:from-indigo-500/20 to-transparent pointer-events-none" />
 
-        {/* Icon + Title */}
-        <div className="text-center px-6 pb-2">
-          <div className="size-14 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3">
-            <Coins size={24} className="text-amber-500" />
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          aria-label="Close modal"
+          className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-all z-10"
+        >
+          <X size={18} strokeWidth={2.5} />
+        </button>
+
+        <div className="px-8 pt-8 pb-6 text-center relative z-10">
+          {/* Icon */}
+          <div className="relative mx-auto w-16 h-16 mb-5">
+            <div className="absolute inset-0 bg-indigo-500/20 dark:bg-indigo-500/30 rounded-2xl blur-xl" />
+            <div className="relative w-full h-full bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 border border-white/20">
+              <Lock size={28} className="text-white" strokeWidth={2} />
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            Not Enough Credits
+
+          <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            Unlock {toolName}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <span className="font-medium text-gray-700 dark:text-gray-300">{toolName}</span>{' '}
-            requires more credits than you have
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+            You need <strong className="text-slate-700 dark:text-slate-300 font-semibold">{shortfall} more credits</strong> to access this feature. Top up your balance to continue.
           </p>
-        </div>
 
-        {/* Credit Breakdown */}
-        <div className="mx-6 my-5 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Required</span>
-            <span className="text-sm font-bold text-gray-900 dark:text-white">{required} credits</span>
+          {/* Clean minimal breakdown */}
+          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 mb-8 border border-slate-100 dark:border-white/5">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Required</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                {required} <Zap size={14} className="text-amber-500" fill="currentColor" />
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Balance</span>
+              <span className="text-sm font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                {available} <Zap size={14} className="text-slate-400" />
+              </span>
+            </div>
           </div>
-          <div className="border-t border-gray-100 dark:border-gray-700" />
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Your Balance</span>
-            <span className="text-sm font-bold text-red-500">{available} credits</span>
-          </div>
-          <div className="border-t border-gray-100 dark:border-gray-700" />
-          <div className="flex items-center justify-between px-4 py-3 bg-amber-50/50 dark:bg-amber-900/10">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Need</span>
-            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">+{shortfall} credits</span>
-          </div>
-        </div>
 
-        {/* Referral hint */}
-        <div className="mx-6 mb-5 flex items-start gap-2.5 p-3 rounded-lg bg-indigo-50/60 dark:bg-indigo-900/10 border border-indigo-100/80 dark:border-indigo-800/30">
-          <Users size={15} className="text-indigo-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-            Invite friends to earn free credits. Each referral earns you bonus credits instantly.
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="px-6 pb-6 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              // Future: Navigate to credits purchase page
-              onClose();
-            }}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition flex items-center justify-center gap-1.5 shadow-sm"
-          >
-            <Sparkles size={15} />
-            Get Credits
-          </button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                // Future: Navigate to credits page
+                onClose();
+              }}
+              className="w-full h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm transition-all hover:scale-[1.02] hover:shadow-lg flex items-center justify-center gap-2 group"
+            >
+              <Sparkles size={16} className="text-indigo-400 dark:text-indigo-600" />
+              Get More Credits
+              <ArrowRight size={16} className="opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full h-12 rounded-xl bg-transparent text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+            >
+              Maybe Later
+            </button>
+          </div>
         </div>
       </div>
     </div>
