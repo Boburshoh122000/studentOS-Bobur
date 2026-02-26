@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
@@ -22,6 +22,45 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Scan history state
+  interface ScanHistoryItem {
+    id: string;
+    score: number;
+    jobRole: string | null;
+    fileName: string | null;
+    createdAt: string;
+  }
+  const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  // Fetch scan history
+  const fetchHistory = useCallback(async () => {
+    try {
+      setHistoryLoading(true);
+      const { data } = await aiApi.getAtsHistory();
+      if (data?.data) setScanHistory(data.data);
+    } catch {
+      /* silent */
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  // Relative time helper
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  };
   const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +104,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       }
       const data = response.data as CVAnalysisResult;
       setAnalysisResult(data);
+      fetchHistory(); // refresh scan history sidebar
     } catch (err: unknown) {
       console.error('Failed to analyze CV:', err);
       const errorMessage =
@@ -564,42 +604,47 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Scans</h3>
                   </div>
 
-                  {(() => {
-                    const recentScans = [
-                      { id: 1, role: 'Frontend Developer', score: 85, date: '2 hours ago' },
-                      { id: 2, role: 'UI/UX Designer', score: 62, date: '1 day ago' },
-                      { id: 3, role: 'Product Manager', score: 91, date: '3 days ago' },
-                    ];
-                    return (
-                      <div className="space-y-1.5">
-                        {recentScans.map((scan) => (
-                          <div
-                            key={scan.id}
-                            className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <FileText size={15} className="text-gray-400 shrink-0" />
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{scan.role}</p>
-                                <p className="text-xs text-gray-400 flex items-center gap-1">
-                                  <Clock size={10} />
-                                  {scan.date}
-                                </p>
-                              </div>
+                  {historyLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <RefreshCw size={16} className="animate-spin text-gray-400" />
+                    </div>
+                  ) : scanHistory.length === 0 ? (
+                    <div className="text-center py-6">
+                      <FileText size={24} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                      <p className="text-sm text-gray-400">No scans yet</p>
+                      <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Upload a CV to get started</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {scanHistory.map((scan) => (
+                        <div
+                          key={scan.id}
+                          className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <FileText size={15} className="text-gray-400 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                                {scan.fileName || scan.jobRole || 'CV Analysis'}
+                              </p>
+                              <p className="text-xs text-gray-400 flex items-center gap-1">
+                                <Clock size={10} />
+                                {timeAgo(scan.createdAt)}
+                              </p>
                             </div>
-                            <span
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${scan.score >= 80
-                                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
-                                  : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
-                                }`}
-                            >
-                              {scan.score}%
-                            </span>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${scan.score >= 80
+                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
+                              : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
+                              }`}
+                          >
+                            {scan.score}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Pro Tip Card */}

@@ -432,6 +432,8 @@ export const aiApi = {
   checkPlagiarism: (text: string) => api.post('/ai/plagiarism-check', { text }),
   generatePresentation: (data: { topic: string; slideCount?: number; style?: string }) =>
     api.post('/ai/generate-presentation', data),
+  getAtsHistory: () =>
+    api.get<{ success: boolean; data: Array<{ id: string; score: number; jobRole: string | null; fileName: string | null; createdAt: string }> }>('/ai/ats-history'),
 };
 
 // Learning Plan API

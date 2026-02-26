@@ -125,6 +125,28 @@ router.get('/test', async (_req, res) => {
 // All AI routes require authentication AND rate limiting (10 req/min)
 router.use(authenticate, aiRateLimit);
 
+// GET /ats-history - Get recent ATS scan history
+router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
+  try {
+    const scans = await prisma.atsScan.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        score: true,
+        jobRole: true,
+        fileName: true,
+        createdAt: true,
+      },
+    });
+    res.json({ success: true, data: scans });
+  } catch (error) {
+    console.error('Failed to fetch ATS history:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch scan history' });
+  }
+});
+
 // CV/ATS Analysis
 router.post('/analyze-cv', requireCredits('ats-checker'), async (req: AuthenticatedRequest, res, next) => {
   try {
@@ -150,6 +172,21 @@ router.post('/analyze-cv', requireCredits('ats-checker'), async (req: Authentica
       });
     } catch (dbError) {
       console.error('Failed to update ATS score in profile:', dbError);
+    }
+
+    // Save scan to history
+    try {
+      await prisma.atsScan.create({
+        data: {
+          userId: req.user!.id,
+          score: analysis.score,
+          jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+          jobDescription: jobDescription || null,
+          result: analysis as any,
+        },
+      });
+    } catch (dbError) {
+      console.error('Failed to save ATS scan history:', dbError);
     }
 
     res.json(analysis);
@@ -301,6 +338,22 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
       });
     } catch (dbError) {
       console.error('Failed to update ATS score in profile:', dbError);
+    }
+
+    // Save scan to history
+    try {
+      await prisma.atsScan.create({
+        data: {
+          userId: req.user!.id,
+          score: analysis.score,
+          jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+          fileName: req.file!.originalname || null,
+          jobDescription: jobDescription || null,
+          result: analysis as any,
+        },
+      });
+    } catch (dbError) {
+      console.error('Failed to save ATS scan history:', dbError);
     }
 
     res.json({

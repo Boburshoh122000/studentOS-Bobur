@@ -132,6 +132,9 @@ model User {
   // Learning Plans
   learningPlans     LearningPlan[]
 
+  // ATS Scan History
+  atsScans          AtsScan[]
+
   @@index([email])
   @@index([googleId])
   @@index([referralCode])
@@ -741,4 +744,23 @@ model TeamMember {
   socialWebsite  String?
   displayOrder   Int      @default(0)
   createdAt      DateTime @default(now())
+}
+
+// =============================================================================
+// ATS SCAN HISTORY
+// =============================================================================
+
+model AtsScan {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score          Int
+  jobRole        String?  // Extracted or user-provided job title
+  fileName       String?  // Original uploaded file name
+  jobDescription String?  // The job description used
+  result         Json?    // Full analysis result
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
