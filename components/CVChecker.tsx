@@ -3,7 +3,6 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import CVBuilder from './cv-builder/CVBuilder';
-import { useCreditTransaction } from '../src/hooks/useCreditTransaction';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { AlertCircle, AlertTriangle, CheckCircle, CloudUpload, FileText, KeyRound, Minus, NotebookPen, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
 
@@ -29,8 +28,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Credit system integration
-  const { toolInfo, executeTransaction } = useCreditTransaction('cv-maker');
+  // Credit-gate modal state (402 from backend triggers this)
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
     required: number;
@@ -45,30 +43,25 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       return;
     }
 
-    // Check credits before proceeding (skip for free tools)
-    if (toolInfo && toolInfo.creditCost > 0) {
-      const result = await executeTransaction();
-      if (!result.success) {
-        if (result.error === 'INSUFFICIENT_CREDITS' && result.data) {
-          setCreditErrorData({
-            required: result.data.required || toolInfo.creditCost,
-            available: result.data.available || 0,
-            shortfall: result.data.shortfall || toolInfo.creditCost,
-            toolName: result.data.toolName || toolInfo.name,
-          });
-          setShowInsufficientModal(true);
-        } else {
-          setError(result.error || 'Failed to process credits');
-        }
-        return;
-      }
-    }
-
     setIsAnalyzing(true);
     setError(null);
 
     try {
       const response = await aiApi.analyzeCV(cvText, jobDescription || undefined);
+
+      // Handle 402 Insufficient Credits from backend
+      if (response.error && (response.data as any)?.code === 'INSUFFICIENT_CREDITS') {
+        const errData = (response.data as any)?.data;
+        setCreditErrorData({
+          required: errData?.required || 0,
+          available: errData?.available || 0,
+          shortfall: errData?.shortfall || 0,
+          toolName: errData?.toolName || 'ATS Checker',
+        });
+        setShowInsufficientModal(true);
+        return;
+      }
+
       if (response.error) {
         throw new Error(response.error);
       }

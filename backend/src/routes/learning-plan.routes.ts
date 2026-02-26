@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
+import { requireCredits } from '../middleware/credits.middleware.js';
 import { generateLearningPlan } from '../services/ai.service.js';
 
 const router = Router();
@@ -28,7 +29,7 @@ router.get('/', async (req: AuthenticatedRequest, res, next) => {
 });
 
 // ─── POST generate plan ──────────────────────────────────────────────────────
-router.post('/generate', async (req: AuthenticatedRequest, res, next) => {
+router.post('/generate', requireCredits('learning-plan'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { topic, duration = '4 weeks' } = req.body;
 
@@ -231,13 +232,13 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
           resources.length > 0
             ? resources
             : [
-                {
-                  title: `Introduction to ${topic}`,
-                  type: 'VIDEO' as const,
-                  durationText: '25 mins',
-                },
-                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
-              ],
+              {
+                title: `Introduction to ${topic}`,
+                type: 'VIDEO' as const,
+                durationText: '25 mins',
+              },
+              { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+            ],
       };
     });
   }
@@ -282,13 +283,13 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
           resources.length > 0
             ? resources
             : [
-                {
-                  title: `Introduction to ${topic}`,
-                  type: 'VIDEO' as const,
-                  durationText: '25 mins',
-                },
-                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
-              ],
+              {
+                title: `Introduction to ${topic}`,
+                type: 'VIDEO' as const,
+                durationText: '25 mins',
+              },
+              { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+            ],
       };
     });
   }

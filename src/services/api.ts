@@ -53,7 +53,7 @@ class ApiClient {
             return this.request<T>(endpoint, options);
           }
         }
-        return { error: data.error || 'An error occurred' };
+        return { data, error: data.error || 'An error occurred' };
       }
 
       return { data };

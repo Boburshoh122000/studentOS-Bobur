@@ -3,6 +3,7 @@ import multer from 'multer';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { aiRateLimit } from '../middleware/rateLimit.middleware.js';
+import { requireCredits } from '../middleware/credits.middleware.js';
 import {
   analyzeCV,
   generateCoverLetter,
@@ -125,7 +126,7 @@ router.get('/test', async (_req, res) => {
 router.use(authenticate, aiRateLimit);
 
 // CV/ATS Analysis
-router.post('/analyze-cv', async (req: AuthenticatedRequest, res, next) => {
+router.post('/analyze-cv', requireCredits('ats-checker'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { cvText, jobDescription } = req.body;
 
@@ -208,7 +209,7 @@ router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
 });
 
 // Plagiarism Check
-router.post('/plagiarism-check', async (req: AuthenticatedRequest, res, next) => {
+router.post('/plagiarism-check', requireCredits('plagiarism-checker'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { text } = req.body;
 

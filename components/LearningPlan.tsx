@@ -3,6 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
+import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, GraduationCap, Loader2, Lock, Monitor, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -44,6 +45,15 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [recentPlans, setRecentPlans] = useState<string[]>([]);
 
+  // Credit-gate modal state (402 from backend triggers this)
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [creditErrorData, setCreditErrorData] = useState<{
+    required: number;
+    available: number;
+    shortfall: number;
+    toolName: string;
+  } | null>(null);
+
   // Fetch active plan on mount
   useEffect(() => {
     fetchActivePlan();
@@ -73,6 +83,24 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setError(null);
     try {
       const res = await learningPlanApi.generate({ topic: topic.trim(), duration });
+
+      // Handle 402 Insufficient Credits from backend
+      if (res.error && (res.data as any)?.code === 'INSUFFICIENT_CREDITS') {
+        const errData = (res.data as any)?.data;
+        setCreditErrorData({
+          required: errData?.required || 0,
+          available: errData?.available || 0,
+          shortfall: errData?.shortfall || 0,
+          toolName: errData?.toolName || 'Learning Plan',
+        });
+        setShowInsufficientModal(true);
+        return;
+      }
+
+      if (res.error) {
+        throw new Error(res.error);
+      }
+
       const data = res.data as any;
       if (data?.plan) {
         setPlan(data.plan);
@@ -426,304 +454,317 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   /* ─── Plan View ──────────────────────────────────────────────────────────── */
 
   return (
-    <DashboardLayout
-      currentScreen={Screen.LEARNING_PLAN}
-      navigateTo={navigateTo}
-      headerContent={headerContent}
-    >
-      <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
-        <div className="max-w-6xl mx-auto p-8">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
+    <>
+      <DashboardLayout
+        currentScreen={Screen.LEARNING_PLAN}
+        navigateTo={navigateTo}
+        headerContent={headerContent}
+      >
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
+          <div className="max-w-6xl mx-auto p-8">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
 
-          <div className="flex gap-8">
-            {/* ── Timeline Column ── */}
-            <div className="flex-1 space-y-8 relative pb-20">
-              {/* Vertical line */}
-              <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 -z-10" />
+            <div className="flex gap-8">
+              {/* ── Timeline Column ── */}
+              <div className="flex-1 space-y-8 relative pb-20">
+                {/* Vertical line */}
+                <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 -z-10" />
 
-              {plan!.phases.map((phase, index) => {
-                const isCurrent = index === currentPhaseIndex;
-                const isCompleted = phase.isCompleted;
-                const isLocked = index > currentPhaseIndex && currentPhaseIndex !== -1;
-                const phaseResources = phase.resources;
-                const phaseCompleted = phaseResources.filter((r) => r.isCompleted).length;
+                {plan!.phases.map((phase, index) => {
+                  const isCurrent = index === currentPhaseIndex;
+                  const isCompleted = phase.isCompleted;
+                  const isLocked = index > currentPhaseIndex && currentPhaseIndex !== -1;
+                  const phaseResources = phase.resources;
+                  const phaseCompleted = phaseResources.filter((r) => r.isCompleted).length;
 
-                return (
-                  <div
-                    key={phase.id}
-                    className={`relative pl-16 group ${isLocked ? 'opacity-50' : ''}`}
-                  >
-                    {/* Phase circle */}
-                    {isCompleted ? (
-                      <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-green-500 flex items-center justify-center shadow-sm z-10">
-                        <Check size={28} className="text-white" />
-                      </div>
-                    ) : isCurrent ? (
-                      <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10">
-                        <span className="text-white font-bold text-xl">{index + 1}</span>
-                      </div>
-                    ) : (
-                      <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-gray-200 dark:bg-gray-700 flex items-center justify-center shadow-sm z-10">
-                        <Lock size={24} className="text-gray-500 dark:text-gray-400" />
-                      </div>
-                    )}
-
-                    {/* Phase card */}
-                    {isCompleted ? (
-                      <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-60">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500 line-through">
-                              {phase.title}
-                            </h3>
-                            <p className="text-sm text-gray-400">Completed</p>
-                          </div>
-                          <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
-                            Done
-                          </span>
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`relative pl-16 group ${isLocked ? 'opacity-50' : ''}`}
+                    >
+                      {/* Phase circle */}
+                      {isCompleted ? (
+                        <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-green-500 flex items-center justify-center shadow-sm z-10">
+                          <Check size={28} className="text-white" />
                         </div>
-                      </div>
-                    ) : isLocked ? (
-                      <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 border-dashed">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-lg font-bold text-text-main dark:text-white">
-                            {phase.title}
-                          </h3>
-                          <span className="text-xs text-text-sub font-medium bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                            Locked
-                          </span>
+                      ) : isCurrent ? (
+                        <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10">
+                          <span className="text-white font-bold text-xl">{index + 1}</span>
                         </div>
-                        <p className="text-sm text-text-sub mt-2">
-                          Unlock by completing Phase {index}.
-                        </p>
-                      </div>
-                    ) : (
-                      /* Current / active phase */
-                      <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-lg border border-primary/20 ring-1 ring-primary/5">
-                        <div className="flex justify-between items-start mb-6">
-                          <div>
-                            <h3 className="text-xl font-bold text-text-main dark:text-white">
-                              {phase.title}
-                            </h3>
-                            {phase.description && (
-                              <p className="text-sm text-text-sub mt-1">{phase.description}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-text-sub">
-                              {phaseCompleted}/{phaseResources.length}
-                            </span>
-                            <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                              Current Step
+                      ) : (
+                        <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-gray-200 dark:bg-gray-700 flex items-center justify-center shadow-sm z-10">
+                          <Lock size={24} className="text-gray-500 dark:text-gray-400" />
+                        </div>
+                      )}
+
+                      {/* Phase card */}
+                      {isCompleted ? (
+                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-60">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500 line-through">
+                                {phase.title}
+                              </h3>
+                              <p className="text-sm text-gray-400">Completed</p>
+                            </div>
+                            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
+                              Done
                             </span>
                           </div>
                         </div>
+                      ) : isLocked ? (
+                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 border-dashed">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-text-main dark:text-white">
+                              {phase.title}
+                            </h3>
+                            <span className="text-xs text-text-sub font-medium bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                              Locked
+                            </span>
+                          </div>
+                          <p className="text-sm text-text-sub mt-2">
+                            Unlock by completing Phase {index}.
+                          </p>
+                        </div>
+                      ) : (
+                        /* Current / active phase */
+                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-lg border border-primary/20 ring-1 ring-primary/5">
+                          <div className="flex justify-between items-start mb-6">
+                            <div>
+                              <h3 className="text-xl font-bold text-text-main dark:text-white">
+                                {phase.title}
+                              </h3>
+                              {phase.description && (
+                                <p className="text-sm text-text-sub mt-1">{phase.description}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-text-sub">
+                                {phaseCompleted}/{phaseResources.length}
+                              </span>
+                              <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                Current Step
+                              </span>
+                            </div>
+                          </div>
 
-                        <div className="space-y-4">
-                          {phaseResources.map((resource) => {
-                            const isVideo = resource.type === 'VIDEO';
-                            const hasUrl = !!resource.url;
+                          <div className="space-y-4">
+                            {phaseResources.map((resource) => {
+                              const isVideo = resource.type === 'VIDEO';
+                              const hasUrl = !!resource.url;
 
-                            const resourceContent = (
-                              <>
-                                {/* Icon */}
-                                {isVideo ? (
-                                  <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                    <Monitor size={20} />
-                                  </div>
-                                ) : (
-                                  <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                    <FileText size={20} />
-                                  </div>
-                                )}
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                  <h4
-                                    className={`text-base font-semibold transition-colors ${
-                                      resource.isCompleted
-                                        ? 'text-gray-400 dark:text-gray-500 line-through'
-                                        : 'text-text-main dark:text-white group-hover/item:text-primary'
-                                    }`}
-                                  >
-                                    {resource.title}
-                                  </h4>
-                                  <p className="text-xs text-text-sub mt-1">
-                                    {isVideo ? 'Video' : 'Article'}
-                                    {resource.durationText && ` • ${resource.durationText}`}
-                                  </p>
-                                </div>
-
-                                {/* External link indicator */}
-                                {hasUrl && (
-                                  <ExternalLink size={16} className="text-gray-400" />
-                                )}
-                              </>
-                            );
-
-                            return (
-                              <div key={resource.id} className="flex items-start gap-3">
-                                {/* Clickable resource area */}
-                                {hasUrl ? (
-                                  <a
-                                    href={resource.url!}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
-                                      resource.isCompleted
-                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                        : 'border-gray-100 dark:border-gray-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-700/50'
-                                    }`}
-                                  >
-                                    {resourceContent}
-                                  </a>
-                                ) : (
-                                  <div
-                                    className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all ${
-                                      resource.isCompleted
-                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                        : 'border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                                    }`}
-                                  >
-                                    {resourceContent}
-                                  </div>
-                                )}
-
-                                {/* Checkbox — outside the link */}
-                                <div
-                                  className="flex-shrink-0 mt-5 cursor-pointer"
-                                  onClick={() => handleToggleResource(resource.id)}
-                                >
-                                  {resource.isCompleted ? (
-                                    <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
-                                      <Check size={16} className="text-white" />
+                              const resourceContent = (
+                                <>
+                                  {/* Icon */}
+                                  {isVideo ? (
+                                    <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
+                                      <Monitor size={20} />
                                     </div>
                                   ) : (
-                                    <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />
+                                    <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
+                                      <FileText size={20} />
+                                    </div>
                                   )}
+
+                                  {/* Content */}
+                                  <div className="flex-1 min-w-0">
+                                    <h4
+                                      className={`text-base font-semibold transition-colors ${resource.isCompleted
+                                        ? 'text-gray-400 dark:text-gray-500 line-through'
+                                        : 'text-text-main dark:text-white group-hover/item:text-primary'
+                                        }`}
+                                    >
+                                      {resource.title}
+                                    </h4>
+                                    <p className="text-xs text-text-sub mt-1">
+                                      {isVideo ? 'Video' : 'Article'}
+                                      {resource.durationText && ` • ${resource.durationText}`}
+                                    </p>
+                                  </div>
+
+                                  {/* External link indicator */}
+                                  {hasUrl && (
+                                    <ExternalLink size={16} className="text-gray-400" />
+                                  )}
+                                </>
+                              );
+
+                              return (
+                                <div key={resource.id} className="flex items-start gap-3">
+                                  {/* Clickable resource area */}
+                                  {hasUrl ? (
+                                    <a
+                                      href={resource.url!}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${resource.isCompleted
+                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                        : 'border-gray-100 dark:border-gray-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-700/50'
+                                        }`}
+                                    >
+                                      {resourceContent}
+                                    </a>
+                                  ) : (
+                                    <div
+                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all ${resource.isCompleted
+                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                        : 'border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                        }`}
+                                    >
+                                      {resourceContent}
+                                    </div>
+                                  )}
+
+                                  {/* Checkbox — outside the link */}
+                                  <div
+                                    className="flex-shrink-0 mt-5 cursor-pointer"
+                                    onClick={() => handleToggleResource(resource.id)}
+                                  >
+                                    {resource.isCompleted ? (
+                                      <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
+                                        <Check size={16} className="text-white" />
+                                      </div>
+                                    ) : (
+                                      <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* ── Sidebar ── */}
+              <div className="w-80 flex-shrink-0 space-y-6">
+                {/* Weekly Goals */}
+                <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+                  <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
+                    Weekly Goals
+                  </h3>
+                  <div className="space-y-4">
+                    {/* Videos */}
+                    {videoResources.length > 0 && (
+                      <div className="flex items-center gap-3">
+                        <ProgressRing
+                          value={
+                            videoResources.length > 0
+                              ? Math.round((completedVideos / videoResources.length) * 100)
+                              : 0
+                          }
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-text-main dark:text-white">
+                            Watch {videoResources.length} Videos
+                          </p>
+                          <p className="text-xs text-text-sub">
+                            {completedVideos}/{videoResources.length} completed
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Articles */}
+                    {articleResources.length > 0 && (
+                      <div className="flex items-center gap-3">
+                        <ProgressRing
+                          value={
+                            articleResources.length > 0
+                              ? Math.round((completedArticles / articleResources.length) * 100)
+                              : 0
+                          }
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-text-main dark:text-white">
+                            Read {articleResources.length} Articles
+                          </p>
+                          <p className="text-xs text-text-sub">
+                            {completedArticles}/{articleResources.length} completed
+                          </p>
                         </div>
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
+                </div>
 
-            {/* ── Sidebar ── */}
-            <div className="w-80 flex-shrink-0 space-y-6">
-              {/* Weekly Goals */}
-              <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
-                  Weekly Goals
-                </h3>
-                <div className="space-y-4">
-                  {/* Videos */}
-                  {videoResources.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <ProgressRing
-                        value={
-                          videoResources.length > 0
-                            ? Math.round((completedVideos / videoResources.length) * 100)
-                            : 0
-                        }
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-text-main dark:text-white">
-                          Watch {videoResources.length} Videos
-                        </p>
-                        <p className="text-xs text-text-sub">
-                          {completedVideos}/{videoResources.length} completed
-                        </p>
-                      </div>
+                {/* Overall Progress */}
+                <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+                  <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
+                    Overall Progress
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <ProgressRing value={progressPercent} size="lg" />
+                    <div>
+                      <p className="text-lg font-bold text-text-main dark:text-white">
+                        {progressPercent}%
+                      </p>
+                      <p className="text-xs text-text-sub">
+                        {completedResources}/{totalResources} resources
+                      </p>
                     </div>
-                  )}
+                  </div>
+                  <div className="mt-4 w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-primary h-full rounded-full transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                </div>
 
-                  {/* Articles */}
-                  {articleResources.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <ProgressRing
-                        value={
-                          articleResources.length > 0
-                            ? Math.round((completedArticles / articleResources.length) * 100)
-                            : 0
-                        }
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-text-main dark:text-white">
-                          Read {articleResources.length} Articles
-                        </p>
-                        <p className="text-xs text-text-sub">
-                          {completedArticles}/{articleResources.length} completed
-                        </p>
-                      </div>
+                {/* Plan Info */}
+                <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+                  <h3 className="text-sm font-bold text-text-sub uppercase mb-3 tracking-wide">
+                    Plan Details
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-text-sub">Topic</span>
+                      <span className="font-medium text-text-main dark:text-white truncate max-w-[160px]">
+                        {plan!.topic}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Overall Progress */}
-              <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
-                  Overall Progress
-                </h3>
-                <div className="flex items-center gap-4">
-                  <ProgressRing value={progressPercent} size="lg" />
-                  <div>
-                    <p className="text-lg font-bold text-text-main dark:text-white">
-                      {progressPercent}%
-                    </p>
-                    <p className="text-xs text-text-sub">
-                      {completedResources}/{totalResources} resources
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-primary h-full rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Plan Info */}
-              <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 className="text-sm font-bold text-text-sub uppercase mb-3 tracking-wide">
-                  Plan Details
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-text-sub">Topic</span>
-                    <span className="font-medium text-text-main dark:text-white truncate max-w-[160px]">
-                      {plan!.topic}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-sub">Duration</span>
-                    <span className="font-medium text-text-main dark:text-white">
-                      {plan!.durationWeeks} weeks
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-sub">Phases</span>
-                    <span className="font-medium text-text-main dark:text-white">
-                      {plan!.phases.length}
-                    </span>
+                    <div className="flex justify-between">
+                      <span className="text-text-sub">Duration</span>
+                      <span className="font-medium text-text-main dark:text-white">
+                        {plan!.durationWeeks} weeks
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-text-sub">Phases</span>
+                      <span className="font-medium text-text-main dark:text-white">
+                        {plan!.phases.length}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+
+      {/* Insufficient Credits Modal */}
+      {
+        creditErrorData && (
+          <InsufficientCreditsModal
+            isOpen={showInsufficientModal}
+            onClose={() => setShowInsufficientModal(false)}
+            toolName={creditErrorData.toolName}
+            required={creditErrorData.required}
+            available={creditErrorData.available}
+            shortfall={creditErrorData.shortfall}
+          />
+        )
+      }
+    </>
   );
 }
 

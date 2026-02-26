@@ -3,7 +3,6 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
-import { useCreditTransaction } from '../src/hooks/useCreditTransaction';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { AlertCircle, BookOpen, Bot, FileUp, FolderOpen, Link, Quote, RefreshCw, Search, ShieldCheck, Type } from 'lucide-react';
 
@@ -25,8 +24,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PlagiarismResult | null>(null);
 
-  // Credit system integration
-  const { toolInfo, executeTransaction } = useCreditTransaction('plagiarism-checker');
+  // Credit-gate modal state (402 from backend triggers this)
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
     required: number;
@@ -47,30 +45,29 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       return;
     }
 
-    // Check credits before proceeding (skip for free tools)
-    if (toolInfo && toolInfo.creditCost > 0) {
-      const result = await executeTransaction();
-      if (!result.success) {
-        if (result.error === 'INSUFFICIENT_CREDITS' && result.data) {
-          setCreditErrorData({
-            required: result.data.required || toolInfo.creditCost,
-            available: result.data.available || 0,
-            shortfall: result.data.shortfall || toolInfo.creditCost,
-            toolName: result.data.toolName || toolInfo.name,
-          });
-          setShowInsufficientModal(true);
-        } else {
-          setError(result.error || 'Failed to process credits');
-        }
-        return;
-      }
-    }
-
     setIsChecking(true);
     setError(null);
 
     try {
       const response = await aiApi.checkPlagiarism(textContent);
+
+      // Handle 402 Insufficient Credits from backend
+      if (response.error && (response.data as any)?.code === 'INSUFFICIENT_CREDITS') {
+        const errData = (response.data as any)?.data;
+        setCreditErrorData({
+          required: errData?.required || 0,
+          available: errData?.available || 0,
+          shortfall: errData?.shortfall || 0,
+          toolName: errData?.toolName || 'Plagiarism Checker',
+        });
+        setShowInsufficientModal(true);
+        return;
+      }
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
       const data = response.data as PlagiarismResult;
       setResult(data);
     } catch (err: unknown) {
@@ -349,7 +346,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </h4>
                       <p className="text-xs text-text-sub">
                         {result.readabilityLevel === 'College' ||
-                        result.readabilityLevel === 'Graduate'
+                          result.readabilityLevel === 'Graduate'
                           ? 'Appropriate for academic submission.'
                           : result.readabilityLevel === 'Professional'
                             ? 'Professional-level writing.'
