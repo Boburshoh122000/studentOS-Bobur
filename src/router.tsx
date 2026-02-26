@@ -73,6 +73,7 @@ const Dashboard = withNavigate(lazyRetry(() => import('../components/Dashboard')
 const ScholarshipFinder = withNavigate(lazyRetry(() => import('../components/ScholarshipFinder')));
 const CareerTracker = withNavigate(lazyRetry(() => import('../components/CareerTracker')));
 const CVChecker = withNavigate(lazyRetry(() => import('../components/CVChecker')));
+const CVBuilderPage = withNavigate(lazyRetry(() => import('../components/CVBuilderPage')));
 const PresentationMaker = withNavigate(lazyRetry(() => import('../components/PresentationMaker')));
 const LearningPlan = withNavigate(lazyRetry(() => import('../components/LearningPlan')));
 const PlagiarismChecker = withNavigate(lazyRetry(() => import('../components/PlagiarismChecker')));
@@ -257,7 +258,15 @@ export const router = createBrowserRouter([
       },
 
       {
-        path: '/app/cv-ats',
+        path: '/app/cv-builder',
+        element: (
+          <StudentRoute>
+            <CVBuilderPage />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/ats-checker',
         element: (
           <StudentRoute>
             <CVChecker />

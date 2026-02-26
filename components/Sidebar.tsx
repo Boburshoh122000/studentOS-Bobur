@@ -42,7 +42,8 @@ export default function Sidebar({
   // Map Screen enum to sidebar translation keys
   const sidebarLabelKeys: Partial<Record<Screen, string>> = {
     [Screen.DASHBOARD]: 'Sidebar.dashboard',
-    [Screen.CV_ATS]: 'Sidebar.cv_ats',
+    [Screen.CV_BUILDER]: 'Sidebar.cv_builder',
+    [Screen.ATS_CHECKER]: 'Sidebar.ats_checker',
     [Screen.LEARNING_PLAN]: 'Sidebar.learning_plan',
     [Screen.HABIT_TRACKER]: 'Sidebar.habit_tracker',
     [Screen.SCHOLARSHIPS]: 'Sidebar.scholarships',

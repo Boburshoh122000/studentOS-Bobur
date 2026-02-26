@@ -2,6 +2,7 @@ import { Screen } from '../../types';
 import {
   LayoutDashboard,
   FileText,
+  FileSearch,
   BookOpen,
   Target,
   Trophy,
@@ -21,7 +22,8 @@ export interface NavItem {
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
   { screen: Screen.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-  { screen: Screen.CV_ATS, icon: FileText, label: 'CV & ATS' },
+  { screen: Screen.CV_BUILDER, icon: FileText, label: 'CV Builder' },
+  { screen: Screen.ATS_CHECKER, icon: FileSearch, label: 'ATS Checker' },
   { screen: Screen.LEARNING_PLAN, icon: BookOpen, label: 'Learning Plan' },
   { screen: Screen.HABIT_TRACKER, icon: Target, label: 'Habit Tracker' },
   { screen: Screen.SCHOLARSHIPS, icon: Trophy, label: 'Scholarships' },
