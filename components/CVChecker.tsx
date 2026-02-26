@@ -336,216 +336,223 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
-        <div className="flex-1 overflow-hidden bg-background-light dark:bg-background-dark p-6">
-          <div className="h-full grid grid-cols-12 gap-6 max-w-7xl mx-auto">
+        <div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6">
+          <div className={`mx-auto transition-all duration-500 ease-in-out ${analysisResult ? 'max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6' : 'max-w-2xl'}`}>
             {/* Left Panel - Input */}
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full overflow-y-auto hide-scrollbar pb-10">
-              {/* Mode Switcher */}
-              <div className="flex mb-4 gap-2">
-                <button
-                  onClick={() => setInputMode('upload')}
-                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${inputMode === 'upload' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
-                >
-                  <CloudUpload size={16} className="mr-1 align-middle inline" />
-                  Upload
-                </button>
-                <button
-                  onClick={() => setInputMode('text')}
-                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${inputMode === 'text' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
-                >
-                  <NotebookPen size={16} className="mr-1 align-middle inline" />
-                  Paste Text
-                </button>
-              </div>
+            <div className={`flex flex-col gap-5 ${analysisResult ? 'lg:col-span-4 h-full overflow-y-auto hide-scrollbar pb-10' : ''}`}>
 
-              {inputMode === 'upload' ? (
-                <div
-                  onClick={() => !isExtracting && !isAnalyzing && fileInputRef.current?.click()}
-                  className={`bg-white dark:bg-card-dark rounded-2xl border-2 border-dashed ${isExtracting ? 'border-primary/60' : isAnalyzing ? 'border-slate-300' : 'border-primary/40 hover:bg-primary/10 cursor-pointer'} bg-primary/5 p-8 flex flex-col items-center justify-center text-center gap-4 transition-all group relative overflow-hidden shadow-sm`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    aria-label="Upload CV file"
-                    disabled={isExtracting || isAnalyzing}
-                  />
-                  {isExtracting ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                        <RefreshCw size={30} className="text-primary animate-spin" />
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                        Extracting text from file...
-                      </h3>
-                      <p className="text-sm text-slate-500">
-                        {selectedFile?.name || 'Processing...'}
-                      </p>
-                    </div>
-                  ) : isAnalyzing ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                        <RefreshCw size={30} className="text-primary animate-spin" />
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                        Analyzing CV...
-                      </h3>
-                      <p className="text-sm text-slate-500">
-                        {selectedFile?.name || 'Processing...'}
-                      </p>
-                    </div>
-                  ) : selectedFile ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <div
-                        className={`size-16 rounded-full flex items-center justify-center ${analysisResult ? 'bg-green-100 dark:bg-green-900/30' : 'bg-primary/10'}`}
-                      >
-                        {analysisResult ? <CheckCircle size={30} className="text-green-600" /> : <FileText size={30} className="text-primary" />}
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                        {selectedFile.name}
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        {(selectedFile.size / 1024).toFixed(1)} KB
-                      </p>
-                      <p className="text-sm text-primary cursor-pointer hover:underline">
-                        Click to upload a different file
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <CloudUpload size={30} className="text-primary" />
-                      </div>
-                      <div>
+              {/* Card wrapper for input section */}
+              <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-6 md:p-8 shadow-sm">
+
+                {/* Mode Switcher — Pill style */}
+                <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl mb-6 w-full max-w-sm mx-auto">
+                  <button
+                    onClick={() => setInputMode('upload')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'upload' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                  >
+                    <CloudUpload size={15} />
+                    Upload
+                  </button>
+                  <button
+                    onClick={() => setInputMode('text')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'text' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                  >
+                    <NotebookPen size={15} />
+                    Paste Text
+                  </button>
+                </div>
+
+                {inputMode === 'upload' ? (
+                  <div
+                    onClick={() => !isExtracting && !isAnalyzing && fileInputRef.current?.click()}
+                    className={`rounded-2xl border-2 border-dashed ${isExtracting ? 'border-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/10' : isAnalyzing ? 'border-gray-200 bg-gray-50 dark:bg-slate-800' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:border-indigo-300 dark:hover:border-indigo-500 cursor-pointer'} p-8 flex flex-col items-center justify-center text-center gap-4 transition-all group relative overflow-hidden`}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      aria-label="Upload CV file"
+                      disabled={isExtracting || isAnalyzing}
+                    />
+                    {isExtracting ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
+                          <RefreshCw size={30} className="text-primary animate-spin" />
+                        </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                          Upload your CV
+                          Extracting text from file...
                         </h3>
-                        <p className="text-sm text-slate-500 mt-1">
-                          Drag & drop or{' '}
-                          <span className="text-primary font-medium hover:underline">browse</span>
+                        <p className="text-sm text-slate-500">
+                          {selectedFile?.name || 'Processing...'}
                         </p>
                       </div>
-                      <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 5MB</p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-4 shadow-sm">
-                  <div>
-                    <label
-                      htmlFor="cv-text-input"
-                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
-                    >
-                      Your CV / Resume Text
-                    </label>
-                    <textarea
-                      id="cv-text-input"
-                      value={cvText}
-                      onChange={(e) => setCvText(e.target.value)}
-                      placeholder="Paste your CV or resume text here..."
-                      className="w-full h-32 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="job-desc-input"
-                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
-                    >
-                      Job Description (Optional)
-                    </label>
-                    <textarea
-                      id="job-desc-input"
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Paste the job description for targeted analysis..."
-                      className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                  </div>
-                  <button
-                    onClick={handleAnalyzeCV}
-                    disabled={isAnalyzing || !cvText.trim()}
-                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <RefreshCw size={18} className="animate-spin" />
-                        Analyzing...
-                      </>
+                    ) : isAnalyzing ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
+                          <RefreshCw size={30} className="text-primary animate-spin" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                          Analyzing CV...
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          {selectedFile?.name || 'Processing...'}
+                        </p>
+                      </div>
+                    ) : selectedFile ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div
+                          className={`size-16 rounded-full flex items-center justify-center ${analysisResult ? 'bg-green-100 dark:bg-green-900/30' : 'bg-primary/10'}`}
+                        >
+                          {analysisResult ? <CheckCircle size={30} className="text-green-600" /> : <FileText size={30} className="text-primary" />}
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                          {selectedFile.name}
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </p>
+                        <p className="text-sm text-primary cursor-pointer hover:underline">
+                          Click to upload a different file
+                        </p>
+                      </div>
                     ) : (
                       <>
-                        <Search size={18} />
-                        Analyze CV
+                        <div className="size-14 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <CloudUpload size={26} className="text-indigo-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                            Upload your CV
+                          </h3>
+                          <p className="text-sm text-slate-500 mt-1">
+                            Drag & drop or{' '}
+                            <span className="text-primary font-medium hover:underline">browse</span>
+                          </p>
+                        </div>
+                        <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 5MB</p>
                       </>
                     )}
-                  </button>
-                </div>
-              )}
-
-              {/* Error Display */}
-              {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle size={20} className="text-red-500" />
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-4 shadow-sm">
                     <div>
-                      <h4 className="font-medium text-red-700 dark:text-red-400">
-                        Analysis Failed
-                      </h4>
-                      <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
+                      <label
+                        htmlFor="cv-text-input"
+                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                      >
+                        Your CV / Resume Text
+                      </label>
+                      <textarea
+                        id="cv-text-input"
+                        value={cvText}
+                        onChange={(e) => setCvText(e.target.value)}
+                        placeholder="Paste your CV or resume text here..."
+                        className="w-full h-32 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="job-desc-input"
+                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                      >
+                        Job Description (Optional)
+                      </label>
+                      <textarea
+                        id="job-desc-input"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste the job description for targeted analysis..."
+                        className="w-full h-24 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAnalyzeCV}
+                      disabled={isAnalyzing || !cvText.trim()}
+                      className="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Search size={18} />
+                          Analyze CV
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Error Display */}
+                {error && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle size={20} className="text-red-500" />
+                      <div>
+                        <h4 className="font-medium text-red-700 dark:text-red-400">
+                          Analysis Failed
+                        </h4>
+                        <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Job Description Input + Analyze Button for Upload Mode */}
-              {inputMode === 'upload' && (
-                <div className="flex flex-col gap-3">
-                  <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
-                    <label
-                      htmlFor="job-desc-upload"
-                      className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                {/* Job Description Input + Analyze Button for Upload Mode */}
+                {inputMode === 'upload' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                      <label
+                        htmlFor="job-desc-upload"
+                        className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
+                      >
+                        Target Job Description (Optional)
+                      </label>
+                      <textarea
+                        id="job-desc-upload"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste a job description for targeted keyword analysis..."
+                        className="w-full h-24 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAnalyzeCV}
+                      disabled={isExtracting || isAnalyzing || !cvText.trim()}
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
-                      Target Job Description (Optional)
-                    </label>
-                    <textarea
-                      id="job-desc-upload"
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Paste a job description for targeted keyword analysis..."
-                      className="w-full h-24 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
+                      {isExtracting ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" />
+                          Extracting text...
+                        </>
+                      ) : isAnalyzing ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Search size={18} />
+                          Analyze CV
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={handleAnalyzeCV}
-                    disabled={isExtracting || isAnalyzing || !cvText.trim()}
-                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    {isExtracting ? (
-                      <>
-                        <RefreshCw size={18} className="animate-spin" />
-                        Extracting text...
-                      </>
-                    ) : isAnalyzing ? (
-                      <>
-                        <RefreshCw size={18} className="animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <Search size={18} />
-                        Analyze CV
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Right Panel - Results */}
-            <div className="col-span-12 lg:col-span-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
-              <ResultsPanel />
-            </div>
+            {/* Right Panel - Results (only when results exist) */}
+            {analysisResult && (
+              <div className="lg:col-span-8 flex flex-col h-full overflow-y-auto hide-scrollbar">
+                <ResultsPanel />
+              </div>
+            )}
           </div>
         </div>
       </DashboardLayout>
