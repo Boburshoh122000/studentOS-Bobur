@@ -144,12 +144,12 @@ export default function Sidebar({
                 <item.icon size={!expanded ? 24 : 20} className={`flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
                 {expanded && (
                   <span className="text-sm font-medium whitespace-nowrap">
-                    {sidebarLabelKeys[item.screen] ? t(sidebarLabelKeys[item.screen]) : item.label}
+                    {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
                   </span>
                 )}
                 {!expanded && (
                   <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                    {sidebarLabelKeys[item.screen] ? t(sidebarLabelKeys[item.screen]) : item.label}
+                    {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
                   </span>
                 )}
               </button>
@@ -175,9 +175,8 @@ export default function Sidebar({
             className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
           >
             <span className="text-sm font-bold text-text-main dark:text-white truncate">
-              {fullName}
+              My Portfolio
             </span>
-            <span className="text-xs text-text-sub truncate">{email}</span>
           </div>
         </div>
 
