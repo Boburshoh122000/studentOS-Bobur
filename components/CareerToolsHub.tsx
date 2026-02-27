@@ -8,7 +8,7 @@ import {
     ArrowRightIcon,
     ClockIcon,
     LightBulbIcon,
-    CheckBadgeIcon,
+    UserCircleIcon,
 } from '@heroicons/react/24/solid';
 
 const tools = [
@@ -17,18 +17,18 @@ const tools = [
         description: 'Create ATS-optimized resumes with AI assistance',
         icon: DocumentTextIcon,
         screen: Screen.CV_BUILDER,
-        color: 'text-blue-500',
-        bg: 'bg-blue-50 dark:bg-blue-900/20',
-        borderHover: 'group-hover:border-blue-200 dark:group-hover:border-blue-800',
+        iconBg: 'bg-blue-50 dark:bg-blue-900/30',
+        iconColor: 'text-blue-600 dark:text-blue-400',
+        hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-700',
     },
     {
         label: 'ATS Checker',
         description: 'Analyze and score your CV against job descriptions',
         icon: DocumentCheckIcon,
         screen: Screen.ATS_CHECKER,
-        color: 'text-indigo-500',
-        bg: 'bg-indigo-50 dark:bg-indigo-900/20',
-        borderHover: 'group-hover:border-indigo-200 dark:group-hover:border-indigo-800',
+        iconBg: 'bg-indigo-50 dark:bg-indigo-900/30',
+        iconColor: 'text-indigo-600 dark:text-indigo-400',
+        hoverBorder: 'hover:border-indigo-300 dark:hover:border-indigo-700',
     },
 ];
 
@@ -65,85 +65,137 @@ const recentActivity = [
 export default function CareerToolsHub({ navigateTo }: NavigationProps) {
     return (
         <DashboardLayout currentScreen={Screen.CAREER_TOOLS} navigateTo={navigateTo}>
-            <div className="p-8 md:p-12">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <div className="mb-10">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2.5 bg-primary/10 rounded-xl">
-                                <BriefcaseIcon className="w-6 h-6 text-primary" />
+            <div className="p-6 md:p-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+
+                    {/* ── Left Column ── */}
+                    <div className="lg:col-span-2">
+                        {/* Header */}
+                        <div className="mb-8">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 bg-primary/10 rounded-xl">
+                                    <BriefcaseIcon className="w-6 h-6 text-primary" />
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Career Tools</h1>
                             </div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Career Tools</h1>
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-lg ml-[52px]">
-                            Build your professional profile and land your dream job.
-                        </p>
-                    </div>
-
-                    {/* Tool Grid — 2 cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                        {tools.map((tool) => (
-                            <button
-                                key={tool.label}
-                                onClick={() => navigateTo(tool.screen)}
-                                className={`group flex flex-col items-center text-center p-8 rounded-3xl border border-transparent ${tool.bg} ${tool.borderHover} transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer`}
-                            >
-                                <div className="w-20 h-20 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center mb-4 shadow-sm group-hover:shadow-md transition-shadow">
-                                    <tool.icon className={`w-9 h-9 ${tool.color} transition-transform duration-300 group-hover:scale-110`} />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{tool.label}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{tool.description}</p>
-                                <span className="flex items-center gap-1 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Open <ArrowRightIcon className="w-3.5 h-3.5" />
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="mb-8">
-                        <div className="flex items-center gap-2 mb-4">
-                            <ClockIcon className="w-5 h-5 text-gray-400" />
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Activity</h3>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-2 shadow-sm">
-                            {recentActivity.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-2xl transition cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
-                                            <item.icon className={`w-5 h-5 ${item.iconColor}`} />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{item.subtitle}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${item.badgeColor}`}>
-                                        {item.badge}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Pro Tip */}
-                    <div className="bg-indigo-50/50 dark:bg-indigo-900/10 rounded-3xl border border-indigo-100 dark:border-indigo-800/30 p-6 flex gap-4 items-start">
-                        <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                            <LightBulbIcon className="w-5 h-5 text-amber-500" />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-200 mb-1 flex items-center gap-1.5">
-                                <span>💡</span> Pro Tip
-                            </h4>
-                            <p className="text-sm text-indigo-700 dark:text-indigo-300 leading-relaxed">
-                                Tailor your CV to specific job descriptions using our ATS Checker. Resumes that score above 80% are 3x more likely to secure an interview.
+                            <p className="text-gray-500 dark:text-gray-400 text-lg ml-[52px]">
+                                Build your professional profile and land your dream job.
                             </p>
                         </div>
-                        <CheckBadgeIcon className="w-8 h-8 text-indigo-200 dark:text-indigo-700 flex-shrink-0 ml-auto hidden md:block" />
+
+                        {/* Tool Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                            {tools.map((tool) => (
+                                <button
+                                    key={tool.label}
+                                    onClick={() => navigateTo(tool.screen)}
+                                    className={`group bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 ${tool.hoverBorder} shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl flex flex-col items-center justify-center p-8 gap-4 cursor-pointer`}
+                                >
+                                    <div className={`${tool.iconBg} ${tool.iconColor} p-4 rounded-2xl transition-transform duration-300 group-hover:scale-110`}>
+                                        <tool.icon className="w-9 h-9" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{tool.label}</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center">{tool.description}</p>
+                                    <span className="flex items-center gap-1 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Open <ArrowRightIcon className="w-3.5 h-3.5" />
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Recent Activity */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <ClockIcon className="w-5 h-5 text-gray-400" />
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Activity</h3>
+                            </div>
+                            <div className="bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-700 p-2 shadow-sm">
+                                {recentActivity.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-2xl transition cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                                                <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{item.subtitle}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${item.badgeColor} hidden sm:block`}>
+                                            {item.badge}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+
+                    {/* ── Right Column ── */}
+                    <div className="lg:col-span-1 space-y-6">
+
+                        {/* Widget A: Profile Readiness */}
+                        <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-3xl p-6 shadow-sm">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <UserCircleIcon className="w-6 h-6 text-indigo-500" />
+                                Profile Readiness
+                            </h3>
+                            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 mb-2">
+                                <div className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style={{ width: '65%' }} />
+                            </div>
+                            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-3">65% Complete</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
+                                Add your latest education and work experience to increase your visibility to employers.
+                            </p>
+                            <button
+                                onClick={() => navigateTo(Screen.PROFILE)}
+                                className="w-full py-2.5 rounded-xl font-medium text-sm border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-white transition"
+                            >
+                                Complete Profile
+                            </button>
+                        </div>
+
+                        {/* Widget B: Quick Tip */}
+                        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800/40 rounded-3xl p-6">
+                            <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-200 mb-2 flex items-center gap-2">
+                                <LightBulbIcon className="w-5 h-5 text-yellow-500" />
+                                Quick Tip
+                            </h4>
+                            <p className="text-sm text-indigo-700 dark:text-indigo-300 leading-relaxed mb-4">
+                                Did you know? Tailoring your CV to specific job descriptions using our ATS Checker increases your interview chances by 3x.
+                            </p>
+                            <button
+                                onClick={() => navigateTo(Screen.ATS_CHECKER)}
+                                className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                Try ATS Checker &rarr;
+                            </button>
+                        </div>
+
+                        {/* Widget C: Quick Actions */}
+                        <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-3xl p-6 shadow-sm">
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => navigateTo(Screen.CV_BUILDER)}
+                                    className="w-full flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition text-left"
+                                >
+                                    <DocumentTextIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">Create New CV</span>
+                                </button>
+                                <button
+                                    onClick={() => navigateTo(Screen.ATS_CHECKER)}
+                                    className="w-full flex items-center gap-3 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition text-left"
+                                >
+                                    <DocumentCheckIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">Scan Existing CV</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </DashboardLayout>
