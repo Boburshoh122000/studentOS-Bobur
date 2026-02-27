@@ -6,7 +6,8 @@ import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
 import LanguageSwitcher from './LanguageSwitcher';
-import { GraduationCap, Settings, X, LogOut, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AcademicCapIcon, Cog8ToothIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
   currentScreen: Screen;
@@ -106,7 +107,7 @@ export default function Sidebar({
           onClick={() => handleNavClick(Screen.LANDING)}
         >
           <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer group hover:scale-105 transition-transform flex-shrink-0">
-            <GraduationCap size={24} className="text-white" />
+            <AcademicCapIcon className="w-6 h-6 text-white" />
           </div>
           <div
             className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
@@ -136,22 +137,12 @@ export default function Sidebar({
             const isActive = currentScreen === item.screen;
             return (
               <React.Fragment key={idx}>
-                {/* Category header */}
-                {item.category && (
-                  expanded ? (
-                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-5 mb-1 px-3 select-none">
-                      {item.category}
-                    </div>
-                  ) : (
-                    <div className="w-6 border-t border-gray-200 dark:border-gray-700 mt-4 mb-2" />
-                  )
-                )}
                 <button
                   onClick={() => handleNavClick(item.screen)}
                   className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${isActive ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
                   title={!expanded ? item.label : ''}
                 >
-                  <item.icon size={!expanded ? 24 : 20} className={`flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
+                  <item.icon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
                   {expanded && (
                     <span className="text-sm font-medium whitespace-nowrap">
                       {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
@@ -200,7 +191,7 @@ export default function Sidebar({
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
           title={!expanded ? t('Sidebar.settings') : ''}
         >
-          <Settings size={20} className={`${currentScreen === Screen.SETTINGS ? '' : 'group-hover:text-primary'} ${!expanded ? 'text-2xl' : 'text-[20px]'}`} />
+          <Cog8ToothIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${currentScreen === Screen.SETTINGS ? '' : 'group-hover:text-primary'}`} />
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">{t('Sidebar.settings')}</span>
           )}
@@ -219,9 +210,9 @@ export default function Sidebar({
           title={!expanded ? t('Sidebar.log_out') : ''}
         >
           {isLoggingOut ? (
-            <Loader2 size={!expanded ? 24 : 20} className="animate-spin flex-shrink-0" />
+            <ArrowPathIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} animate-spin flex-shrink-0`} />
           ) : (
-            <LogOut size={!expanded ? 24 : 20} className="flex-shrink-0" />
+            <ArrowRightOnRectangleIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
           )}
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">
@@ -252,7 +243,7 @@ export default function Sidebar({
           className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
           title={isSidebarLocked ? 'Unlock Sidebar' : 'Lock Sidebar Open'}
         >
-          {isSidebarLocked ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+          {isSidebarLocked ? <ChevronLeftIcon className="w-3.5 h-3.5" /> : <ChevronRightIcon className="w-3.5 h-3.5" />}
         </button>
 
         {sidebarContent(isSidebarExpanded)}
@@ -270,7 +261,7 @@ export default function Sidebar({
               onClick={onCloseMobile}
               className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <X size={20} className="text-text-sub" />
+              <XMarkIcon className="w-5 h-5 text-text-sub" />
             </button>
             {sidebarContent(true)}
           </aside>

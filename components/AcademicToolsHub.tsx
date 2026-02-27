@@ -1,13 +1,18 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
 import DashboardLayout from './DashboardLayout';
-import { ScanSearch, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
+import {
+    AcademicCapIcon,
+    ShieldCheckIcon,
+    BookOpenIcon,
+    ArrowRightIcon,
+} from '@heroicons/react/24/solid';
 
 const tools = [
     {
         label: 'Plagiarism Checker',
         description: 'Verify the originality of your academic writing',
-        icon: ScanSearch,
+        icon: ShieldCheckIcon,
         screen: Screen.PLAGIARISM,
         color: 'text-rose-500',
         bg: 'bg-rose-50 dark:bg-rose-900/20',
@@ -16,7 +21,7 @@ const tools = [
     {
         label: 'Learning Plan',
         description: 'Generate personalized study roadmaps with AI',
-        icon: BookOpen,
+        icon: BookOpenIcon,
         screen: Screen.LEARNING_PLAN,
         color: 'text-emerald-500',
         bg: 'bg-emerald-50 dark:bg-emerald-900/20',
@@ -33,7 +38,7 @@ export default function AcademicToolsHub({ navigateTo }: NavigationProps) {
                     <div className="mb-10">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="p-2.5 bg-emerald-500/10 rounded-xl">
-                                <GraduationCap size={24} className="text-emerald-600" />
+                                <AcademicCapIcon className="w-6 h-6 text-emerald-600" />
                             </div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Academic Tools</h1>
                         </div>
@@ -51,12 +56,12 @@ export default function AcademicToolsHub({ navigateTo }: NavigationProps) {
                                 className={`group flex flex-col items-center text-center p-6 rounded-3xl border border-transparent ${tool.bg} ${tool.borderHover} transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer`}
                             >
                                 <div className="w-20 h-20 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center mb-4 shadow-sm group-hover:shadow-md transition-shadow">
-                                    <tool.icon size={36} className={`${tool.color} transition-transform duration-300 group-hover:scale-110`} strokeWidth={1.5} />
+                                    <tool.icon className={`w-9 h-9 ${tool.color} transition-transform duration-300 group-hover:scale-110`} />
                                 </div>
                                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">{tool.label}</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{tool.description}</p>
                                 <span className="flex items-center gap-1 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Open <ArrowRight size={14} />
+                                    Open <ArrowRightIcon className="w-3.5 h-3.5" />
                                 </span>
                             </button>
                         ))}

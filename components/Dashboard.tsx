@@ -4,7 +4,17 @@ import { userApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
-import { ArrowRight, Briefcase, CheckCircle, ClipboardCheck, FileText, Search, Send, Trophy, User } from 'lucide-react';
+import {
+  ArrowRightIcon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  ClipboardDocumentCheckIcon,
+  DocumentTextIcon,
+  MagnifyingGlassIcon,
+  PaperAirplaneIcon,
+  TrophyIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
   // Data State
@@ -54,7 +64,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       </div>
       <div className="flex items-center gap-4">
         <div className="relative hidden sm:block">
-          <Search size={20} className="text-gray-400" />
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
           <input
             className="pl-10 pr-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all shadow-sm dark:text-white"
             placeholder="Search tools, jobs..."
@@ -106,7 +116,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     >
                       View Board{' '}
-                      <ArrowRight size={16} />
+                      <ArrowRightIcon className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -122,7 +132,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                           {stats.activeApplications}
                         </span>
                       </div>
-                      <Send size={80} className="text-blue-200 text-blue-800 dark:text-blue-800 transition-transform" />
+                      <PaperAirplaneIcon className="w-20 h-20 text-blue-200 dark:text-blue-800 transition-transform" />
                     </div>
                     <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800/30 flex flex-col justify-between h-32 relative overflow-hidden group">
                       <div className="z-10 relative">
@@ -137,7 +147,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         </span>
                       </div>
                       <p className="text-xs text-green-600 dark:text-green-400 z-10">Today</p>
-                      <CheckCircle size={80} className="text-green-200 text-green-800 dark:text-green-800 transition-transform" />
+                      <CheckCircleIcon className="w-20 h-20 text-green-200 dark:text-green-800 transition-transform" />
                     </div>
                   </div>
                 </div>
@@ -151,7 +161,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       Evaluation
                     </h3>
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                      <ClipboardCheck size={20} />
+                      <ClipboardDocumentCheckIcon className="w-5 h-5" />
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col items-center justify-center z-10 my-2">
@@ -182,7 +192,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigateTo(Screen.CV_ATS)}
+                    onClick={() => navigateTo(Screen.ATS_CHECKER)}
                     className="mt-4 w-full py-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
                   >
                     View Details
@@ -254,7 +264,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                             <div
                               className={`w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 flex-shrink-0`}
                             >
-                              <Briefcase size={20} />
+                              <BriefcaseIcon className="w-5 h-5" />
                             </div>
                             <div>
                               <h4 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
@@ -298,7 +308,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     onClick={() => navigateTo(Screen.PROFILE)}
                     className="text-primary bg-primary/10 p-2 rounded-lg hover:bg-primary/20 transition-colors"
                   >
-                    <User size={20} />
+                    <UserIcon className="w-5 h-5" />
                   </button>
                 </div>
 
@@ -349,7 +359,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                     >
-                      <Trophy size={20} className="text-amber-500" />
+                      <TrophyIcon className="w-5 h-5 text-amber-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Find Scholarships
@@ -358,10 +368,10 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       </div>
                     </button>
                     <button
-                      onClick={() => navigateTo(Screen.CV_ATS)}
+                      onClick={() => navigateTo(Screen.ATS_CHECKER)}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                     >
-                      <FileText size={20} className="text-blue-500" />
+                      <DocumentTextIcon className="w-5 h-5 text-blue-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Improve Your CV
@@ -373,7 +383,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     {/* Connect Telegram */}
                     {dashboardData?.telegramConnected ? (
                       <div className="w-full flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
-                        <CheckCircle size={20} className="text-green-500" />
+                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
                         <div>
                           <p className="text-sm font-medium text-green-800 dark:text-green-200">
                             Telegram Connected

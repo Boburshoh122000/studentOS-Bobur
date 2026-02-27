@@ -1,30 +1,28 @@
 import { Screen } from '../../types';
 import {
-  LayoutGrid,
-  FileText,
-  ShieldCheck,
-  Briefcase,
-  GraduationCap,
-  Target,
-  type LucideIcon,
-} from 'lucide-react';
+  Squares2X2Icon,
+  BriefcaseIcon,
+  AcademicCapIcon,
+  TrophyIcon,
+  FireIcon,
+} from '@heroicons/react/24/solid';
 
 /**
  * Single source of truth for student dashboard navigation items.
- * Career Tools and Academic Tools are hub pages that contain sub-tools.
+ * Uses @heroicons/react/24/solid for a premium filled icon aesthetic.
  */
 export interface NavItem {
   screen: Screen;
-  icon: LucideIcon;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
 }
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
-  { screen: Screen.DASHBOARD, icon: LayoutGrid, label: 'Dashboard' },
-  { screen: Screen.CAREER_TOOLS, icon: FileText, label: 'Career Tools' },
-  { screen: Screen.ACADEMIC_TOOLS, icon: ShieldCheck, label: 'Academic Tools' },
-  { screen: Screen.SCHOLARSHIPS, icon: Briefcase, label: 'Scholarships' },
-  { screen: Screen.HABIT_TRACKER, icon: GraduationCap, label: 'Habit Tracker' },
+  { screen: Screen.DASHBOARD, icon: Squares2X2Icon, label: 'Dashboard' },
+  { screen: Screen.CAREER_TOOLS, icon: BriefcaseIcon, label: 'Career Tools' },
+  { screen: Screen.ACADEMIC_TOOLS, icon: AcademicCapIcon, label: 'Academic Tools' },
+  { screen: Screen.SCHOLARSHIPS, icon: TrophyIcon, label: 'Scholarships' },
+  { screen: Screen.HABIT_TRACKER, icon: FireIcon, label: 'Habit Tracker' },
 ];
 
 /**

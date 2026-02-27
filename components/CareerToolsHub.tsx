@@ -1,13 +1,19 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
 import DashboardLayout from './DashboardLayout';
-import { FileText, FileSearch, Presentation, Briefcase, ArrowRight } from 'lucide-react';
+import {
+    BriefcaseIcon,
+    DocumentTextIcon,
+    DocumentCheckIcon,
+    PresentationChartBarIcon,
+    ArrowRightIcon,
+} from '@heroicons/react/24/solid';
 
 const tools = [
     {
         label: 'CV Builder',
         description: 'Create ATS-optimized resumes with AI assistance',
-        icon: FileText,
+        icon: DocumentTextIcon,
         screen: Screen.CV_BUILDER,
         color: 'text-blue-500',
         bg: 'bg-blue-50 dark:bg-blue-900/20',
@@ -16,7 +22,7 @@ const tools = [
     {
         label: 'ATS Checker',
         description: 'Analyze and score your CV against job descriptions',
-        icon: FileSearch,
+        icon: DocumentCheckIcon,
         screen: Screen.ATS_CHECKER,
         color: 'text-indigo-500',
         bg: 'bg-indigo-50 dark:bg-indigo-900/20',
@@ -25,7 +31,7 @@ const tools = [
     {
         label: 'Presentations',
         description: 'Generate professional slide decks with AI',
-        icon: Presentation,
+        icon: PresentationChartBarIcon,
         screen: Screen.PRESENTATION,
         color: 'text-violet-500',
         bg: 'bg-violet-50 dark:bg-violet-900/20',
@@ -42,7 +48,7 @@ export default function CareerToolsHub({ navigateTo }: NavigationProps) {
                     <div className="mb-10">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="p-2.5 bg-primary/10 rounded-xl">
-                                <Briefcase size={24} className="text-primary" />
+                                <BriefcaseIcon className="w-6 h-6 text-primary" />
                             </div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Career Tools</h1>
                         </div>
@@ -60,12 +66,12 @@ export default function CareerToolsHub({ navigateTo }: NavigationProps) {
                                 className={`group flex flex-col items-center text-center p-6 rounded-3xl border border-transparent ${tool.bg} ${tool.borderHover} transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer`}
                             >
                                 <div className="w-20 h-20 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center mb-4 shadow-sm group-hover:shadow-md transition-shadow">
-                                    <tool.icon size={36} className={`${tool.color} transition-transform duration-300 group-hover:scale-110`} strokeWidth={1.5} />
+                                    <tool.icon className={`w-9 h-9 ${tool.color} transition-transform duration-300 group-hover:scale-110`} />
                                 </div>
                                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">{tool.label}</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{tool.description}</p>
                                 <span className="flex items-center gap-1 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Open <ArrowRight size={14} />
+                                    Open <ArrowRightIcon className="w-3.5 h-3.5" />
                                 </span>
                             </button>
                         ))}
