@@ -1,10 +1,11 @@
 import { Screen } from '../../types';
 import {
-  LayoutDashboard,
+  LayoutGrid,
+  FileText,
+  ShieldCheck,
   Briefcase,
   GraduationCap,
   Target,
-  Trophy,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,16 +17,14 @@ export interface NavItem {
   screen: Screen;
   icon: LucideIcon;
   label: string;
-  /** Category header to render ABOVE this item (if it starts a new group) */
-  category?: string;
 }
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
-  { screen: Screen.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-  { screen: Screen.CAREER_TOOLS, icon: Briefcase, label: 'Career Tools' },
-  { screen: Screen.ACADEMIC_TOOLS, icon: GraduationCap, label: 'Academic Tools' },
-  { screen: Screen.SCHOLARSHIPS, icon: Trophy, label: 'Scholarships' },
-  { screen: Screen.HABIT_TRACKER, icon: Target, label: 'Habit Tracker' },
+  { screen: Screen.DASHBOARD, icon: LayoutGrid, label: 'Dashboard' },
+  { screen: Screen.CAREER_TOOLS, icon: FileText, label: 'Career Tools' },
+  { screen: Screen.ACADEMIC_TOOLS, icon: ShieldCheck, label: 'Academic Tools' },
+  { screen: Screen.SCHOLARSHIPS, icon: Briefcase, label: 'Scholarships' },
+  { screen: Screen.HABIT_TRACKER, icon: GraduationCap, label: 'Habit Tracker' },
 ];
 
 /**
