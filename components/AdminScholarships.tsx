@@ -5,7 +5,7 @@ import { scholarshipApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Bell, Briefcase, CheckCircle, Clock, CreditCard, DollarSign, FileText, GraduationCap, LayoutDashboard, Pencil, Plus, Search, ShieldCheck, Trash2, Users } from 'lucide-react';
+import { AcademicCapIcon, BellIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, CreditCardIcon, CurrencyDollarIcon, DocumentTextIcon, MagnifyingGlassIcon, PencilIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, TrashIcon, UsersIcon } from '@heroicons/react/24/solid';
 
 interface Scholarship {
   id: string;
@@ -338,7 +338,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <AcademicCapIcon className="w-6 h-6" />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -357,7 +357,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <Squares2X2Icon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -367,7 +367,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <Briefcase size={20} />
+                <BriefcaseIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -377,7 +377,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <CreditCard size={20} />
+                <CreditCardIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -387,7 +387,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -397,7 +397,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Scholarships</span>
                 )}
@@ -407,7 +407,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <FileText size={20} />
+                <DocumentTextIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -417,7 +417,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <ShieldCheck size={20} />
+                <ShieldCheckIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -427,7 +427,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <Bell size={20} />
+                <BellIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -437,7 +437,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -494,7 +494,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 onClick={handleCreate}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 group"
               >
-                <Plus size={18} />
+                <PlusIcon className="w-[18px] h-[18px]" />
                 <span>Add Scholarship</span>
               </button>
             </div>
@@ -507,7 +507,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Active Scholarships
                 </p>
-                <CheckCircle size={20} className="text-primary/60 dark:text-primary-dark/60" />
+                <CheckCircleIcon className="w-5 h-5 text-primary/60 dark:text-primary-dark/60" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats?.published || 0}
@@ -518,7 +518,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Pending Review
                 </p>
-                <Clock size={20} className="text-orange-500/80" />
+                <ClockIcon className="w-5 h-5 text-orange-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats?.pending || 0}
@@ -529,7 +529,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Funding
                 </p>
-                <DollarSign size={20} className="text-emerald-600/80" />
+                <CurrencyDollarIcon className="w-5 h-5 text-emerald-600/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {formatFunding(stats?.totalFunding || 0)}
@@ -540,7 +540,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
           {/* Search and Filters */}
           <div className="flex flex-wrap items-center justify-between gap-4 py-2 mb-4">
             <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
-              <Search size={20} className="text-slate-500 dark:text-slate-400" />
+              <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
               <input
                 className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
                 placeholder="Search scholarship, university..."
@@ -603,7 +603,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                   ) : scholarships.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
-                        <GraduationCap size={36} className="text-slate-300 dark:text-slate-600" />
+                        <AcademicCapIcon className="w-9 h-9 text-slate-300 dark:text-slate-600" />
                         <p className="text-sm text-slate-500">No scholarships found</p>
                       </td>
                     </tr>
@@ -617,7 +617,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 font-bold">
-                              <GraduationCap size={20} />
+                              <AcademicCapIcon className="w-5 h-5" />
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -667,7 +667,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                               }}
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                             >
-                              <Pencil size={18} />
+                              <PencilIcon className="w-[18px] h-[18px]" />
                             </button>
                             <button
                               onClick={(e) => {
@@ -676,7 +676,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                               }}
                               className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             >
-                              <Trash2 size={18} />
+                              <TrashIcon className="w-[18px] h-[18px]" />
                             </button>
                           </div>
                         </td>

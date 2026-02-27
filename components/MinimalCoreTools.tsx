@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, ShieldCheck, BrainCircuit, CheckCircle2 } from 'lucide-react';
+import { CheckCircleIcon, CpuChipIcon, DocumentTextIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 const containerVariants = {
   hidden: {},
@@ -52,7 +52,7 @@ export default function MinimalCoreTools() {
           >
             <div className="flex-1 shrink-0 z-10 mb-6 md:mb-0">
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6">
-                <FileText className="w-6 h-6 text-[#4F46E5]" />
+                <DocumentTextIcon className="w-6 h-6 text-[#4F46E5]" />
               </div>
               <h3 className="text-2xl font-bold text-[#0A0A0A] mb-2 tracking-tight">
                 ATS Resume Checker
@@ -99,7 +99,7 @@ export default function MinimalCoreTools() {
             className="col-span-1 md:col-span-1 row-span-2 bg-white border border-[#E5E7EB] rounded-[32px] p-10 flex flex-col overflow-hidden shadow-sm transition-shadow"
           >
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6">
-              <CheckCircle2 className="w-6 h-6 text-[#4F46E5]" />
+              <CheckCircleIcon className="w-6 h-6 text-[#4F46E5]" />
             </div>
             <h3 className="text-2xl font-bold text-[#0A0A0A] mb-2 tracking-tight">
               Daily Habit Tracker
@@ -122,7 +122,7 @@ export default function MinimalCoreTools() {
                   <div
                     className={`w-5 h-5 rounded-md flex items-center justify-center ${habit.done ? 'bg-[#4F46E5]' : 'border-2 border-gray-300'}`}
                   >
-                    {habit.done && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    {habit.done && <CheckCircleIcon className="w-3 h-3 text-white" />}
                   </div>
                   <span
                     className={`text-sm font-medium ${habit.done ? 'text-gray-400 line-through' : 'text-[#0A0A0A]'}`}
@@ -143,7 +143,7 @@ export default function MinimalCoreTools() {
             className="col-span-1 md:col-span-1 row-span-1 bg-white border border-[#E5E7EB] rounded-[32px] p-10 flex flex-col shadow-sm transition-shadow relative overflow-hidden"
           >
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 z-10">
-              <ShieldCheck className="w-6 h-6 text-[#4F46E5]" />
+              <ShieldCheckIcon className="w-6 h-6 text-[#4F46E5]" />
             </div>
             <h3 className="text-xl font-bold text-[#0A0A0A] mb-2 z-10 tracking-tight">
               AI & Plagiarism
@@ -153,9 +153,8 @@ export default function MinimalCoreTools() {
             </p>
             {/* Decorative BG element */}
             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-gray-50 rounded-full border border-gray-100" />
-            <ShieldCheck
+            <ShieldCheckIcon
               className="absolute -bottom-6 -right-6 w-32 h-32 text-gray-100 z-0"
-              strokeWidth={1}
             />
           </motion.div>
 
@@ -168,7 +167,7 @@ export default function MinimalCoreTools() {
             className="col-span-1 md:col-span-1 row-span-1 bg-white border border-[#E5E7EB] rounded-[32px] p-10 flex flex-col shadow-sm transition-shadow relative overflow-hidden"
           >
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 z-10">
-              <BrainCircuit className="w-6 h-6 text-[#4F46E5]" />
+              <CpuChipIcon className="w-6 h-6 text-[#4F46E5]" />
             </div>
             <h3 className="text-xl font-bold text-[#0A0A0A] mb-2 z-10 tracking-tight">
               Smart Learning Plans
@@ -178,9 +177,8 @@ export default function MinimalCoreTools() {
             </p>
             {/* Decorative BG element */}
             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-50 rounded-full border border-indigo-100/50" />
-            <BrainCircuit
+            <CpuChipIcon
               className="absolute -bottom-4 -right-4 w-32 h-32 text-indigo-100/50 z-0"
-              strokeWidth={1}
             />
           </motion.div>
         </motion.div>

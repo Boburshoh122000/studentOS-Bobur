@@ -1,4 +1,4 @@
-import { X, Zap, Gift, ArrowUpRight } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon, BoltIcon, GiftIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
 interface InsufficientCreditsModalProps {
@@ -46,13 +46,13 @@ export default function InsufficientCreditsModal({
             aria-label="Close"
             className="absolute top-3 right-3 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition"
           >
-            <X size={18} />
+            <XMarkIcon className="w-[18px] h-[18px]" />
           </button>
 
           {/* Big credit coin */}
           <div className="relative flex flex-col items-center gap-1">
             <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
-              <Zap size={30} className="text-white" fill="white" />
+              <BoltIcon className="w-5 h-5" className="text-white" fill="white" />
             </div>
             <span className="text-white/90 text-sm font-medium mt-1">{toolName}</span>
           </div>
@@ -91,7 +91,7 @@ export default function InsufficientCreditsModal({
               className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 border border-violet-100 dark:border-violet-800/30 hover:shadow-md hover:scale-[1.02] transition-all group"
             >
               <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-800/40 flex items-center justify-center group-hover:bg-violet-200 dark:group-hover:bg-violet-700/40 transition">
-                <Zap size={18} className="text-violet-600 dark:text-violet-400" />
+                <BoltIcon className="w-[18px] h-[18px] text-violet-600 dark:text-violet-400" />
               </div>
               <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">Buy Credits</span>
             </button>
@@ -101,7 +101,7 @@ export default function InsufficientCreditsModal({
               className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30 hover:shadow-md hover:scale-[1.02] transition-all group"
             >
               <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-700/40 transition">
-                <Gift size={18} className="text-emerald-600 dark:text-emerald-400" />
+                <GiftIcon className="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-400" />
               </div>
               <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Invite & Earn</span>
             </button>
@@ -113,7 +113,7 @@ export default function InsufficientCreditsModal({
             className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all active:scale-[0.98]"
           >
             Top Up {shortfall} Credits
-            <ArrowUpRight size={16} />
+            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
           </button>
 
           <button

@@ -6,7 +6,7 @@ import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { CheckCircle, Flame, ListChecks, PieChart, Plus, PlusCircle, Snowflake, Target, Trash2, TrendingUp, X } from 'lucide-react';
+import { ArrowTrendingUpIcon, ChartPieIcon, CheckCircleIcon, ClipboardDocumentListIcon, FireIcon, PlusCircleIcon, PlusIcon, StopIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface Habit {
   id: string;
@@ -153,7 +153,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
           onClick={() => setShowNewHabitModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow-sm text-sm font-medium"
         >
-          <Plus size={18} />
+          <PlusIcon className="w-[18px] h-[18px]" />
           New Habit
         </button>
       </div>
@@ -176,14 +176,14 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Best Streak</span>
-                  <Flame size={20} className="text-orange-500" />
+                  <FireIcon className="w-5 h-5 text-orange-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">{maxStreak}</h3>
                   <span className="text-sm text-text-sub">days</span>
                 </div>
                 <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                  <TrendingUp size={14} /> Top
+                  <ArrowTrendingUpIcon className="w-3.5 h-3.5" /> Top
                   performing habit
                 </p>
               </div>
@@ -191,7 +191,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Today's Rate</span>
-                  <PieChart size={20} className="text-primary" />
+                  <ChartPieIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">
@@ -213,7 +213,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                 <div className="absolute -right-4 -top-4 size-20 bg-blue-400/10 rounded-full blur-xl"></div>
                 <div className="flex justify-between items-start mb-2 relative z-10">
                   <span className="text-sm font-medium text-text-sub">Streak Freezes</span>
-                  <Snowflake size={20} className="text-blue-400" />
+                  <StopIcon className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="flex items-baseline gap-2 relative z-10">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">
@@ -228,12 +228,12 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                       className="text-xs font-semibold text-primary hover:text-primary-dark flex items-center gap-1 transition-colors"
                     >
                       Acquire (+1){' '}
-                      <PlusCircle size={14} />
+                      <PlusCircleIcon className="w-3.5 h-3.5" />
                     </button>
                   ) : (
                     <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
                       Max Capacity{' '}
-                      <CheckCircle size={14} />
+                      <CheckCircleIcon className="w-3.5 h-3.5" />
                     </span>
                   )}
                 </div>
@@ -242,7 +242,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-sub">Active Habits</span>
-                  <ListChecks size={20} className="text-purple-500" />
+                  <ClipboardDocumentListIcon className="w-5 h-5 text-purple-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">
@@ -259,7 +259,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
 
               {habits.length === 0 ? (
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-12 text-center border border-gray-100 dark:border-gray-800">
-                  <Target size={20} className="text-gray-300 dark:text-gray-700" />
+                  <FireIcon className="w-5 h-5 text-gray-300 dark:text-gray-700" />
                   <h4 className="text-lg font-bold text-text-main dark:text-white mb-2">
                     No habits yet
                   </h4>
@@ -285,7 +285,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                         {habit.completedToday && (
                           <div className="absolute top-0 right-0 p-0">
                             <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-bl-xl text-xs font-bold flex items-center gap-1">
-                              <CheckCircle size={14} />{' '}
+                              <CheckCircleIcon className="w-3.5 h-3.5" />{' '}
                               Completed
                             </div>
                           </div>
@@ -309,7 +309,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                           </div>
                           <div className="flex flex-col items-end gap-1 mr-12 sm:mr-0">
                             <div className="flex items-center gap-1 text-orange-500 bg-orange-50 dark:bg-orange-900/10 px-2 py-1 rounded-md">
-                              <Flame size={16} />
+                              <FireIcon className="w-4 h-4" />
                               <span className="text-xs font-bold">{habit.streak} Days</span>
                             </div>
                           </div>
@@ -336,7 +336,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                               onClick={() => handleDeleteHabit(habit.id)}
                               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors"
                             >
-                              <Trash2 size={18} />
+                              <TrashIcon className="w-[18px] h-[18px]" />
                             </button>
                           </div>
                         </div>
@@ -360,7 +360,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                 onClick={() => setShowNewHabitModal(false)}
                 className="text-text-sub hover:text-text-main transition-colors"
               >
-                <X size={20} />
+                <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
 

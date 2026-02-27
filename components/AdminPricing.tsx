@@ -5,7 +5,7 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Bell, Briefcase, CreditCard, FileText, Gift, GraduationCap, History, LayoutDashboard, Pencil, Plus, Search, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { AcademicCapIcon, BellIcon, BriefcaseIcon, ClockIcon, CreditCardIcon, DocumentTextIcon, GiftIcon, MagnifyingGlassIcon, PencilIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, UsersIcon, WalletIcon } from '@heroicons/react/24/solid';
 
 // Types
 interface Tool {
@@ -282,7 +282,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <AcademicCapIcon className="w-6 h-6" />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -301,7 +301,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <Squares2X2Icon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -311,7 +311,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <Briefcase size={20} />
+                <BriefcaseIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -321,7 +321,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <CreditCard size={20} />
+                <CreditCardIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
                 )}
@@ -331,7 +331,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -341,7 +341,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -351,7 +351,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <FileText size={20} />
+                <DocumentTextIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -361,7 +361,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <ShieldCheck size={20} />
+                <ShieldCheckIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -371,7 +371,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <Bell size={20} />
+                <BellIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -381,7 +381,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -437,14 +437,14 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
                 className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
-                <History size={18} />
+                <ClockIcon className="w-[18px] h-[18px]" />
                 <span>View Audit Log</span>
               </button>
               <button
                 onClick={() => setShowAddToolModal(true)}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
               >
-                <Plus size={18} />
+                <PlusIcon className="w-[18px] h-[18px]" />
                 <span>Add New Tool</span>
               </button>
             </div>
@@ -454,7 +454,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
           <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
             <div className="mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Wallet size={20} className="text-primary" />
+                <WalletIcon className="w-5 h-5 text-primary" />
                 Manual Credit Allocation
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -517,7 +517,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                   }}
                   className="w-full px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 flex items-center justify-center gap-2"
                 >
-                  <Gift size={18} />
+                  <GiftIcon className="w-[18px] h-[18px]" />
                   Grant Credits
                 </button>
               </div>
@@ -622,7 +622,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             {/* Search and Filter */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
-                <Search size={20} className="text-slate-500 dark:text-slate-400" />
+                <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 <input
                   className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
                   placeholder="Search tools..."
@@ -750,7 +750,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                                   className="rounded-lg p-1.5 text-primary hover:bg-indigo-50 dark:text-primary dark:hover:bg-indigo-900/20 transition-colors"
                                   title="Edit Credit Cost"
                                 >
-                                  <Pencil size={20} />
+                                  <PencilIcon className="w-5 h-5" />
                                 </button>
                                 <div className="flex items-center">
                                   <label className="relative inline-flex cursor-pointer items-center">

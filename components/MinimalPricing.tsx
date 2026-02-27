@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Check, Zap, Brain, ShieldCheck, FileText, Sparkles } from 'lucide-react';
+import { BoltIcon, CheckIcon, CpuChipIcon, DocumentTextIcon, ShieldCheckIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
 /* ─── Credit Packages Data ──────────────────────────────── */
 const packages = [
@@ -55,21 +55,21 @@ const packages = [
 /* ─── Credit Explainer Data ─────────────────────────────── */
 const explainers = [
   {
-    icon: FileText,
+    icon: DocumentTextIcon,
     label: '1 Credit',
     desc: '1 AI Resume Scan',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50',
   },
   {
-    icon: Brain,
+    icon: CpuChipIcon,
     label: '5 Credits',
     desc: 'Generate Learning Plan',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50',
   },
   {
-    icon: ShieldCheck,
+    icon: ShieldCheckIcon,
     label: '2 Credits',
     desc: 'Plagiarism Check',
     color: 'text-indigo-600',
@@ -204,7 +204,7 @@ export default function MinimalPricing() {
             <ul className="space-y-3.5 mb-10 flex-1">
               {pkg.features.map((feature, fi) => (
                 <li key={fi} className="flex items-start gap-3 text-sm text-gray-600">
-                  <Check className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                  <CheckIcon className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
                   {feature}
                 </li>
               ))}
@@ -280,7 +280,7 @@ export default function MinimalPricing() {
           className="text-center mt-14"
         >
           <div className="inline-flex items-center gap-2 text-sm text-gray-400">
-            <Sparkles className="w-4 h-4 text-indigo-500" />
+            <SparklesIcon className="w-4 h-4 text-indigo-500" />
             <span>
               New users get <strong className="text-indigo-600">10 free credits</strong> to try any
               tool.

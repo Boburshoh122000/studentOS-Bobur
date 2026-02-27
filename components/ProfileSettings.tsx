@@ -3,7 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { userApi, authApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
-import { Save, Plus, GraduationCap, User, Briefcase } from 'lucide-react';
+import { AcademicCapIcon, BriefcaseIcon, CheckIcon, PlusIcon, UserIcon } from '@heroicons/react/24/solid';
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */
 interface EducationEntry {
@@ -120,7 +120,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         disabled={saving}
         className="mt-4 md:mt-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50"
       >
-        <Save size={18} />
+        <CheckIcon className="w-[18px] h-[18px]" />
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
     </div>
@@ -196,7 +196,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                <User size={20} />
+                <UserIcon className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">About Me</h2>
             </div>
@@ -215,7 +215,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">Education</h2>
             </div>
@@ -270,7 +270,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               className="w-full group border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 transition-all cursor-pointer"
             >
               <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                <Plus size={20} className="text-gray-500 group-hover:text-blue-600" />
+                <PlusIcon className="w-5 h-5 text-gray-500 group-hover:text-blue-600" />
               </div>
               <div className="text-center">
                 <span className="block text-sm font-medium text-gray-900 group-hover:text-blue-700">
@@ -287,7 +287,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                <Briefcase size={20} />
+                <BriefcaseIcon className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">Experience & Projects</h2>
             </div>
@@ -341,7 +341,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               className="w-full group border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-50/50 transition-all cursor-pointer"
             >
               <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                <Plus size={20} className="text-gray-500 group-hover:text-blue-600" />
+                <PlusIcon className="w-5 h-5 text-gray-500 group-hover:text-blue-600" />
               </div>
               <span className="block text-sm font-medium text-gray-900 group-hover:text-blue-700">
                 Add Experience

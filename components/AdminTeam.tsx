@@ -5,7 +5,7 @@ import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Camera, Globe, GraduationCap, Link, Pencil, Trash2, User, UserPlus, Users, X } from 'lucide-react';
+import { AcademicCapIcon, CameraIcon, GlobeAltIcon, LinkIcon, PencilIcon, TrashIcon, UserIcon, UserPlusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface TeamMember {
   id: string;
@@ -258,7 +258,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <AcademicCapIcon className="w-6 h-6" />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -332,7 +332,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               onClick={openCreateModal}
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
             >
-              <UserPlus size={18} />
+              <UserPlusIcon className="w-[18px] h-[18px]" />
               <span>Add Member</span>
             </button>
           </header>
@@ -344,7 +344,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Total Members
                 </p>
-                <Users size={20} className="text-primary/60" />
+                <UsersIcon className="w-5 h-5 text-primary/60" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {members.length}
@@ -355,7 +355,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   With Avatar
                 </p>
-                <Camera size={20} className="text-emerald-500/80" />
+                <CameraIcon className="w-5 h-5 text-emerald-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {members.filter((m) => m.avatarUrl).length}
@@ -366,7 +366,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   With Social Links
                 </p>
-                <Link size={20} className="text-blue-500/80" />
+                <LinkIcon className="w-5 h-5 text-blue-500/80" />
               </div>
               <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 {
@@ -385,7 +385,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               </div>
             ) : members.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-slate-500">
-                <UserPlus size={40} />
+                <UserPlusIcon className="w-10 h-10" />
                 <p className="font-medium">No team members yet</p>
                 <button
                   onClick={openCreateModal}
@@ -463,7 +463,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-blue-600 transition-colors"
                                 title="LinkedIn"
                               >
-                                <Link size={18} />
+                                <LinkIcon className="w-[18px] h-[18px]" />
                               </a>
                             )}
                             {member.socialTwitter && (
@@ -474,7 +474,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-sky-500 transition-colors"
                                 title="Twitter"
                               >
-                                <Globe size={18} />
+                                <GlobeAltIcon className="w-[18px] h-[18px]" />
                               </a>
                             )}
                             {member.socialWebsite && (
@@ -485,7 +485,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                                 className="text-slate-400 hover:text-emerald-500 transition-colors"
                                 title="Website"
                               >
-                                <Globe size={18} />
+                                <GlobeAltIcon className="w-[18px] h-[18px]" />
                               </a>
                             )}
                             {!member.socialLinkedin &&
@@ -502,14 +502,14 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                               title="Edit"
                             >
-                              <Pencil size={20} />
+                              <PencilIcon className="w-5 h-5" />
                             </button>
                             <button
                               onClick={() => handleDelete(member.id)}
                               className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                               title="Delete"
                             >
-                              <Trash2 size={20} />
+                              <TrashIcon className="w-5 h-5" />
                             </button>
                           </div>
                         </td>
@@ -540,7 +540,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                 onClick={() => setShowModal(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
-                <X size={20} />
+                <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -568,11 +568,11 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                     />
                   ) : (
                     <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary">
-                      <User size={30} />
+                      <UserIcon className="w-5 h-5" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera size={20} className="text-white" />
+                    <CameraIcon className="w-5 h-5 text-white" />
                   </div>
                 </button>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -624,7 +624,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Link size={20} className="text-slate-400" />
+                  <LinkIcon className="w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={form.socialLinkedin}
@@ -634,7 +634,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Globe size={20} className="text-slate-400" />
+                  <GlobeAltIcon className="w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={form.socialTwitter}
@@ -644,7 +644,7 @@ export default function AdminTeam({ navigateTo }: NavigationProps) {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Globe size={20} className="text-slate-400" />
+                  <GlobeAltIcon className="w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={form.socialWebsite}

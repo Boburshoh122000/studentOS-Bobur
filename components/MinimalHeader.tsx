@@ -2,26 +2,17 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  FileText,
-  ShieldCheck,
-  Brain,
-  CheckSquare,
-  Globe,
-  LogOut,
-  Settings,
-  LayoutDashboard,
-} from 'lucide-react';
+import { ArrowRightOnRectangleIcon, ChevronDownIcon, Cog8ToothIcon, CpuChipIcon, DocumentTextIcon, GlobeAltIcon, ShieldCheckIcon, Squares2X2Icon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
-  { label: 'ATS Resume Checker', icon: FileText, href: '/app/cv-ats' },
-  { label: 'Plagiarism Check', icon: ShieldCheck, href: '/app/plagiarism' },
-  { label: 'Learning Plan', icon: Brain, href: '/app/learning-plan' },
-  { label: 'Habit Tracker', icon: CheckSquare, href: '/app/habit-tracker' },
+  { label: 'ATS Resume Checker', icon: DocumentTextIcon, href: '/app/cv-ats' },
+  { label: 'Plagiarism Check', icon: ShieldCheckIcon, href: '/app/plagiarism' },
+  { label: 'Learning Plan', icon: CpuChipIcon, href: '/app/learning-plan' },
+  { label: 'Habit Tracker', icon: CheckBadgeIcon, href: '/app/habit-tracker' },
 ];
 
 /* ─── Nav links ─────────────────────────────────────────── */
@@ -170,11 +161,10 @@ export default function MinimalHeader() {
           {/* About */}
           <Link
             to={navLinks[0].href}
-            className={`text-sm font-medium transition-colors relative ${
-              pathname === navLinks[0].href
+            className={`text-sm font-medium transition-colors relative ${pathname === navLinks[0].href
                 ? 'text-[#0A0A0A] font-semibold'
                 : 'text-gray-500 hover:text-[#0A0A0A]'
-            }`}
+              }`}
           >
             {navLinks[0].label}
             {pathname === navLinks[0].href && (
@@ -190,7 +180,7 @@ export default function MinimalHeader() {
             >
               Tools
               <motion.span animate={{ rotate: toolsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDownIcon className="w-3.5 h-3.5" />
               </motion.span>
             </button>
 
@@ -227,11 +217,10 @@ export default function MinimalHeader() {
             <Link
               key={link.label}
               to={link.href}
-              className={`text-sm font-medium transition-colors relative ${
-                pathname === link.href
+              className={`text-sm font-medium transition-colors relative ${pathname === link.href
                   ? 'text-[#0A0A0A] font-semibold'
                   : 'text-gray-500 hover:text-[#0A0A0A]'
-              }`}
+                }`}
             >
               {link.label}
               {pathname === link.href && (
@@ -249,9 +238,9 @@ export default function MinimalHeader() {
               onClick={() => setLangOpen(!langOpen)}
               className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors px-2 py-1.5 rounded-full hover:bg-gray-100/60"
             >
-              <Globe className="w-3.5 h-3.5" />
+              <GlobeAltIcon className="w-3.5 h-3.5" />
               {activeLang}
-              <ChevronDown className="w-3 h-3" />
+              <ChevronDownIcon className="w-3 h-3" />
             </button>
 
             <AnimatePresence>
@@ -271,11 +260,10 @@ export default function MinimalHeader() {
                         setActiveLang(lang.code);
                         setLangOpen(false);
                       }}
-                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                        activeLang === lang.code
+                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${activeLang === lang.code
                           ? 'bg-indigo-50 text-indigo-600 font-semibold'
                           : 'text-gray-600 hover:bg-gray-50 font-medium'
-                      }`}
+                        }`}
                     >
                       <span>{lang.label}</span>
                       <span className="text-xs text-gray-400">{lang.code}</span>
@@ -335,7 +323,7 @@ export default function MinimalHeader() {
                       onClick={() => setAvatarOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
                     >
-                      <LayoutDashboard className="w-4 h-4" />
+                      <Squares2X2Icon className="w-4 h-4" />
                       Dashboard
                     </Link>
                     <Link
@@ -343,7 +331,7 @@ export default function MinimalHeader() {
                       onClick={() => setAvatarOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
                     >
-                      <Settings className="w-4 h-4" />
+                      <Cog8ToothIcon className="w-4 h-4" />
                       Settings
                     </Link>
                     <button
@@ -353,7 +341,7 @@ export default function MinimalHeader() {
                       }}
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 font-medium transition-colors w-full text-left"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <ArrowRightOnRectangleIcon className="w-4 h-4" />
                       Sign Out
                     </button>
                   </motion.div>

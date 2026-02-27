@@ -4,25 +4,7 @@ import { userApi, authApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
-import {
-  Briefcase,
-  GraduationCap,
-  Building2,
-  Pencil,
-  Save,
-  X,
-  Plus,
-  Trash2,
-  Award,
-  Upload,
-  FileText,
-  Image as ImageIcon,
-  Check,
-  Download,
-  Eye,
-  Share2,
-  Zap,
-} from 'lucide-react';
+import { AcademicCapIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, BoltIcon, BriefcaseIcon, BuildingOffice2Icon, CheckIcon, DocumentTextIcon, EyeIcon, PencilIcon, PhotoIcon, PlusIcon, ShareIcon, TrashIcon, TrophyIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface EducationEntry {
@@ -325,7 +307,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         {fullName || 'Your Name'}
                       </h1>
                       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                        <Briefcase size={13} className="text-gray-400" />
+                        <BriefcaseIcon className="w-5 h-5" className="text-gray-400" />
                         {headline || 'Add a headline'}
                       </p>
                     </div>
@@ -340,15 +322,15 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button onClick={saveHeader} disabled={saving === 'header'} className={saveBtnCls}>
-                      <Save size={14} /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>
                 ) : (
                   <button onClick={() => setEditingHeader(true)} className={actionBtnCls} title="Edit">
-                    <Pencil size={16} />
+                    <PencilIcon className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -367,15 +349,15 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button onClick={saveBio} disabled={saving === 'bio'} className={saveBtnCls}>
-                      <Save size={14} /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>
                 ) : (
                   <button onClick={() => setEditingBio(true)} className={actionBtnCls}>
-                    <Pencil size={16} />
+                    <PencilIcon className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -411,15 +393,15 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button onClick={saveSkills} disabled={saving === 'skills'} className={saveBtnCls}>
-                      <Save size={14} /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>
                 ) : (
                   <button onClick={() => setEditingSkills(true)} className={actionBtnCls}>
-                    <Pencil size={16} />
+                    <PencilIcon className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -435,7 +417,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         onClick={() => removeSkill(s)}
                         className="text-red-400 hover:text-red-600"
                       >
-                        <X size={12} />
+                        <XMarkIcon className="w-3 h-3" />
                       </button>
                     )}
                   </span>
@@ -475,7 +457,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     }}
                     className={actionBtnCls}
                   >
-                    <Plus size={18} />
+                    <PlusIcon className="w-[18px] h-[18px]" />
                   </button>
                 )}
               </div>
@@ -517,14 +499,14 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       />
                       <div className="flex justify-end gap-2">
                         <button onClick={() => setEditingWorkIdx(null)} className={cancelBtnCls}>
-                          <X size={14} /> Cancel
+                          <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                         </button>
                         <button
                           onClick={() => saveEditWork(i)}
                           disabled={saving === 'work'}
                           className={saveBtnCls}
                         >
-                          <Check size={14} /> Save
+                          <CheckIcon className="w-3.5 h-3.5" /> Save
                         </button>
                       </div>
                     </div>
@@ -533,7 +515,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${getColor(i)}`}
                       >
-                        <Building2 size={18} />
+                        <BuildingOffice2Icon className="w-[18px] h-[18px]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
@@ -549,13 +531,13 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                               onClick={() => setEditingWorkIdx(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-600 rounded transition"
                             >
-                              <Pencil size={14} />
+                              <PencilIcon className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => deleteWork(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition"
                             >
-                              <Trash2 size={14} />
+                              <TrashIcon className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -605,14 +587,14 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   />
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingWork(false)} className={cancelBtnCls}>
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button
                       onClick={confirmAddWork}
                       disabled={saving === 'work'}
                       className={saveBtnCls}
                     >
-                      <Plus size={14} /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> Add
                     </button>
                   </div>
                 </div>
@@ -631,7 +613,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     }}
                     className={actionBtnCls}
                   >
-                    <Plus size={18} />
+                    <PlusIcon className="w-[18px] h-[18px]" />
                   </button>
                 )}
               </div>
@@ -672,21 +654,21 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       />
                       <div className="flex justify-end gap-2">
                         <button onClick={() => setEditingEduIdx(null)} className={cancelBtnCls}>
-                          <X size={14} /> Cancel
+                          <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                         </button>
                         <button
                           onClick={() => saveEditEdu(i)}
                           disabled={saving === 'edu'}
                           className={saveBtnCls}
                         >
-                          <Check size={14} /> Save
+                          <CheckIcon className="w-3.5 h-3.5" /> Save
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div key={i} className="flex gap-4 group">
                       <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
-                        <GraduationCap size={18} />
+                        <AcademicCapIcon className="w-[18px] h-[18px]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
@@ -702,13 +684,13 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                               onClick={() => setEditingEduIdx(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-600 rounded transition"
                             >
-                              <Pencil size={14} />
+                              <PencilIcon className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => deleteEdu(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition"
                             >
-                              <Trash2 size={14} />
+                              <TrashIcon className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -757,10 +739,10 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   />
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingEdu(false)} className={cancelBtnCls}>
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button onClick={confirmAddEdu} disabled={saving === 'edu'} className={saveBtnCls}>
-                      <Plus size={14} /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> Add
                     </button>
                   </div>
                 </div>
@@ -786,7 +768,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     }}
                     className={actionBtnCls}
                   >
-                    <Plus size={18} />
+                    <PlusIcon className="w-[18px] h-[18px]" />
                   </button>
                 )}
               </div>
@@ -794,7 +776,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
               {certificates.length === 0 && !addingCert && (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <div className="w-14 h-14 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-3">
-                    <Award size={24} className="text-gray-300 dark:text-gray-600" />
+                    <TrophyIcon className="w-6 h-6 text-gray-300 dark:text-gray-600" />
                   </div>
                   <p className="text-sm text-gray-400 italic">No certificates uploaded yet.</p>
                 </div>
@@ -808,9 +790,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   >
                     <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                       {cert.fileName?.endsWith('.pdf') ? (
-                        <FileText size={18} />
+                        <DocumentTextIcon className="w-[18px] h-[18px]" />
                       ) : (
-                        <ImageIcon size={18} />
+                        <ImageIcon className="w-[18px] h-[18px]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -829,14 +811,14 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                           onClick={() => setViewingCert(cert)}
                           className="flex items-center gap-1 text-xs text-primary font-medium hover:underline mr-2 opacity-0 group-hover:opacity-100 transition"
                         >
-                          <Eye size={13} /> View
+                          <EyeIcon className="w-5 h-5" /> View
                         </button>
                       )}
                       <button
                         onClick={() => deleteCert(i)}
                         className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition"
                       >
-                        <Trash2 size={14} />
+                        <TrashIcon className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -877,20 +859,20 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       htmlFor="cert-upload"
                       className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary hover:text-primary cursor-pointer transition"
                     >
-                      <Upload size={16} />
+                      <ArrowUpTrayIcon className="w-4 h-4" />
                       {draftCert.fileName || 'Upload file (JPG, PNG, PDF · max 5 MB)'}
                     </label>
                   </div>
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingCert(false)} className={cancelBtnCls}>
-                      <X size={14} /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
                     <button
                       onClick={confirmAddCert}
                       disabled={saving === 'cert' || !draftCert.name}
                       className={saveBtnCls}
                     >
-                      <Plus size={14} /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> Add
                     </button>
                   </div>
                 </div>
@@ -933,7 +915,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       {sections.map((s) => (
                         <div key={s.label} className="flex items-center gap-2.5">
                           <div className={`size-5 rounded-full flex items-center justify-center text-white text-[10px] ${s.done ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                            {s.done && <Check size={12} />}
+                            {s.done && <CheckIcon className="w-3 h-3" />}
                           </div>
                           <span className={`text-sm ${s.done ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>{s.label}</span>
                         </div>
@@ -955,21 +937,21 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   }}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
-                  <Share2 size={16} className="text-primary" />
+                  <ShareIcon className="w-4 h-4 text-primary" />
                   Share Profile
                 </button>
                 <button
                   onClick={() => navigateTo(Screen.CV_BUILDER)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
-                  <FileText size={16} className="text-primary" />
+                  <DocumentTextIcon className="w-4 h-4 text-primary" />
                   Build CV from Profile
                 </button>
                 <button
                   onClick={() => navigateTo(Screen.SETTINGS)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
-                  <Zap size={16} className="text-primary" />
+                  <BoltIcon className="w-4 h-4 text-primary" />
                   Account Settings
                 </button>
               </div>
@@ -979,7 +961,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-indigo-500/5 border border-primary/10 p-5">
               <div className="flex items-start gap-3">
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Zap size={14} className="text-primary" />
+                  <BoltIcon className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Pro Tip</h4>
@@ -1007,7 +989,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
               onClick={() => setViewingCert(null)}
               className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 text-white hover:bg-black/70 transition"
             >
-              <X size={20} />
+              <XMarkIcon className="w-5 h-5" />
             </button>
 
             {/* Left — Media Preview */}
@@ -1036,7 +1018,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   onClick={() => setViewingCert(null)}
                   className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded transition"
                 >
-                  <X size={18} />
+                  <XMarkIcon className="w-[18px] h-[18px]" />
                 </button>
               </div>
 
@@ -1044,7 +1026,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
               <div className="px-5 py-5 flex-1 overflow-y-auto">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                    <Award size={20} />
+                    <TrophyIcon className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white text-sm">
@@ -1082,7 +1064,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   download={viewingCert.fileName || 'certificate'}
                   className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition"
                 >
-                  <Download size={16} /> Download
+                  <ArrowDownTrayIcon className="w-4 h-4" /> Download
                 </a>
               </div>
             </div>

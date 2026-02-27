@@ -4,7 +4,8 @@ import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { useCredits } from '../src/contexts/CreditContext';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { ChevronDown, ChevronRight, Download, Image, Plus, Redo2, RefreshCw, Sparkles, Undo2, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon, ChevronDownIcon, ChevronRightIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, PhotoIcon, PlusIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface Slide {
   slideNumber: number;
@@ -91,7 +92,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-500">Presentation Maker</span>
-            <ChevronRight size={14} className="text-gray-400" />
+            <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400" />
             <input
               className="bg-transparent border-none p-0 text-sm font-bold text-text-main dark:text-white focus:ring-0 w-64 hover:bg-gray-50 rounded px-1 transition-colors"
               type="text"
@@ -120,14 +121,14 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
           onClick={() => setShowGenerateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md shadow-indigo-200 dark:shadow-none"
         >
-          <Sparkles size={18} />
+          <SparklesIcon className="w-[18px] h-[18px]" />
           AI Generate
         </button>
         <div className="relative group">
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-text-main dark:text-white transition-all">
-            <Download size={18} />
+            <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
             Download PPTX/PDF
-            <ChevronDown size={18} />
+            <ChevronDownIcon className="w-[18px] h-[18px]" />
           </button>
         </div>
       </div>
@@ -149,7 +150,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                 Slides (5)
               </span>
               <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-text-sub">
-                <Plus size={18} />
+                <PlusIcon className="w-[18px] h-[18px]" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -162,7 +163,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                     {i}
                   </div>
                   <div className="flex items-center justify-center h-full text-gray-300">
-                    <Image size={36} />
+                    <PhotoIcon className="w-9 h-9" />
                   </div>
                 </div>
               ))}
@@ -201,18 +202,18 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
             {/* Bottom Toolbar */}
             <div className="h-12 bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-4 px-4">
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <Undo2 size={20} />
+                <ArrowUturnLeftIcon className="w-5 h-5" />
               </button>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <Redo2 size={20} />
+                <ArrowUturnRightIcon className="w-5 h-5" />
               </button>
               <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <ZoomOut size={20} />
+                <MagnifyingGlassMinusIcon className="w-5 h-5" />
               </button>
               <span className="text-xs font-medium text-text-sub">Fit</span>
               <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <ZoomIn size={20} />
+                <MagnifyingGlassPlusIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -275,7 +276,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                   <button className="size-6 rounded-full bg-emerald-500 border border-slate-200 dark:border-slate-700"></button>
                   <button className="size-6 rounded-full bg-orange-500 border border-slate-200 dark:border-slate-700"></button>
                   <button className="size-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary">
-                    <Plus size={14} />
+                    <PlusIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -296,7 +297,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                   aria-label="Close modal"
                 >
-                  <X size={20} />
+                  <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
 
@@ -341,12 +342,12 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
                 >
                   {isGenerating ? (
                     <>
-                      <RefreshCw size={18} className="animate-spin" />
+                      <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Sparkles size={18} />
+                      <SparklesIcon className="w-[18px] h-[18px]" />
                       Generate Slides
                     </>
                   )}

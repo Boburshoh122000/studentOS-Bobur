@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Activity, Briefcase, Target, Award, Cpu, Layers } from 'lucide-react';
+import { BriefcaseIcon, ChartBarIcon, CpuChipIcon, DocumentTextIcon, FireIcon, RectangleStackIcon, TrophyIcon } from '@heroicons/react/24/solid';
 
 /* 
   DATA ARRAY ARCHITECTURE (Dual-Wrapper Parallax)
@@ -14,7 +14,7 @@ const toolsConfig = [
   {
     id: 'ats',
     title: 'ATS Checker',
-    icon: <FileText className="w-5 h-5 text-indigo-600" />,
+    icon: <DocumentTextIcon className="w-5 h-5 text-indigo-600" />,
     top: '15%',
     left: '8%',
     parallaxSpeed: [0, -350],
@@ -23,7 +23,7 @@ const toolsConfig = [
   {
     id: 'habit',
     title: 'Habit Tracker',
-    icon: <Activity className="w-5 h-5 text-indigo-600" />,
+    icon: <ChartBarIcon className="w-5 h-5 text-indigo-600" />,
     top: '45%',
     left: '12%',
     parallaxSpeed: [0, -200],
@@ -32,7 +32,7 @@ const toolsConfig = [
   {
     id: 'cv',
     title: 'Smart CV',
-    icon: <Briefcase className="w-5 h-5 text-indigo-600" />,
+    icon: <BriefcaseIcon className="w-5 h-5 text-indigo-600" />,
     top: '75%',
     left: '6%',
     parallaxSpeed: [0, -450],
@@ -43,7 +43,7 @@ const toolsConfig = [
   {
     id: 'job',
     title: 'Job Board',
-    icon: <Target className="w-5 h-5 text-indigo-600" />,
+    icon: <FireIcon className="w-5 h-5 text-indigo-600" />,
     top: '20%',
     left: '72%',
     parallaxSpeed: [0, -400],
@@ -52,7 +52,7 @@ const toolsConfig = [
   {
     id: 'scholarship',
     title: 'Scholarships',
-    icon: <Award className="w-5 h-5 text-indigo-600" />,
+    icon: <TrophyIcon className="w-5 h-5 text-indigo-600" />,
     top: '55%',
     left: '76%',
     parallaxSpeed: [0, -600],
@@ -61,7 +61,7 @@ const toolsConfig = [
   {
     id: 'ai',
     title: 'Mock Interviews',
-    icon: <Cpu className="w-5 h-5 text-indigo-600" />,
+    icon: <CpuChipIcon className="w-5 h-5 text-indigo-600" />,
     top: '80%',
     left: '70%',
     parallaxSpeed: [0, -250],
@@ -143,7 +143,7 @@ export default function CoreSolutions() {
       <div className="relative z-30 flex flex-col items-center text-center px-4">
         {/* Top Floating Badge */}
         <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6 shadow-sm shadow-indigo-200/50">
-          <Layers className="w-6 h-6" />
+          <RectangleStackIcon className="w-6 h-6" />
         </div>
 
         {/* Core Typography */}

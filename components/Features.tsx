@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Layers, Zap, FolderDot } from 'lucide-react';
+import { BoltIcon, FolderIcon, RectangleStackIcon } from '@heroicons/react/24/solid';
 
 export default function Features() {
   return (
@@ -28,7 +28,7 @@ export default function Features() {
               className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-left hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
-                <Layers className="text-indigo-600 w-6 h-6" />
+                <RectangleStackIcon className="text-indigo-600 w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">For Undergrads</h3>
               <p className="text-gray-500 mt-2 leading-relaxed">
@@ -46,7 +46,7 @@ export default function Features() {
               className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-left hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center mb-6">
-                <Zap className="text-rose-600 w-6 h-6" />
+                <BoltIcon className="text-rose-600 w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">For Researchers</h3>
               <p className="text-gray-500 mt-2 leading-relaxed">
@@ -64,7 +64,7 @@ export default function Features() {
               className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-left hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
-                <FolderDot className="text-emerald-600 w-6 h-6" />
+                <FolderIcon className="text-emerald-600 w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">For Group Projects</h3>
               <p className="text-gray-500 mt-2 leading-relaxed">
@@ -91,7 +91,7 @@ export default function Features() {
           {/* Left Text Column */}
           <div className="flex-1 z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
-              <FolderDot className="w-4 h-4 text-indigo-400" />
+              <FolderIcon className="w-4 h-4 text-indigo-400" />
               <span className="text-xs font-semibold text-indigo-400 tracking-wider uppercase">
                 Big Data Ready
               </span>

@@ -3,7 +3,8 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
-import { Copy, Download, FileText, History, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowDownTrayIcon, ClipboardIcon, ClockIcon, DocumentTextIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,7 +58,7 @@ export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-          <History size={18} /> History
+          <ClockIcon className="w-[18px] h-[18px]" /> History
         </button>
       </div>
     </header>
@@ -177,12 +178,12 @@ export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
             >
               {isGenerating ? (
                 <>
-                  <RefreshCw size={20} className="animate-spin" />
+                  <ArrowPathIcon className="w-5 h-5 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <Sparkles size={20} />
+                  <SparklesIcon className="w-5 h-5" />
                   Generate Cover Letter
                 </>
               )}
@@ -199,13 +200,13 @@ export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
                 className="p-2 text-text-sub hover:text-primary hover:bg-white dark:hover:bg-card-dark rounded-lg transition-colors"
                 title="Copy"
               >
-                <Copy size={18} />
+                <ClipboardIcon className="w-[18px] h-[18px]" />
               </button>
               <button
                 className="p-2 text-text-sub hover:text-primary hover:bg-white dark:hover:bg-card-dark rounded-lg transition-colors"
                 title="Download PDF"
               >
-                <Download size={18} />
+                <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>
@@ -216,7 +217,7 @@ export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600">
-                <FileText size={48} />
+                <DocumentTextIcon className="w-12 h-12" />
                 <p className="text-sm">Your generated cover letter will appear here.</p>
               </div>
             )}

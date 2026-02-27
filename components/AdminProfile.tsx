@@ -4,7 +4,8 @@ import { Screen, NavigationProps } from '../types';
 import { authApi, userApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { Bell, Briefcase, Check, CreditCard, FileText, GraduationCap, Info, LayoutDashboard, Lock, Mail, RefreshCw, ShieldCheck, User, Users } from 'lucide-react';
+import { AcademicCapIcon, BellIcon, BriefcaseIcon, CheckIcon, CreditCardIcon, DocumentTextIcon, EnvelopeIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, Squares2X2Icon, UserIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface ProfileData {
   id: string;
@@ -264,7 +265,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <AcademicCapIcon className="w-6 h-6" />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -283,7 +284,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <Squares2X2Icon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
                 )}
@@ -293,7 +294,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <Briefcase size={20} />
+                <BriefcaseIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -303,7 +304,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <CreditCard size={20} />
+                <CreditCardIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -313,7 +314,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -323,7 +324,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -333,7 +334,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <FileText size={20} />
+                <DocumentTextIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -343,7 +344,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <ShieldCheck size={20} />
+                <ShieldCheckIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -353,7 +354,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <Bell size={20} />
+                <BellIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -363,7 +364,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -452,7 +453,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               <section className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <User size={20} className="text-primary" />
+                    <UserIcon className="w-5 h-5 text-primary" />
                     Public Profile
                   </h3>
                 </div>
@@ -523,12 +524,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                         >
                           {isSavingProfile ? (
                             <>
-                              <RefreshCw size={18} className="animate-spin" />
+                              <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                               Saving...
                             </>
                           ) : (
                             <>
-                              <Check size={18} />
+                              <CheckIcon className="w-[18px] h-[18px]" />
                               Save Changes
                             </>
                           )}
@@ -543,7 +544,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
               <section className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <ShieldCheck size={20} className="text-primary" />
+                    <ShieldCheckIcon className="w-5 h-5 text-primary" />
                     Security Settings
                   </h3>
                 </div>
@@ -595,12 +596,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       >
                         {isSavingEmail ? (
                           <>
-                            <RefreshCw size={18} className="animate-spin" />
+                            <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                             Updating...
                           </>
                         ) : (
                           <>
-                            <Mail size={18} />
+                            <EnvelopeIcon className="w-[18px] h-[18px]" />
                             Update Email
                           </>
                         )}
@@ -696,7 +697,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                         <div className="flex items-start gap-2">
-                          <Info size={18} className="text-amber-600 dark:text-amber-400" />
+                          <InformationCircleIcon className="w-[18px] h-[18px] text-amber-600 dark:text-amber-400" />
                           <div className="text-xs text-amber-800 dark:text-amber-300">
                             <p className="font-medium mb-1">Password Requirements:</p>
                             <ul className="list-disc pl-4 space-y-0.5">
@@ -722,12 +723,12 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
                       >
                         {isSavingPassword ? (
                           <>
-                            <RefreshCw size={18} className="animate-spin" />
+                            <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                             Updating...
                           </>
                         ) : (
                           <>
-                            <Lock size={18} />
+                            <LockClosedIcon className="w-[18px] h-[18px]" />
                             Update Password
                           </>
                         )}

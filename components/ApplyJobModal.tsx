@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { jobApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Info, MapPin, Send } from 'lucide-react';
+import { BriefcaseIcon, InformationCircleIcon, MapPinIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 interface Job {
   id: string;
@@ -64,7 +64,7 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Send size={24} className="text-primary" />
+              <PaperAirplaneIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Apply for Job</h2>
@@ -79,12 +79,12 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
             <div className="flex items-center gap-3 mt-2">
               {job.location && (
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                  <MapPin size={14} />
+                  <MapPinIcon className="w-3.5 h-3.5" />
                   {job.location}
                 </span>
               )}
               <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <Briefcase size={14} />
+                <BriefcaseIcon className="w-3.5 h-3.5" />
                 {job.locationType}
               </span>
             </div>
@@ -114,7 +114,7 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
             {/* CV Notice */}
             <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
               <div className="flex items-start gap-2">
-                <Info size={18} className="text-blue-600 text-blue-400 dark:text-blue-400" />
+                <InformationCircleIcon className="w-[18px] h-[18px] text-blue-600 text-blue-400 dark:text-blue-400" />
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   Your profile CV will be shared with the employer. Make sure your profile is up to
                   date!
@@ -144,7 +144,7 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
                 </>
               ) : (
                 <>
-                  <Send size={18} />
+                  <PaperAirplaneIcon className="w-[18px] h-[18px]" />
                   Submit Application
                 </>
               )}

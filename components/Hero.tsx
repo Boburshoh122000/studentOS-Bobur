@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, Lightbulb, Shield, Airplay, Eye } from 'lucide-react';
+import { CheckIcon, EyeIcon, LightBulbIcon, ShieldCheckIcon, TvIcon } from '@heroicons/react/24/solid';
 
 /* 
   DATA ARRAY ARCHITECTURE (Strict Layout & Timeline)
@@ -20,7 +20,7 @@ const nodesConfig = [
     y: -150,
     content: (
       <div className="w-full h-full bg-[#FFE55C] flex items-center justify-center rounded-[1.2rem] shadow-sm">
-        <Lightbulb className="w-7 h-7 text-[#D97706]" />
+        <LightBulbIcon className="w-7 h-7 text-[#D97706]" />
       </div>
     ),
     floatDuration: 4.2,
@@ -46,7 +46,7 @@ const nodesConfig = [
     y: 180,
     content: (
       <div className="w-full h-full bg-[#42A5F5] flex items-center justify-center rounded-[1.2rem] shadow-sm">
-        <Airplay className="w-6 h-6 text-white" />
+        <TvIcon className="w-6 h-6 text-white" />
       </div>
     ),
     floatDuration: 4.8,
@@ -59,7 +59,7 @@ const nodesConfig = [
     y: -180,
     content: (
       <div className="w-full h-full bg-[#EF5350] flex items-center justify-center rounded-[1.2rem] shadow-sm">
-        <Shield className="w-7 h-7 text-white" />
+        <ShieldCheckIcon className="w-7 h-7 text-white" />
       </div>
     ),
     floatDuration: 3.9,
@@ -70,7 +70,7 @@ const nodesConfig = [
     y: -10,
     content: (
       <div className="w-full h-full bg-white border border-gray-100 shadow-sm flex items-center justify-center rounded-[1.2rem]">
-        <Eye className="w-7 h-7 text-gray-800" />
+        <EyeIcon className="w-7 h-7 text-gray-800" />
       </div>
     ),
     floatDuration: 5.5,
@@ -171,7 +171,7 @@ export default function Hero() {
             }}
             className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] shadow-[0_0_40px_rgba(139,92,246,0.4)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
           >
-            <Check className="w-10 h-10 text-white stroke-[3px]" />
+            <CheckIcon className="w-10 h-10 text-white stroke-[3px]" />
           </motion.div>
         </motion.div>
 

@@ -5,7 +5,7 @@ import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import ToolCard from './ToolCard';
 import toast from 'react-hot-toast';
-import { ArrowRight, BookOpen, Building2, Check, Globe, GraduationCap, Landmark, Shapes } from 'lucide-react';
+import { AcademicCapIcon, ArrowRightIcon, BookOpenIcon, BuildingLibraryIcon, BuildingOffice2Icon, CheckIcon, GlobeAltIcon, SwatchIcon } from '@heroicons/react/24/solid';
 
 type Role = 'student' | 'educator' | 'organization' | null;
 
@@ -153,7 +153,7 @@ export default function SignUpStep2() {
                       <div
                         className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${role.gradient} shadow-md`}
                       >
-                        <role.Icon size={24} className="text-white" />
+                        <role.Icon className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-slate-900 text-sm">{role.title}</div>
@@ -164,7 +164,7 @@ export default function SignUpStep2() {
                           }`}
                       >
                         {isSelected && (
-                          <Check size={14} className="text-white" />
+                          <CheckIcon className="w-3.5 h-3.5 text-white" />
                         )}
                       </div>
                     </button>
@@ -184,7 +184,7 @@ export default function SignUpStep2() {
                           University / School
                         </label>
                         <div className="relative">
-                          <Landmark size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <BuildingLibraryIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={university}
@@ -199,7 +199,7 @@ export default function SignUpStep2() {
                           Field of Study / Major
                         </label>
                         <div className="relative">
-                          <BookOpen size={20} className="text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <BookOpenIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
                             value={major}
@@ -219,7 +219,7 @@ export default function SignUpStep2() {
                           University / Institution
                         </label>
                         <div className="relative">
-                          <Landmark size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <BuildingLibraryIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={institution}
@@ -234,7 +234,7 @@ export default function SignUpStep2() {
                           Department
                         </label>
                         <div className="relative">
-                          <Building2 size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <BuildingOffice2Icon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={department}
@@ -254,7 +254,7 @@ export default function SignUpStep2() {
                           Organization Name <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
-                          <Building2 size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <BuildingOffice2Icon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={companyName}
@@ -270,7 +270,7 @@ export default function SignUpStep2() {
                           Industry
                         </label>
                         <div className="relative">
-                          <Shapes size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <SwatchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             value={industry}
@@ -285,7 +285,7 @@ export default function SignUpStep2() {
                           Website URL
                         </label>
                         <div className="relative">
-                          <Globe size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <GlobeAltIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="url"
                             value={website}
@@ -314,7 +314,7 @@ export default function SignUpStep2() {
                 ) : (
                   <>
                     Continue
-                    <ArrowRight size={18} />
+                    <ArrowRightIcon className="w-[18px] h-[18px]" />
                   </>
                 )}
               </button>

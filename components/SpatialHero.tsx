@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
 const ORBS = [
   { id: 1, size: 'w-96 h-96', color: 'bg-[#00F0FF]/30', initial: { x: -200, y: -200 } },
@@ -95,7 +95,7 @@ export default function SpatialHero() {
           transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
           className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.05)]"
         >
-          <Sparkles className="w-4 h-4 text-[#00F0FF]" />
+          <SparklesIcon className="w-4 h-4 text-[#00F0FF]" />
           <span className="text-xs font-semibold uppercase tracking-widest bg-gradient-to-r from-[#00F0FF] to-[#8A2BE2] bg-clip-text text-transparent">
             StudentOS V2 OS Platform
           </span>
@@ -145,7 +145,7 @@ export default function SpatialHero() {
             />
 
             <span className="relative z-20">Enter Matrix</span>
-            <ArrowRight className="w-6 h-6 relative z-20 group-hover:translate-x-1 transition-transform" />
+            <ArrowRightIcon className="w-6 h-6 relative z-20 group-hover:translate-x-1 transition-transform" />
 
             {/* Glowing Border effect using absolute positioning behind the bg */}
           </motion.button>

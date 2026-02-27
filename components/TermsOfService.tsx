@@ -1,6 +1,6 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 export default function TermsOfService({ navigateTo }: NavigationProps) {
   return (
@@ -12,7 +12,7 @@ export default function TermsOfService({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.LANDING)}
             className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeftIcon className="w-5 h-5" />
             Back to Home
           </button>
         </div>

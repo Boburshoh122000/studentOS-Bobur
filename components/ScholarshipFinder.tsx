@@ -4,7 +4,7 @@ import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
-import { Bookmark, Calendar, DollarSign, Filter, Globe, GraduationCap, Search } from 'lucide-react';
+import { AcademicCapIcon, BookmarkIcon, CalendarIcon, CurrencyDollarIcon, FunnelIcon, GlobeAltIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   // Data State
@@ -114,7 +114,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <div className="flex w-full md:w-auto">
                   <div className="flex shadow-sm rounded-lg overflow-hidden w-full md:w-[480px]">
                     <div className="relative flex-1 bg-white dark:bg-card-dark border border-r-0 border-gray-200 dark:border-gray-700 rounded-l-lg hover:z-10 focus-within:z-10">
-                      <Search size={20} className="text-gray-400" />
+                      <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
                       <input
                         className="w-full h-11 pl-10 pr-4 text-sm border-0 focus:ring-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-500"
                         placeholder="Search by name, university..."
@@ -151,7 +151,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <div className="bg-white dark:bg-card-dark rounded-xl border border-gray-100 dark:border-gray-800 p-4">
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
                     <span className="flex items-center gap-2">
-                      <Globe size={18} className="text-primary" />
+                      <GlobeAltIcon className="w-[18px] h-[18px] text-primary" />
                       Country
                     </span>
                   </label>
@@ -175,7 +175,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <div className="bg-white dark:bg-card-dark rounded-xl border border-gray-100 dark:border-gray-800 p-4">
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
                     <span className="flex items-center gap-2">
-                      <GraduationCap size={18} className="text-primary" />
+                      <AcademicCapIcon className="w-[18px] h-[18px] text-primary" />
                       Study Level
                     </span>
                   </label>
@@ -200,7 +200,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   onClick={handleSearch}
                   className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  <Filter size={18} />
+                  <FunnelIcon className="w-[18px] h-[18px]" />
                   Apply Filters
                 </button>
 
@@ -259,7 +259,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         className="bg-white dark:bg-card-dark rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col h-full group relative"
                       >
                         <button className="absolute top-5 right-5 text-gray-400 hover:text-primary transition-colors">
-                          <Bookmark size={24} />
+                          <BookmarkIcon className="w-6 h-6" />
                         </button>
                         <div className="flex items-center gap-3 mb-4">
                           <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg font-bold flex-shrink-0">
@@ -290,7 +290,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         </h2>
                         <div className="mb-4">
                           <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-100 dark:bg-green-900/20 dark:text-green-300 dark:border-green-900/30 truncate max-w-full">
-                            <DollarSign size={14} />
+                            <CurrencyDollarIcon className="w-3.5 h-3.5" />
                             {s.awardAmount}
                           </span>
                         </div>
@@ -304,7 +304,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         </div>
                         <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-1.5 font-bold text-gray-500">
-                            <Calendar size={16} />
+                            <CalendarIcon className="w-4 h-4" />
                             <span>Deadline: {formatDate(s.deadline)}</span>
                           </div>
                         </div>

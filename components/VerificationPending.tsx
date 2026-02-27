@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
-import { Check, Clock, Hourglass, Lock, ShieldCheck } from 'lucide-react';
+import { CheckIcon, ClockIcon, LockClosedIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 export default function VerificationPending() {
   const { logout } = useAuth();
@@ -27,7 +27,7 @@ export default function VerificationPending() {
           <div className="w-full max-w-sm mx-auto text-center">
             {/* Animated icon */}
             <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center shadow-lg shadow-orange-100">
-              <Hourglass size={36} className="text-orange-500 animate-pulse" />
+              <ClockIcon className="w-9 h-9 text-orange-500 animate-pulse" />
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 mb-3">
@@ -42,7 +42,7 @@ export default function VerificationPending() {
             <div className="text-left space-y-4 mb-8">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                  <Check size={18} className="text-emerald-600" />
+                  <CheckIcon className="w-[18px] h-[18px] text-emerald-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">Account created</p>
@@ -51,7 +51,7 @@ export default function VerificationPending() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 animate-pulse">
-                  <Clock size={18} className="text-orange-500" />
+                  <ClockIcon className="w-[18px] h-[18px] text-orange-500" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">Under review</p>
@@ -60,7 +60,7 @@ export default function VerificationPending() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                  <Lock size={18} className="text-slate-400" />
+                  <LockClosedIcon className="w-[18px] h-[18px] text-slate-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400">Full access</p>
@@ -108,7 +108,7 @@ export default function VerificationPending() {
         {/* Centered illustration */}
         <div className="relative z-10 text-center px-12">
           <div className="mx-auto mb-8 w-32 h-32 rounded-3xl bg-white/80 backdrop-blur-sm shadow-xl flex items-center justify-center">
-            <ShieldCheck size={48} className="text-indigo-500" />
+            <ShieldCheckIcon className="w-12 h-12 text-indigo-500" />
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-3">Almost There!</h2>
           <p className="text-slate-600 text-sm max-w-xs mx-auto leading-relaxed">

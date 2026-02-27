@@ -4,7 +4,8 @@ import { learningPlanApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, GraduationCap, Loader2, Lock, Monitor, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { AcademicCapIcon, ArrowLeftIcon, ArrowRightIcon, ArrowTopRightOnSquareIcon, CheckIcon, ComputerDesktopIcon, DocumentTextIcon, LockClosedIcon, SparklesIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 
@@ -187,7 +188,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           className="flex items-center gap-2 text-text-sub mb-1 cursor-pointer"
           onClick={() => navigateTo(Screen.DASHBOARD)}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeftIcon className="w-[18px] h-[18px]" />
           <span className="text-sm font-medium">Back to Dashboard</span>
         </div>
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
@@ -204,7 +205,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             onClick={handleDeletePlan}
             className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
-            <Trash2 size={18} />
+            <TrashIcon className="w-[18px] h-[18px]" />
             New Plan
           </button>
         ) : (
@@ -237,7 +238,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       <DashboardLayout currentScreen={Screen.LEARNING_PLAN} navigateTo={navigateTo}>
         <div className="flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="text-primary animate-spin" />
+            <ArrowPathIcon className="w-8 h-8 text-primary animate-spin" />
             <p className="text-sm text-text-sub">Loading your learning plan...</p>
           </div>
         </div>
@@ -262,7 +263,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               </div>
             )}
             <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <GraduationCap size={40} className="text-primary" />
+              <AcademicCapIcon className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">
               Create Your Learning Plan
@@ -294,7 +295,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             <div className="w-full max-w-2xl mx-auto mt-16">
               <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center">
                 <div className="flex-1 flex items-center gap-2 pl-4">
-                  <Sparkles size={20} className="text-primary" />
+                  <SparklesIcon className="w-5 h-5 text-primary" />
                   <input
                     type="text"
                     value={topic}
@@ -327,7 +328,6 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2.5}
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
@@ -339,12 +339,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 >
                   {isGenerating ? (
                     <>
-                      <RefreshCw size={16} className="animate-spin" />
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <ArrowRight size={16} />
+                      <ArrowRightIcon className="w-4 h-4" />
                       Generate
                     </>
                   )}
@@ -374,7 +374,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             {/* Thinking message */}
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white dark:bg-card-dark rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
-                <Loader2 size={20} className="text-primary animate-spin" />
+                <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
                 <span className="text-sm font-medium text-text-main dark:text-white">
                   AI is structuring your learning journey...
                 </span>
@@ -489,7 +489,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                       {/* Phase circle */}
                       {isCompleted ? (
                         <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-green-500 flex items-center justify-center shadow-sm z-10">
-                          <Check size={28} className="text-white" />
+                          <CheckIcon className="w-7 h-7 text-white" />
                         </div>
                       ) : isCurrent ? (
                         <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10">
@@ -497,7 +497,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         </div>
                       ) : (
                         <div className="absolute left-0 top-0 size-14 rounded-full border-4 border-white dark:border-[#0f111a] bg-gray-200 dark:bg-gray-700 flex items-center justify-center shadow-sm z-10">
-                          <Lock size={24} className="text-gray-500 dark:text-gray-400" />
+                          <LockClosedIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                         </div>
                       )}
 
@@ -562,11 +562,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                   {/* Icon */}
                                   {isVideo ? (
                                     <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                      <Monitor size={20} />
+                                      <ComputerDesktopIcon className="w-5 h-5" />
                                     </div>
                                   ) : (
                                     <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
-                                      <FileText size={20} />
+                                      <DocumentTextIcon className="w-5 h-5" />
                                     </div>
                                   )}
 
@@ -588,7 +588,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
                                   {/* External link indicator */}
                                   {hasUrl && (
-                                    <ExternalLink size={16} className="text-gray-400" />
+                                    <ArrowTopRightOnSquareIcon className="w-4 h-4 text-gray-400" />
                                   )}
                                 </>
                               );
@@ -626,7 +626,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                   >
                                     {resource.isCompleted ? (
                                       <div className="size-6 rounded-full bg-green-500 flex items-center justify-center">
-                                        <Check size={16} className="text-white" />
+                                        <CheckIcon className="w-4 h-4 text-white" />
                                       </div>
                                     ) : (
                                       <div className="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary transition-colors" />

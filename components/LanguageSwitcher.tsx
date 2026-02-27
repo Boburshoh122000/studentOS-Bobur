@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedLocales, localeLabels, type Locale } from '../src/i18n';
-import { Check, ChevronDown } from 'lucide-react';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface LanguageSwitcherProps {
   /** Compact mode for collapsed sidebar — shows only the globe icon */
@@ -54,7 +54,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         {!compact && (
           <>
             <span className="font-semibold">{current.label}</span>
-            <ChevronDown size={20} className={`text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`} />
+            <ChevronDownIcon className="w-5 h-5" className={`text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`} />
           </>
         )}
       </button>
@@ -91,7 +91,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
                 <span className="text-lg leading-none">{flag}</span>
                 <span>{label}</span>
                 {isActive && (
-                  <Check size={16} className="text-indigo-500" />
+                  <CheckIcon className="w-4 h-4 text-indigo-500" />
                 )}
               </button>
             );

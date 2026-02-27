@@ -5,7 +5,8 @@ import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Bell, BellOff, GraduationCap, History, Loader2, RefreshCw, Send } from 'lucide-react';
+import { AcademicCapIcon, BellIcon, BellSlashIcon, ClockIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface SentNotification {
   id: string;
@@ -162,7 +163,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
             onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-              <GraduationCap size={24} />
+              <AcademicCapIcon className="w-6 h-6" />
             </div>
             <div
               className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -233,7 +234,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <Bell size={20} className="text-primary" />
+                <BellIcon className="w-5 h-5 text-primary" />
                 Notifications
               </h2>
               <p className="text-sm text-slate-500 mt-1">
@@ -247,7 +248,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           {/* ── Send Notification Card ── */}
           <div className="bg-white dark:bg-[#1e2139] rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center gap-2">
-              <Send size={20} className="text-primary" />
+              <PaperAirplaneIcon className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-bold">Send Notification</h3>
             </div>
             <div className="p-6 space-y-4">
@@ -338,7 +339,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                   className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center gap-2 shadow-sm"
                 >
                   {isSending && (
-                    <Loader2 size={16} className="animate-spin" />
+                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
                   )}
                   {isSending
                     ? 'Sending...'
@@ -354,14 +355,14 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-[#1e2139] rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <History size={20} className="text-slate-400" />
+                <ClockIcon className="w-5 h-5 text-slate-400" />
                 <h3 className="text-lg font-bold">Recently Sent</h3>
               </div>
               <button
                 onClick={fetchHistory}
                 className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1"
               >
-                <RefreshCw size={14} /> Refresh
+                <ArrowPathIcon className="w-3.5 h-3.5" /> Refresh
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -369,7 +370,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                 <GlobalLoader fullScreen={false} />
               ) : history.length === 0 ? (
                 <div className="text-center py-12 text-slate-500">
-                  <BellOff size={36} className="text-slate-300" />
+                  <BellSlashIcon className="w-9 h-9 text-slate-300" />
                   <p className="text-sm">No notifications sent yet</p>
                 </div>
               ) : (

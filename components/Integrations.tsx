@@ -1,32 +1,32 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, Video, Calendar, Cloud, Github } from 'lucide-react';
+import { CalendarIcon, ChatBubbleLeftIcon, CloudIcon, CodeBracketSquareIcon, EnvelopeIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 
 const integrationIcons = [
-  { id: 'mail', icon: <Mail className="w-8 h-8 text-red-500" />, shadowColor: 'shadow-red-500/10' },
+  { id: 'mail', icon: <EnvelopeIcon className="w-8 h-8 text-red-500" />, shadowColor: 'shadow-red-500/10' },
   {
     id: 'message',
-    icon: <MessageSquare className="w-8 h-8 text-purple-500" />,
+    icon: <ChatBubbleLeftIcon className="w-8 h-8 text-purple-500" />,
     shadowColor: 'shadow-purple-500/10',
   },
   {
     id: 'video',
-    icon: <Video className="w-8 h-8 text-blue-500" />,
+    icon: <VideoCameraIcon className="w-8 h-8 text-blue-500" />,
     shadowColor: 'shadow-blue-500/10',
   },
   {
     id: 'calendar',
-    icon: <Calendar className="w-8 h-8 text-green-500" />,
+    icon: <CalendarIcon className="w-8 h-8 text-green-500" />,
     shadowColor: 'shadow-green-500/10',
   },
   {
     id: 'cloud',
-    icon: <Cloud className="w-8 h-8 text-yellow-500" />,
+    icon: <CloudIcon className="w-8 h-8 text-yellow-500" />,
     shadowColor: 'shadow-yellow-500/10',
   },
   {
     id: 'github',
-    icon: <Github className="w-8 h-8 text-gray-800" />,
+    icon: <CodeBracketSquareIcon className="w-8 h-8 text-gray-800" />,
     shadowColor: 'shadow-gray-800/10',
   },
 ];

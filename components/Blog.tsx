@@ -4,7 +4,7 @@ import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AlertCircle, ArrowRight, FileText, GraduationCap, Search } from 'lucide-react';
+import { AcademicCapIcon, ArrowRightIcon, DocumentTextIcon, ExclamationCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 interface BlogPost {
   id: string;
@@ -121,7 +121,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                       className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
                     >
                       Read Article{' '}
-                      <ArrowRight size={14} />
+                      <ArrowRightIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                 ))}
               </div>
               <div className="relative w-full md:w-72 shrink-0">
-                <Search size={20} className="text-slate-400" />
+                <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
                 <input
                   className="h-10 w-full rounded-full border-0 bg-white dark:bg-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm"
                   placeholder="Search articles..."
@@ -172,7 +172,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {error && !loading && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                    <AlertCircle size={30} className="text-red-500" />
+                    <ExclamationCircleIcon className="w-5 h-5" className="text-red-500" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     Failed to load articles
@@ -193,7 +193,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {!loading && !error && filteredPosts.length === 0 && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-                    <Search size={30} className="text-slate-400" />
+                    <MagnifyingGlassIcon className="w-5 h-5" className="text-slate-400" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     No articles found
@@ -234,7 +234,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                           ></div>
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
-                            <FileText size={36} className="text-slate-400" />
+                            <DocumentTextIcon className="w-9 h-9 text-slate-400" />
                           </div>
                         )}
                       </div>
@@ -319,7 +319,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               <div className="flex flex-col gap-4 max-w-xs">
                 <div className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-white">
-                    <GraduationCap size={16} />
+                    <AcademicCapIcon className="w-4 h-4" />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white">StudentOS</h3>
                 </div>

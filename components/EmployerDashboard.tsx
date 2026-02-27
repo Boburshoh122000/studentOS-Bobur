@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../src/contexts/AuthContext';
 import PostJobModal from './PostJobModal';
 import ViewApplicantModal from './ViewApplicantModal';
-import { AlertTriangle, ArrowUpDown, Briefcase, Building2, Camera, ChevronRight, Clock, CloudUpload, Download, Eye, FileText, Filter, Globe, GraduationCap, ListChecks, Lock, MapPin, Menu, MoreHorizontal, MoreVertical, Plus, Save, Search, Star, TrendingUp, User, UserPlus, Users, Video, X } from 'lucide-react';
+import { AcademicCapIcon, ArrowDownTrayIcon, ArrowTrendingUpIcon, ArrowsUpDownIcon, Bars3Icon, BriefcaseIcon, BuildingOffice2Icon, CameraIcon, CheckIcon, ChevronRightIcon, ClipboardDocumentListIcon, ClockIcon, CloudArrowUpIcon, DocumentTextIcon, EllipsisHorizontalIcon, EllipsisVerticalIcon, ExclamationTriangleIcon, EyeIcon, FunnelIcon, GlobeAltIcon, LockClosedIcon, MagnifyingGlassIcon, MapPinIcon, PlusIcon, StarIcon, UserIcon, UserPlusIcon, UsersIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface EmployerStats {
   activeJobs: number;
@@ -219,7 +219,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30">
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
                 <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white tracking-tight">
@@ -318,7 +318,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   Hiring Manager
                 </p>
               </div>
-              <ChevronRight size={16} className="text-slate-400" />
+              <ChevronRightIcon className="w-4 h-4 text-slate-400" />
             </button>
             <button
               onClick={async () => {
@@ -365,7 +365,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => navigateTo(Screen.LANDING)}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30">
-                      <GraduationCap size={20} />
+                      <AcademicCapIcon className="w-5 h-5" />
                     </div>
                     <div className="flex flex-col">
                       <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white tracking-tight">
@@ -380,7 +380,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setIsMobileSidebarOpen(false)}
                     className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <X size={20} className="text-slate-500" />
+                    <XMarkIcon className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
 
@@ -477,11 +477,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Open menu"
           >
-            <Menu size={20} className="text-slate-900 dark:text-white" />
+            <Bars3Icon className="w-5 h-5 text-slate-900 dark:text-white" />
           </button>
           <div className="flex items-center gap-2">
             <div className="size-7 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-              <GraduationCap size={16} className="text-white" />
+              <AcademicCapIcon className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm font-bold text-slate-900 dark:text-white">
               Employer Console
@@ -508,14 +508,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setActiveTab('company')}
                     className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm"
                   >
-                    <Building2 size={20} />
+                    <BuildingOffice2Icon className="w-5 h-5" />
                     <span>View Profile</span>
                   </button>
                   <button
                     onClick={() => setShowPostJobModal(true)}
                     className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg shadow-primary/30"
                   >
-                    <Plus size={20} />
+                    <PlusIcon className="w-5 h-5" />
                     <span>Post New Job</span>
                   </button>
                 </div>
@@ -530,7 +530,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Active Vacancies
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-primary dark:bg-primary/20 dark:text-primary-light">
-                      <ListChecks size={20} />
+                      <ClipboardDocumentListIcon className="w-5 h-5" />
                     </div>
                   </div>
                   <div>
@@ -539,7 +539,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <ArrowTrendingUpIcon className="w-4 h-4" />
                         2 New
                       </span>
                       <span className="text-slate-400 font-medium">this week</span>
@@ -553,7 +553,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Total Applicants
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300">
-                      <Users size={20} />
+                      <UsersIcon className="w-5 h-5" />
                     </div>
                   </div>
                   <div>
@@ -562,7 +562,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <ArrowTrendingUpIcon className="w-4 h-4" />
                         +45
                       </span>
                       <span className="text-slate-400 font-medium">since last login</span>
@@ -577,7 +577,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       Shortlisted Candidates
                     </p>
                     <div className="p-2 rounded-lg bg-orange-50 text-orange-500 dark:bg-orange-900/20 dark:text-orange-400">
-                      <Star size={20} />
+                      <StarIcon className="w-5 h-5" />
                     </div>
                   </div>
                   <div className="relative z-10">
@@ -586,7 +586,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp size={16} />
+                        <ArrowTrendingUpIcon className="w-4 h-4" />
                         +5
                       </span>
                       <span className="text-slate-400 font-medium">this week</span>
@@ -600,7 +600,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       New Applications
                     </p>
                     <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300">
-                      <UserPlus size={20} />
+                      <UserPlusIcon className="w-5 h-5" />
                     </div>
                   </div>
                   <div>
@@ -690,7 +690,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         Application Trends
                       </h3>
                       <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
-                        <MoreHorizontal size={20} />
+                        <EllipsisHorizontalIcon className="w-5 h-5" />
                       </button>
                     </div>
 
@@ -757,14 +757,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setActiveTab('company')}
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
                   >
-                    <Eye size={18} />
+                    <EyeIcon className="w-[18px] h-[18px]" />
                     View Profile
                   </button>
                   <button
                     onClick={() => setShowPostJobModal(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
                   >
-                    <Plus size={18} />
+                    <PlusIcon className="w-[18px] h-[18px]" />
                     Post New Job
                   </button>
                 </div>
@@ -776,13 +776,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Active Listings
                     </h3>
-                    <ListChecks size={20} className="text-primary" />
+                    <ClipboardDocumentListIcon className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">12</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <TrendingUp size={14} className="text-emerald-500" />
+                    <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-emerald-500" />
                     <span className="text-emerald-500 font-medium">2 New</span>
                     <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
                       this week
@@ -794,13 +794,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Total Applicants
                     </h3>
-                    <Users size={20} className="text-primary" />
+                    <UsersIcon className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">1,208</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <TrendingUp size={14} className="text-emerald-500" />
+                    <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-emerald-500" />
                     <span className="text-emerald-500 font-medium">+45</span>
                     <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
                       since last login
@@ -813,13 +813,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       In Review
                     </h3>
-                    <Clock size={20} className="text-orange-500" />
+                    <ClockIcon className="w-5 h-5 text-orange-500" />
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">3</span>
                   </div>
                   <div className="flex items-center gap-1 mt-2 text-sm">
-                    <Clock size={14} className="text-orange-500" />
+                    <ClockIcon className="w-3.5 h-3.5 text-orange-500" />
                     <span className="text-orange-500 font-medium">Pending Approval</span>
                   </div>
                 </div>
@@ -828,7 +828,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
                       Interviews
                     </h3>
-                    <Video size={20} className="text-primary" />
+                    <VideoCameraIcon className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-slate-900 dark:text-white">8</span>
@@ -855,7 +855,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full sm:w-96">
-                  <Search size={20} className="text-slate-400" />
+                  <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
                   <input
                     className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white transition-all shadow-sm"
                     placeholder="Search job titles or locations..."
@@ -864,11 +864,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <Filter size={18} />
+                    <FunnelIcon className="w-[18px] h-[18px]" />
                     Filter
                   </button>
                   <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <ArrowUpDown size={18} />
+                    <ArrowsUpDownIcon className="w-[18px] h-[18px]" />
                     Sort
                   </button>
                 </div>
@@ -905,7 +905,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                 <div
                                   className={`w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0`}
                                 >
-                                  <Briefcase size={20} />
+                                  <BriefcaseIcon className="w-5 h-5" />
                                 </div>
                                 <div>
                                   <div className="font-bold text-slate-900 dark:text-white text-sm">
@@ -954,7 +954,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <button className="text-slate-400 hover:text-primary transition-colors">
-                                <MoreVertical size={20} />
+                                <EllipsisVerticalIcon className="w-5 h-5" />
                               </button>
                             </td>
                           </tr>
@@ -1007,11 +1007,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={handleExportApps}
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-700 dark:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-bold text-sm shadow-sm"
                   >
-                    <Download size={20} />
+                    <ArrowDownTrayIcon className="w-5 h-5" />
                     Export List
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-bold text-sm shadow-sm shadow-primary/30">
-                    <Plus size={20} />
+                    <PlusIcon className="w-5 h-5" />
                     Add Candidate
                   </button>
                 </div>
@@ -1022,7 +1022,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
                   <div className="w-full lg:w-64">
                     <div className="relative">
-                      <Briefcase size={20} className="text-slate-500 dark:text-slate-400" />
+                      <BriefcaseIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                       <select
                         className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary cursor-pointer"
                         aria-label="Select job position"
@@ -1078,10 +1078,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           setAppPage(1);
                         }}
                       />
-                      <Search size={20} className="text-slate-500 dark:text-slate-400" />
+                      <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                     </div>
                     <button className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-transparent dark:border-slate-700">
-                      <Filter size={20} />
+                      <FunnelIcon className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -1132,15 +1132,15 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           </div>
                           <div className="space-y-3 mb-6">
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <Briefcase size={18} />
+                              <BriefcaseIcon className="w-[18px] h-[18px]" />
                               <span>{app.job.title}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <GraduationCap size={18} />
+                              <AcademicCapIcon className="w-[18px] h-[18px]" />
                               <span>{app.user.studentProfile?.university || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <MapPin size={18} />
+                              <MapPinIcon className="w-[18px] h-[18px]" />
                               <span>{app.user.studentProfile?.country || 'Remote'}</span>
                             </div>
                           </div>
@@ -1225,7 +1225,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex space-x-3">
                   <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
-                    <Eye size={18} />
+                    <EyeIcon className="w-[18px] h-[18px]" />
                     View Public Profile
                   </button>
                   <button
@@ -1233,7 +1233,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     disabled={isLoading}
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-primary/30 disabled:opacity-50"
                   >
-                    <Save size={18} />
+                    <CheckIcon className="w-[18px] h-[18px]" />
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
@@ -1246,7 +1246,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <h3 className="font-bold text-slate-900 dark:text-white">
                         General Information
                       </h3>
-                      <Building2 size={20} className="text-slate-400" />
+                      <BuildingOffice2Icon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6 space-y-6">
                       <div className="flex items-start gap-6">
@@ -1256,7 +1256,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           </label>
                           <div className="group relative w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary cursor-pointer bg-slate-50 dark:bg-slate-800/50 transition-colors flex flex-col items-center justify-center">
                             <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-2 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                              <CloudUpload size={24} className="text-slate-500 dark:text-slate-400 group-hover:text-primary" />
+                              <CloudArrowUpIcon className="w-6 h-6 text-slate-500 dark:text-slate-400 group-hover:text-primary" />
                             </div>
                             <span className="text-xs text-center text-slate-500 dark:text-slate-400 px-2 group-hover:text-primary">
                               Click to upload
@@ -1345,7 +1345,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">About Company</h3>
-                      <FileText size={20} className="text-slate-400" />
+                      <DocumentTextIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6">
                       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
@@ -1372,7 +1372,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">Headquarters</h3>
-                      <MapPin size={20} className="text-slate-400" />
+                      <MapPinIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
@@ -1444,7 +1444,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">Online Presence</h3>
-                      <Globe size={20} className="text-slate-400" />
+                      <GlobeAltIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
@@ -1456,7 +1456,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         </label>
                         <div className="relative rounded-md shadow-sm">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <Globe size={18} className="text-slate-400" />
+                            <GlobeAltIcon className="w-[18px] h-[18px] text-slate-400" />
                           </div>
                           <input
                             className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1540,7 +1540,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <User size={20} className="text-primary" />
+                    <UserIcon className="w-5 h-5 text-primary" />
                     Profile Information
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -1556,7 +1556,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           {getInitials(company.companyName || 'HR')}
                         </div>
                         <button className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                          <Camera size={18} className="text-slate-600 dark:text-slate-300" />
+                          <CameraIcon className="w-[18px] h-[18px] text-slate-600 dark:text-slate-300" />
                         </button>
                       </div>
                       <button className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
@@ -1620,7 +1620,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Lock size={20} className="text-primary" />
+                    <LockClosedIcon className="w-5 h-5 text-primary" />
                     Security Settings
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -1692,7 +1692,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="mt-6 p-6 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
                 <div className="flex items-start gap-4">
                   <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                    <AlertTriangle size={20} className="text-red-600 dark:text-red-400" />
+                    <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-bold text-red-800 dark:text-red-300">Danger Zone</h4>

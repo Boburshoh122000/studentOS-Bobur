@@ -24,7 +24,8 @@ import {
 } from './CVTemplates';
 import { userApi } from '../../src/services/api';
 import toast from 'react-hot-toast';
-import { Check, Download, Plus, PlusCircle, RefreshCw, Trash2, X } from 'lucide-react';
+import { ArrowDownTrayIcon, CheckIcon, PlusCircleIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY = 'studentos_cv_draft';
 
@@ -175,7 +176,7 @@ const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
           >
             {skill}
             <button type="button" onClick={() => removeSkill(index)} className="hover:text-red-500">
-              <X size={12} />
+              <XMarkIcon className="w-3 h-3" />
             </button>
           </span>
         ))}
@@ -197,7 +198,7 @@ const ExperienceItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <div className="grid grid-cols-2 gap-3">
       <Input
@@ -264,7 +265,7 @@ const EducationItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <div className="grid grid-cols-2 gap-3">
       <Input
@@ -325,7 +326,7 @@ const LanguageItem: React.FC<{
       <option value="beginner">Beginner</option>
     </select>
     <button type="button" onClick={onRemove} className="p-2 text-slate-400 hover:text-red-500">
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
   </div>
 );
@@ -341,7 +342,7 @@ const ProjectItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <Input
       label="Project Title"
@@ -382,7 +383,7 @@ const VolunteeringItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <div className="grid grid-cols-2 gap-3">
       <Input
@@ -433,7 +434,7 @@ const AwardItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <div className="grid grid-cols-2 gap-3">
       <Input
@@ -476,7 +477,7 @@ const PublicationItem: React.FC<{
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
     >
-      <Trash2 size={14} />
+      <TrashIcon className="w-3.5 h-3.5" />
     </button>
     <Input
       label="Title"
@@ -550,7 +551,7 @@ const CustomSectionEditor: React.FC<{
               onClick={() => removeItem(item.id)}
               className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
             >
-              <Trash2 size={14} />
+              <TrashIcon className="w-3.5 h-3.5" />
             </button>
             <Input
               label="Title"
@@ -578,7 +579,7 @@ const CustomSectionEditor: React.FC<{
           onClick={addItem}
           className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
         >
-          <Plus size={14} />
+          <PlusIcon className="w-3.5 h-3.5" />
           Add Item
         </button>
       </div>
@@ -1007,7 +1008,7 @@ export default function CVBuilder() {
                 onClick={addExperience}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Experience
+                <PlusIcon className="w-3.5 h-3.5" />Add Experience
               </button>
             </div>
           </Accordion>
@@ -1036,7 +1037,7 @@ export default function CVBuilder() {
                 onClick={addEducation}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Education
+                <PlusIcon className="w-3.5 h-3.5" />Add Education
               </button>
             </div>
           </Accordion>
@@ -1081,7 +1082,7 @@ export default function CVBuilder() {
                 onClick={addLanguage}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Language
+                <PlusIcon className="w-3.5 h-3.5" />Add Language
               </button>
             </div>
           </Accordion>
@@ -1110,7 +1111,7 @@ export default function CVBuilder() {
                 onClick={addProject}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Project
+                <PlusIcon className="w-3.5 h-3.5" />Add Project
               </button>
             </div>
           </Accordion>
@@ -1139,7 +1140,7 @@ export default function CVBuilder() {
                 onClick={addVolunteering}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Volunteering
+                <PlusIcon className="w-3.5 h-3.5" />Add Volunteering
               </button>
             </div>
           </Accordion>
@@ -1168,7 +1169,7 @@ export default function CVBuilder() {
                 onClick={addAward}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Award
+                <PlusIcon className="w-3.5 h-3.5" />Add Award
               </button>
             </div>
           </Accordion>
@@ -1197,7 +1198,7 @@ export default function CVBuilder() {
                 onClick={addPublication}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <Plus size={14} />Add Publication
+                <PlusIcon className="w-3.5 h-3.5" />Add Publication
               </button>
             </div>
           </Accordion>
@@ -1306,7 +1307,7 @@ export default function CVBuilder() {
               onClick={() => setShowAddMenu(!showAddMenu)}
               className="w-full py-3 border-2 border-dashed border-primary/30 rounded-xl text-primary text-sm font-semibold hover:bg-primary/5 hover:border-primary/50 transition-all flex items-center justify-center gap-2"
             >
-              <PlusCircle size={14} />
+              <PlusCircleIcon className="w-3.5 h-3.5" />
               Add Section
             </button>
 
@@ -1365,12 +1366,12 @@ export default function CVBuilder() {
           >
             {isExporting ? (
               <>
-                <RefreshCw size={18} className="animate-spin" />
+                <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                 Exporting...
               </>
             ) : (
               <>
-                <Download size={18} />
+                <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
                 Download PDF
               </>
             )}
@@ -1401,7 +1402,7 @@ export default function CVBuilder() {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <RefreshCw size={20} className="text-primary" />
+                <ArrowPathIcon className="w-5 h-5 text-primary" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                 Update your Portfolio?
@@ -1425,12 +1426,12 @@ export default function CVBuilder() {
               >
                 {isSyncing ? (
                   <>
-                    <RefreshCw size={16} className="animate-spin" />
+                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
                     Syncing...
                   </>
                 ) : (
                   <>
-                    <Check size={16} />
+                    <CheckIcon className="w-4 h-4" />
                     Yes, Update Profile
                   </>
                 )}

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useTheme } from '../src/contexts/ThemeContext';
-import { Moon, Sun } from 'lucide-react';
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid';
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -13,7 +13,7 @@ export function ThemeToggle() {
       aria-label="Toggle Dark Mode"
       title={`Current: ${theme === 'dark' ? 'Dark' : 'Light'} Mode`}
     >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
     </button>
   );
 }

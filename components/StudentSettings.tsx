@@ -6,27 +6,9 @@ import { userApi, authApi, creditsApi, notificationApi } from '../src/services/a
 import { toast } from 'react-hot-toast';
 import DashboardLayout from './DashboardLayout';
 import { GlobalLoader } from './ui/GlobalLoader';
-import {
-  AlertTriangle,
-  Bell,
-  CheckCircle,
-  Copy,
-  CreditCard,
-  Gift,
-  Loader2,
-  MapPin,
-  Pencil,
-  Send,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  User,
-  Shield,
-  Eye,
-  EyeOff,
-  Check,
-  X,
-} from 'lucide-react';
+import { ArrowTrendingDownIcon, ArrowTrendingUpIcon, BellIcon, CheckCircleIcon, CheckIcon, ClipboardIcon, CreditCardIcon, ExclamationTriangleIcon, EyeIcon, GiftIcon, MapPinIcon, PaperAirplaneIcon, PencilIcon, ShieldCheckIcon, TrashIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { EyeSlashIcon } from '@heroicons/react/24/solid';
 
 type SettingsTab = 'profile' | 'security' | 'notifications' | 'billing' | 'earn' | 'delete';
 
@@ -58,12 +40,12 @@ interface ProfileData {
 
 // ─── Tab Configuration ───────────────────────────────────────────────
 const TABS: { id: SettingsTab; label: string; icon: React.ElementType; danger?: boolean }[] = [
-  { id: 'profile', label: 'My Profile', icon: User },
-  { id: 'security', label: 'Password & Security', icon: Shield },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'billing', label: 'Billing', icon: CreditCard },
-  { id: 'earn', label: 'Earn Credits', icon: Gift },
-  { id: 'delete', label: 'Delete Account', icon: Trash2, danger: true },
+  { id: 'profile', label: 'My Profile', icon: UserIcon },
+  { id: 'security', label: 'Password & Security', icon: ShieldCheckIcon },
+  { id: 'notifications', label: 'Notifications', icon: BellIcon },
+  { id: 'billing', label: 'Billing', icon: CreditCardIcon },
+  { id: 'earn', label: 'Earn Credits', icon: GiftIcon },
+  { id: 'delete', label: 'Delete Account', icon: TrashIcon, danger: true },
 ];
 
 // ─── Reusable Card ───────────────────────────────────────────────────
@@ -103,7 +85,7 @@ function EditButton({ onClick, loading }: { onClick: () => void; loading?: boole
       disabled={loading}
       className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors font-medium disabled:opacity-50"
     >
-      {loading ? <Loader2 size={14} className="animate-spin" /> : <Pencil size={14} />}
+      {loading ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <PencilIcon className="w-3.5 h-3.5" />}
       {loading ? 'Saving...' : 'Edit'}
     </button>
   );
@@ -390,7 +372,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <h4 className="text-base font-semibold text-gray-900 dark:text-white">{profile.fullName || email}</h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">{profile.headline || (user?.role === 'STUDENT' ? 'Student' : user?.role || 'Member')}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
-              <MapPin size={12} /> {profile.country || 'Not set'}
+              <MapPinIcon className="w-3 h-3" /> {profile.country || 'Not set'}
             </p>
           </div>
         </div>
@@ -402,9 +384,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         action={
           editingSection === 'personal' ? (
             <div className="flex gap-2">
-              <button onClick={() => setEditingSection(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"><X size={16} /></button>
+              <button onClick={() => setEditingSection(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"><XMarkIcon className="w-4 h-4" /></button>
               <button onClick={handleSaveProfile} disabled={isSavingProfile} className="flex items-center gap-1.5 text-sm text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50">
-                {isSavingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {isSavingProfile ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <CheckIcon className="w-3.5 h-3.5" />}
                 Save
               </button>
             </div>
@@ -475,7 +457,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             </div>
             <div className="flex items-end">
               <button onClick={handleSaveProfile} disabled={isSavingProfile} className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center gap-2">
-                {isSavingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
+                {isSavingProfile ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <CheckIcon className="w-3.5 h-3.5" />} Save
               </button>
             </div>
           </div>
@@ -499,7 +481,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <input type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password"
               className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
             <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showCurrentPw ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -509,7 +491,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <input type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min 6 characters"
               className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
             <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showNewPw ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -521,7 +503,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         <div className="flex justify-end pt-3">
           <button onClick={handleChangePassword} disabled={isSavingPassword}
             className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm">
-            {isSavingPassword && <Loader2 size={16} className="animate-spin" />}
+            {isSavingPassword && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
             {isSavingPassword ? 'Updating...' : 'Update Password'}
           </button>
         </div>
@@ -539,10 +521,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       ) : undefined}
     >
       {isLoadingNotifications ? (
-        <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-blue-500" /></div>
+        <div className="flex justify-center py-8"><ArrowPathIcon className="w-6 h-6 animate-spin text-blue-500" /></div>
       ) : notifications.length === 0 ? (
         <div className="text-center py-8">
-          <Bell size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+          <BellIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
           <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
         </div>
       ) : (
@@ -577,10 +559,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       {/* Transaction History */}
       <SettingsCard title="Credit Usage History">
         {isLoadingHistory ? (
-          <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-blue-500" /></div>
+          <div className="flex justify-center py-8"><ArrowPathIcon className="w-6 h-6 animate-spin text-blue-500" /></div>
         ) : creditHistory.length === 0 ? (
           <div className="text-center py-8">
-            <CreditCard size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+            <CreditCardIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
             <p className="text-sm text-gray-500 dark:text-gray-400">No transactions yet</p>
           </div>
         ) : (
@@ -589,7 +571,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               <div key={t.id} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 px-1">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                    <TrendingDown size={16} className="text-gray-500 dark:text-gray-400" />
+                    <ArrowTrendingDownIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{t.tool.name}</p>
@@ -613,7 +595,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         {/* Task 1: Invite Friends */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/15 dark:to-indigo-900/15 rounded-xl p-5 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-center gap-2 mb-1.5">
-            <Gift size={18} className="text-blue-600 dark:text-blue-400" />
+            <GiftIcon className="w-[18px] h-[18px] text-blue-600 dark:text-blue-400" />
             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Invite Friends</h4>
             <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">+50 Credits</span>
           </div>
@@ -625,7 +607,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 text-xs font-mono focus:outline-none truncate" />
             <button onClick={handleCopyReferral}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm ${copied ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-              {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
+              {copied ? <CheckCircleIcon className="w-5 h-5" /> : <ClipboardIcon className="w-5 h-5" />}
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -646,7 +628,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             </div>
             <button onClick={handleClaimTelegram} disabled={isClaiming || telegramClaimed}
               className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shadow-sm ${telegramClaimed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 cursor-default' : 'bg-[#229ED9] text-white hover:bg-[#1e8ec5] disabled:opacity-50'}`}>
-              {isClaiming ? (<><Loader2 size={16} className="animate-spin" /> Joining...</>) : telegramClaimed ? (<><CheckCircle size={16} /> Claimed!</>) : (<><Send size={16} /> Join Channel</>)}
+              {isClaiming ? (<><ArrowPathIcon className="w-4 h-4 animate-spin" /> Joining...</>) : telegramClaimed ? (<><CheckCircleIcon className="w-4 h-4" /> Claimed!</>) : (<><PaperAirplaneIcon className="w-4 h-4" /> Join Channel</>)}
             </button>
           </div>
         </div>
@@ -658,7 +640,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     <div className="bg-white dark:bg-[#1e2330] rounded-2xl border-2 border-red-200 dark:border-red-900/40 p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-          <AlertTriangle size={20} className="text-red-600 dark:text-red-400" />
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Delete Account</h3>
@@ -678,7 +660,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all mb-4" />
         <button disabled={deleteConfirm !== 'DELETE' || isDeleting} onClick={handleDeleteAccount}
           className="px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2">
-          {isDeleting && <Loader2 size={16} className="animate-spin" />}
+          {isDeleting && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
           {isDeleting ? 'Deleting...' : 'Delete My Account'}
         </button>
       </div>
@@ -711,13 +693,13 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                       <button
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2.5 w-full rounded-xl px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${isActive && !tab.danger
-                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                            : tab.danger
-                              ? `text-red-500 dark:text-red-400 ${isActive ? 'bg-red-50 dark:bg-red-900/15' : 'hover:bg-red-50 dark:hover:bg-red-900/10'}`
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                          : tab.danger
+                            ? `text-red-500 dark:text-red-400 ${isActive ? 'bg-red-50 dark:bg-red-900/15' : 'hover:bg-red-50 dark:hover:bg-red-900/10'}`
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
                           }`}
                       >
-                        <Icon size={18} className={isActive && !tab.danger ? 'text-blue-600 dark:text-blue-400' : tab.danger ? 'text-red-400' : 'text-gray-400 dark:text-gray-500'} />
+                        <Icon className="w-5 h-5" className={isActive && !tab.danger ? 'text-blue-600 dark:text-blue-400' : tab.danger ? 'text-red-400' : 'text-gray-400 dark:text-gray-500'} />
                         <span className="hidden md:inline">{tab.label}</span>
                         {tab.id === 'notifications' && unreadCount > 0 && (
                           <span className="ml-auto hidden md:inline-flex w-5 h-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">{unreadCount}</span>

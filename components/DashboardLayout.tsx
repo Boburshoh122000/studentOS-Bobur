@@ -3,7 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { GraduationCap, Menu } from 'lucide-react';
+import { AcademicCapIcon, Bars3Icon } from '@heroicons/react/24/solid';
 
 interface DashboardLayoutProps extends NavigationProps {
   currentScreen: Screen;
@@ -70,11 +70,11 @@ export default function DashboardLayout({
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Open navigation menu"
           >
-            <Menu size={20} className="text-white dark:text-white" />
+            <Bars3Icon className="w-5 h-5 text-white dark:text-white" />
           </button>
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-              <GraduationCap size={18} className="text-white" />
+              <AcademicCapIcon className="w-[18px] h-[18px] text-white" />
             </div>
             <span className="text-base font-bold text-text-main dark:text-white tracking-tight">
               StudentOS

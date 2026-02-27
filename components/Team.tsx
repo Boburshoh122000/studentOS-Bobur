@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Twitter, Linkedin, Globe } from 'lucide-react';
+import { GlobeAltIcon } from '@heroicons/react/24/solid';
+import { Linkedin, Twitter } from 'lucide-react';
 import { teamApi } from '../src/services/api';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -165,7 +166,7 @@ export default function Team() {
                 },
                 member.socialWebsite && {
                   href: member.socialWebsite,
-                  icon: Globe,
+                  icon: GlobeAltIcon,
                   label: 'Website',
                 },
               ].filter(Boolean) as { href: string; icon: React.ElementType; label: string }[];
@@ -211,7 +212,7 @@ export default function Team() {
                             title={social.label}
                             className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-gray-800 flex items-center justify-center hover:bg-white hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg"
                           >
-                            <social.icon size={16} strokeWidth={2} />
+                            <social.icon className="w-4 h-4" />
                           </a>
                         ))}
                       </div>

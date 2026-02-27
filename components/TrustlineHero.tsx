@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Brain, Users, Activity, ToggleRight, Check, ArrowRight } from 'lucide-react';
+import { ArrowRightIcon, ArrowsRightLeftIcon, ChartBarIcon, CheckIcon, CpuChipIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/solid';
 
 export default function TrustlineHero() {
   const [mounted, setMounted] = useState(false);
@@ -159,7 +159,7 @@ export default function TrustlineHero() {
               <span className="text-[10px] text-indigo-400 font-semibold uppercase">GPA</span>
             </div>
             <span className="text-[10px] font-semibold text-slate-700">With StudentOS</span>
-            <ToggleRight className="w-7 h-7 text-indigo-500" />
+            <ArrowsRightLeftIcon className="w-7 h-7 text-indigo-500" />
           </div>
         </motion.div>
 
@@ -171,7 +171,7 @@ export default function TrustlineHero() {
           className="absolute top-[10%] right-[2%] lg:right-[5%] w-[210px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center gap-3 pointer-events-auto"
         >
           <div className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-emerald-500" />
+            <CheckIcon className="w-4 h-4 text-emerald-500" />
             <span className="text-xs font-semibold text-slate-700">Secure Study Data</span>
           </div>
           <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center relative">
@@ -180,7 +180,7 @@ export default function TrustlineHero() {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute inset-0 bg-emerald-200 rounded-full blur-md"
             />
-            <ShieldCheck className="w-7 h-7 text-emerald-600 relative z-10" />
+            <ShieldCheckIcon className="w-7 h-7 text-emerald-600 relative z-10" />
           </div>
         </motion.div>
 
@@ -247,7 +247,7 @@ export default function TrustlineHero() {
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.7 }}
           className="absolute bottom-[25%] left-1/2 -translate-x-1/2 bg-indigo-600 px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(99,102,241,0.4)] flex items-center gap-2 pointer-events-auto"
         >
-          <Activity className="w-3.5 h-3.5 text-white" />
+          <ChartBarIcon className="w-3.5 h-3.5 text-white" />
           <span className="text-xs font-bold text-white tracking-wide">StudentOS</span>
         </motion.div>
 
@@ -259,7 +259,7 @@ export default function TrustlineHero() {
           className="absolute bottom-[5%] right-[2%] lg:right-[5%] w-[280px] pointer-events-auto"
         >
           <div className="absolute -top-3 right-6 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100 flex items-center gap-1.5 z-20">
-            <Users className="w-3 h-3 text-amber-500" />
+            <UsersIcon className="w-3 h-3 text-amber-500" />
             <span className="text-[10px] font-bold text-slate-700">Your Mentors</span>
           </div>
           <div className="bg-white rounded-[2rem] shadow-lg border border-slate-100 w-full aspect-square relative overflow-hidden p-5">
@@ -309,7 +309,7 @@ export default function TrustlineHero() {
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-amber-50 rounded-xl shadow-sm border border-amber-100 flex items-center justify-center"
               >
-                <Brain className="w-7 h-7 text-amber-600" />
+                <CpuChipIcon className="w-7 h-7 text-amber-600" />
               </motion.div>
               {/* Satellite Mentors */}
               <div className="absolute top-[8%] left-[8%] flex flex-col items-center gap-1">
@@ -334,7 +334,7 @@ export default function TrustlineHero() {
               </div>
               <div className="absolute bottom-[8%] left-[8%] flex flex-col items-center gap-1">
                 <div className="w-11 h-11 rounded-full bg-purple-50 flex items-center justify-center border-2 border-white shadow-md">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <CpuChipIcon className="w-5 h-5 text-purple-600" />
                 </div>
                 <span className="text-[9px] font-bold text-slate-500">AI Tutor</span>
               </div>
@@ -365,7 +365,7 @@ export default function TrustlineHero() {
           className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100"
         >
           <div className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center">
-            <Users className="w-3 h-3 text-white" />
+            <UsersIcon className="w-3 h-3 text-white" />
           </div>
           <span className="text-sm font-semibold text-indigo-700">StudentOS</span>
         </motion.div>
@@ -404,7 +404,7 @@ export default function TrustlineHero() {
             Get started
           </button>
           <button className="bg-white text-slate-900 border border-slate-200 shadow-sm px-8 py-3.5 rounded-full font-medium hover:bg-slate-50 transition flex items-center gap-2">
-            View live demo <ArrowRight className="w-4 h-4" />
+            View live demo <ArrowRightIcon className="w-4 h-4" />
           </button>
         </motion.div>
       </div>

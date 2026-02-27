@@ -6,7 +6,7 @@ import { useAuth } from '../src/contexts/AuthContext';
 import ApplyJobModal from './ApplyJobModal';
 import { toast } from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { Briefcase, CheckCircle, Filter, Search, X } from 'lucide-react';
+import { BriefcaseIcon, CheckCircleIcon, FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface Job {
   id: string;
@@ -188,7 +188,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     <div className="p-5">
       <div className="flex items-center justify-between mb-5">
         <h3 className="font-bold text-text-main dark:text-white flex items-center gap-2">
-          <Filter size={20} className="text-primary" />
+          <FunnelIcon className="w-5 h-5 text-primary" />
           Filters
         </h3>
         {hasActiveFilters && (
@@ -205,7 +205,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       <div className="mb-6">
         <label className="block text-sm font-medium text-text-sub mb-2">Search</label>
         <div className="relative">
-          <Search size={18} className="text-gray-400" />
+          <MagnifyingGlassIcon className="w-[18px] h-[18px] text-gray-400" />
           <input
             type="text"
             placeholder="Job title or company..."
@@ -324,7 +324,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-text-main dark:text-white flex items-center gap-3">
-                <Briefcase size={28} className="text-primary" />
+                <BriefcaseIcon className="w-7 h-7 text-primary" />
                 Career Tracker
               </h1>
               <p className="text-sm text-text-sub mt-1">
@@ -337,7 +337,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                 className="lg:hidden px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
-                <Filter size={18} />
+                <FunnelIcon className="w-[18px] h-[18px]" />
                 Filters
                 {hasActiveFilters && <span className="size-2 rounded-full bg-primary" />}
               </button>
@@ -375,7 +375,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                     onClick={() => setShowMobileFilters(false)}
                     className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
-                    <X size={20} />
+                    <XMarkIcon className="w-5 h-5" />
                   </button>
                 </div>
                 {filterContent}
@@ -398,7 +398,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               <GlobalLoader fullScreen={false} />
             ) : jobs.length === 0 ? (
               <div className="text-center py-20">
-                <Briefcase size={20} className="text-gray-300 dark:text-gray-700" />
+                <BriefcaseIcon className="w-5 h-5 text-gray-300 dark:text-gray-700" />
                 <p className="mt-4 text-gray-500 dark:text-gray-400">
                   No jobs found matching your criteria
                 </p>
@@ -469,7 +469,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                       {job.hasApplied ? (
                         <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
-                          <CheckCircle size={16} />
+                          <CheckCircleIcon className="w-4 h-4" />
                           Applied
                         </span>
                       ) : (

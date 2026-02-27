@@ -2,7 +2,8 @@ import React from 'react';
 import { Screen, NavigationProps } from '../types';
 import MinimalHeader from './MinimalHeader';
 import Team from './Team';
-import { ArrowDown, ArrowRight, Globe, GraduationCap, Lightbulb, Share2, ShieldCheck, User } from 'lucide-react';
+import { AcademicCapIcon, ArrowRightIcon, GlobeAltIcon, LightBulbIcon, ShareIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/solid';
+import { ArrowDownIcon } from '@heroicons/react/24/solid';
 
 export default function AboutUs({ navigateTo }: NavigationProps) {
   return (
@@ -35,7 +36,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                     className="mt-2 flex items-center gap-2 h-12 px-6 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold transition-colors"
                   >
                     <span>See our story</span>
-                    <ArrowDown size={14} />
+                    <ArrowDownIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
@@ -84,7 +85,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                    <Lightbulb size={24} />
+                    <LightBulbIcon className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
                     Innovation
@@ -96,7 +97,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                    <User size={24} />
+                    <UserIcon className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
                     Accessibility
@@ -108,7 +109,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                    <ShieldCheck size={24} />
+                    <ShieldCheckIcon className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Trust</h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -145,7 +146,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                     className="bg-white text-primary hover:bg-blue-50 transition-colors px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2 group"
                   >
                     <span>Join the community</span>
-                    <ArrowRight size={20} className="transition-transform" />
+                    <ArrowRightIcon className="w-5 h-5 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -157,7 +158,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               <div className="col-span-1 md:col-span-1">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white mb-4">
-                  <GraduationCap size={20} className="text-primary" />
+                  <AcademicCapIcon className="w-5 h-5 text-primary" />
                   <span className="font-bold text-lg">StudentOS</span>
                 </div>
                 <p className="text-slate-500 text-sm">
@@ -226,11 +227,11 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
               <div className="flex gap-4 text-slate-400">
                 <a className="hover:text-primary transition-colors" href="#">
                   <span className="sr-only">Twitter</span>
-                  <Globe size={20} />
+                  <GlobeAltIcon className="w-5 h-5" />
                 </a>
                 <a className="hover:text-primary transition-colors" href="#">
                   <span className="sr-only">LinkedIn</span>
-                  <Share2 size={20} />
+                  <ShareIcon className="w-5 h-5" />
                 </a>
               </div>
             </div>

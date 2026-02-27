@@ -5,7 +5,7 @@ import { adminApi } from '../src/services/api';
 import { downloadCSV } from '../src/utils/csv';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { AlertCircle, BadgeCheck, Bell, Briefcase, Calendar, Circle, Clock, CreditCard, Download, FileText, GraduationCap, LayoutDashboard, Receipt, ShieldCheck, TrendingUp, Users } from 'lucide-react';
+import { AcademicCapIcon, ArrowDownTrayIcon, ArrowTrendingUpIcon, BellIcon, BriefcaseIcon, CalendarIcon, CheckBadgeIcon, ClockIcon, CreditCardIcon, DocumentTextIcon, ExclamationCircleIcon, ReceiptPercentIcon, ShieldCheckIcon, Squares2X2Icon, StopIcon, UsersIcon } from '@heroicons/react/24/solid';
 import UserDemographics from './UserDemographics';
 
 interface AdminStats {
@@ -131,7 +131,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <GraduationCap size={24} />
+                <AcademicCapIcon className="w-6 h-6" />
               </div>
               <div
                 className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
@@ -150,7 +150,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
               >
-                <LayoutDashboard size={20} />
+                <Squares2X2Icon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-semibold whitespace-nowrap">Dashboard</span>
                 )}
@@ -160,7 +160,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
               >
-                <Briefcase size={20} />
+                <BriefcaseIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Employers</span>
                 )}
@@ -170,7 +170,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
               >
-                <CreditCard size={20} />
+                <CreditCardIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
                 )}
@@ -180,7 +180,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Users</span>
                 )}
@@ -190,7 +190,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
               >
-                <GraduationCap size={20} />
+                <AcademicCapIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
                 )}
@@ -200,7 +200,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
               >
-                <FileText size={20} />
+                <DocumentTextIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
                 )}
@@ -210,7 +210,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
               >
-                <ShieldCheck size={20} />
+                <ShieldCheckIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
                 )}
@@ -220,7 +220,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
               >
-                <Bell size={20} />
+                <BellIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
                 )}
@@ -230,7 +230,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
               >
-                <Users size={20} />
+                <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
                 )}
@@ -286,14 +286,14 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 onClick={handleDateFilter}
                 className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
-                <Calendar size={18} />
+                <CalendarIcon className="w-[18px] h-[18px]" />
                 <span>Oct 24 - Nov 24</span>
               </button>
               <button
                 onClick={handleExport}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
               >
-                <Download size={18} />
+                <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
                 <span>Export Report</span>
               </button>
             </div>
@@ -314,7 +314,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
               </>
             ) : error ? (
               <div className="col-span-4 flex flex-col items-center justify-center py-8 text-center">
-                <AlertCircle size={36} className="text-red-400" />
+                <ExclamationCircleIcon className="w-9 h-9 text-red-400" />
                 <p className="text-red-600 dark:text-red-400">{error}</p>
                 <button
                   onClick={fetchStats}
@@ -330,13 +330,13 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Total Users
                     </p>
-                    <Users size={20} className="text-primary/60 dark:text-primary-dark/60" />
+                    <UsersIcon className="w-5 h-5 text-primary/60 dark:text-primary-dark/60" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.totalUsers?.toLocaleString() || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    <TrendingUp size={20} />
+                    <ArrowTrendingUpIcon className="w-5 h-5" />
                     <span>+{stats?.newUsersThisWeek || 0}</span>
                     <span className="font-normal text-slate-500 dark:text-slate-400 ml-1">
                       this week
@@ -348,13 +348,13 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Active Now
                     </p>
-                    <Circle size={20} className="text-emerald-500/80" />
+                    <StopIcon className="w-5 h-5 text-emerald-500/80" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.activeUsers?.toLocaleString() || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    <Clock size={20} />
+                    <ClockIcon className="w-5 h-5" />
                     <span className="font-normal text-slate-500 dark:text-slate-400">
                       in last 24 hours
                     </span>
@@ -365,13 +365,13 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Active Subscriptions
                     </p>
-                    <Receipt size={20} className="text-orange-500/80" />
+                    <ReceiptPercentIcon className="w-5 h-5 text-orange-500/80" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.recentTransactions || 0}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
-                    <BadgeCheck size={20} />
+                    <CheckBadgeIcon className="w-5 h-5" />
                     <span>Active</span>
                   </div>
                 </div>
@@ -380,7 +380,7 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       Total Jobs
                     </p>
-                    <Briefcase size={20} className="text-primary/60 dark:text-primary-dark/60" />
+                    <BriefcaseIcon className="w-5 h-5 text-primary/60 dark:text-primary-dark/60" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                     {stats?.totalJobs?.toLocaleString() || 0}

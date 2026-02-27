@@ -4,7 +4,8 @@ import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { useCredits } from '../src/contexts/CreditContext';
-import { AlertCircle, AlertTriangle, CheckCircle, Clock, CloudUpload, FileText, History, KeyRound, Minus, NotebookPen, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
+import { CheckCircleIcon, ClockIcon, CloudArrowUpIcon, DocumentTextIcon, ExclamationCircleIcon, ExclamationTriangleIcon, KeyIcon, MagnifyingGlassIcon, MinusIcon, PencilSquareIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface CVAnalysisResult {
   score: number;
@@ -211,7 +212,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center h-full text-center p-8">
       <div className="size-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
-        <FileText size={36} className="text-slate-400" />
+        <DocumentTextIcon className="w-9 h-9 text-slate-400" />
       </div>
       <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">No CV Analyzed Yet</h3>
       <p className="text-sm text-slate-500 max-w-md">
@@ -291,7 +292,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
-                <KeyRound size={20} />
+                <KeyIcon className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-slate-800 dark:text-white">Missing Keywords</h3>
             </div>
@@ -315,7 +316,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
-                <AlertTriangle size={20} />
+                <ExclamationTriangleIcon className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-slate-800 dark:text-white">Weaknesses</h3>
             </div>
@@ -326,7 +327,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     key={index}
                     className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
                   >
-                    <Minus size={14} className="text-amber-500 mt-0.5" />
+                    <MinusIcon className="w-3.5 h-3.5 text-amber-500 mt-0.5" />
                     {weakness}
                   </li>
                 ))}
@@ -341,7 +342,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
         <div className="bg-gradient-to-br from-slate-900 via-[#1e1b4b] to-slate-900 rounded-2xl border border-white/10 p-6 shadow-xl text-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-white/10 rounded-lg">
-              <Sparkles size={20} className="text-white" />
+              <SparklesIcon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="font-bold">AI-Powered Suggestions</h3>
@@ -356,7 +357,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10"
                 >
                   <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/30">
-                    <Plus size={12} className="text-green-400" />
+                    <PlusIcon className="w-3 h-3 text-green-400" />
                   </div>
                   <p className="text-sm text-white/90">{fix}</p>
                 </div>
@@ -393,14 +394,14 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     onClick={() => setInputMode('upload')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'upload' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                   >
-                    <CloudUpload size={15} />
+                    <CloudArrowUpIcon className="w-5 h-5" />
                     Upload
                   </button>
                   <button
                     onClick={() => setInputMode('text')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'text' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                   >
-                    <NotebookPen size={15} />
+                    <PencilSquareIcon className="w-5 h-5" />
                     Paste Text
                   </button>
                 </div>
@@ -422,7 +423,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     {isExtracting ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          <RefreshCw size={30} className="text-primary animate-spin" />
+                          <ArrowPathIcon className="w-5 h-5" className="text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           Extracting text from file...
@@ -434,7 +435,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ) : isAnalyzing ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          <RefreshCw size={30} className="text-primary animate-spin" />
+                          <ArrowPathIcon className="w-5 h-5" className="text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           Analyzing CV...
@@ -448,7 +449,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         <div
                           className={`size-16 rounded-full flex items-center justify-center ${analysisResult ? 'bg-green-100 dark:bg-green-900/30' : 'bg-primary/10'}`}
                         >
-                          {analysisResult ? <CheckCircle size={30} className="text-green-600" /> : <FileText size={30} className="text-primary" />}
+                          {analysisResult ? <CheckCircleIcon className="w-5 h-5" className="text-green-600" /> : <DocumentTextIcon className="w-5 h-5" className="text-primary" />}
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           {selectedFile.name}
@@ -463,7 +464,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ) : (
                       <>
                         <div className="size-14 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <CloudUpload size={26} className="text-indigo-400" />
+                          <CloudArrowUpIcon className="w-5 h-5" className="text-indigo-400" />
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -517,12 +518,12 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     >
                       {isAnalyzing ? (
                         <>
-                          <RefreshCw size={18} className="animate-spin" />
+                          <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                           Analyzing...
                         </>
                       ) : (
                         <>
-                          <Search size={18} />
+                          <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
                           Analyze CV
                         </>
                       )}
@@ -534,7 +535,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 {error && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                     <div className="flex items-start gap-3">
-                      <AlertCircle size={20} className="text-red-500" />
+                      <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                       <div>
                         <h4 className="font-medium text-red-700 dark:text-red-400">
                           Analysis Failed
@@ -570,17 +571,17 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     >
                       {isExtracting ? (
                         <>
-                          <RefreshCw size={18} className="animate-spin" />
+                          <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                           Extracting text...
                         </>
                       ) : isAnalyzing ? (
                         <>
-                          <RefreshCw size={18} className="animate-spin" />
+                          <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
                           Analyzing...
                         </>
                       ) : (
                         <>
-                          <Search size={18} />
+                          <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
                           Analyze CV
                         </>
                       )}
@@ -603,17 +604,17 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 {/* Recent Scans Card */}
                 <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
-                    <History size={18} className="text-indigo-500" />
+                    <ClockIcon className="w-[18px] h-[18px] text-indigo-500" />
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Scans</h3>
                   </div>
 
                   {historyLoading ? (
                     <div className="flex items-center justify-center py-6">
-                      <RefreshCw size={16} className="animate-spin text-gray-400" />
+                      <ArrowPathIcon className="w-4 h-4 animate-spin text-gray-400" />
                     </div>
                   ) : scanHistory.length === 0 ? (
                     <div className="text-center py-6">
-                      <FileText size={24} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                      <DocumentTextIcon className="w-6 h-6 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
                       <p className="text-sm text-gray-400">No scans yet</p>
                       <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Upload a CV to get started</p>
                     </div>
@@ -625,13 +626,13 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <FileText size={15} className="text-gray-400 shrink-0" />
+                            <DocumentTextIcon className="w-5 h-5" className="text-gray-400 shrink-0" />
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
                                 {scan.fileName || scan.jobRole || 'CV Analysis'}
                               </p>
                               <p className="text-xs text-gray-400 flex items-center gap-1">
-                                <Clock size={10} />
+                                <ClockIcon className="w-5 h-5" />
                                 {timeAgo(scan.createdAt)}
                               </p>
                             </div>

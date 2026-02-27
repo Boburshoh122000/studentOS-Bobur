@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { ArrowRightIcon } from '@heroicons/react/24/solid';
+import { Instagram, Linkedin, Twitter } from 'lucide-react';
 
 /* ─── Footer Link Data ──────────────────────────────────── */
 const linkColumns = [
@@ -135,7 +136,7 @@ export default function MinimalFooter() {
         >
           <MagneticButton className="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white font-semibold text-base transition-colors shadow-lg shadow-indigo-500/25 inline-flex items-center gap-2">
             Get Started with Free Credits
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRightIcon className="w-4 h-4" />
           </MagneticButton>
         </motion.div>
       </div>

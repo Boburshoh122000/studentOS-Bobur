@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { jobApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Upload, X } from 'lucide-react';
+import { ArrowUpTrayIcon, BriefcaseIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface PostJobModalProps {
   isOpen: boolean;
@@ -102,7 +102,7 @@ export default function PostJobModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Briefcase size={24} className="text-primary" />
+              <BriefcaseIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Post New Job</h2>
@@ -115,7 +115,7 @@ export default function PostJobModal({
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            <X size={20} className="text-slate-500" />
+            <XMarkIcon className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
@@ -275,7 +275,7 @@ export default function PostJobModal({
                 </>
               ) : (
                 <>
-                  <Upload size={18} />
+                  <ArrowUpTrayIcon className="w-[18px] h-[18px]" />
                   Post Job
                 </>
               )}
