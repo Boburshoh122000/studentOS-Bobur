@@ -78,6 +78,8 @@ const PresentationMaker = withNavigate(lazyRetry(() => import('../components/Pre
 const LearningPlan = withNavigate(lazyRetry(() => import('../components/LearningPlan')));
 const PlagiarismChecker = withNavigate(lazyRetry(() => import('../components/PlagiarismChecker')));
 const HabitTracker = withNavigate(lazyRetry(() => import('../components/HabitTracker')));
+const CareerToolsHub = withNavigate(lazyRetry(() => import('../components/CareerToolsHub')));
+const AcademicToolsHub = withNavigate(lazyRetry(() => import('../components/AcademicToolsHub')));
 const CommunityFeed = withNavigate(lazyRetry(() => import('../components/CommunityFeed')));
 const ProfileSettings = withNavigate(lazyRetry(() => import('../components/ProfileSettings')));
 const UserProfile = withNavigate(lazyRetry(() => import('../components/UserProfile')));
@@ -245,6 +247,22 @@ export const router = createBrowserRouter([
         element: (
           <StudentRoute>
             <Dashboard />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/career-tools',
+        element: (
+          <StudentRoute>
+            <CareerToolsHub />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/academic-tools',
+        element: (
+          <StudentRoute>
+            <AcademicToolsHub />
           </StudentRoute>
         ),
       },

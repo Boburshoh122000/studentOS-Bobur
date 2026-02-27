@@ -17,6 +17,8 @@ const screenToPath: Record<Screen, string> = {
   [Screen.CV_BUILDER]: '/app/cv-builder',
   [Screen.ATS_CHECKER]: '/app/ats-checker',
   [Screen.PRESENTATION]: '/app/presentation',
+  [Screen.CAREER_TOOLS]: '/app/career-tools',
+  [Screen.ACADEMIC_TOOLS]: '/app/academic-tools',
   [Screen.LEARNING_PLAN]: '/app/learning-plan',
   [Screen.PLAGIARISM]: '/app/plagiarism',
   [Screen.HABIT_TRACKER]: '/app/habit-tracker',
