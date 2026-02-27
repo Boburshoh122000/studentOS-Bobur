@@ -4,7 +4,7 @@ import { userApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
-import { ArrowRight, BookOpen, Briefcase, CheckCircle, ClipboardCheck, FileSearch, FileText, Presentation, ScanSearch, Search, Send, Target, Trophy, User } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, ClipboardCheck, FileText, Search, Send, Trophy, User } from 'lucide-react';
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
   // Data State
@@ -22,7 +22,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       const dashboardRes = await userApi.getDashboard();
       if (dashboardRes.data) {
         setDashboardData(dashboardRes.data);
-        // Get first name from dashboard data if available
         const name =
           dashboardRes.data.user?.profile?.fullName ||
           dashboardRes.data.user?.email?.split('@')[0] ||
@@ -35,24 +34,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       setIsLoading(false);
     }
   };
-
-  // Time-based greeting
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-
-  // Tool grid data
-  const careerTools = [
-    { label: 'CV Builder', icon: FileText, screen: Screen.CV_BUILDER, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-    { label: 'ATS Checker', icon: FileSearch, screen: Screen.ATS_CHECKER, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
-    { label: 'Scholarships', icon: Trophy, screen: Screen.SCHOLARSHIPS, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-  ];
-
-  const academicTools = [
-    { label: 'Plagiarism Checker', icon: ScanSearch, screen: Screen.PLAGIARISM, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
-    { label: 'Learning Plan', icon: BookOpen, screen: Screen.LEARNING_PLAN, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { label: 'Presentations', icon: Presentation, screen: Screen.PRESENTATION, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-900/20' },
-    { label: 'Habit Tracker', icon: Target, screen: Screen.HABIT_TRACKER, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20' },
-  ];
 
   // Helpers
   const stats = dashboardData?.stats || {
@@ -86,21 +67,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     </header>
   );
 
-  /** Reusable ElevenLabs-style tool card */
-  const ToolCard = ({ tool }: { tool: { label: string; icon: React.ElementType; screen: Screen; color: string; bg: string } }) => (
-    <button
-      onClick={() => navigateTo(tool.screen)}
-      className="flex flex-col items-center gap-3 cursor-pointer group w-[120px] md:w-[140px]"
-    >
-      <div className={`w-full aspect-square ${tool.bg} rounded-3xl flex items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:scale-[1.04] border border-transparent group-hover:border-gray-200 dark:group-hover:border-gray-700`}>
-        <tool.icon size={40} className={`${tool.color} transition-transform duration-300 group-hover:scale-110`} strokeWidth={1.5} />
-      </div>
-      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-center leading-tight">
-        {tool.label}
-      </span>
-    </button>
-  );
-
   if (isLoading) {
     return (
       <DashboardLayout currentScreen={Screen.DASHBOARD} navigateTo={navigateTo}>
@@ -118,30 +84,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
-          {/* ── ElevenLabs-style Tool Launchpad ── */}
-          <div>
-            <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mb-1">My workspace</p>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">{greeting}</h1>
 
-            {/* Career Tools */}
-            <h2 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-4">Career Tools</h2>
-            <div className="flex flex-wrap gap-5 md:gap-7 mb-8">
-              {careerTools.map((tool) => (
-                <ToolCard key={tool.label} tool={tool} />
-              ))}
-            </div>
-
-            {/* Academic Tools */}
-            <h2 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-4">Academic Tools</h2>
-            <div className="flex flex-wrap gap-5 md:gap-7 mb-4">
-              {academicTools.map((tool) => (
-                <ToolCard key={tool.label} tool={tool} />
-              ))}
-            </div>
-          </div>
-
-          {/* ── Divider ── */}
-          <div className="border-t border-gray-100 dark:border-gray-800" />
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left Column: Stats & Activity */}
             <div className="xl:col-span-2 space-y-6">
