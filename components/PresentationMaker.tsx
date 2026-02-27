@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
-import { useCreditTransaction } from '../src/hooks/useCreditTransaction';
+import { useCredits } from '../src/contexts/CreditContext';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { ChevronDown, ChevronRight, Download, Image, Plus, Redo2, RefreshCw, Sparkles, Undo2, X, ZoomIn, ZoomOut } from 'lucide-react';
 
@@ -30,7 +30,7 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   // Credit system integration
-  const { toolInfo, executeTransaction } = useCreditTransaction('presentation-maker');
+  const { refreshBalance } = useCredits();
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
     required: number;
@@ -45,36 +45,32 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
       return;
     }
 
-    // Check credits before proceeding (skip for free tools)
-    if (toolInfo && toolInfo.creditCost > 0) {
-      const result = await executeTransaction();
-      if (!result.success) {
-        if (result.error === 'INSUFFICIENT_CREDITS' && result.data) {
-          setCreditErrorData({
-            required: result.data.required || toolInfo.creditCost,
-            available: result.data.available || 0,
-            shortfall: result.data.shortfall || toolInfo.creditCost,
-            toolName: result.data.toolName || toolInfo.name,
-          });
-          setShowInsufficientModal(true);
-        } else {
-          setError(result.error || 'Failed to process credits');
-        }
-        return;
-      }
-    }
-
     setIsGenerating(true);
     setError(null);
 
     try {
       const response = await aiApi.generatePresentation({ topic, slideCount });
+
+      // Handle 402 Insufficient Credits from backend middleware
+      if (response.error && (response.data as any)?.code === 'INSUFFICIENT_CREDITS') {
+        const errData = (response.data as any)?.data;
+        setCreditErrorData({
+          required: errData?.required || 0,
+          available: errData?.available || 0,
+          shortfall: errData?.shortfall || 0,
+          toolName: errData?.toolName || 'Presentation Maker',
+        });
+        setShowInsufficientModal(true);
+        return;
+      }
+
       if (response.error) {
         setError(response.error);
       } else {
         setPresentation(response.data as PresentationData);
         setActiveSlideIndex(0);
         setShowGenerateModal(false);
+        refreshBalance(); // sync credit balance in sidebar
       }
     } catch (err: unknown) {
       console.error('Failed to generate presentation:', err);

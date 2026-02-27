@@ -59,10 +59,11 @@ export function requireCredits(toolSlug: string) {
             }
 
             // Atomic deduction + usage record
-            await prisma.$transaction([
+            const [updatedUser] = await prisma.$transaction([
                 prisma.user.update({
                     where: { id: userId },
                     data: { creditBalance: { decrement: tool.creditCost } },
+                    select: { creditBalance: true },
                 }),
                 prisma.toolUsage.create({
                     data: { userId, toolId: tool.id, credits: tool.creditCost },
@@ -71,6 +72,7 @@ export function requireCredits(toolSlug: string) {
 
             // Attach deducted info to request for downstream use
             (req as any).creditDeducted = tool.creditCost;
+            (req as any).remainingBalance = updatedUser.creditBalance;
 
             next();
         } catch (error) {

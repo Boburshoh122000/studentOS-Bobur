@@ -3,6 +3,7 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
+import { useCredits } from '../src/contexts/CreditContext';
 import { AlertCircle, AlertTriangle, CheckCircle, Clock, CloudUpload, FileText, History, KeyRound, Minus, NotebookPen, Plus, RefreshCw, Search, Sparkles } from 'lucide-react';
 
 interface CVAnalysisResult {
@@ -17,6 +18,7 @@ interface CVAnalysisResult {
 }
 
 export default function CVChecker({ navigateTo }: NavigationProps) {
+  const { refreshBalance } = useCredits();
   const [inputMode, setInputMode] = useState<'upload' | 'text'>('upload');
   const [cvText, setCvText] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -105,6 +107,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       const data = response.data as CVAnalysisResult;
       setAnalysisResult(data);
       fetchHistory(); // refresh scan history sidebar
+      refreshBalance(); // sync credit balance in sidebar
     } catch (err: unknown) {
       console.error('Failed to analyze CV:', err);
       const errorMessage =

@@ -189,7 +189,7 @@ router.post('/analyze-cv', requireCredits('ats-checker'), async (req: Authentica
       console.error('Failed to save ATS scan history:', dbError);
     }
 
-    res.json(analysis);
+    res.json({ ...analysis, remainingCredits: (req as any).remainingBalance ?? null });
   } catch (error: any) {
     handleAIError(error, res, next);
   }
@@ -216,14 +216,14 @@ router.post('/cover-letter', requireCredits('cover-letter'), async (req: Authent
       experience: profile?.bio || undefined,
     });
 
-    res.json({ coverLetter });
+    res.json({ coverLetter, remainingCredits: (req as any).remainingBalance ?? null });
   } catch (error: any) {
     handleAIError(error, res, next);
   }
 });
 
 // Learning Plan Generation
-router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
+router.post('/learning-plan', requireCredits('learning-plan'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { goal, timeframe = '4 weeks' } = req.body;
 
@@ -239,7 +239,7 @@ router.post('/learning-plan', async (req: AuthenticatedRequest, res, next) => {
 
     const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
 
-    res.json(plan);
+    res.json({ ...plan, remainingCredits: (req as any).remainingBalance ?? null });
   } catch (error: any) {
     handleAIError(error, res, next);
   }
@@ -256,7 +256,7 @@ router.post('/plagiarism-check', requireCredits('plagiarism-checker'), async (re
     }
 
     const result = await checkPlagiarism(text);
-    res.json(result);
+    res.json({ ...result, remainingCredits: (req as any).remainingBalance ?? null });
   } catch (error: any) {
     handleAIError(error, res, next);
   }
@@ -359,6 +359,7 @@ router.post('/upload-cv', upload.single('file'), requireCredits('ats-checker'), 
     res.json({
       extractedText,
       analysis,
+      remainingCredits: (req as any).remainingBalance ?? null,
     });
   } catch (error: any) {
     handleAIError(error, res, next);
@@ -385,7 +386,7 @@ router.post('/generate-presentation', requireCredits('presentation-maker'), asyn
     // Set author name if available
     presentation.author = profile?.fullName || '';
 
-    res.json(presentation);
+    res.json({ ...presentation, remainingCredits: (req as any).remainingBalance ?? null });
   } catch (error: any) {
     handleAIError(error, res, next);
   }
