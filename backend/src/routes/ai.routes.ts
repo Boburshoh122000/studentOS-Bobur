@@ -196,7 +196,7 @@ router.post('/analyze-cv', requireCredits('ats-checker'), async (req: Authentica
 });
 
 // Cover Letter Generation
-router.post('/cover-letter', async (req: AuthenticatedRequest, res, next) => {
+router.post('/cover-letter', requireCredits('cover-letter'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { jobTitle, company, jobDescription } = req.body;
 
@@ -301,7 +301,7 @@ router.post(
 );
 
 // CV Upload with PDF/DOCX Text Extraction + Analysis (legacy endpoint)
-router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedRequest, res, next) => {
+router.post('/upload-cv', upload.single('file'), requireCredits('ats-checker'), async (req: AuthenticatedRequest, res, next) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: 'No file uploaded' });
@@ -366,7 +366,7 @@ router.post('/upload-cv', upload.single('file'), async (req: AuthenticatedReques
 });
 
 // Presentation Content Generation
-router.post('/generate-presentation', async (req: AuthenticatedRequest, res, next) => {
+router.post('/generate-presentation', requireCredits('presentation-maker'), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { topic, slideCount = 5, style = 'professional' } = req.body;
 

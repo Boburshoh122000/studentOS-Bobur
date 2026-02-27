@@ -104,6 +104,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         email,
         passwordHash,
         role: 'STUDENT',
+        creditBalance: 10, // Welcome bonus
         studentProfile: {
           create: {
             fullName,
@@ -538,6 +539,7 @@ router.post('/google-callback', validate(googleCallbackSchema), async (req, res,
           email,
           role: 'STUDENT',
           emailVerified: true, // OAuth emails are already verified
+          creditBalance: 10, // Welcome bonus
           studentProfile: {
             create: {
               fullName: fullName || email.split('@')[0],

@@ -95,7 +95,7 @@ model User {
   lastLoginAt   DateTime?
 
   // Credit System
-  creditBalance    Int       @default(0)
+  creditBalance    Int       @default(10)
   referralCode     String?   @unique
   referredBy       String?   // User ID who referred this user
   telegramCredited Boolean   @default(false)
