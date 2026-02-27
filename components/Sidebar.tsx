@@ -130,29 +130,40 @@ export default function Sidebar({
 
         {/* Navigation */}
         <nav
-          className={`flex flex-col ${expanded ? 'items-stretch' : 'items-center'} space-y-2 w-full`}
+          className={`flex flex-col ${expanded ? 'items-stretch' : 'items-center'} space-y-1 w-full`}
         >
           {navItems.map((item, idx) => {
             const isActive = currentScreen === item.screen;
             return (
-              <button
-                key={idx}
-                onClick={() => handleNavClick(item.screen)}
-                className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${isActive ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
-                title={!expanded ? item.label : ''}
-              >
-                <item.icon size={!expanded ? 24 : 20} className={`flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
-                {expanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">
-                    {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
-                  </span>
+              <React.Fragment key={idx}>
+                {/* Category header */}
+                {item.category && (
+                  expanded ? (
+                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-5 mb-1 px-3 select-none">
+                      {item.category}
+                    </div>
+                  ) : (
+                    <div className="w-6 border-t border-gray-200 dark:border-gray-700 mt-4 mb-2" />
+                  )
                 )}
-                {!expanded && (
-                  <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                    {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
-                  </span>
-                )}
-              </button>
+                <button
+                  onClick={() => handleNavClick(item.screen)}
+                  className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${isActive ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
+                  title={!expanded ? item.label : ''}
+                >
+                  <item.icon size={!expanded ? 24 : 20} className={`flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
+                  {expanded && (
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
+                    </span>
+                  )}
+                  {!expanded && (
+                    <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                      {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
+                    </span>
+                  )}
+                </button>
+              </React.Fragment>
             );
           })}
         </nav>
