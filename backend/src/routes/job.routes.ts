@@ -22,6 +22,14 @@ router.get(
         minSalary,
         maxSalary,
         department,
+        compensationType,
+        paidOnly,
+        remoteOnly,
+        startMonth,
+        durationRange,
+        hoursPerWeek,
+        skills,
+        sort = 'newest',
         page = '1',
         limit = '10',
       } = req.query as any;
@@ -30,18 +38,49 @@ router.get(
         status: 'ACTIVE',
       };
 
+      // Basic filters
       if (locationType) where.locationType = locationType;
       if (jobType) where.jobType = jobType;
       if (department) where.department = department;
       if (minSalary) where.salaryMin = { gte: parseInt(minSalary) };
       if (maxSalary) where.salaryMax = { lte: parseInt(maxSalary) };
+
+      // Internship-specific filters
+      if (compensationType) where.compensationType = compensationType;
+      if (paidOnly === 'true') where.compensationType = { in: ['PAID', 'STIPEND'] };
+      if (remoteOnly === 'true') where.locationType = 'REMOTE';
+      if (hoursPerWeek) where.hoursPerWeek = hoursPerWeek;
+
+      if (startMonth) {
+        const year = new Date().getFullYear();
+        const monthStart = new Date(year, parseInt(startMonth) - 1, 1);
+        const monthEnd = new Date(year, parseInt(startMonth), 0);
+        where.startDate = { gte: monthStart, lte: monthEnd };
+      }
+
+      if (durationRange) {
+        const [minW, maxW] = durationRange.split('-').map(Number);
+        where.durationWeeks = { gte: minW * 4, lte: maxW * 4 };
+      }
+
+      if (skills) {
+        const skillList = skills.split(',').map((s: string) => s.trim());
+        where.skills = { hasSome: skillList };
+      }
+
       if (search) {
         where.OR = [
           { title: { contains: search, mode: 'insensitive' } },
           { company: { contains: search, mode: 'insensitive' } },
           { location: { contains: search, mode: 'insensitive' } },
+          { skills: { hasSome: [search] } },
         ];
       }
+
+      // Sort options
+      let orderBy: any = { postedAt: 'desc' };
+      if (sort === 'stipend') orderBy = { salaryMax: 'desc' };
+      if (sort === 'deadline') orderBy = { applicationDeadline: 'asc' };
 
       const [jobs, total] = await Promise.all([
         prisma.job.findMany({
@@ -51,13 +90,14 @@ router.get(
               select: {
                 companyName: true,
                 logoUrl: true,
+                verificationStatus: true,
               },
             },
             _count: {
               select: { applications: true },
             },
           },
-          orderBy: { postedAt: 'desc' },
+          orderBy,
           skip: (parseInt(page) - 1) * parseInt(limit),
           take: parseInt(limit),
         }),
@@ -386,6 +426,72 @@ router.delete(
 
       await prisma.job.delete({ where: { id: req.params.id as string } });
       res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Employer: Update application status
+router.patch(
+  '/applications/:id/status',
+  authenticate,
+  requireEmployer,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { status } = req.body;
+      const application = await prisma.jobApplication.update({
+        where: { id: req.params.id as string },
+        data: {
+          status,
+          ...(status === 'VIEWED' ? { viewedAt: new Date() } : {}),
+        },
+      });
+      res.json(application);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Employer: Rate applicant
+router.patch(
+  '/applications/:id/rate',
+  authenticate,
+  requireEmployer,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { rating, notes } = req.body;
+      const application = await prisma.jobApplication.update({
+        where: { id: req.params.id as string },
+        data: {
+          ...(rating !== undefined ? { employerRating: rating } : {}),
+          ...(notes !== undefined ? { employerNotes: notes } : {}),
+        },
+      });
+      res.json(application);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Employer: Schedule interview
+router.patch(
+  '/applications/:id/interview',
+  authenticate,
+  requireEmployer,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { interviewDate } = req.body;
+      const application = await prisma.jobApplication.update({
+        where: { id: req.params.id as string },
+        data: {
+          interviewDate: new Date(interviewDate),
+          status: 'INTERVIEW',
+        },
+      });
+      res.json(application);
     } catch (error) {
       next(error);
     }

@@ -36,24 +36,45 @@ enum LocationType {
 }
 
 enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
   NEW
+  VIEWED
   SCREENING
   INTERVIEW
   OFFER
+  HIRED
   REJECTED
   WITHDRAWN
+  EXPIRED
 }
 
 enum JobStatus {
+  DRAFT
   ACTIVE
   PAUSED
   CLOSED
+  FILLED
+  ARCHIVED
 }
 
 enum JobType {
   INTERNSHIP
+  GRADUATE
   PART_TIME
   FULL_TIME
+}
+
+enum CompensationType {
+  PAID
+  UNPAID
+  STIPEND
+}
+
+enum SalaryPeriod {
+  HOURLY
+  MONTHLY
+  YEARLY
 }
 
 enum BlogStatus {
@@ -271,6 +292,28 @@ model Job {
   benefits         String[]     @default([])
   status           JobStatus    @default(ACTIVE)
 
+  // ── Internship-Specific Fields ──
+  applicationDeadline DateTime?
+  startDate           DateTime?
+  endDate             DateTime?
+  durationWeeks       Int?
+  hoursPerWeek        String?                // e.g. "20-30"
+  compensationType    CompensationType?
+  salaryPeriod        SalaryPeriod?
+  currency            String?    @default("USD")
+
+  // ── Structured Data ──
+  skills              String[]   @default([])
+  learningGoals       String[]   @default([])
+  hiringSteps         String[]   @default([])
+  mentorName          String?
+  mentorTitle         String?
+  eligibilityMajors   String[]   @default([])
+  eligibilityYear     String?
+
+  // ── Screening ──
+  screeningQuestions  Json?      // Array of { type, question, options? }
+
   employerId String
   employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
 
@@ -285,6 +328,8 @@ model Job {
   @@index([locationType])
   @@index([jobType])
   @@index([employerId])
+  @@index([applicationDeadline])
+  @@index([compensationType])
 }
 
 model JobApplication {
@@ -299,6 +344,13 @@ model JobApplication {
   cvUrl       String?
   matchScore  Int?
   notes       String?
+
+  // ── Pipeline / Employer Fields ──
+  screeningAnswers Json?         // Answers to screening questions
+  employerNotes    String?
+  employerRating   Int?          // 1-5 scorecard
+  viewedAt         DateTime?
+  interviewDate    DateTime?
 
   appliedAt DateTime @default(now())
   updatedAt DateTime @updatedAt
