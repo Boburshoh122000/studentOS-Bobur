@@ -96,8 +96,7 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        {/* Full-width content */}
-        {headerContent}
+        {/* Full-width content — no headerContent in focus mode */}
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     );

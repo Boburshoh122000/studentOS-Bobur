@@ -819,7 +819,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   return (
     <>
       <DashboardLayout
-        currentScreen={Screen.CV_ATS}
+        currentScreen={Screen.ATS_CHECKER}
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
