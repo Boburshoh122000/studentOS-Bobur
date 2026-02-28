@@ -1,6 +1,19 @@
 import React from 'react';
 import { Screen, NavigationProps } from '../types';
-import { AcademicCapIcon, Bars3Icon, BriefcaseIcon, CheckCircleIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, EnvelopeIcon, MapIcon, MapPinIcon, PaperAirplaneIcon, ScaleIcon, UsersIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  Bars3Icon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ClipboardDocumentCheckIcon,
+  EnvelopeIcon,
+  MapIcon,
+  MapPinIcon,
+  PaperAirplaneIcon,
+  ScaleIcon,
+  UsersIcon,
+} from '@heroicons/react/24/solid';
 
 export default function ContactSupport({ navigateTo }: NavigationProps) {
   return (
@@ -41,7 +54,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <button
-                      onClick={() => navigateTo(Screen.CV_ATS)}
+                      onClick={() => navigateTo(Screen.ATS_CHECKER)}
                       className="w-full text-left flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group/item"
                     >
                       <ClipboardDocumentCheckIcon className="w-5 h-5 text-primary" />

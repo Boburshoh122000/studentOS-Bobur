@@ -6,7 +6,14 @@ import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
 import LanguageSwitcher from './LanguageSwitcher';
-import { AcademicCapIcon, Cog8ToothIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  Cog8ToothIcon,
+  XMarkIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -43,12 +50,10 @@ export default function Sidebar({
   // Map Screen enum to sidebar translation keys
   const sidebarLabelKeys: Partial<Record<Screen, string>> = {
     [Screen.DASHBOARD]: 'Sidebar.dashboard',
-    [Screen.CV_BUILDER]: 'Sidebar.cv_builder',
-    [Screen.ATS_CHECKER]: 'Sidebar.ats_checker',
-    [Screen.LEARNING_PLAN]: 'Sidebar.learning_plan',
-    [Screen.HABIT_TRACKER]: 'Sidebar.habit_tracker',
+    [Screen.CAREER_TOOLS]: 'Sidebar.career_tools',
+    [Screen.ACADEMIC_TOOLS]: 'Sidebar.academic_tools',
     [Screen.SCHOLARSHIPS]: 'Sidebar.scholarships',
-    [Screen.PLAGIARISM]: 'Sidebar.plagiarism',
+    [Screen.HABIT_TRACKER]: 'Sidebar.habit_tracker',
     [Screen.SETTINGS]: 'Sidebar.settings',
   };
 
@@ -142,15 +147,25 @@ export default function Sidebar({
                   className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${isActive ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
                   title={!expanded ? item.label : ''}
                 >
-                  <item.icon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`} />
+                  <item.icon
+                    className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${isActive ? '' : 'group-hover:text-primary'}`}
+                  />
                   {expanded && (
                     <span className="text-sm font-medium whitespace-nowrap">
-                      {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
+                      {(() => {
+                        const key = sidebarLabelKeys[item.screen];
+                        const translated = key ? t(key) : '';
+                        return translated && translated !== key ? translated : item.label;
+                      })()}
                     </span>
                   )}
                   {!expanded && (
                     <span className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {(() => { const key = sidebarLabelKeys[item.screen]; const translated = key ? t(key) : ''; return (translated && translated !== key) ? translated : item.label; })()}
+                      {(() => {
+                        const key = sidebarLabelKeys[item.screen];
+                        const translated = key ? t(key) : '';
+                        return translated && translated !== key ? translated : item.label;
+                      })()}
                     </span>
                   )}
                 </button>
@@ -191,7 +206,9 @@ export default function Sidebar({
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
           title={!expanded ? t('Sidebar.settings') : ''}
         >
-          <Cog8ToothIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${currentScreen === Screen.SETTINGS ? '' : 'group-hover:text-primary'}`} />
+          <Cog8ToothIcon
+            className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${currentScreen === Screen.SETTINGS ? '' : 'group-hover:text-primary'}`}
+          />
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">{t('Sidebar.settings')}</span>
           )}
@@ -210,9 +227,13 @@ export default function Sidebar({
           title={!expanded ? t('Sidebar.log_out') : ''}
         >
           {isLoggingOut ? (
-            <ArrowPathIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} animate-spin flex-shrink-0`} />
+            <ArrowPathIcon
+              className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} animate-spin flex-shrink-0`}
+            />
           ) : (
-            <ArrowRightOnRectangleIcon className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
+            <ArrowRightOnRectangleIcon
+              className={`${!expanded ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`}
+            />
           )}
           {expanded && (
             <span className="text-sm font-medium whitespace-nowrap">
@@ -243,7 +264,11 @@ export default function Sidebar({
           className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
           title={isSidebarLocked ? 'Unlock Sidebar' : 'Lock Sidebar Open'}
         >
-          {isSidebarLocked ? <ChevronLeftIcon className="w-3.5 h-3.5" /> : <ChevronRightIcon className="w-3.5 h-3.5" />}
+          {isSidebarLocked ? (
+            <ChevronLeftIcon className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronRightIcon className="w-3.5 h-3.5" />
+          )}
         </button>
 
         {sidebarContent(isSidebarExpanded)}
