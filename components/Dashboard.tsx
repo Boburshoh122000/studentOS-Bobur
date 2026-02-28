@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { userApi } from '../src/services/api';
+import { useCredits } from '../src/contexts/CreditContext';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
+import LanguageSwitcher from './LanguageSwitcher';
 import DashboardLayout from './DashboardLayout';
 import {
   ArrowRightIcon,
@@ -21,6 +23,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [firstName, setFirstName] = useState('Student');
+  const { balance } = useCredits();
 
   useEffect(() => {
     fetchDashboard();
@@ -62,16 +65,29 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         </h2>
         <p className="text-sm text-text-sub">Here is your daily briefing.</p>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="relative hidden sm:block">
-          <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+      <div className="flex items-center gap-3">
+        {/* Search Input — icon properly inside */}
+        <div className="relative hidden md:block">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
-            className="pl-10 pr-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all shadow-sm dark:text-white"
+            className="pl-10 pr-4 py-2 w-64 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-all shadow-sm dark:text-white"
             placeholder="Search tools, jobs..."
             type="text"
           />
         </div>
+        {/* Credits Badge */}
+        <button
+          onClick={() => navigateTo(Screen.SETTINGS)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+        >
+          <span className="text-sm">💎</span>
+          <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{balance}</span>
+        </button>
+        {/* Language Selector */}
+        <LanguageSwitcher compact />
+        {/* Dark Mode */}
         <ThemeToggle />
+        {/* Notifications */}
         <NotificationDropdown />
       </div>
     </header>
@@ -93,8 +109,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     >
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-8">
-
-
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left Column: Stats & Activity */}
             <div className="xl:col-span-2 space-y-6">
@@ -115,8 +129,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       className="text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1"
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     >
-                      View Board{' '}
-                      <ArrowRightIcon className="w-4 h-4" />
+                      View Board <ArrowRightIcon className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

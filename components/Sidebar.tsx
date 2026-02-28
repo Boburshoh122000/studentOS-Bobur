@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '../types';
 import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
-import { useCredits } from '../src/contexts/CreditContext';
-import LanguageSwitcher from './LanguageSwitcher';
+
 import {
   AcademicCapIcon,
   Cog8ToothIcon,
@@ -40,7 +39,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { balance, isLoading: isLoadingCredits } = useCredits();
+
   const { t } = useTranslation();
   const [isSidebarLocked, setIsSidebarLocked] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -120,17 +119,6 @@ export default function Sidebar({
             <h1 className="text-lg font-bold leading-none tracking-tight whitespace-nowrap">
               StudentOS
             </h1>
-            <p className="text-xs text-text-sub font-medium mt-1 whitespace-nowrap flex items-center gap-1">
-              {isLoadingCredits ? (
-                <span className="animate-pulse">Loading...</span>
-              ) : (
-                <>
-                  <span className="text-sm">💎</span>
-                  <span className="font-semibold text-primary">{balance.toLocaleString()}</span>
-                  <span>{t('Sidebar.credits')}</span>
-                </>
-              )}
-            </p>
           </div>
         </div>
 
@@ -197,10 +185,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* 2. Language Switcher */}
-        <LanguageSwitcher compact={!expanded} />
-
-        {/* 3. Settings */}
+        {/* 2. Settings */}
         <button
           onClick={() => handleNavClick(Screen.SETTINGS)}
           className={`flex items-center ${expanded ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center p-3 size-10'} rounded-lg transition-colors group relative ${currentScreen === Screen.SETTINGS ? 'bg-primary/10 text-primary' : 'text-text-sub hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-text-main dark:hover:text-white'}`}
