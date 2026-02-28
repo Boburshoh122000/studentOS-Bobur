@@ -116,12 +116,25 @@ export const analyzeCV = async (
   jobDescription?: string
 ): Promise<{
   score: number;
+  pass_ats: string;
+  pass_ats_reason: string;
+  score_rationale: string;
+  parsing_risks: { issue: string; severity: string; reason: string }[];
+  requirements: { requirement: string; score: number; evidence: string; fix_suggestion: string }[];
+  gaps: string[];
+  hidden_gaps: string[];
+  fluff_claims: string[];
+  fix_plan: {
+    headlines: string[];
+    summaries: string[];
+    skills_to_add: string[];
+    improved_bullets: { role: string; original: string; rewritten: string }[];
+  };
+  formatting_fixes: string[];
+  // Backward-compatible fields
   missing_keywords: string[];
   weaknesses: string[];
   actionable_fixes: string[];
-  feedback?: string[];
-  suggestions?: string[];
-  keywords?: { found: string[]; missing: string[] };
 }> => {
   try {
     const sanitizedCV = cvText
@@ -129,29 +142,86 @@ export const analyzeCV = async (
       .replace(/\s+/g, ' ')
       .trim();
 
-    const prompt = `You are a professional career advisor and ATS (Applicant Tracking System) expert.
+    const jobContext = jobDescription
+      ? `JOB DESCRIPTION:\n${jobDescription}\n`
+      : 'No job description provided. Perform a general ATS readiness analysis and score based on resume quality, formatting, and overall market-readiness.\n';
 
-TASK: Analyze the following professional resume/CV document for ATS compatibility and provide improvement suggestions.
+    const prompt = `You are an ATS + senior recruiter hybrid. Evaluate the resume against the job description (if provided) using a real ATS pipeline: parse → normalize → entity extraction → section detection → semantic match scoring → recruiter sanity-check.
 
-${jobDescription ? `TARGET JOB: ${jobDescription}` : 'Provide general job market analysis.'}
+NON-NEGOTIABLE RULES:
+- Do NOT do shallow keyword matching. Evaluate semantic match: seniority alignment, scope, evidence, impact, and relevance.
+- Do NOT invent experience, employers, degrees, certifications, projects, or numbers.
+- If the resume claims something without proof, downgrade it.
+- Be strict and practical. If something is missing or weak, say it bluntly.
+- Use ONLY the provided inputs. If info is missing, note it.
+
+NORMALIZATION (do silently):
+- Treat synonyms as the same skill (e.g., "stakeholder management" ≈ "cross-functional collaboration").
+- Normalize titles to common market titles when possible.
+- Detect seniority signals: ownership, scope, leadership, budget, systems complexity, stakeholder depth, metrics.
+- Separate "tools/tech" from "skills/capabilities".
+
+EVIDENCE RULES:
+- Cite evidence from the resume for every scored requirement.
+- If you cannot find support, write: "No supporting evidence found."
+- If evidence is vague ("helped", "worked on", "responsible for"), treat it as weak.
+
+${jobContext}
 
 ---BEGIN RESUME---
 ${sanitizedCV}
 ---END RESUME---
 
-Respond with a JSON object containing:
+Respond with a JSON object matching this EXACT structure:
 {
-  "score": <number 0-100>,
-  "missing_keywords": ["keyword1", "keyword2"],
-  "weaknesses": ["weakness1", "weakness2"],
-  "actionable_fixes": ["fix1", "fix2"]
+  "score": <number 0-100, overall fit score>,
+  "pass_ats": "<Yes | Maybe | No>",
+  "pass_ats_reason": "<one sentence why>",
+  "score_rationale": "<one sentence overall rationale>",
+  "parsing_risks": [
+    { "issue": "<what breaks ATS parsing>", "severity": "<Low|Med|High>", "reason": "<why it matters>" }
+  ],
+  "requirements": [
+    {
+      "requirement": "<requirement from job description or general best practice>",
+      "score": <0-3 where 0=missing, 1=weak, 2=present with evidence, 3=strong with impact>,
+      "evidence": "<exact short quote from resume or 'No supporting evidence found.'>",
+      "fix_suggestion": "<specific actionable fix>"
+    }
+  ],
+  "gaps": ["<top gaps that likely cause rejection, prioritize must-have failures>"],
+  "hidden_gaps": ["<implied by role but not proven: ownership, metrics, stakeholder mgmt, scale, leadership>"],
+  "fluff_claims": ["<unverifiable, buzzword-only, responsibility-without-impact claims>"],
+  "fix_plan": {
+    "headlines": ["<2 ATS-safe headline options for the resume>"],
+    "summaries": ["<2 ATS-safe professional summary options>"],
+    "skills_to_add": ["<8-12 ATS-safe skills to add ONLY IF truthful>"],
+    "improved_bullets": [
+      {
+        "role": "<which role/company>",
+        "original": "<original bullet or 'N/A'>",
+        "rewritten": "<Action verb + what + how + tools + measurable result + scope. Use [METRIC NEEDED] if metric is missing.>"
+      }
+    ]
+  },
+  "formatting_fixes": ["<prioritized ATS formatting fixes>"],
+  "missing_keywords": ["<keywords missing from the resume>"],
+  "weaknesses": ["<top weaknesses>"],
+  "actionable_fixes": ["<top actionable fixes>"]
 }
 
-Return ONLY valid JSON. No markdown formatting.`;
+SCORING GUIDANCE:
+- Base score = average(requirement scores) / 3 * 85
+- Add up to +10 for strong responsibility alignment + clear metrics + seniority match
+- Subtract up to -15 for critical parsing risks or must-have disqualifiers
+- Generate 6-12 requirements. If no job description, evaluate against general best practices.
+- Be strict. Most resumes should score 40-70.
+
+Return ONLY valid JSON. No markdown, no code fences, no explanation outside the JSON.`;
 
     const responseText = await callAI(prompt, {
       temperature: 0.3,
-      maxTokens: 2048,
+      maxTokens: 8192,
       jsonMode: true,
     });
 
@@ -159,23 +229,42 @@ Return ONLY valid JSON. No markdown formatting.`;
       const parsed = JSON.parse(cleanJSON(responseText));
       return {
         score: parsed.score ?? 50,
+        pass_ats: parsed.pass_ats ?? 'Maybe',
+        pass_ats_reason: parsed.pass_ats_reason ?? '',
+        score_rationale: parsed.score_rationale ?? '',
+        parsing_risks: parsed.parsing_risks ?? [],
+        requirements: parsed.requirements ?? [],
+        gaps: parsed.gaps ?? [],
+        hidden_gaps: parsed.hidden_gaps ?? [],
+        fluff_claims: parsed.fluff_claims ?? [],
+        fix_plan: {
+          headlines: parsed.fix_plan?.headlines ?? [],
+          summaries: parsed.fix_plan?.summaries ?? [],
+          skills_to_add: parsed.fix_plan?.skills_to_add ?? [],
+          improved_bullets: parsed.fix_plan?.improved_bullets ?? [],
+        },
+        formatting_fixes: parsed.formatting_fixes ?? [],
         missing_keywords: parsed.missing_keywords ?? [],
         weaknesses: parsed.weaknesses ?? [],
         actionable_fixes: parsed.actionable_fixes ?? [],
-        feedback: parsed.weaknesses ?? [],
-        suggestions: parsed.actionable_fixes ?? [],
-        keywords: { found: [], missing: parsed.missing_keywords ?? [] },
       };
     } catch {
       console.error('Failed to parse CV analysis response:', responseText.slice(0, 200));
       return {
         score: 50,
+        pass_ats: 'Maybe',
+        pass_ats_reason: 'Unable to parse AI response',
+        score_rationale: '',
+        parsing_risks: [],
+        requirements: [],
+        gaps: [],
+        hidden_gaps: [],
+        fluff_claims: [],
+        fix_plan: { headlines: [], summaries: [], skills_to_add: [], improved_bullets: [] },
+        formatting_fixes: [],
         missing_keywords: [],
         weaknesses: ['Unable to parse AI response'],
         actionable_fixes: ['Please try again with a clearer CV format'],
-        feedback: ['Unable to parse AI response'],
-        suggestions: ['Please try again'],
-        keywords: { found: [], missing: [] },
       };
     }
   } catch (error) {

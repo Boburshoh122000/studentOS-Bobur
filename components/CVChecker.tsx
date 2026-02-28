@@ -4,19 +4,62 @@ import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { useCredits } from '../src/contexts/CreditContext';
-import { CheckCircleIcon, ClockIcon, CloudArrowUpIcon, DocumentTextIcon, ExclamationCircleIcon, ExclamationTriangleIcon, KeyIcon, MagnifyingGlassIcon, MinusIcon, PencilSquareIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  CloudArrowUpIcon,
+  DocumentTextIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  KeyIcon,
+  MagnifyingGlassIcon,
+  MinusIcon,
+  PencilSquareIcon,
+  PlusIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
+
+/* ─── Types ─────────────────────────────────────────────────────────────── */
 
 interface CVAnalysisResult {
   score: number;
+  pass_ats: string;
+  pass_ats_reason: string;
+  score_rationale: string;
+  parsing_risks: { issue: string; severity: string; reason: string }[];
+  requirements: {
+    requirement: string;
+    score: number;
+    evidence: string;
+    fix_suggestion: string;
+  }[];
+  gaps: string[];
+  hidden_gaps: string[];
+  fluff_claims: string[];
+  fix_plan: {
+    headlines: string[];
+    summaries: string[];
+    skills_to_add: string[];
+    improved_bullets: { role: string; original: string; rewritten: string }[];
+  };
+  formatting_fixes: string[];
   missing_keywords: string[];
   weaknesses: string[];
   actionable_fixes: string[];
-  // Legacy fields
-  feedback?: string[];
-  suggestions?: string[];
-  keywords?: { found: string[]; missing: string[] };
 }
+
+interface ScanHistoryItem {
+  id: string;
+  score: number;
+  jobRole: string | null;
+  fileName: string | null;
+  createdAt: string;
+}
+
+type ResultTab = 'overview' | 'requirements' | 'gaps' | 'fix_plan' | 'formatting';
+
+/* ─── Component ─────────────────────────────────────────────────────────── */
 
 export default function CVChecker({ navigateTo }: NavigationProps) {
   const { refreshBalance } = useCredits();
@@ -25,19 +68,25 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Scan history state
-  interface ScanHistoryItem {
-    id: string;
-    score: number;
-    jobRole: string | null;
-    fileName: string | null;
-    createdAt: string;
-  }
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [activeTab, setActiveTab] = useState<ResultTab>('overview');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch scan history
+  // Credit-gate modal state
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [creditErrorData, setCreditErrorData] = useState<{
+    required: number;
+    available: number;
+    shortfall: number;
+    toolName: string;
+  } | null>(null);
+
+  /* ── Helpers ───────────────────────────────────────────────────────────── */
+
   const fetchHistory = useCallback(async () => {
     try {
       setHistoryLoading(true);
@@ -50,9 +99,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     }
   }, []);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
-  // Relative time helper
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
@@ -64,33 +114,62 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     if (days < 30) return `${days}d ago`;
     return `${Math.floor(days / 30)}mo ago`;
   };
-  const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Credit-gate modal state (402 from backend triggers this)
-  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
-  const [creditErrorData, setCreditErrorData] = useState<{
-    required: number;
-    available: number;
-    shortfall: number;
-    toolName: string;
-  } | null>(null);
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreRingColor = (score: number) => {
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  const getScoreMessage = (score: number) => {
+    if (score >= 80) return 'Excellent! Your CV is well-optimized.';
+    if (score >= 60) return 'Good progress! A few improvements needed.';
+    return 'Needs work. Follow the suggestions below.';
+  };
+
+  const getVerdictStyles = (verdict: string) => {
+    if (verdict === 'Yes')
+      return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800';
+    if (verdict === 'No')
+      return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
+    return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+  };
+
+  const getReqScoreColor = (s: number) => {
+    if (s === 3) return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400';
+    if (s === 2) return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400';
+    if (s === 1) return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+  };
+
+  const getSeverityColor = (s: string) => {
+    if (s === 'High') return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+    if (s === 'Med') return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
+    return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  };
+
+  /* ── Actions ───────────────────────────────────────────────────────────── */
 
   const handleAnalyzeCV = async () => {
     if (!cvText.trim()) {
       setError('Please enter your CV text');
       return;
     }
-
     setIsAnalyzing(true);
     setError(null);
-
     try {
       const response = await aiApi.analyzeCV(cvText, jobDescription || undefined);
 
-      // Handle 402 Insufficient Credits from backend
+      // Handle 402 Insufficient Credits
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (response.error && (response.data as any)?.code === 'INSUFFICIENT_CREDITS') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const errData = (response.data as any)?.data;
         setCreditErrorData({
           required: errData?.required || 0,
@@ -101,64 +180,49 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
         setShowInsufficientModal(true);
         return;
       }
+      if (response.error) throw new Error(response.error);
 
-      if (response.error) {
-        throw new Error(response.error);
-      }
       const data = response.data as CVAnalysisResult;
       setAnalysisResult(data);
-      fetchHistory(); // refresh scan history sidebar
-      refreshBalance(); // sync credit balance in sidebar
+      setActiveTab('overview');
+      fetchHistory();
+      refreshBalance();
     } catch (err: unknown) {
       console.error('Failed to analyze CV:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to analyze CV. Please try again.';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Failed to analyze CV. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  const [isExtracting, setIsExtracting] = useState(false);
-
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // 5MB size limit
     if (file.size > 5 * 1024 * 1024) {
       setError('File is too large. Maximum size is 5MB.');
       return;
     }
-
     setSelectedFile(file);
     setAnalysisResult(null);
     setError(null);
     setIsExtracting(true);
-
     try {
-      // For plain text files, read directly on the client
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         const text = await file.text();
         setCvText(text.substring(0, 20000));
         setIsExtracting(false);
         return;
       }
-
-      // For PDF/DOCX, call the backend extract-text endpoint
       const response = await aiApi.extractText(file);
-      if (response.error) {
-        throw new Error(response.error);
-      }
-      const data = response.data!;
-      setCvText(data.extractedText);
+      if (response.error) throw new Error(response.error);
+      setCvText(response.data!.extractedText);
     } catch (err: unknown) {
       console.error('Failed to extract text from file:', err);
-      const errorMessage =
+      setError(
         err instanceof Error
           ? err.message
-          : 'Failed to extract text from file. Please try pasting the text directly.';
-      setError(errorMessage);
+          : 'Failed to extract text from file. Please try pasting the text directly.'
+      );
     } finally {
       setIsExtracting(false);
     }
@@ -170,19 +234,20 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     setCvText('');
     setJobDescription('');
     setError(null);
+    setActiveTab('overview');
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  /* ─── Tab definitions ─────────────────────────────────────────────────── */
 
-  const getScoreMessage = (score: number) => {
-    if (score >= 80) return 'Excellent! Your CV is well-optimized.';
-    if (score >= 60) return 'Good progress! A few improvements needed.';
-    return 'Needs work. Follow the suggestions below.';
-  };
+  const tabs: { key: ResultTab; label: string; icon: string }[] = [
+    { key: 'overview', label: 'Overview', icon: 'assessment' },
+    { key: 'requirements', label: 'Requirements', icon: 'checklist' },
+    { key: 'gaps', label: 'Gaps', icon: 'error_outline' },
+    { key: 'fix_plan', label: 'Fix Plan', icon: 'build' },
+    { key: 'formatting', label: 'Formatting', icon: 'format_list_bulleted' },
+  ];
+
+  /* ─── Header ──────────────────────────────────────────────────────────── */
 
   const headerContent = (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] backdrop-blur-sm px-6 flex items-center justify-between shrink-0 z-10">
@@ -191,9 +256,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
           StudentOS
         </h1>
         <div className="h-4 w-px bg-slate-300 dark:bg-slate-700"></div>
-        <span className="text-sm font-medium text-slate-500">
-          ATS Checker
-        </span>
+        <span className="text-sm font-medium text-slate-500">ATS Checker</span>
       </div>
       <div className="flex items-center gap-3">
         {analysisResult && (
@@ -208,7 +271,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     </header>
   );
 
-  // Empty state - show when no analysis
+  /* ─── Empty State ─────────────────────────────────────────────────────── */
+
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center h-full text-center p-8">
       <div className="size-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
@@ -222,173 +286,553 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     </div>
   );
 
-  // Results display
+  /* ─── Results Panel ───────────────────────────────────────────────────── */
+
   const ResultsPanel = () => {
     if (!analysisResult) return <EmptyState />;
-
-    const score = analysisResult.score;
-    const missingKeywords =
-      analysisResult.missing_keywords || analysisResult.keywords?.missing || [];
-    const weaknesses = analysisResult.weaknesses || analysisResult.feedback || [];
-    const fixes = analysisResult.actionable_fixes || analysisResult.suggestions || [];
+    const r = analysisResult;
 
     return (
-      <div className="flex flex-col gap-6 overflow-y-auto hide-scrollbar pb-10">
-        {/* Score Card */}
-        <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="relative size-36 md:size-40 shrink-0">
-              <svg className="size-full -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-slate-100 dark:text-slate-800"
-                  strokeWidth="3"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className={
-                    score >= 80
-                      ? 'text-green-500'
-                      : score >= 60
-                        ? 'text-yellow-500'
-                        : 'text-red-500'
-                  }
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeDasharray={`${score}, 100`}
-                  d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl font-extrabold ${getScoreColor(score)}`}>
-                  {score}
-                  <span className="text-xl text-slate-400">%</span>
-                </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                  ATS Score
-                </span>
+      <div className="flex flex-col gap-4 overflow-y-auto hide-scrollbar pb-10">
+        {/* Tab Bar */}
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === t.key
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── OVERVIEW TAB ───────────────────────────────────────────────── */}
+        {activeTab === 'overview' && (
+          <div className="flex flex-col gap-6">
+            {/* Score + Verdict */}
+            <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative size-36 md:size-40 shrink-0">
+                  <svg className="size-full -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-slate-100 dark:text-slate-800"
+                      strokeWidth="3"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className={getScoreRingColor(r.score)}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeDasharray={`${r.score}, 100`}
+                      d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className={`text-4xl font-extrabold ${getScoreColor(r.score)}`}>
+                      {r.score}
+                      <span className="text-xl text-slate-400">%</span>
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      ATS Score
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-3 text-center md:text-left">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {getScoreMessage(r.score)}
+                  </h2>
+                  {r.score_rationale && (
+                    <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
+                      {r.score_rationale}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start">
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border ${getVerdictStyles(r.pass_ats)}`}
+                    >
+                      Pass ATS: {r.pass_ats}
+                    </span>
+                    {r.pass_ats_reason && (
+                      <span className="text-xs text-slate-500 italic">{r.pass_ats_reason}</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex-1 space-y-4 text-center md:text-left">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                  {getScoreMessage(score)}
-                </h2>
-                <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
-                  Your resume has been analyzed for ATS compatibility.
-                  {missingKeywords.length > 0 &&
-                    ` Adding ${missingKeywords.length} missing keywords could improve your score.`}
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                {
+                  label: 'Requirements Met',
+                  value: `${r.requirements.filter((x) => x.score >= 2).length}/${r.requirements.length}`,
+                  color: 'text-blue-600',
+                  bg: 'bg-blue-50 dark:bg-blue-900/20',
+                },
+                {
+                  label: 'Critical Gaps',
+                  value: r.gaps.length,
+                  color: 'text-red-600',
+                  bg: 'bg-red-50 dark:bg-red-900/20',
+                },
+                {
+                  label: 'Parsing Risks',
+                  value: r.parsing_risks.filter((x) => x.severity === 'High').length,
+                  color: 'text-amber-600',
+                  bg: 'bg-amber-50 dark:bg-amber-900/20',
+                },
+                {
+                  label: 'Missing Keywords',
+                  value: r.missing_keywords.length,
+                  color: 'text-purple-600',
+                  bg: 'bg-purple-50 dark:bg-purple-900/20',
+                },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className={`${stat.bg} rounded-xl p-4 border border-slate-100 dark:border-slate-800`}
+                >
+                  <div className={`text-2xl font-extrabold ${stat.color}`}>{stat.value}</div>
+                  <div className="text-xs text-slate-500 font-medium mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Missing Keywords + Weaknesses */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                    <KeyIcon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 dark:text-white">Missing Keywords</h3>
+                </div>
+                {r.missing_keywords.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {r.missing_keywords.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-medium rounded-full"
+                      >
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">No missing keywords detected!</p>
+                )}
+              </div>
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                    <ExclamationTriangleIcon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 dark:text-white">Weaknesses</h3>
+                </div>
+                {r.weaknesses.length > 0 ? (
+                  <ul className="space-y-2">
+                    {r.weaknesses.slice(0, 5).map((w, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
+                      >
+                        <MinusIcon className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate-500">No major weaknesses found!</p>
+                )}
+              </div>
+            </div>
+
+            {/* Actionable Fixes */}
+            <div className="bg-gradient-to-br from-slate-900 via-[#1e1b4b] to-slate-900 rounded-2xl border border-white/10 p-6 shadow-xl text-white">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <SparklesIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold">AI-Powered Suggestions</h3>
+                  <p className="text-xs text-slate-400">
+                    Personalized improvements for your resume
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {r.actionable_fixes.length > 0 ? (
+                  r.actionable_fixes.map((fix, i) => (
+                    <div
+                      key={i}
+                      className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/30">
+                        <PlusIcon className="w-3 h-3 text-green-400" />
+                      </div>
+                      <p className="text-sm text-white/90">{fix}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">
+                    Your CV looks great! No specific fixes needed.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── REQUIREMENTS TAB ───────────────────────────────────────────── */}
+        {activeTab === 'requirements' && (
+          <div className="flex flex-col gap-4">
+            <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">
+                    checklist
+                  </span>
+                  Semantic Match Scoring
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Each requirement scored 0–3: 0=missing, 1=weak, 2=present with evidence, 3=strong
+                  with impact
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Missing Keywords */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
-                <KeyIcon className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-slate-800 dark:text-white">Missing Keywords</h3>
-            </div>
-            {missingKeywords.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {missingKeywords.map((keyword, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-medium rounded-full"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">No missing keywords detected!</p>
-            )}
-          </div>
-
-          {/* Weaknesses */}
-          <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
-                <ExclamationTriangleIcon className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-slate-800 dark:text-white">Weaknesses</h3>
-            </div>
-            {weaknesses.length > 0 ? (
-              <ul className="space-y-2">
-                {weaknesses.slice(0, 5).map((weakness, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
-                  >
-                    <MinusIcon className="w-3.5 h-3.5 text-amber-500 mt-0.5" />
-                    {weakness}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-500">No major weaknesses found!</p>
-            )}
-          </div>
-        </div>
-
-        {/* Actionable Fixes */}
-        <div className="bg-gradient-to-br from-slate-900 via-[#1e1b4b] to-slate-900 rounded-2xl border border-white/10 p-6 shadow-xl text-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-white/10 rounded-lg">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold">AI-Powered Suggestions</h3>
-              <p className="text-xs text-slate-400">Personalized improvements for your resume</p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {fixes.length > 0 ? (
-              fixes.map((fix, index) => (
-                <div
-                  key={index}
-                  className="flex gap-4 items-start p-4 rounded-xl bg-white/5 border border-white/10"
-                >
-                  <div className="mt-0.5 size-5 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/30">
-                    <PlusIcon className="w-3 h-3 text-green-400" />
-                  </div>
-                  <p className="text-sm text-white/90">{fix}</p>
+              {r.requirements.length > 0 ? (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {r.requirements.map((req, i) => (
+                    <div
+                      key={i}
+                      className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h4 className="font-semibold text-sm text-slate-800 dark:text-white flex-1">
+                          {req.requirement}
+                        </h4>
+                        <span
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${getReqScoreColor(req.score)}`}
+                        >
+                          {req.score}/3
+                        </span>
+                      </div>
+                      {req.evidence && (
+                        <p className="text-xs text-slate-500 italic mb-1.5 pl-1 border-l-2 border-slate-200 dark:border-slate-700">
+                          &quot;{req.evidence}&quot;
+                        </p>
+                      )}
+                      {req.fix_suggestion && (
+                        <p className="text-xs text-primary font-medium mt-1">
+                          💡 {req.fix_suggestion}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-400">
-                Your CV looks great! No specific fixes needed.
-              </p>
+              ) : (
+                <div className="p-8 text-center text-sm text-slate-500">
+                  No requirements to display.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── GAPS TAB ────────────────────────────────────────────────────── */}
+        {activeTab === 'gaps' && (
+          <div className="flex flex-col gap-6">
+            {/* Top Gaps */}
+            <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                  <ExclamationCircleIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 dark:text-white">
+                    Top Gaps (Likely Rejection Causes)
+                  </h3>
+                  <p className="text-xs text-slate-500">Must-have failures prioritized</p>
+                </div>
+              </div>
+              {r.gaps.length > 0 ? (
+                <ul className="space-y-2">
+                  {r.gaps.map((gap, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30"
+                    >
+                      <span className="text-red-500 font-bold shrink-0">{i + 1}.</span>
+                      {gap}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-500">No critical gaps found!</p>
+              )}
+            </div>
+
+            {/* Hidden Gaps */}
+            {r.hidden_gaps.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                    <ExclamationTriangleIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Hidden Gaps</h3>
+                    <p className="text-xs text-slate-500">
+                      Implied by the role but not proven in the resume
+                    </p>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {r.hidden_gaps.map((hg, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
+                    >
+                      <MinusIcon className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                      {hg}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Fluff Claims */}
+            {r.fluff_claims.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
+                    <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Fluff Claims</h3>
+                    <p className="text-xs text-slate-500">
+                      Unverifiable, buzzword-only, or responsibility-without-impact
+                    </p>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {r.fluff_claims.map((fc, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300 p-2 bg-purple-50/50 dark:bg-purple-900/10 rounded-lg"
+                    >
+                      <span className="text-purple-500 shrink-0">⚠</span>
+                      {fc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* ── FIX PLAN TAB ────────────────────────────────────────────────── */}
+        {activeTab === 'fix_plan' && (
+          <div className="flex flex-col gap-6">
+            {/* Headlines */}
+            {r.fix_plan.headlines.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">title</span>
+                  Suggested Headlines
+                </h3>
+                <div className="space-y-3">
+                  {r.fix_plan.headlines.map((h, i) => (
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl bg-primary/5 border border-primary/15 text-sm font-medium text-slate-800 dark:text-white"
+                    >
+                      <span className="text-xs text-primary font-bold mr-2">Option {i + 1}:</span>
+                      {h}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Summaries */}
+            {r.fix_plan.summaries.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">
+                    description
+                  </span>
+                  Suggested Summaries
+                </h3>
+                <div className="space-y-3">
+                  {r.fix_plan.summaries.map((s, i) => (
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
+                    >
+                      <span className="text-xs text-primary font-bold mr-2">Option {i + 1}:</span>
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Skills to Add */}
+            {r.fix_plan.skills_to_add.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">
+                    psychology
+                  </span>
+                  Skills to Add
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">Add only if truthful</p>
+                <div className="flex flex-wrap gap-2">
+                  {r.fix_plan.skills_to_add.map((skill, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 text-xs font-medium rounded-full"
+                    >
+                      + {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Improved Bullets */}
+            {r.fix_plan.improved_bullets.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">edit</span>
+                  Improved Bullet Points
+                </h3>
+                <div className="space-y-4">
+                  {r.fix_plan.improved_bullets.map((b, i) => (
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50"
+                    >
+                      <div className="text-xs font-bold text-primary mb-2">{b.role}</div>
+                      {b.original && b.original !== 'N/A' && (
+                        <div className="text-xs text-slate-400 mb-2 p-2 bg-red-50/50 dark:bg-red-900/10 rounded-lg line-through">
+                          {b.original}
+                        </div>
+                      )}
+                      <div className="text-sm text-slate-800 dark:text-white p-2 bg-green-50/50 dark:bg-green-900/10 rounded-lg border border-green-200/50 dark:border-green-800/50">
+                        {b.rewritten}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── FORMATTING TAB ──────────────────────────────────────────────── */}
+        {activeTab === 'formatting' && (
+          <div className="flex flex-col gap-6">
+            {/* Parsing Risks */}
+            {r.parsing_risks.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-amber-500 text-[20px]">
+                    warning
+                  </span>
+                  ATS Parsing Risks
+                </h3>
+                <div className="space-y-3">
+                  {r.parsing_risks.map((pr, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50"
+                    >
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 mt-0.5 ${getSeverityColor(pr.severity)}`}
+                      >
+                        {pr.severity}
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-white">
+                          {pr.issue}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">{pr.reason}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Formatting Fixes Checklist */}
+            {r.formatting_fixes.length > 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                  <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  Formatting Fixes Checklist
+                </h3>
+                <ul className="space-y-2">
+                  {r.formatting_fixes.map((fix, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <span className="size-5 rounded border border-slate-300 dark:border-slate-600 shrink-0 mt-0.5 flex items-center justify-center text-[10px] text-slate-400">
+                        {i + 1}
+                      </span>
+                      {fix}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {r.parsing_risks.length === 0 && r.formatting_fixes.length === 0 && (
+              <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-12 shadow-sm text-center">
+                <CheckCircleIcon className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                <h3 className="font-bold text-slate-800 dark:text-white mb-1">
+                  Formatting Looks Good!
+                </h3>
+                <p className="text-sm text-slate-500">
+                  No major parsing risks or formatting issues detected.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
 
+  /* ─── Main Render ─────────────────────────────────────────────────────── */
+
   return (
     <>
       <DashboardLayout
-        currentScreen={Screen.ATS_CHECKER}
+        currentScreen={Screen.CV_ATS}
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
         <div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6">
-          <div className={`mx-auto transition-all duration-500 ease-in-out ${analysisResult ? 'max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6' : 'max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-6'}`}>
+          <div
+            className={`mx-auto transition-all duration-500 ease-in-out ${analysisResult ? 'max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6' : 'max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-6'}`}
+          >
             {/* Left Panel - Input */}
-            <div className={`flex flex-col gap-5 ${analysisResult ? 'lg:col-span-4 h-full overflow-y-auto hide-scrollbar pb-10' : 'lg:col-span-2'}`}>
-
-              {/* Card wrapper for input section */}
+            <div
+              className={`flex flex-col gap-5 ${analysisResult ? 'lg:col-span-4 h-full overflow-y-auto hide-scrollbar pb-10' : 'lg:col-span-2'}`}
+            >
               <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-6 md:p-8 shadow-sm">
-
-                {/* Mode Switcher — Pill style */}
+                {/* Mode Switcher */}
                 <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl mb-6 w-full max-w-sm mx-auto">
                   <button
                     onClick={() => setInputMode('upload')}
@@ -423,7 +867,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     {isExtracting ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          <ArrowPathIcon className="w-5 h-5" className="text-primary animate-spin" />
+                          <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           Extracting text from file...
@@ -435,7 +879,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ) : isAnalyzing ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          <ArrowPathIcon className="w-5 h-5" className="text-primary animate-spin" />
+                          <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           Analyzing CV...
@@ -449,7 +893,11 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         <div
                           className={`size-16 rounded-full flex items-center justify-center ${analysisResult ? 'bg-green-100 dark:bg-green-900/30' : 'bg-primary/10'}`}
                         >
-                          {analysisResult ? <CheckCircleIcon className="w-5 h-5" className="text-green-600" /> : <DocumentTextIcon className="w-5 h-5" className="text-primary" />}
+                          {analysisResult ? (
+                            <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <DocumentTextIcon className="w-5 h-5 text-primary" />
+                          )}
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                           {selectedFile.name}
@@ -464,7 +912,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ) : (
                       <>
                         <div className="size-14 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <CloudArrowUpIcon className="w-5 h-5" className="text-indigo-400" />
+                          <CloudArrowUpIcon className="w-5 h-5 text-indigo-400" />
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -533,7 +981,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
                 {/* Error Display */}
                 {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mt-4">
                     <div className="flex items-start gap-3">
                       <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                       <div>
@@ -546,9 +994,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* Job Description Input + Analyze Button for Upload Mode */}
+                {/* Job Description + Analyze for Upload Mode */}
                 {inputMode === 'upload' && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 mt-4">
                     <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
                       <label
                         htmlFor="job-desc-upload"
@@ -601,11 +1049,12 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
             {/* Right Sidebar - Recent Scans (only when no results) */}
             {!analysisResult && (
               <div className="lg:col-span-1 space-y-5">
-                {/* Recent Scans Card */}
                 <div className="bg-white dark:bg-[#1e2330] border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <ClockIcon className="w-[18px] h-[18px] text-indigo-500" />
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Scans</h3>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                      Recent Scans
+                    </h3>
                   </div>
 
                   {historyLoading ? (
@@ -616,7 +1065,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <div className="text-center py-6">
                       <DocumentTextIcon className="w-6 h-6 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
                       <p className="text-sm text-gray-400">No scans yet</p>
-                      <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Upload a CV to get started</p>
+                      <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                        Upload a CV to get started
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-1.5">
@@ -626,22 +1077,23 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <DocumentTextIcon className="w-5 h-5" className="text-gray-400 shrink-0" />
+                            <DocumentTextIcon className="w-5 h-5 text-gray-400 shrink-0" />
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
                                 {scan.fileName || scan.jobRole || 'CV Analysis'}
                               </p>
                               <p className="text-xs text-gray-400 flex items-center gap-1">
-                                <ClockIcon className="w-5 h-5" />
+                                <ClockIcon className="w-3 h-3" />
                                 {timeAgo(scan.createdAt)}
                               </p>
                             </div>
                           </div>
                           <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${scan.score >= 80
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
-                              : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
-                              }`}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${
+                              scan.score >= 80
+                                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
+                                : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
+                            }`}
                           >
                             {scan.score}%
                           </span>
@@ -651,11 +1103,13 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   )}
                 </div>
 
-                {/* Pro Tip Card */}
                 <div className="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-xl p-5">
-                  <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-1">💡 Pro Tip</h4>
+                  <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-1">
+                    💡 Pro Tip
+                  </h4>
                   <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-                    Tailoring your resume to the specific job description keywords can increase your ATS match rate by up to 50%.
+                    Paste the target job description for a semantic match analysis — not just
+                    keyword matching.
                   </p>
                 </div>
               </div>
