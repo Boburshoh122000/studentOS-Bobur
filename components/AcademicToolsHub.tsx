@@ -73,26 +73,38 @@ export default function AcademicToolsHub({ navigateTo }: NavigationProps) {
               </p>
             </div>
 
-            {/* Tool Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            {/* Tool Cards — Premium Bento Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               {tools.map((tool) => (
                 <button
                   key={tool.label}
                   onClick={() => navigateTo(tool.screen)}
-                  className={`group bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 ${tool.hoverBorder} shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl flex flex-col items-center justify-center p-8 gap-4 cursor-pointer`}
+                  className={`group relative p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 ${tool.hoverBorder} rounded-[2rem] cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-400 overflow-hidden flex flex-col justify-between min-h-[220px] text-left`}
                 >
+                  {/* Decorative hover glow orb */}
+                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br from-emerald-100/40 to-teal-50/40 dark:from-emerald-900/20 dark:to-teal-900/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  {/* Icon */}
                   <div
-                    className={`${tool.iconBg} ${tool.iconColor} p-4 rounded-2xl transition-transform duration-300 group-hover:scale-110`}
+                    className={`w-14 h-14 ${tool.iconBg} rounded-2xl flex items-center justify-center ${tool.iconColor} mb-6 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm relative z-10`}
                   >
-                    <tool.icon className="w-9 h-9" />
+                    <tool.icon className="w-7 h-7" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{tool.label}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                    {tool.description}
-                  </p>
-                  <span className="flex items-center gap-1 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open <ArrowRightIcon className="w-3.5 h-3.5" />
-                  </span>
+
+                  {/* Bottom: Text + Arrow */}
+                  <div className="flex items-end justify-between relative z-10">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                        {tool.label}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[85%] leading-relaxed">
+                        {tool.description}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full border border-gray-100 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-gray-800 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:border-emerald-200 dark:group-hover:border-emerald-700 transition-colors shrink-0">
+                      <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transform group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
