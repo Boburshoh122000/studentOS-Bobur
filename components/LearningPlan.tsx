@@ -13,8 +13,8 @@ import {
   ComputerDesktopIcon,
   DocumentTextIcon,
   LockClosedIcon,
+  PlusIcon,
   SparklesIcon,
-  TrashIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
@@ -115,9 +115,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     toolName: string;
   } | null>(null);
 
-  // Fetch active plan on mount
+  // Fetch active plan on mount + cleanup on unmount
   useEffect(() => {
     fetchActivePlan();
+    return () => {
+      setPlan(null);
+    };
   }, []);
 
   const fetchActivePlan = async () => {
@@ -211,14 +214,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     [plan]
   );
 
-  const handleDeletePlan = async () => {
-    if (!plan) return;
-    try {
-      await learningPlanApi.deletePlan(plan.id);
-      setPlan(null);
-    } catch (err) {
-      console.error('Failed to delete plan:', err);
-    }
+  const handleStartNew = () => {
+    setPlan(null);
+    setTopic('');
+    setError(null);
   };
 
   // ── Computed values ──
@@ -262,11 +261,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         <ThemeToggle />
         {plan ? (
           <button
-            onClick={handleDeletePlan}
-            className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            onClick={handleStartNew}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-sm text-sm"
           >
-            <TrashIcon className="w-[18px] h-[18px]" />
-            New Plan
+            <PlusIcon className="w-[18px] h-[18px]" />
+            Create New Plan
           </button>
         ) : (
           /* Recent Plans pills */
