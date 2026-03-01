@@ -783,7 +783,6 @@ model PlanPhase {
   orderIndex  Int
   isCompleted Boolean        @default(false)
   resources   PlanResource[]
-  quiz        PlanQuiz?
 
   @@index([planId])
 }
@@ -799,30 +798,6 @@ model PlanResource {
   isCompleted  Boolean      @default(false)
 
   @@index([phaseId])
-}
-
-model PlanQuiz {
-  id        String         @id @default(cuid())
-  phaseId   String         @unique
-  phase     PlanPhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
-  score     Int?
-  questions QuizQuestion[]
-  createdAt DateTime       @default(now())
-
-  @@index([phaseId])
-}
-
-model QuizQuestion {
-  id           String   @id @default(cuid())
-  quizId       String
-  quiz         PlanQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  question     String
-  options      String[]
-  correctIndex Int
-  explanation  String?
-  userAnswer   Int?
-
-  @@index([quizId])
 }
 
 // =============================================================================

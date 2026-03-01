@@ -335,88 +335,133 @@ export const generateLearningPlan = async (
 - INTERMEDIATE: Skip basics. Focus on practical application, real projects, and industry best practices.
 - ADVANCED: Assume strong foundation. Focus on edge cases, optimization, portfolio-quality projects, and interview prep.`;
 
-    const prompt = `You are an elite Educational Curriculum Architect with 15+ years of experience designing personalized, career-focused learning programs.
-
-The user has a SPECIFIC CAREER GOAL or learning objective. Your task is to create a structured, actionable learning roadmap that feels like a guided experience — NOT a reading list.
+    const prompt = `You are a world-class learning coach who has helped hundreds of people achieve this exact type of goal. You know the shortcuts, the pitfalls, the best resources, and the exact sequence. Your plans are so specific and actionable that the user can start tomorrow without asking a single follow-up question.
 
 USER GOAL: "${goal}"
 DURATION: ${duration}${difficultyContext}${skillsContext}
 
-═══════════════════════════════════════════════
-RULE 1 — COMPREHENSION & SYNTHESIS (CRITICAL):
-═══════════════════════════════════════════════
-DO NOT ever copy-paste the user's raw input text into titles, phase names, or themes.
-You must ANALYZE and SYNTHESIZE the user's intent into clean, professional language.
+══════════════════════════════════════════════════
+STEP 1 — ANALYZE THE GOAL (do this internally):
+══════════════════════════════════════════════════
+Before building anything, answer these silently:
+1. What category? (Language exam / Coding & Tech / Academic / Creative / Certification / Business / Other)
+2. What does MEASURABLE SUCCESS look like? Not "understand React" but "build a working CRUD app without documentation." Not "improve English" but "score Band 7 on all four IELTS components."
+3. What is the optimal learning SEQUENCE? What must come before what? Respect prerequisite order strictly.
+4. What are the top 3 reasons people FAIL at this goal? Build the plan to prevent those failures.
 
-EXAMPLES:
-- User says "I have already IELTS 6.0 and i neednt basic info it so give me 7.0+ plan"
-  → Title: "Advanced IELTS 7.0+ Preparation Roadmap"
-  → Phase theme: "Mastering Task 2 Essay Structures for Band 7+"
-  → WRONG: "Mastering I have already IELTS 6.0 and i neednt basic info..."
+══════════════════════════════════════════════════
+STEP 2 — TIME FEASIBILITY CHECK:
+══════════════════════════════════════════════════
+Assume ~2 hours/day of focused study. Calculate total hours = 2 × 7 × number_of_weeks.
+Compare against these benchmarks:
+- IELTS Band 5→6: 60h | 5→7: 150h | 6→8: 250h
+- Python beginner to job-ready: 300h | React basics: 60h | React job-ready: 150h
+- AWS Solutions Architect: 100h | GMAT 500→700: 120h
+- Spanish A1→B1: 200h | Guitar beginner to 10 songs: 80h
+- UI/UX fundamentals: 80h | Data Science basics: 120h | Digital Marketing: 60h
 
-- User says "prepare for journalism internship at Kun.uz"
-  → Title: "Journalism Internship Preparation — Kun.uz Ready"
-  → Phase theme: "Newswriting Fundamentals: Lead, Structure & AP Style"
+If total hours are LESS than minimum required, include an HONEST feasibility warning in the "overview" field. State the gap and suggest: increase daily hours, extend duration, or reduce scope. Never build a false plan that sets them up for failure.
 
-═══════════════════════════════════════════════
-RULE 2 — MIXED CONTENT TYPES (MANDATORY):
-═══════════════════════════════════════════════
-Each phase MUST contain ALL of these content types:
-- 2-3 TASKS (actionable steps with URLs — e.g., "Read this guide", "Set up your environment")
-- 1-2 EXERCISES (hands-on practice WITHOUT URLs — e.g., "Write a 500-word news article about a local event", "Build a REST API with 3 endpoints")
-- 2+ VIDEOS (YouTube tutorials/lectures)
-- 2+ ARTICLES (guides, documentation, blog posts)
+══════════════════════════════════════════════════
+STEP 3 — WEEKLY STRUCTURE ARC:
+══════════════════════════════════════════════════
+Follow this arc regardless of the goal:
+- First ~15% of weeks → DIAGNOSIS & FOUNDATION: Discover exact baseline, fill critical gaps, set up tools, do a diagnostic assessment.
+- Middle ~70% of weeks → PROGRESSIVE SKILL BUILDING: Each week has one clear theme. Difficulty increases gradually. Early = 60% easy / 40% medium. Middle = 30% easy / 50% medium / 20% hard. Later = 20% easy / 40% medium / 40% hard.
+- Final ~15% of weeks → CONSOLIDATION & SIMULATION: Practice under real conditions. Full mock tests, complete projects, no new material — only integration.
 
-EXERCISES are the KEY differentiator. They must be:
-- Concrete and measurable ("Write X", "Build Y", "Analyze Z")
-- Have a clear deliverable the student can self-assess
-- Include estimated duration
-- Include a brief description of what to do
+══════════════════════════════════════════════════
+STEP 4 — TASK QUALITY RULES (CRITICAL):
+══════════════════════════════════════════════════
+Generic tasks destroy motivation. Every task MUST answer 5 questions:
+1. WHAT exactly to do? Action verb: Write, Build, Watch, Solve, Record, Analyze, Read, Complete, Practice. NEVER "Study", "Review", or "Look into."
+2. HOW LONG exactly? Specific minutes: "45 min" not "about an hour."
+3. WHERE exactly? A real, specific resource with a working URL.
+4. HOW to do it? Step-by-step if needed: "Watch the video, pause after each section, write a 2-sentence summary."
+5. SUCCESS CRITERIA? Measurable: "Complete the quiz and score 80%+" or "Write a 250-word essay in 40 minutes with clear thesis and two body paragraphs."
 
-═══════════════════════════════════════════════
-RULE 3 — DURATION MAPPING (STRICT):
-═══════════════════════════════════════════════
-Map "${duration}" to phases EXACTLY:
-- "1 week" = 1 phase | "2 weeks" = 2 phases | "3 weeks" = 3 phases
-- "4 weeks" = 4 phases | "2 months" = 8 phases | "3 months" = 12 phases
-Each phase = 1 week. Label each phase "Week N".
+BAD: "Study grammar for writing."
+GOOD: "Complete the complex sentences module on ieltsadvantage.com/task-2-grammar (45 min). Then write 5 original sentences using subordinate clauses. Success: all 5 are grammatically correct and you can explain why."
 
-═══════════════════════════════════════════════
-RULE 4 — MANDATORY CLICKABLE URLS (ZERO EXCEPTIONS):
-═══════════════════════════════════════════════
-EVERY task, video, and article MUST have a "url" field. No exceptions.
+══════════════════════════════════════════════════
+STEP 5 — MANDATORY RESOURCE URLs:
+══════════════════════════════════════════════════
+Every task, video, and article MUST have a real URL. Priority: official sources → best free platforms → specific YouTube playlists → paid only if no free alternative.
+
+TRUSTED SOURCES BY DOMAIN:
+- Language exams: ielts.org, britishcouncil.org, ieltsliz.com, ieltsadvantage.com, cambridgeenglish.org
+- Coding: developer.mozilla.org, roadmap.sh, freecodecamp.org, javascript.info, theodinproject.com, cs50.harvard.edu, leetcode.com
+- Data Science: kaggle.com/learn, fast.ai, scikit-learn.org/stable/tutorial
+- Cloud: aws.amazon.com/training, learn.microsoft.com, cloud.google.com/learn
+- Academic: khanacademy.org, ocw.mit.edu, coursera.org, edx.org
+- Music: musictheory.net, justinguitar.com
+- Design: figma.com/resources, lawsofux.com, nngroup.com/articles
+- Business: hubspot.com/resources, semrush.com/academy
+- Languages: duolingo.com, italki.com, clozemaster.com
+
 ANTI-HALLUCINATION: Do NOT invent fake YouTube video IDs or fabricate URLs.
+- If you know the EXACT permanent URL, use it directly.
+- Otherwise, construct a GUARANTEED SEARCH URL:
+  Videos: https://www.youtube.com/results?search_query=best+<specific+subtopic>+tutorial
+  Articles: https://www.google.com/search?q=comprehensive+guide+<specific+subtopic>
+  Tasks: https://www.google.com/search?q=step+by+step+<specific+task>+tutorial
+- Make queries HYPER-SPECIFIC with known channel/source names.
 
-Strategy:
-a) If you know the EXACT permanent URL (freeCodeCamp, CS50, MDN, official docs), use it directly.
-b) Otherwise, construct a GUARANTEED SEARCH URL:
-   - Videos: https://www.youtube.com/results?search_query=best+<specific+subtopic>+tutorial
-   - Articles: https://www.google.com/search?q=comprehensive+guide+<specific+subtopic>
-   - Tasks: https://www.google.com/search?q=step+by+step+<specific+task>+tutorial
-c) Make queries HYPER-SPECIFIC with known channel/source names.
+══════════════════════════════════════════════════
+STEP 6 — COMPREHENSION & SYNTHESIS:
+══════════════════════════════════════════════════
+DO NOT ever copy-paste the user's raw input text into titles, phase names, or themes.
+ANALYZE and SYNTHESIZE into clean, professional language.
+- User: "I have already IELTS 6.0 give me 7.0+ plan" → Title: "Advanced IELTS 7.0+ Preparation Roadmap"
+- User: "prepare for journalism internship at Kun.uz" → Title: "Journalism Internship Preparation — Kun.uz Ready"
 
-═══════════════════════════════════════════════
-RULE 5 — NO GENERIC TEMPLATES:
-═══════════════════════════════════════════════
-NEVER use lazy, generic phase titles like:
-- "[Topic] Core Concepts" / "[Topic] in Action" / "Getting Started with [Topic]"
-Instead, write HIGHLY SPECIFIC, level-appropriate titles.
+══════════════════════════════════════════════════
+STEP 7 — EXERCISE DESCRIPTIONS:
+══════════════════════════════════════════════════
+Each phase MUST have 1-2 EXERCISES (hands-on, NO URL). Each exercise description must include:
+- A concrete, measurable deliverable ("Write X", "Build Y", "Analyze Z")
+- Step-by-step instructions
+- Success criteria the student can self-assess
+- Estimated duration in minutes
 
-═══════════════════════════════════════════════
+══════════════════════════════════════════════════
+STEP 8 — OVERVIEW CONTENT:
+══════════════════════════════════════════════════
+The "overview" field must include:
+1. An encouraging summary of what the learner will achieve
+2. A feasibility note (sufficient time OR honest warning)
+3. Two expert tips specific to THIS goal (not generic advice)
+
+══════════════════════════════════════════════════
+DURATION MAPPING (STRICT):
+══════════════════════════════════════════════════
+"1 week" = 1 phase | "2 weeks" = 2 | "3 weeks" = 3
+"4 weeks" = 4 | "2 months" = 8 | "3 months" = 12
+Each phase = 1 week. Label "Week N".
+
+Each phase MUST contain: 2-3 tasks (with URLs), 1-2 exercises (no URLs), 2+ videos, 2+ articles.
+
+══════════════════════════════════════════════════
+NO GENERIC TEMPLATES:
+══════════════════════════════════════════════════
+NEVER use lazy titles like "[Topic] Core Concepts" / "Getting Started with [Topic]".
+Write HIGHLY SPECIFIC, level-appropriate titles that a real coach would use.
+
+══════════════════════════════════════════════════
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Clean, professional title synthesized from the user's goal",
-  "overview": "Encouraging 1-2 sentence summary of what the learner will achieve and why it matters for their career.",
+  "overview": "Encouraging summary + feasibility note + 2 expert tips. 3-5 sentences.",
   "roadmap": [
     {
       "phase": "Week 1",
-      "theme": "Specific, descriptive theme",
+      "theme": "Specific, descriptive theme for this week",
       "tasks": [
         {
-          "title": "Actionable task with a link",
+          "title": "Actionable task with clear success criteria",
           "type": "task",
-          "duration": "15 min",
+          "duration": "45 min",
           "url": "https://..."
         }
       ],
@@ -424,13 +469,13 @@ Return a JSON object with this EXACT structure:
         {
           "title": "Hands-on exercise title",
           "type": "exercise",
-          "duration": "45 min",
-          "description": "Clear instructions for what the student should create or practice"
+          "duration": "60 min",
+          "description": "Step-by-step instructions with deliverable and success criteria"
         }
       ],
       "resources": {
         "videos": [
-          { "title": "Video title (Channel)", "url": "https://..." }
+          { "title": "Video title (Channel/Source)", "url": "https://..." }
         ],
         "articles": [
           { "title": "Article title (Source)", "url": "https://..." }
@@ -442,7 +487,7 @@ Return a JSON object with this EXACT structure:
 
 Respond ONLY with valid JSON. No markdown, no code fences, no explanation outside the JSON.`;
 
-    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 8192, jsonMode: true });
+    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 12288, jsonMode: true });
 
     try {
       return JSON.parse(cleanJSON(response));
@@ -452,81 +497,6 @@ Respond ONLY with valid JSON. No markdown, no code fences, no explanation outsid
     }
   } catch (error) {
     return handleAIError(error);
-  }
-};
-
-// ══════════════════════════════════════════════════════════════════════════════
-// PHASE QUIZ GENERATION
-// ══════════════════════════════════════════════════════════════════════════════
-
-export const generatePhaseQuiz = async (
-  phaseTopic: string,
-  resourceTitles: string[]
-): Promise<{
-  questions: {
-    question: string;
-    options: string[];
-    correctIndex: number;
-    explanation: string;
-  }[];
-}> => {
-  try {
-    const resourceContext = resourceTitles.length
-      ? `\nThe phase covers these specific resources:\n${resourceTitles.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
-      : '';
-
-    const prompt = `You are an expert quiz creator for an online learning platform.
-
-Generate exactly 5 multiple-choice quiz questions to assess a student's understanding of this learning phase:
-
-PHASE TOPIC: "${phaseTopic}"${resourceContext}
-
-RULES:
-1. Each question must have exactly 4 options (A, B, C, D)
-2. Questions should test UNDERSTANDING, not just memorization
-3. Include a mix of conceptual, applied, and analytical questions
-4. Each question must have exactly ONE correct answer
-5. Provide a brief explanation (1-2 sentences) for why the correct answer is right
-6. Questions should be challenging but fair for someone who studied the material
-7. Options should be plausible — avoid obviously wrong "joke" answers
-
-Return a JSON object:
-{
-  "questions": [
-    {
-      "question": "What is the primary purpose of X?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctIndex": 0,
-      "explanation": "Option A is correct because..."
-    }
-  ]
-}
-
-Respond ONLY with valid JSON.`;
-
-    const response = await callAI(prompt, { temperature: 0.4, maxTokens: 4096, jsonMode: true });
-
-    try {
-      const parsed = JSON.parse(cleanJSON(response));
-      // Validate structure
-      if (!parsed.questions?.length) {
-        return { questions: [] };
-      }
-      return {
-        questions: parsed.questions.slice(0, 5).map((q: any) => ({
-          question: q.question || '',
-          options: (q.options || []).slice(0, 4),
-          correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0,
-          explanation: q.explanation || '',
-        })),
-      };
-    } catch {
-      console.error('Failed to parse quiz response:', response.slice(0, 200));
-      return { questions: [] };
-    }
-  } catch (error) {
-    console.error('Quiz generation error:', error);
-    return { questions: [] };
   }
 };
 
