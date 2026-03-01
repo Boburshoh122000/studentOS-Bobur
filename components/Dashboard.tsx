@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { userApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -18,6 +18,39 @@ import {
   UserIcon,
 } from '@heroicons/react/24/solid';
 
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+  NEW: {
+    label: 'Applied',
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-700 dark:text-blue-300',
+  },
+  SCREENING: {
+    label: 'Screening',
+    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    text: 'text-yellow-700 dark:text-yellow-300',
+  },
+  INTERVIEW: {
+    label: 'Interview',
+    bg: 'bg-purple-100 dark:bg-purple-900/30',
+    text: 'text-purple-700 dark:text-purple-300',
+  },
+  OFFER: {
+    label: 'Offer',
+    bg: 'bg-green-100 dark:bg-green-900/30',
+    text: 'text-green-700 dark:text-green-300',
+  },
+  REJECTED: {
+    label: 'Rejected',
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-300',
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    bg: 'bg-gray-100 dark:bg-gray-800',
+    text: 'text-gray-600 dark:text-gray-400',
+  },
+};
+
 export default function Dashboard({ navigateTo }: NavigationProps) {
   // Data State
   const [isLoading, setIsLoading] = useState(true);
@@ -35,10 +68,8 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       const dashboardRes = await userApi.getDashboard();
       if (dashboardRes.data) {
         setDashboardData(dashboardRes.data);
-        const name =
-          dashboardRes.data.user?.profile?.fullName ||
-          dashboardRes.data.user?.email?.split('@')[0] ||
-          'Student';
+        const data = dashboardRes.data as any;
+        const name = data.user?.profile?.fullName || data.user?.email?.split('@')[0] || 'Student';
         setFirstName(name.split(' ')[0]);
       }
     } catch (error) {
@@ -78,6 +109,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         {/* Credits Badge */}
         <button
           onClick={() => navigateTo(Screen.SETTINGS)}
+          aria-label="Credits balance — go to settings"
           className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
         >
           <span className="text-sm">💎</span>
@@ -95,7 +127,11 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
 
   if (isLoading) {
     return (
-      <DashboardLayout currentScreen={Screen.DASHBOARD} navigateTo={navigateTo}>
+      <DashboardLayout
+        currentScreen={Screen.DASHBOARD}
+        navigateTo={navigateTo}
+        headerContent={headerContent}
+      >
         <div className="flex h-full items-center justify-center">Loading dashboard...</div>
       </DashboardLayout>
     );
@@ -229,48 +265,12 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex flex-col gap-1">
                   {recentApps.length > 0 ? (
-                    recentApps.map((app: any, i: number) => {
-                      // Dynamic status badge
-                      const statusConfig: Record<
-                        string,
-                        { label: string; bg: string; text: string }
-                      > = {
-                        NEW: {
-                          label: 'Applied',
-                          bg: 'bg-blue-100 dark:bg-blue-900/30',
-                          text: 'text-blue-700 dark:text-blue-300',
-                        },
-                        SCREENING: {
-                          label: 'Screening',
-                          bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-                          text: 'text-yellow-700 dark:text-yellow-300',
-                        },
-                        INTERVIEW: {
-                          label: 'Interview',
-                          bg: 'bg-purple-100 dark:bg-purple-900/30',
-                          text: 'text-purple-700 dark:text-purple-300',
-                        },
-                        OFFER: {
-                          label: 'Offer',
-                          bg: 'bg-green-100 dark:bg-green-900/30',
-                          text: 'text-green-700 dark:text-green-300',
-                        },
-                        REJECTED: {
-                          label: 'Rejected',
-                          bg: 'bg-red-100 dark:bg-red-900/30',
-                          text: 'text-red-700 dark:text-red-300',
-                        },
-                        WITHDRAWN: {
-                          label: 'Withdrawn',
-                          bg: 'bg-gray-100 dark:bg-gray-800',
-                          text: 'text-gray-600 dark:text-gray-400',
-                        },
-                      };
-                      const badge = statusConfig[app.status] || statusConfig.NEW;
+                    recentApps.map((app: any) => {
+                      const badge = STATUS_CONFIG[app.status] || STATUS_CONFIG.NEW;
 
                       return (
                         <div
-                          key={i}
+                          key={app.id}
                           className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group"
                         >
                           <div className="flex items-center gap-4">
@@ -319,6 +319,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </div>
                   <button
                     onClick={() => navigateTo(Screen.PROFILE)}
+                    aria-label="Go to profile"
                     className="text-primary bg-primary/10 p-2 rounded-lg hover:bg-primary/20 transition-colors"
                   >
                     <UserIcon className="w-5 h-5" />

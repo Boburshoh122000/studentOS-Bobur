@@ -7,7 +7,14 @@ import DashboardLayout from './DashboardLayout';
 import ApplyJobModal from './ApplyJobModal';
 import { toast } from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { BriefcaseIcon, CheckCircleIcon, FunnelIcon, ListBulletIcon, MagnifyingGlassIcon, Squares2X2Icon } from '@heroicons/react/24/solid';
+import {
+  BriefcaseIcon,
+  CheckCircleIcon,
+  FunnelIcon,
+  ListBulletIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/solid';
 
 interface Job {
   id: string;
@@ -128,6 +135,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
   };
 
   const clearFilters = () => {
+    setDebouncedSearch('');
     setFilters({
       search: '',
       locationTypes: [],
@@ -220,7 +228,7 @@ export default function JobFinder({ navigateTo }: NavigationProps) {
             <div className="mb-6">
               <label className="block text-sm font-medium text-text-sub mb-2">Search</label>
               <div className="relative">
-                <MagnifyingGlassIcon className="w-[18px] h-[18px] text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Job title or company..."

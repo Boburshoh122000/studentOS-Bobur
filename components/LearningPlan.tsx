@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
@@ -28,6 +28,22 @@ interface Resource {
   isCompleted: boolean;
 }
 
+interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string | null;
+  userAnswer: number | null;
+}
+
+interface Quiz {
+  id: string;
+  phaseId: string;
+  score: number | null;
+  questions: QuizQuestion[];
+}
+
 interface Phase {
   id: string;
   title: string;
@@ -35,6 +51,7 @@ interface Phase {
   orderIndex: number;
   isCompleted: boolean;
   resources: Resource[];
+  quiz: Quiz | null;
 }
 
 interface Plan {
@@ -43,6 +60,16 @@ interface Plan {
   durationWeeks: number;
   createdAt: string;
   phases: Phase[];
+}
+
+interface QuizResult {
+  questionId: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  userAnswer: number;
+  isCorrect: boolean;
+  explanation: string | null;
 }
 
 /* ─── Pegtop Loader ───────────────────────────────────────────────────────── */
@@ -117,12 +144,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     toolName: string;
   } | null>(null);
 
-  // Fetch active plan on mount
-  useEffect(() => {
-    fetchActivePlan();
-  }, []);
-
-  const fetchActivePlan = async () => {
+  const fetchActivePlan = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await learningPlanApi.getActive();
@@ -135,7 +157,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Fetch active plan on mount
+  useEffect(() => {
+    fetchActivePlan();
+  }, [fetchActivePlan]);
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -215,7 +242,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         fetchActivePlan();
       }
     },
-    [plan]
+    [plan, fetchActivePlan]
   );
 
   // Hard reset: delete from backend + clear all local state
@@ -231,6 +258,84 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setTopic('');
     setDifficulty('intermediate');
     setError(null);
+  };
+
+  // ── Quiz state ──
+  const [quizPhaseId, setQuizPhaseId] = useState<string | null>(null);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>([]);
+  const [quizStep, setQuizStep] = useState(0); // 0-4 = question index, 5 = results
+  const [quizResults, setQuizResults] = useState<QuizResult[] | null>(null);
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+
+  const handleStartQuiz = useCallback(async (phaseId: string) => {
+    setQuizPhaseId(phaseId);
+    setQuizLoading(true);
+    setQuizStep(0);
+    setQuizAnswers([]);
+    setQuizResults(null);
+    setQuizScore(null);
+    try {
+      const res = await learningPlanApi.generateQuiz(phaseId);
+      const data = res.data as { quiz: Quiz };
+      if (data?.quiz) {
+        setActiveQuiz(data.quiz);
+        setQuizAnswers(new Array(data.quiz.questions.length).fill(null));
+        // If already submitted, show results
+        if (data.quiz.score !== null) {
+          setQuizStep(data.quiz.questions.length);
+          setQuizScore(data.quiz.score);
+          setQuizResults(
+            data.quiz.questions.map((q) => ({
+              questionId: q.id,
+              question: q.question,
+              options: q.options,
+              correctIndex: q.correctIndex,
+              userAnswer: q.userAnswer ?? -1,
+              isCorrect: q.userAnswer === q.correctIndex,
+              explanation: q.explanation,
+            }))
+          );
+        }
+      }
+    } catch {
+      setError('Failed to generate quiz');
+    } finally {
+      setQuizLoading(false);
+    }
+  }, []);
+
+  const handleSubmitQuiz = useCallback(async () => {
+    if (!activeQuiz) return;
+    const answers = quizAnswers.map((a) => a ?? -1);
+    try {
+      const res = await learningPlanApi.submitQuiz(activeQuiz.id, answers);
+      const data = res.data as { score: number; results: QuizResult[] };
+      if (data) {
+        setQuizScore(data.score);
+        setQuizResults(data.results);
+        setQuizStep(activeQuiz.questions.length); // Go to results view
+        // Update plan state locally
+        if (plan) {
+          setPlan({
+            ...plan,
+            phases: plan.phases.map((p) =>
+              p.id === quizPhaseId ? { ...p, quiz: { ...activeQuiz, score: data.score } } : p
+            ),
+          });
+        }
+      }
+    } catch {
+      setError('Failed to submit quiz');
+    }
+  }, [activeQuiz, quizAnswers, plan, quizPhaseId]);
+
+  const closeQuiz = () => {
+    setQuizPhaseId(null);
+    setActiveQuiz(null);
+    setQuizResults(null);
+    setQuizScore(null);
   };
 
   // ── Computed values ──
@@ -546,6 +651,9 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
   /* ─── Plan View ──────────────────────────────────────────────────────────── */
 
+  // Narrowing guard — TypeScript can't infer plan is non-null from earlier early-returns
+  if (!plan) return null;
+
   return (
     <>
       <DashboardLayout
@@ -567,7 +675,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 {/* Vertical line */}
                 <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 -z-10" />
 
-                {plan!.phases.map((phase, index) => {
+                {plan.phases.map((phase, index) => {
                   const isCurrent = index === currentPhaseIndex;
                   const isCompleted = phase.isCompleted;
                   const isLocked = index > currentPhaseIndex && currentPhaseIndex !== -1;
@@ -596,18 +704,42 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
                       {/* Phase card */}
                       {isCompleted ? (
-                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-60">
-                          <div className="flex justify-between items-start mb-4">
+                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-80">
+                          <div className="flex justify-between items-start mb-3">
                             <div>
                               <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500 line-through">
                                 {phase.title}
                               </h3>
                               <p className="text-sm text-gray-400">Completed</p>
                             </div>
-                            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
-                              Done
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {phase.quiz?.score !== null && phase.quiz?.score !== undefined && (
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                                    phase.quiz.score >= 80
+                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                                      : phase.quiz.score >= 50
+                                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                        : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                                  }`}
+                                >
+                                  Quiz: {phase.quiz.score}%
+                                </span>
+                              )}
+                              <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
+                                Done
+                              </span>
+                            </div>
                           </div>
+                          <button
+                            onClick={() => handleStartQuiz(phase.id)}
+                            className="w-full mt-1 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                          >
+                            <SparklesIcon className="w-4 h-4" />
+                            {phase.quiz?.score !== null && phase.quiz?.score !== undefined
+                              ? 'View Quiz Results'
+                              : 'Take Quiz'}
+                          </button>
                         </div>
                       ) : isLocked ? (
                         <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 border-dashed">
@@ -830,7 +962,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     <div className="p-3 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/10">
                       <p className="text-xs text-primary font-semibold mb-0.5">Goal</p>
                       <p className="text-sm font-medium text-text-main dark:text-white leading-snug">
-                        {plan!.topic}
+                        {plan.topic}
                       </p>
                     </div>
                     {/* Estimated completion */}
@@ -838,14 +970,14 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                       <span className="text-xs text-text-sub">Est. completion</span>
                       <span className="text-xs font-semibold text-text-main dark:text-white">
                         {new Date(
-                          new Date(plan!.createdAt).getTime() +
-                            plan!.durationWeeks * 7 * 24 * 60 * 60 * 1000
+                          new Date(plan.createdAt).getTime() +
+                            plan.durationWeeks * 7 * 24 * 60 * 60 * 1000
                         ).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     {/* Exercises */}
                     {(() => {
-                      const exerciseCount = plan!.phases
+                      const exerciseCount = plan.phases
                         .flatMap((p) => p.resources)
                         .filter((r) => r.type === 'EXERCISE').length;
                       return exerciseCount > 0 ? (
@@ -861,7 +993,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-text-sub">Duration</span>
                       <span className="text-xs font-semibold text-text-main dark:text-white">
-                        {plan!.durationWeeks} weeks · {plan!.phases.length} phases
+                        {plan.durationWeeks} weeks · {plan.phases.length} phases
                       </span>
                     </div>
                     {/* Progress bar */}
@@ -884,6 +1016,177 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           </div>
         </div>
       </DashboardLayout>
+
+      {/* Quiz Modal */}
+      {quizPhaseId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={closeQuiz}
+        >
+          <div
+            className="bg-white dark:bg-[#1a1d2e] rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {quizLoading ? (
+              <div className="flex flex-col items-center justify-center p-12">
+                <PegtopLoader />
+                <p className="text-sm text-text-sub mt-4">Generating quiz questions...</p>
+              </div>
+            ) : activeQuiz && quizStep < activeQuiz.questions.length && !quizResults ? (
+              /* Question View */
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-text-main dark:text-white">Phase Quiz</h3>
+                  <span className="text-xs text-text-sub font-medium bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                    {quizStep + 1} / {activeQuiz.questions.length}
+                  </span>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mb-6 overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    style={{ width: `${((quizStep + 1) / activeQuiz.questions.length) * 100}%` }}
+                  />
+                </div>
+                <p className="text-base font-semibold text-text-main dark:text-white mb-5 leading-relaxed">
+                  {activeQuiz.questions[quizStep].question}
+                </p>
+                <div className="space-y-3">
+                  {activeQuiz.questions[quizStep].options.map((opt, oi) => (
+                    <button
+                      key={oi}
+                      onClick={() => {
+                        const next = [...quizAnswers];
+                        next[quizStep] = oi;
+                        setQuizAnswers(next);
+                      }}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all text-sm font-medium ${
+                        quizAnswers[quizStep] === oi
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-gray-100 dark:border-gray-800 text-text-main dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold mr-3">
+                        {String.fromCharCode(65 + oi)}
+                      </span>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {/* Nav */}
+                <div className="flex items-center justify-between mt-6">
+                  <button
+                    onClick={() => setQuizStep((s) => Math.max(0, s - 1))}
+                    disabled={quizStep === 0}
+                    className="px-4 py-2 text-sm font-medium text-text-sub hover:text-text-main disabled:opacity-30 transition-colors"
+                  >
+                    ← Previous
+                  </button>
+                  {quizStep < activeQuiz.questions.length - 1 ? (
+                    <button
+                      onClick={() => setQuizStep((s) => s + 1)}
+                      disabled={quizAnswers[quizStep] === null}
+                      className="px-5 py-2 bg-primary text-white rounded-full text-sm font-semibold disabled:opacity-40 transition-all hover:bg-primary-dark"
+                    >
+                      Next →
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSubmitQuiz}
+                      disabled={quizAnswers.some((a) => a === null)}
+                      className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full text-sm font-bold disabled:opacity-40 transition-all"
+                    >
+                      Submit Quiz
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : quizResults ? (
+              /* Results View */
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <div
+                    className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-3 ${
+                      (quizScore ?? 0) >= 80
+                        ? 'bg-green-100 dark:bg-green-900/30'
+                        : (quizScore ?? 0) >= 50
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                          : 'bg-red-100 dark:bg-red-900/30'
+                    }`}
+                  >
+                    <span
+                      className={`text-2xl font-bold ${
+                        (quizScore ?? 0) >= 80
+                          ? 'text-green-600'
+                          : (quizScore ?? 0) >= 50
+                            ? 'text-yellow-600'
+                            : 'text-red-600'
+                      }`}
+                    >
+                      {quizScore}%
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-text-main dark:text-white">
+                    {(quizScore ?? 0) >= 80
+                      ? '🎉 Excellent!'
+                      : (quizScore ?? 0) >= 50
+                        ? '👍 Not bad!'
+                        : '📚 Keep learning!'}
+                  </h3>
+                  <p className="text-sm text-text-sub mt-1">
+                    You got {quizResults.filter((r) => r.isCorrect).length} out of{' '}
+                    {quizResults.length} correct
+                  </p>
+                </div>
+                <div className="space-y-4 max-h-[40vh] overflow-y-auto">
+                  {quizResults.map((r, i) => (
+                    <div
+                      key={r.questionId}
+                      className={`p-4 rounded-xl border ${
+                        r.isCorrect
+                          ? 'border-green-200 dark:border-green-800/40 bg-green-50/50 dark:bg-green-900/10'
+                          : 'border-red-200 dark:border-red-800/40 bg-red-50/50 dark:bg-red-900/10'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2 mb-2">
+                        <span
+                          className={`text-sm font-bold mt-0.5 ${r.isCorrect ? 'text-green-600' : 'text-red-500'}`}
+                        >
+                          {r.isCorrect ? '✓' : '✗'}
+                        </span>
+                        <p className="text-sm font-medium text-text-main dark:text-white">
+                          {i + 1}. {r.question}
+                        </p>
+                      </div>
+                      {!r.isCorrect && (
+                        <p className="text-xs text-text-sub ml-5">
+                          Your answer:{' '}
+                          <span className="text-red-500 font-medium">
+                            {r.options[r.userAnswer] || '—'}
+                          </span>
+                          {' · '}Correct:{' '}
+                          <span className="text-green-600 font-medium">
+                            {r.options[r.correctIndex]}
+                          </span>
+                        </p>
+                      )}
+                      {r.explanation && (
+                        <p className="text-xs text-text-sub ml-5 mt-1 italic">{r.explanation}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={closeQuiz}
+                  className="w-full mt-5 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-semibold transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Insufficient Credits Modal */}
       {creditErrorData && (

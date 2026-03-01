@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { communityApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
@@ -80,6 +80,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
       );
     } catch (err: any) {
       console.error('Failed to toggle like:', err);
+      alert('Failed to update like. Please try again.');
     }
   };
 
@@ -218,7 +219,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                   type="text"
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleCreatePost()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreatePost()}
                 />
               </div>
               <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-3">

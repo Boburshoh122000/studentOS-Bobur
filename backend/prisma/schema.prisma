@@ -130,11 +130,11 @@ model User {
   lastLoginAt   DateTime?
 
   // Credit System
-  creditBalance    Int       @default(10)
-  referralCode     String?   @unique
-  referredBy       String?   // User ID who referred this user
-  telegramCredited Boolean   @default(false)
-  telegramChatId   BigInt?   @unique
+  creditBalance    Int     @default(10)
+  referralCode     String? @unique
+  referredBy       String? // User ID who referred this user
+  telegramCredited Boolean @default(false)
+  telegramChatId   BigInt? @unique
 
   // Relations
   studentProfile    StudentProfile?
@@ -159,16 +159,16 @@ model User {
   notifications     Notification[]
 
   // RBAC - Admin Roles
-  adminRoles        UserAdminRole[]
+  adminRoles UserAdminRole[]
 
   // Tool Usage
-  toolUsages        ToolUsage[]
+  toolUsages ToolUsage[]
 
   // Learning Plans
-  learningPlans     LearningPlan[]
+  learningPlans LearningPlan[]
 
   // ATS Scan History
-  atsScans          AtsScan[]
+  atsScans AtsScan[]
 
   // Plagiarism Documents
   plagiarismDocuments PlagiarismDocument[]
@@ -198,9 +198,9 @@ model StudentProfile {
   atsScore          Int?            @default(0)
   profileCompletion Int             @default(0)
   headline          String?
-  educationHistory  Json?           // Array of { school, degree, year, description }
-  workExperience    Json?           // Array of { company, role, duration, description }
-  certificates      Json?           // Array of { id, name, issuer, date, fileUrl, fileName }
+  educationHistory  Json? // Array of { school, degree, year, description }
+  workExperience    Json? // Array of { company, role, duration, description }
+  certificates      Json? // Array of { id, name, issuer, date, fileUrl, fileName }
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -223,8 +223,8 @@ model EmployerProfile {
   city               String?
   state              String?
   country            String?
-  verificationStatus String   @default("pending") // verified, pending, rejected
-  isFeatured         Boolean  @default(false)
+  verificationStatus String  @default("pending") // verified, pending, rejected
+  isFeatured         Boolean @default(false)
 
   jobs Job[]
 
@@ -314,22 +314,22 @@ model Job {
   startDate           DateTime?
   endDate             DateTime?
   durationWeeks       Int?
-  hoursPerWeek        String?                // e.g. "20-30"
+  hoursPerWeek        String? // e.g. "20-30"
   compensationType    CompensationType?
   salaryPeriod        SalaryPeriod?
-  currency            String?    @default("USD")
+  currency            String?           @default("USD")
 
   // ── Structured Data ──
-  skills              String[]   @default([])
-  learningGoals       String[]   @default([])
-  hiringSteps         String[]   @default([])
-  mentorName          String?
-  mentorTitle         String?
-  eligibilityMajors   String[]   @default([])
-  eligibilityYear     String?
+  skills            String[] @default([])
+  learningGoals     String[] @default([])
+  hiringSteps       String[] @default([])
+  mentorName        String?
+  mentorTitle       String?
+  eligibilityMajors String[] @default([])
+  eligibilityYear   String?
 
   // ── Screening ──
-  screeningQuestions  Json?      // Array of { type, question, options? }
+  screeningQuestions Json? // Array of { type, question, options? }
 
   employerId String
   employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
@@ -363,9 +363,9 @@ model JobApplication {
   notes       String?
 
   // ── Pipeline / Employer Fields ──
-  screeningAnswers Json?         // Answers to screening questions
+  screeningAnswers Json? // Answers to screening questions
   employerNotes    String?
-  employerRating   Int?          // 1-5 scorecard
+  employerRating   Int? // 1-5 scorecard
   viewedAt         DateTime?
   interviewDate    DateTime?
 
@@ -654,8 +654,8 @@ model AdminRole {
 }
 
 model Permission {
-  id          String @id @default(cuid())
-  slug        String @unique // e.g., "users.view", "jobs.approve"
+  id          String  @id @default(cuid())
+  slug        String  @unique // e.g., "users.view", "jobs.approve"
   name        String // Human-readable name
   category    String // Grouping: "User Management", "Content Management"
   description String?
@@ -695,8 +695,8 @@ model Tool {
   slug        String   @unique
   description String?
   category    String
-  icon        String?  // Material icon name
-  creditCost  Int      @default(0)  // 0 = Free
+  icon        String? // Material icon name
+  creditCost  Int      @default(0) // 0 = Free
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -715,13 +715,13 @@ model AppSettings {
 }
 
 model ToolUsage {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  toolId    String
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-  credits   Int
-  usedAt    DateTime @default(now())
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId  String
+  tool    Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  credits Int
+  usedAt  DateTime @default(now())
 
   @@index([userId])
   @@index([toolId])
@@ -783,6 +783,7 @@ model PlanPhase {
   orderIndex  Int
   isCompleted Boolean        @default(false)
   resources   PlanResource[]
+  quiz        PlanQuiz?
 
   @@index([planId])
 }
@@ -798,6 +799,30 @@ model PlanResource {
   isCompleted  Boolean      @default(false)
 
   @@index([phaseId])
+}
+
+model PlanQuiz {
+  id        String         @id @default(cuid())
+  phaseId   String         @unique
+  phase     PlanPhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  score     Int?
+  questions QuizQuestion[]
+  createdAt DateTime       @default(now())
+
+  @@index([phaseId])
+}
+
+model QuizQuestion {
+  id           String   @id @default(cuid())
+  quizId       String
+  quiz         PlanQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question     String
+  options      String[]
+  correctIndex Int
+  explanation  String?
+  userAnswer   Int?
+
+  @@index([quizId])
 }
 
 // =============================================================================
@@ -825,10 +850,10 @@ model AtsScan {
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   score          Int
-  jobRole        String?  // Extracted or user-provided job title
-  fileName       String?  // Original uploaded file name
-  jobDescription String?  // The job description used
-  result         Json?    // Full analysis result
+  jobRole        String? // Extracted or user-provided job title
+  fileName       String? // Original uploaded file name
+  jobDescription String? // The job description used
+  result         Json? // Full analysis result
   createdAt      DateTime @default(now())
 
   @@index([userId])
@@ -853,7 +878,7 @@ model PlagiarismDocument {
   createdAt   DateTime              @default(now())
   expiresAt   DateTime?
 
-  report      PlagiarismReport?
+  report PlagiarismReport?
 
   @@index([userId])
   @@index([createdAt])
@@ -861,9 +886,9 @@ model PlagiarismDocument {
 }
 
 model PlagiarismReport {
-  id           String             @id @default(cuid())
-  documentId   String             @unique
-  document     PlagiarismDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id         String             @id @default(cuid())
+  documentId String             @unique
+  document   PlagiarismDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   originalityScore   Int
   aiProbabilityScore Int
@@ -874,12 +899,12 @@ model PlagiarismReport {
   feedbackDetails      Json?
   hallucinationDetails Json?
 
-  readabilityLevel  String?
-  summary           String
-  modulesUsed       CheckModule[]
-  processingTimeMs  Int?
+  readabilityLevel String?
+  summary          String
+  modulesUsed      CheckModule[]
+  processingTimeMs Int?
 
-  createdAt         DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([documentId])
 }

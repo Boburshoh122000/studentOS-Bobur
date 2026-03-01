@@ -5,7 +5,16 @@ import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import ToolCard from './ToolCard';
 import toast from 'react-hot-toast';
-import { AcademicCapIcon, ArrowRightIcon, BookOpenIcon, BuildingLibraryIcon, BuildingOffice2Icon, CheckIcon, GlobeAltIcon, SwatchIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowRightIcon,
+  BookOpenIcon,
+  BuildingLibraryIcon,
+  BuildingOffice2Icon,
+  CheckIcon,
+  GlobeAltIcon,
+  SwatchIcon,
+} from '@heroicons/react/24/solid';
 
 type Role = 'student' | 'educator' | 'organization' | null;
 
@@ -14,7 +23,7 @@ const ROLES = [
     id: 'student' as const,
     title: 'Student',
     desc: 'Access study tools, scholarships, and job opportunities',
-    Icon: GraduationCap,
+    Icon: AcademicCapIcon,
     gradient: 'from-blue-500 to-indigo-600',
     lightBg: 'bg-blue-50',
     lightText: 'text-blue-600',
@@ -23,7 +32,7 @@ const ROLES = [
     id: 'educator' as const,
     title: 'Educator',
     desc: 'Manage courses, share resources, and mentor students',
-    Icon: BookOpen,
+    Icon: BookOpenIcon,
     gradient: 'from-emerald-500 to-teal-600',
     lightBg: 'bg-emerald-50',
     lightText: 'text-emerald-600',
@@ -32,7 +41,7 @@ const ROLES = [
     id: 'organization' as const,
     title: 'Organization',
     desc: 'Post jobs, recruit talent, and partner with institutions',
-    Icon: Building2,
+    Icon: BuildingOffice2Icon,
     gradient: 'from-purple-500 to-violet-600',
     lightBg: 'bg-purple-50',
     lightText: 'text-purple-600',
@@ -145,10 +154,11 @@ export default function SignUpStep2() {
                       key={role.id}
                       type="button"
                       onClick={() => setSelectedRole(role.id)}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${isSelected
-                        ? 'border-blue-500 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                        }`}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                      }`}
                     >
                       <div
                         className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${role.gradient} shadow-md`}
@@ -160,12 +170,11 @@ export default function SignUpStep2() {
                         <div className="text-xs text-slate-500 mt-0.5">{role.desc}</div>
                       </div>
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
-                          }`}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
+                        }`}
                       >
-                        {isSelected && (
-                          <CheckIcon className="w-3.5 h-3.5 text-white" />
-                        )}
+                        {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white" />}
                       </div>
                     </button>
                   );

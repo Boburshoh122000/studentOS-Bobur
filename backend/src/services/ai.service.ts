@@ -456,6 +456,81 @@ Respond ONLY with valid JSON. No markdown, no code fences, no explanation outsid
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+// PHASE QUIZ GENERATION
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const generatePhaseQuiz = async (
+  phaseTopic: string,
+  resourceTitles: string[]
+): Promise<{
+  questions: {
+    question: string;
+    options: string[];
+    correctIndex: number;
+    explanation: string;
+  }[];
+}> => {
+  try {
+    const resourceContext = resourceTitles.length
+      ? `\nThe phase covers these specific resources:\n${resourceTitles.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
+      : '';
+
+    const prompt = `You are an expert quiz creator for an online learning platform.
+
+Generate exactly 5 multiple-choice quiz questions to assess a student's understanding of this learning phase:
+
+PHASE TOPIC: "${phaseTopic}"${resourceContext}
+
+RULES:
+1. Each question must have exactly 4 options (A, B, C, D)
+2. Questions should test UNDERSTANDING, not just memorization
+3. Include a mix of conceptual, applied, and analytical questions
+4. Each question must have exactly ONE correct answer
+5. Provide a brief explanation (1-2 sentences) for why the correct answer is right
+6. Questions should be challenging but fair for someone who studied the material
+7. Options should be plausible — avoid obviously wrong "joke" answers
+
+Return a JSON object:
+{
+  "questions": [
+    {
+      "question": "What is the primary purpose of X?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctIndex": 0,
+      "explanation": "Option A is correct because..."
+    }
+  ]
+}
+
+Respond ONLY with valid JSON.`;
+
+    const response = await callAI(prompt, { temperature: 0.4, maxTokens: 4096, jsonMode: true });
+
+    try {
+      const parsed = JSON.parse(cleanJSON(response));
+      // Validate structure
+      if (!parsed.questions?.length) {
+        return { questions: [] };
+      }
+      return {
+        questions: parsed.questions.slice(0, 5).map((q: any) => ({
+          question: q.question || '',
+          options: (q.options || []).slice(0, 4),
+          correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0,
+          explanation: q.explanation || '',
+        })),
+      };
+    } catch {
+      console.error('Failed to parse quiz response:', response.slice(0, 200));
+      return { questions: [] };
+    }
+  } catch (error) {
+    console.error('Quiz generation error:', error);
+    return { questions: [] };
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
 // PLAGIARISM PIPELINE — Multi-Module Analysis System
 // ══════════════════════════════════════════════════════════════════════════════
 

@@ -4,7 +4,15 @@ import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
-import { AcademicCapIcon, BookmarkIcon, CalendarIcon, CurrencyDollarIcon, FunnelIcon, GlobeAltIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  BookmarkIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  FunnelIcon,
+  GlobeAltIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/solid';
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   // Data State
@@ -34,13 +42,17 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     fetchScholarships();
   }, []);
 
-  const fetchScholarships = async () => {
+  const fetchScholarships = async (
+    search = searchQuery,
+    country = countryFilter,
+    studyLevel = studyLevelFilter
+  ) => {
     try {
       setIsLoading(true);
       const params: any = {};
-      if (searchQuery) params.search = searchQuery;
-      if (countryFilter) params.country = countryFilter;
-      if (studyLevelFilter) params.studyLevel = studyLevelFilter;
+      if (search) params.search = search;
+      if (country) params.country = country;
+      if (studyLevel) params.studyLevel = studyLevel;
 
       const scholarshipsRes = await scholarshipApi.list(params);
       const list =
@@ -62,7 +74,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     setSearchQuery('');
     setCountryFilter('');
     setStudyLevelFilter('');
-    setTimeout(() => fetchScholarships(), 0);
+    fetchScholarships('', '', '');
   };
 
   // Format date helper
@@ -114,7 +126,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <div className="flex w-full md:w-auto">
                   <div className="flex shadow-sm rounded-lg overflow-hidden w-full md:w-[480px]">
                     <div className="relative flex-1 bg-white dark:bg-card-dark border border-r-0 border-gray-200 dark:border-gray-700 rounded-l-lg hover:z-10 focus-within:z-10">
-                      <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+                      <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                       <input
                         className="w-full h-11 pl-10 pr-4 text-sm border-0 focus:ring-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-500"
                         placeholder="Search by name, university..."

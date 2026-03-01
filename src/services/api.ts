@@ -1,7 +1,6 @@
 // API Configuration and HTTP Client
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-console.warn('[API] Base URL:', API_URL);
 
 interface ApiResponse<T> {
   data?: T;
@@ -456,6 +455,9 @@ export const learningPlanApi = {
     api.post('/learning-plans/generate', data),
   toggleResource: (id: string) => api.patch(`/learning-plans/resources/${id}/toggle`, {}),
   deletePlan: (id: string) => api.delete(`/learning-plans/${id}`),
+  generateQuiz: (phaseId: string) => api.post(`/learning-plans/${phaseId}/quiz`, {}),
+  submitQuiz: (quizId: string, answers: number[]) =>
+    api.post(`/learning-plans/quiz/${quizId}/submit`, { answers }),
 };
 
 // Admin API
