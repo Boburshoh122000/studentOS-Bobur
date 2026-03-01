@@ -115,12 +115,9 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     toolName: string;
   } | null>(null);
 
-  // Fetch active plan on mount + cleanup on unmount
+  // Fetch active plan on mount
   useEffect(() => {
     fetchActivePlan();
-    return () => {
-      setPlan(null);
-    };
   }, []);
 
   const fetchActivePlan = async () => {
@@ -214,7 +211,15 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     [plan]
   );
 
-  const handleStartNew = () => {
+  // Hard reset: delete from backend + clear all local state
+  const handleStartNew = async () => {
+    if (plan) {
+      try {
+        await learningPlanApi.deletePlan(plan.id);
+      } catch (err) {
+        console.error('Failed to delete plan:', err);
+      }
+    }
     setPlan(null);
     setTopic('');
     setError(null);
