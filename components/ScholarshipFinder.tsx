@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -20,11 +20,13 @@ import {
   FunnelIcon,
   ArrowsUpDownIcon,
   BuildingLibraryIcon,
+  Bars3Icon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/solid';
 import { BookmarkIcon as BookmarkOutlineIcon, FireIcon } from '@heroicons/react/24/outline';
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── Types ────────────────────────────────────────────────────────────────── */
+/*  Types                                                                    */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 interface Scholarship {
@@ -54,7 +56,7 @@ interface Filters {
 type SortOption = 'relevance' | 'deadline' | 'amount' | 'recent';
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── Constants ────────────────────────────────────────────────────────────── */
+/*  Constants                                                                */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 const ALL_COUNTRIES = [
@@ -244,16 +246,99 @@ const FLAG_MAP: Record<string, string> = {
   Uzbekistan: '🇺🇿',
   Egypt: '🇪🇬',
   Poland: '🇵🇱',
+  Austria: '🇦🇹',
+  Belgium: '🇧🇪',
+  Denmark: '🇩🇰',
+  Finland: '🇫🇮',
+  Greece: '🇬🇷',
+  Ireland: '🇮🇪',
+  Portugal: '🇵🇹',
+  Romania: '🇷🇴',
+  Thailand: '🇹🇭',
+  Vietnam: '🇻🇳',
+  Philippines: '🇵🇭',
+  Indonesia: '🇮🇩',
+  Pakistan: '🇵🇰',
+  Bangladesh: '🇧🇩',
+  Nigeria: '🇳🇬',
+  Kenya: '🇰🇪',
+  'South Africa': '🇿🇦',
+  Argentina: '🇦🇷',
+  Colombia: '🇨🇴',
+  Chile: '🇨🇱',
+  Peru: '🇵🇪',
+  Ukraine: '🇺🇦',
+  'Czech Republic': '🇨🇿',
+  Israel: '🇮🇱',
+  Qatar: '🇶🇦',
+  Kuwait: '🇰🇼',
+  Bahrain: '🇧🇭',
+  Oman: '🇴🇲',
+  Jordan: '🇯🇴',
+  Lebanon: '🇱🇧',
+  Morocco: '🇲🇦',
+  Tunisia: '🇹🇳',
+  Ghana: '🇬🇭',
+  Ethiopia: '🇪🇹',
+  Tanzania: '🇹🇿',
+  Uganda: '🇺🇬',
+  Cambodia: '🇰🇭',
+  Myanmar: '🇲🇲',
+  Nepal: '🇳🇵',
+  'Sri Lanka': '🇱🇰',
+  Kazakhstan: '🇰🇿',
+  Mongolia: '🇲🇳',
+  Iran: '🇮🇷',
+  Iraq: '🇮🇶',
+  Cuba: '🇨🇺',
+  Iceland: '🇮🇸',
+  Luxembourg: '🇱🇺',
+  Malta: '🇲🇹',
+  Croatia: '🇭🇷',
+  Serbia: '🇷🇸',
+  Bulgaria: '🇧🇬',
+  Slovakia: '🇸🇰',
+  Slovenia: '🇸🇮',
+  Lithuania: '🇱🇹',
+  Latvia: '🇱🇻',
+  Estonia: '🇪🇪',
+  Georgia: '🇬🇪',
+  Armenia: '🇦🇲',
+  Azerbaijan: '🇦🇿',
+  Belarus: '🇧🇾',
+  Moldova: '🇲🇩',
+  Albania: '🇦🇱',
+  'North Macedonia': '🇲🇰',
+  Montenegro: '🇲🇪',
+  'Bosnia and Herzegovina': '🇧🇦',
+  Taiwan: '🇹🇼',
+  Maldives: '🇲🇻',
+  Brunei: '🇧🇳',
+  Syria: '🇸🇾',
+  Libya: '🇱🇾',
+  Palestine: '🇵🇸',
+  Panama: '🇵🇦',
+  'Costa Rica': '🇨🇷',
+  Bolivia: '🇧🇴',
+  Ecuador: '🇪🇨',
+  Guatemala: '🇬🇹',
+  Jamaica: '🇯🇲',
+  Venezuela: '🇻🇪',
+  Zimbabwe: '🇿🇼',
+  Cameroon: '🇨🇲',
+  Algeria: '🇩🇿',
+  Afghanistan: '🇦🇫',
+  Andorra: '🇦🇩',
+  Angola: '🇦🇴',
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── Helpers ──────────────────────────────────────────────────────────────── */
+/*  Helpers                                                                  */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function daysUntil(d: string | null | undefined): number | null {
   if (!d) return null;
-  const diff = (new Date(d).getTime() - Date.now()) / 86_400_000;
-  return Math.ceil(diff);
+  return Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000);
 }
 
 function formatDate(d: string | null | undefined): string {
@@ -275,31 +360,46 @@ function getFlag(country: string): string {
   return FLAG_MAP[country] || '🌍';
 }
 
+function isExpired(deadline: string | null): boolean {
+  if (!deadline) return false;
+  return new Date(deadline).getTime() < Date.now();
+}
+
 function deadlineBadge(days: number | null): { color: string; label: string } | null {
-  if (days === null || days <= 0) return null;
+  if (days === null) return null;
+  if (days <= 0)
+    return {
+      color:
+        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30',
+      label: 'Expired',
+    };
   if (days <= 7)
     return {
       color:
-        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800/30',
+        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30',
       label: `${days}d left`,
     };
   if (days <= 30)
     return {
       color:
-        'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800/30',
+        'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/30',
       label: `${days}d left`,
     };
   if (days <= 90)
     return {
       color:
-        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800/30',
+        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/30',
       label: `${days}d left`,
     };
   return null;
 }
 
+function titleCase(str: string): string {
+  return str.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── FilterGroup UI ──────────────────────────────────────────────────────── */
+/*  FilterGroup                                                              */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function FilterGroup({
@@ -337,11 +437,121 @@ function FilterGroup({
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── Main Component ──────────────────────────────────────────────────────── */
+/*  Searchable Country Dropdown                                              */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+function CountrySelect({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (countries: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return ALL_COUNTRIES;
+    return ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(search.toLowerCase()));
+  }, [search]);
+
+  const toggle = (country: string) => {
+    onChange(
+      selected.includes(country) ? selected.filter((c) => c !== country) : [...selected, country]
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-800 dark:text-gray-200 hover:border-[#4F6EF7]/50 transition-colors"
+      >
+        <span className="truncate text-left">
+          {selected.length === 0 ? 'Select countries...' : `${selected.length} selected`}
+        </span>
+        <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+      </button>
+
+      {/* Selected tags */}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {selected.map((c) => (
+            <span
+              key={c}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#4F6EF7]/10 text-[#4F6EF7] text-[10px] font-semibold rounded-md"
+            >
+              {getFlag(c)} {c}
+              <button
+                onClick={() => toggle(c)}
+                className="hover:text-red-500"
+                title={`Remove ${c}`}
+                type="button"
+              >
+                <XMarkIcon className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search countries..."
+              autoFocus
+              aria-label="Search countries"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none"
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto px-2 pb-2">
+            {filtered.length === 0 && (
+              <p className="text-xs text-gray-400 py-3 text-center">No countries found</p>
+            )}
+            {filtered.map((c) => (
+              <label
+                key={c}
+                className="flex items-center gap-2 py-1.5 px-2 cursor-pointer rounded-md hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(c)}
+                  onChange={() => toggle(c)}
+                  className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
+                />
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  {getFlag(c)} {c}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  Main Component                                                           */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
-  /* ── State ── */
   const [isLoading, setIsLoading] = useState(true);
   const [allScholarships, setAllScholarships] = useState<Scholarship[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -350,9 +560,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [countrySearch, setCountrySearch] = useState('');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  /* ── Fetch scholarships from DB ── */
+  /* ── Fetch ── */
   const fetchScholarships = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -361,7 +571,6 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       const list = (data?.scholarships ||
         (Array.isArray(res.data) ? res.data : [])) as Scholarship[];
       setAllScholarships(list);
-
       const ids = new Set<string>();
       list.forEach((s) => {
         if (s.isSaved) ids.add(s.id);
@@ -378,33 +587,34 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     fetchScholarships();
   }, [fetchScholarships]);
 
-  /* ── Save / Unsave ── */
+  /* ── Save/Unsave ── */
   const toggleSave = async (id: string) => {
-    const isSaved = savedIds.has(id);
+    const wasSaved = savedIds.has(id);
     const next = new Set(savedIds);
-    if (isSaved) {
+    if (wasSaved) {
       next.delete(id);
-      setSavedIds(next);
-      try {
-        await scholarshipApi.unsave(id);
-      } catch {
-        next.add(id);
-        setSavedIds(new Set(next));
-      }
     } else {
       next.add(id);
-      setSavedIds(next);
-      try {
+    }
+    setSavedIds(next);
+    try {
+      if (wasSaved) {
+        await scholarshipApi.unsave(id);
+      } else {
         await scholarshipApi.save(id);
-      } catch {
-        next.delete(id);
-        setSavedIds(new Set(next));
       }
+    } catch {
+      if (wasSaved) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      setSavedIds(new Set(next));
     }
   };
 
   /* ── Filter helpers ── */
-  const toggleArrayFilter = (key: 'countries' | 'fields' | 'scholarshipTypes', value: string) => {
+  const toggleArrayFilter = (key: 'fields' | 'scholarshipTypes', value: string) => {
     setFilters((prev) => ({
       ...prev,
       [key]: prev[key].includes(value)
@@ -418,30 +628,27 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     filters.studyLevel !== '' ||
     filters.fields.length > 0 ||
     filters.scholarshipTypes.length > 0;
-
   const handleResetFilters = () => {
     setFilters({ ...DEFAULT_FILTERS });
     setSearchQuery('');
     setFiltersApplied(false);
     setSortBy('relevance');
-    setCountrySearch('');
   };
-
   const handleApplyFilters = () => {
     setFiltersApplied(true);
+    setShowMobileFilters(false);
   };
 
-  /* ── Filtered countries for search ── */
-  const filteredCountries = useMemo(() => {
-    if (!countrySearch.trim()) return ALL_COUNTRIES;
-    return ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()));
-  }, [countrySearch]);
+  /* ── Active (non-expired) scholarships ── */
+  const activeScholarships = useMemo(
+    () => allScholarships.filter((s) => !isExpired(s.deadline)),
+    [allScholarships]
+  );
 
   /* ── Display Logic ── */
   const displayScholarships = useMemo(() => {
-    let list = [...allScholarships];
+    let list = [...activeScholarships];
 
-    // Text search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -453,17 +660,15 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       );
     }
 
-    // Apply hard filters
     if (filtersApplied) {
       if (filters.studyLevel)
         list = list.filter((s) => s.studyLevel === filters.studyLevel || s.studyLevel === 'ANY');
       if (filters.countries.length > 0)
         list = list.filter((s) =>
-          filters.countries.some((c) => s.country.toLowerCase().includes(c.toLowerCase()))
+          filters.countries.some((c) => s.country.toLowerCase() === c.toLowerCase())
         );
     }
 
-    // Sort
     switch (sortBy) {
       case 'deadline':
         list.sort(
@@ -482,31 +687,110 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         break;
     }
     return list;
-  }, [allScholarships, searchQuery, filters, filtersApplied, sortBy]);
+  }, [activeScholarships, searchQuery, filters, filtersApplied, sortBy]);
 
-  // Trending = isTrending from DB
   const trendingScholarships = useMemo(
-    () => allScholarships.filter((s) => s.isTrending),
-    [allScholarships]
+    () => activeScholarships.filter((s) => s.isTrending),
+    [activeScholarships]
   );
-
-  // Upcoming deadlines
   const upcomingDeadlines = useMemo(
     () =>
-      allScholarships
+      activeScholarships
         .filter((s) => {
           const d = daysUntil(s.deadline);
           return d !== null && d > 0 && d <= 90;
         })
         .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
         .slice(0, 6),
-    [allScholarships]
+    [activeScholarships]
+  );
+
+  /* ── Render filter sidebar content (shared between desktop + mobile) ── */
+  const filterContent = (
+    <>
+      <FilterGroup title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-[#4F6EF7]" />}>
+        <CountrySelect
+          selected={filters.countries}
+          onChange={(countries) => setFilters((prev) => ({ ...prev, countries }))}
+        />
+      </FilterGroup>
+
+      <FilterGroup
+        title="Study Level"
+        icon={<AcademicCapIcon className="w-4 h-4 text-[#4F6EF7]" />}
+      >
+        <select
+          value={filters.studyLevel}
+          onChange={(e) => setFilters((prev) => ({ ...prev, studyLevel: e.target.value }))}
+          aria-label="Study Level"
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] px-3 py-2.5 text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+        >
+          {STUDY_LEVELS.map((l) => (
+            <option key={l.value} value={l.value}>
+              {l.label}
+            </option>
+          ))}
+        </select>
+      </FilterGroup>
+
+      <FilterGroup
+        title="Field of Study"
+        icon={<BookmarkIcon className="w-4 h-4 text-[#4F6EF7]" />}
+        defaultOpen={false}
+      >
+        <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1">
+          {FIELDS.map((f) => (
+            <label key={f} className="flex items-center gap-2 py-1 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={filters.fields.includes(f)}
+                onChange={() => toggleArrayFilter('fields', f)}
+                className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                {f}
+              </span>
+            </label>
+          ))}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup
+        title="Scholarship Type"
+        icon={<BuildingLibraryIcon className="w-4 h-4 text-[#2D3A8C]" />}
+        defaultOpen={false}
+      >
+        <div className="space-y-0.5">
+          {SCHOLARSHIP_TYPES.map((t) => (
+            <label key={t} className="flex items-center gap-2 py-1 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={filters.scholarshipTypes.includes(t)}
+                onChange={() => toggleArrayFilter('scholarshipTypes', t)}
+                className="rounded border-gray-300 dark:border-gray-600 text-[#2D3A8C] focus:ring-[#2D3A8C] w-3.5 h-3.5"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                {t}
+              </span>
+            </label>
+          ))}
+        </div>
+      </FilterGroup>
+    </>
   );
 
   /* ─── Header ─── */
   const headerContent = (
     <header className="h-16 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800">
       <div className="flex items-center gap-3">
+        {/* Mobile filter toggle */}
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="lg:hidden p-2 -ml-2 text-gray-500 hover:text-[#4F6EF7] transition-colors"
+          title="Toggle filters"
+        >
+          <Bars3Icon className="w-5 h-5" />
+        </button>
         <div className="size-9 rounded-lg bg-[#2D3A8C]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center">
           <TrophyIcon className="w-5 h-5 text-[#2D3A8C] dark:text-[#4F6EF7]" />
         </div>
@@ -521,22 +805,60 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     </header>
   );
 
-  /* ─── Render ─── */
   return (
     <DashboardLayout
       currentScreen={Screen.SCHOLARSHIPS}
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 flex overflow-hidden bg-[#F8F9FC] dark:bg-[#0f111a] h-full">
-        {/* ═══════════ LEFT SIDEBAR — FILTERS ═══════════ */}
+      <div className="flex-1 flex overflow-hidden bg-[#F8F9FC] dark:bg-[#0f111a] h-full relative">
+        {/* ══ Mobile filter overlay ══ */}
+        {showMobileFilters && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setShowMobileFilters(false)}
+            />
+            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#161b2e] shadow-2xl flex flex-col z-50 overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#1A1A2E] dark:text-white flex items-center gap-2">
+                  <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" /> Filters
+                </h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  title="Close filters"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-5">{filterContent}</div>
+              <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-2">
+                {isAnyFilterActive && (
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    Reset
+                  </button>
+                )}
+                <button
+                  onClick={handleApplyFilters}
+                  className="flex-1 bg-[#2D3A8C] hover:bg-[#222d6e] text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <SparklesIcon className="w-4 h-4" /> Apply
+                </button>
+              </div>
+            </aside>
+          </div>
+        )}
+
+        {/* ══ Desktop sidebar ══ */}
         <aside className="w-[280px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-[#161b2e] border-r border-gray-200 dark:border-gray-800 overflow-hidden ml-2">
-          {/* Header */}
           <div className="p-5 border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#1A1A2E] dark:text-white flex items-center gap-2">
-                <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" />
-                Filters
+                <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" /> Filters
               </h3>
               {isAnyFilterActive && (
                 <button
@@ -548,143 +870,42 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               )}
             </div>
           </div>
-
-          {/* Filter Groups */}
-          <div className="flex-1 overflow-y-auto px-5">
-            {/* Country — Searchable */}
-            <FilterGroup title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-[#4F6EF7]" />}>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={countrySearch}
-                  onChange={(e) => setCountrySearch(e.target.value)}
-                  placeholder="Search countries..."
-                  aria-label="Search countries"
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none"
-                />
-                {filters.countries.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {filters.countries.map((c) => (
-                      <span
-                        key={c}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#4F6EF7]/10 text-[#4F6EF7] text-[10px] font-semibold rounded-md"
-                      >
-                        {getFlag(c)} {c}
-                        <button
-                          onClick={() => toggleArrayFilter('countries', c)}
-                          className="hover:text-red-500"
-                          title={`Remove ${c}`}
-                        >
-                          <XMarkIcon className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1">
-                  {filteredCountries.map((c) => (
-                    <label key={c} className="flex items-center gap-2 py-1 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={filters.countries.includes(c)}
-                        onChange={() => toggleArrayFilter('countries', c)}
-                        className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
-                      />
-                      <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
-                        {getFlag(c)} {c}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </FilterGroup>
-
-            {/* Study Level */}
-            <FilterGroup
-              title="Study Level"
-              icon={<AcademicCapIcon className="w-4 h-4 text-[#4F6EF7]" />}
-            >
-              <select
-                value={filters.studyLevel}
-                onChange={(e) => setFilters((prev) => ({ ...prev, studyLevel: e.target.value }))}
-                aria-label="Study Level"
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] px-3 py-2.5 text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
-              >
-                {STUDY_LEVELS.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-            </FilterGroup>
-
-            {/* Field of Study */}
-            <FilterGroup
-              title="Field of Study"
-              icon={<BookmarkIcon className="w-4 h-4 text-[#4F6EF7]" />}
-              defaultOpen={false}
-            >
-              <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1">
-                {FIELDS.map((f) => (
-                  <label key={f} className="flex items-center gap-2 py-1 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={filters.fields.includes(f)}
-                      onChange={() => toggleArrayFilter('fields', f)}
-                      className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
-                    />
-                    <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
-                      {f}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </FilterGroup>
-
-            {/* Scholarship Type */}
-            <FilterGroup
-              title="Scholarship Type"
-              icon={<BuildingLibraryIcon className="w-4 h-4 text-[#2D3A8C]" />}
-              defaultOpen={false}
-            >
-              <div className="space-y-0.5">
-                {SCHOLARSHIP_TYPES.map((t) => (
-                  <label key={t} className="flex items-center gap-2 py-1 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={filters.scholarshipTypes.includes(t)}
-                      onChange={() => toggleArrayFilter('scholarshipTypes', t)}
-                      className="rounded border-gray-300 dark:border-gray-600 text-[#2D3A8C] focus:ring-[#2D3A8C] w-3.5 h-3.5"
-                    />
-                    <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
-                      {t}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </FilterGroup>
-          </div>
-
-          {/* Apply Button */}
+          <div className="flex-1 overflow-y-auto px-5">{filterContent}</div>
           <div className="p-5 border-t border-gray-100 dark:border-gray-800">
             <button
               onClick={handleApplyFilters}
-              className="w-full bg-[#2D3A8C] hover:bg-[#222d6e] text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-[#2D3A8C]/20 hover:shadow-lg hover:shadow-[#2D3A8C]/30 flex items-center justify-center gap-2.5 active:scale-[0.98]"
+              className="w-full bg-[#2D3A8C] hover:bg-[#222d6e] text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-[#2D3A8C]/20 hover:shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.98]"
             >
-              <SparklesIcon className="w-5 h-5" />
-              Apply Filters
+              <SparklesIcon className="w-5 h-5" /> Apply Filters
             </button>
           </div>
         </aside>
 
-        {/* ═══════════ RIGHT PANEL — RESULTS ═══════════ */}
+        {/* ══ RIGHT PANEL ══ */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-8">
-            {/* ── Search + Sort Row ── */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
-              <div className="relative flex-1 max-w-xl">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 py-6">
+            {/* Search + Sort */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+              {/* Mobile filter button (inline) */}
+              <button
+                onClick={() => setShowMobileFilters(true)}
+                className="lg:hidden flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl"
+              >
+                <FunnelIcon className="w-4 h-4" />
+                Filters{' '}
+                {isAnyFilterActive && (
+                  <span className="bg-[#4F6EF7] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {filters.countries.length +
+                      (filters.studyLevel ? 1 : 0) +
+                      filters.fields.length +
+                      filters.scholarshipTypes.length}
+                  </span>
+                )}
+              </button>
+
+              <div className="relative flex-1 max-w-xl w-full">
                 <input
-                  className="w-full h-11 pl-4 pr-4 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+                  className="w-full h-11 pl-4 pr-10 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
                   placeholder="Search by name, university, country..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -699,6 +920,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </button>
                 )}
               </div>
+
               <div className="relative">
                 <button
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -706,6 +928,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 >
                   <ArrowsUpDownIcon className="w-4 h-4" />
                   {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+                  <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
                 </button>
                 {showSortDropdown && (
                   <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 min-w-[180px] py-1">
@@ -728,22 +951,22 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 
             {/* ── Loading ── */}
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
                     className="bg-white dark:bg-[#161b2e] rounded-xl p-6 border border-gray-100 dark:border-gray-800 animate-pulse"
                   >
-                    <div className="flex items-center gap-3 mb-5">
+                    <div className="flex items-center gap-3 mb-4">
                       <div className="size-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
                       <div className="flex-1">
                         <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
                         <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
                       </div>
                     </div>
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-4" />
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-3" />
                     <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-full mb-3" />
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-2 mb-3">
                       <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20" />
                       <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
                     </div>
@@ -754,7 +977,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             ) : filtersApplied || searchQuery ? (
               /* ═══ FILTERED RESULTS ═══ */
               <>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-5">
                   <p className="text-sm text-[#6B7280]">
                     Showing{' '}
                     <span className="font-bold text-[#1A1A2E] dark:text-white">
@@ -772,12 +995,12 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   )}
                 </div>
                 {displayScholarships.length === 0 ? (
-                  <div className="text-center py-20">
-                    <TrophyIcon className="w-14 h-14 text-gray-200 dark:text-gray-700 mx-auto mb-5" />
-                    <p className="text-lg font-semibold text-[#1A1A2E] dark:text-white mb-2">
+                  <div className="text-center py-16">
+                    <TrophyIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                    <p className="text-base font-semibold text-[#1A1A2E] dark:text-white mb-1.5">
                       No scholarships match your criteria
                     </p>
-                    <p className="text-sm text-[#6B7280] mb-6">
+                    <p className="text-sm text-[#6B7280] mb-5">
                       Try adjusting your filters or broadening your search.
                     </p>
                     <button
@@ -788,7 +1011,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                     {displayScholarships.map((s) => (
                       <ScholarshipCard
                         key={s.id}
@@ -802,37 +1025,39 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </>
             ) : (
               /* ═══ INITIAL STATE ═══ */
-              <div className="space-y-12">
-                {/* Trending (isTrending from DB) */}
+              <div className="space-y-8">
+                {/* Trending */}
                 {trendingScholarships.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2.5 mb-5">
+                    <div className="flex items-center gap-2.5 mb-4">
                       <FireIcon className="w-5 h-5 text-[#F59E0B]" />
                       <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
                         Trending Scholarships
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {trendingScholarships.map((s) => (
                         <div
                           key={s.id}
-                          className="relative bg-gradient-to-br from-[#2D3A8C] to-[#4F6EF7] rounded-2xl p-6 text-white overflow-hidden group cursor-pointer hover:shadow-2xl hover:shadow-[#2D3A8C]/20 transition-all duration-300"
+                          className="relative bg-gradient-to-br from-[#2D3A8C] to-[#4F6EF7] rounded-2xl p-5 text-white overflow-hidden group cursor-pointer hover:shadow-xl hover:shadow-[#2D3A8C]/15 transition-all duration-300"
                           onClick={() =>
                             s.applicationUrl && window.open(s.applicationUrl, '_blank')
                           }
                         >
-                          <div className="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
                           <div className="relative z-10">
-                            <p className="text-blue-200 text-xs font-semibold mb-1.5 uppercase tracking-wider">
-                              {s.institution}
+                            <p className="text-blue-200 text-[10px] font-semibold mb-1 uppercase tracking-wider truncate">
+                              {titleCase(s.institution)}
                             </p>
-                            <h3 className="text-lg font-bold mb-3 leading-tight">{s.title}</h3>
-                            <div className="flex items-center gap-2.5 text-sm flex-wrap">
-                              <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-medium">
+                            <h3 className="text-base font-bold mb-2.5 leading-snug line-clamp-2">
+                              {s.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-sm flex-wrap">
+                              <span className="flex items-center gap-1 bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-md text-[11px] font-medium">
                                 {getFlag(s.country)} {s.country}
                               </span>
                               {s.awardAmount && (
-                                <span className="bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-medium">
+                                <span className="bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-md text-[11px] font-medium">
                                   {s.awardAmount}
                                 </span>
                               )}
@@ -847,13 +1072,13 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 {/* Upcoming Deadlines */}
                 {upcomingDeadlines.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2.5 mb-5">
+                    <div className="flex items-center gap-2.5 mb-4">
                       <ClockIcon className="w-5 h-5 text-[#EF4444]" />
                       <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
                         Upcoming Deadlines
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                       {upcomingDeadlines.map((s) => (
                         <ScholarshipCard
                           key={s.id}
@@ -868,19 +1093,19 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 )}
 
                 {/* All Scholarships */}
-                {allScholarships.length > 0 && (
+                {activeScholarships.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2.5 mb-5">
+                    <div className="flex items-center gap-2.5 mb-4">
                       <AcademicCapIcon className="w-5 h-5 text-[#4F6EF7]" />
                       <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
                         All Scholarships
                       </h2>
                       <span className="text-xs text-[#6B7280] font-medium">
-                        ({allScholarships.length})
+                        ({activeScholarships.length})
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      {allScholarships.slice(0, 12).map((s) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                      {activeScholarships.slice(0, 12).map((s) => (
                         <ScholarshipCard
                           key={s.id}
                           scholarship={s}
@@ -892,14 +1117,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </section>
                 )}
 
-                {allScholarships.length === 0 && !isLoading && (
-                  <div className="text-center py-20">
-                    <TrophyIcon className="w-14 h-14 text-gray-200 dark:text-gray-700 mx-auto mb-5" />
-                    <p className="text-lg font-semibold text-[#1A1A2E] dark:text-white mb-2">
+                {activeScholarships.length === 0 && !isLoading && (
+                  <div className="text-center py-16">
+                    <TrophyIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                    <p className="text-base font-semibold text-[#1A1A2E] dark:text-white mb-1.5">
                       No scholarships yet
                     </p>
                     <p className="text-sm text-[#6B7280]">
-                      Scholarships will appear here once they are added by an admin.
+                      Scholarships will appear here once added by an admin.
                     </p>
                   </div>
                 )}
@@ -913,7 +1138,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── ScholarshipCard ─────────────────────────────────────────────────────── */
+/*  ScholarshipCard                                                          */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function ScholarshipCard({
@@ -929,16 +1154,19 @@ function ScholarshipCard({
 }) {
   const days = daysUntil(s.deadline);
   const urgencyBadge = deadlineBadge(days);
+  const expired = isExpired(s.deadline);
   const isUrgent = days !== null && days > 0 && days <= 15;
 
   return (
-    <div className="bg-white dark:bg-[#161b2e] rounded-xl p-6 border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 flex flex-col h-full group relative">
+    <div
+      className={`bg-white dark:bg-[#161b2e] rounded-xl p-5 border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 flex flex-col group relative ${expired ? 'opacity-50' : ''}`}
+    >
       <button
         onClick={(e) => {
           e.stopPropagation();
           onToggleSave();
         }}
-        className="absolute top-5 right-5 z-10 text-gray-300 dark:text-gray-600 hover:text-[#4F6EF7] transition-colors"
+        className="absolute top-4 right-4 z-10 text-gray-300 dark:text-gray-600 hover:text-[#4F6EF7] transition-colors"
         title={isSaved ? 'Remove bookmark' : 'Save scholarship'}
       >
         {isSaved ? (
@@ -948,58 +1176,71 @@ function ScholarshipCard({
         )}
       </button>
 
-      <div className="flex items-center gap-3 mb-4">
-        <div className="size-10 rounded-lg bg-[#4F6EF7]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center flex-shrink-0">
-          <AcademicCapIcon className="w-5 h-5 text-[#4F6EF7]" />
+      {/* Institution + Country */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className="size-9 rounded-lg bg-[#4F6EF7]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center flex-shrink-0">
+          <AcademicCapIcon className="w-4.5 h-4.5 text-[#4F6EF7]" />
         </div>
         <div className="min-w-0 flex-1 pr-7">
-          <h4 className="text-sm font-semibold text-[#4F6EF7] truncate" title={s.institution}>
-            {s.institution}
+          <h4 className="text-xs font-semibold text-[#4F6EF7] truncate" title={s.institution}>
+            {titleCase(s.institution)}
           </h4>
-          <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+          <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
             <span>{getFlag(s.country)}</span>
             <span>{s.country}</span>
           </div>
         </div>
       </div>
 
+      {/* Title */}
       <h3
-        className="text-[15px] font-bold text-[#1A1A2E] dark:text-white mb-2 leading-snug group-hover:text-[#4F6EF7] transition-colors line-clamp-2"
+        className="text-sm font-bold text-[#1A1A2E] dark:text-white mb-1.5 leading-snug group-hover:text-[#4F6EF7] transition-colors line-clamp-2"
         title={s.title}
       >
         {s.title}
       </h3>
-      {s.description && (
-        <p className="text-xs text-[#6B7280] leading-relaxed mb-3 line-clamp-2">{s.description}</p>
-      )}
 
+      {/* Description */}
+      <p className="text-[11px] text-[#6B7280] leading-relaxed mb-3 line-clamp-2 min-h-[2.5em]">
+        {s.description && s.description.length > 3 ? s.description : 'No description available.'}
+      </p>
+
+      {/* Amount */}
       {s.awardAmount && (
         <div className="mb-3">
-          <span className="inline-flex items-center gap-1.5 bg-[#10B981]/10 dark:bg-[#10B981]/15 text-[#10B981] text-xs font-bold px-2.5 py-1.5 rounded-lg border border-[#10B981]/15">
+          <span className="inline-flex items-center gap-1 bg-[#10B981]/10 dark:bg-[#10B981]/15 text-[#10B981] text-[11px] font-bold px-2 py-1 rounded-lg border border-[#10B981]/15">
             <CurrencyDollarIcon className="w-3.5 h-3.5" />
             {s.awardAmount}
           </span>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-1 rounded-md capitalize border border-gray-100 dark:border-gray-700">
+      {/* Tags */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-0.5 rounded-md capitalize border border-gray-100 dark:border-gray-700">
           {s.studyLevel?.toLowerCase().replace('_', ' ')}
         </span>
-        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-1 rounded-md border border-gray-100 dark:border-gray-700">
+        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">
           {s.awardType}
         </span>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs text-[#6B7280] font-medium">
+      {/* Footer */}
+      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280] font-medium">
           <CalendarIcon className="w-3.5 h-3.5" />
           <span>{formatDate(s.deadline)}</span>
-          {(showUrgency || isUrgent) && urgencyBadge && (
+          {expired && (
+            <span className="ml-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800/30">
+              <ExclamationTriangleIcon className="w-2.5 h-2.5" />
+              Expired
+            </span>
+          )}
+          {!expired && (showUrgency || isUrgent) && urgencyBadge && (
             <span
-              className={`ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${urgencyBadge.color}`}
+              className={`ml-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${urgencyBadge.color}`}
             >
-              <ClockIcon className="w-3 h-3" />
+              <ClockIcon className="w-2.5 h-2.5" />
               {urgencyBadge.label}
             </span>
           )}
@@ -1010,9 +1251,9 @@ function ScholarshipCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#4F6EF7] hover:text-[#2D3A8C] transition-colors"
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#4F6EF7] hover:text-[#2D3A8C] transition-colors"
           >
-            Apply Now <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+            Apply <ArrowTopRightOnSquareIcon className="w-3 h-3" />
           </a>
         )}
       </div>
