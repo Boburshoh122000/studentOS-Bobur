@@ -5,7 +5,23 @@ import { scholarshipApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, BellIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, CreditCardIcon, CurrencyDollarIcon, DocumentTextIcon, MagnifyingGlassIcon, PencilIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, TrashIcon, UsersIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  BellIcon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  CreditCardIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  TrashIcon,
+  UsersIcon,
+} from '@heroicons/react/24/solid';
 
 interface Scholarship {
   id: string;
@@ -111,8 +127,11 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         page: currentPage,
       });
-      setScholarships(response.data.scholarships || []);
-      setPagination(response.data.pagination || { total: 0, pages: 1 });
+      if (response.data) {
+        const data = response.data as any;
+        setScholarships(data.scholarships || []);
+        setPagination(data.pagination || { total: 0, pages: 1 });
+      }
     } catch (error) {
       console.error('Failed to fetch scholarships:', error);
       toast.error('Failed to load scholarships');

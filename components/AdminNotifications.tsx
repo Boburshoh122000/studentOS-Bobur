@@ -5,7 +5,13 @@ import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, BellIcon, BellSlashIcon, ClockIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  BellIcon,
+  BellSlashIcon,
+  ClockIcon,
+  PaperAirplaneIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface SentNotification {
@@ -68,6 +74,9 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
 
   useEffect(() => {
     fetchHistory();
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
   }, []);
 
   const handleSend = async () => {
@@ -338,9 +347,7 @@ export default function AdminNotifications({ navigateTo }: NavigationProps) {
                   disabled={isSending}
                   className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center gap-2 shadow-sm"
                 >
-                  {isSending && (
-                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                  )}
+                  {isSending && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
                   {isSending
                     ? 'Sending...'
                     : targetMode === 'broadcast'

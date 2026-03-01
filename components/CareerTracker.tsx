@@ -89,7 +89,15 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   useEffect(() => {
     fetchJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, filters.locationTypes, filters.jobTypes, filters.salaryRange, filters.paidOnly, filters.remoteOnly, filters.sort]);
+  }, [
+    debouncedSearch,
+    filters.locationTypes,
+    filters.jobTypes,
+    filters.salaryRange,
+    filters.paidOnly,
+    filters.remoteOnly,
+    filters.sort,
+  ]);
 
   const fetchJobs = async () => {
     try {
@@ -170,6 +178,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   };
 
   const clearFilters = () => {
+    setDebouncedSearch('');
     setFilters({
       search: '',
       locationTypes: [],
@@ -185,14 +194,17 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   const formatCompensation = (job: Job) => {
     if (job.compensationType === 'UNPAID') return 'Unpaid';
     if (!job.salaryMin && !job.salaryMax) return 'Competitive';
-    const period = job.salaryPeriod === 'HOURLY' ? '/hr' : job.salaryPeriod === 'MONTHLY' ? '/mo' : '/yr';
+    const period =
+      job.salaryPeriod === 'HOURLY' ? '/hr' : job.salaryPeriod === 'MONTHLY' ? '/mo' : '/yr';
     const currency = job.currency || '$';
     const symbol = currency === 'USD' ? '$' : currency;
     if (job.salaryMin && job.salaryMax) {
-      if (job.salaryPeriod === 'YEARLY') return `${symbol}${(job.salaryMin / 1000).toFixed(0)}k - ${symbol}${(job.salaryMax / 1000).toFixed(0)}k${period}`;
+      if (job.salaryPeriod === 'YEARLY')
+        return `${symbol}${(job.salaryMin / 1000).toFixed(0)}k - ${symbol}${(job.salaryMax / 1000).toFixed(0)}k${period}`;
       return `${symbol}${job.salaryMin} - ${symbol}${job.salaryMax}${period}`;
     }
-    if (job.salaryMin) return `${symbol}${job.salaryPeriod === 'YEARLY' ? (job.salaryMin / 1000).toFixed(0) + 'k' : job.salaryMin}+${period}`;
+    if (job.salaryMin)
+      return `${symbol}${job.salaryPeriod === 'YEARLY' ? (job.salaryMin / 1000).toFixed(0) + 'k' : job.salaryMin}+${period}`;
     return `Up to ${symbol}${job.salaryPeriod === 'YEARLY' ? (job.salaryMax! / 1000).toFixed(0) + 'k' : job.salaryMax}${period}`;
   };
 
@@ -214,7 +226,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   };
 
   const timeAgo = (dateStr: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24));
+    const days = Math.floor(
+      (new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24)
+    );
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
     return `${days}d ago`;
@@ -226,7 +240,12 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   };
 
   const hasActiveFilters =
-    filters.search || filters.locationTypes.length > 0 || filters.jobTypes.length > 0 || filters.salaryRange || filters.paidOnly || filters.remoteOnly;
+    filters.search ||
+    filters.locationTypes.length > 0 ||
+    filters.jobTypes.length > 0 ||
+    filters.salaryRange ||
+    filters.paidOnly ||
+    filters.remoteOnly;
 
   const filterContent = (
     <div className="p-5">
@@ -236,7 +255,10 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           Filters
         </h3>
         {hasActiveFilters && (
-          <button onClick={clearFilters} className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">
+          <button
+            onClick={clearFilters}
+            className="text-xs font-medium text-primary hover:text-primary-dark transition-colors"
+          >
             Clear All
           </button>
         )}
@@ -265,7 +287,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             onClick={() => setFilters((prev) => ({ ...prev, paidOnly: !prev.paidOnly }))}
             className={`w-10 h-6 rounded-full transition-colors ${filters.paidOnly ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'} relative`}
           >
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.paidOnly ? 'left-5' : 'left-1'}`} />
+            <span
+              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.paidOnly ? 'left-5' : 'left-1'}`}
+            />
           </button>
         </label>
         <label className="flex items-center justify-between cursor-pointer group">
@@ -274,7 +298,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             onClick={() => setFilters((prev) => ({ ...prev, remoteOnly: !prev.remoteOnly }))}
             className={`w-10 h-6 rounded-full transition-colors ${filters.remoteOnly ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'} relative`}
           >
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.remoteOnly ? 'left-5' : 'left-1'}`} />
+            <span
+              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.remoteOnly ? 'left-5' : 'left-1'}`}
+            />
           </button>
         </label>
       </div>
@@ -285,8 +311,15 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
         <div className="space-y-2">
           {['REMOTE', 'ONSITE', 'HYBRID'].map((type) => (
             <label key={type} className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" checked={filters.locationTypes.includes(type)} onChange={() => toggleFilter('locationTypes', type)} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20" />
-              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors capitalize">{type.toLowerCase()}</span>
+              <input
+                type="checkbox"
+                checked={filters.locationTypes.includes(type)}
+                onChange={() => toggleFilter('locationTypes', type)}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+              />
+              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors capitalize">
+                {type.toLowerCase()}
+              </span>
             </label>
           ))}
         </div>
@@ -303,8 +336,15 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             { value: 'FULL_TIME', label: '💼 Full-time' },
           ].map((type) => (
             <label key={type.value} className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" checked={filters.jobTypes.includes(type.value)} onChange={() => toggleFilter('jobTypes', type.value)} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20" />
-              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors">{type.label}</span>
+              <input
+                type="checkbox"
+                checked={filters.jobTypes.includes(type.value)}
+                onChange={() => toggleFilter('jobTypes', type.value)}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+              />
+              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors">
+                {type.label}
+              </span>
             </label>
           ))}
         </div>
@@ -328,14 +368,39 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       </div>
 
       {/* Active Tags */}
-      {(filters.locationTypes.length > 0 || filters.jobTypes.length > 0 || filters.paidOnly || filters.remoteOnly) && (
+      {(filters.locationTypes.length > 0 ||
+        filters.jobTypes.length > 0 ||
+        filters.paidOnly ||
+        filters.remoteOnly) && (
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <p className="text-xs font-medium text-text-sub mb-2">Active:</p>
           <div className="flex flex-wrap gap-1.5">
-            {filters.paidOnly && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Paid</span>}
-            {filters.remoteOnly && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Remote</span>}
-            {filters.locationTypes.map((t) => <span key={t} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">{t.toLowerCase()}</span>)}
-            {filters.jobTypes.map((t) => <span key={t} className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">{formatJobType(t)}</span>)}
+            {filters.paidOnly && (
+              <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                Paid
+              </span>
+            )}
+            {filters.remoteOnly && (
+              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                Remote
+              </span>
+            )}
+            {filters.locationTypes.map((t) => (
+              <span
+                key={t}
+                className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
+              >
+                {t.toLowerCase()}
+              </span>
+            ))}
+            {filters.jobTypes.map((t) => (
+              <span
+                key={t}
+                className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+              >
+                {formatJobType(t)}
+              </span>
+            ))}
           </div>
         </div>
       )}
@@ -389,11 +454,17 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           {/* Mobile Filter Panel */}
           {showMobileFilters && (
             <div className="lg:hidden fixed inset-0 z-50">
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)} />
+              <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setShowMobileFilters(false)}
+              />
               <div className="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-card-light dark:bg-card-dark shadow-2xl overflow-y-auto">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                   <h3 className="font-bold">Filters</h3>
-                  <button onClick={() => setShowMobileFilters(false)} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
                     <XMarkIcon className="w-5 h-5" />
                   </button>
                 </div>
@@ -432,8 +503,15 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             ) : jobs.length === 0 ? (
               <div className="text-center py-20">
                 <BriefcaseIcon className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto" />
-                <p className="mt-4 text-gray-500 dark:text-gray-400">No jobs found matching your criteria</p>
-                <button onClick={clearFilters} className="mt-4 text-primary hover:text-primary-dark font-medium">Clear Filters</button>
+                <p className="mt-4 text-gray-500 dark:text-gray-400">
+                  No jobs found matching your criteria
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 text-primary hover:text-primary-dark font-medium"
+                >
+                  Clear Filters
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -441,7 +519,8 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                   const isInternship = job.jobType === 'INTERNSHIP' || job.jobType === 'GRADUATE';
                   const deadline = formatDeadline(job.applicationDeadline);
                   const duration = formatDuration(job);
-                  const isDeadlineSoon = deadline && (deadline.includes('d left') || deadline === 'Today');
+                  const isDeadlineSoon =
+                    deadline && (deadline.includes('d left') || deadline === 'Today');
 
                   return (
                     <div
@@ -453,19 +532,28 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                         <div className="flex items-center gap-3">
                           <div className="size-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-base font-bold text-gray-700 dark:text-gray-300 flex-shrink-0">
                             {job.employer?.logoUrl ? (
-                              <img src={job.employer.logoUrl} alt={job.company} className="w-full h-full rounded-xl object-cover" />
+                              <img
+                                src={job.employer.logoUrl}
+                                alt={job.company}
+                                className="w-full h-full rounded-xl object-cover"
+                              />
                             ) : (
                               job.company?.[0]?.toUpperCase() || 'C'
                             )}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-text-main dark:text-white group-hover:text-primary transition-colors truncate text-[15px]" title={job.title}>
+                            <h4
+                              className="font-bold text-text-main dark:text-white group-hover:text-primary transition-colors truncate text-[15px]"
+                              title={job.title}
+                            >
                               {job.title}
                             </h4>
                             <p className="text-xs text-text-sub truncate flex items-center gap-1">
                               {job.company}
                               {job.employer?.verificationStatus === 'verified' && (
-                                <span className="text-blue-500" title="Verified">✓</span>
+                                <span className="text-blue-500" title="Verified">
+                                  ✓
+                                </span>
                               )}
                             </p>
                           </div>
@@ -482,15 +570,21 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                       <div className="space-y-2 mb-4">
                         {/* Compensation */}
                         <div className="flex items-center gap-2 text-xs">
-                          <CurrencyDollarIcon className={`w-4 h-4 flex-shrink-0 ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-500'}`} />
-                          <span className={`font-semibold ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-600 dark:text-green-400'}`}>
+                          <CurrencyDollarIcon
+                            className={`w-4 h-4 flex-shrink-0 ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-500'}`}
+                          />
+                          <span
+                            className={`font-semibold ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-600 dark:text-green-400'}`}
+                          >
                             {formatCompensation(job)}
                           </span>
-                          {isInternship && job.compensationType && job.compensationType !== 'UNPAID' && (
-                            <span className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase">
-                              {job.compensationType}
-                            </span>
-                          )}
+                          {isInternship &&
+                            job.compensationType &&
+                            job.compensationType !== 'UNPAID' && (
+                              <span className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase">
+                                {job.compensationType}
+                              </span>
+                            )}
                         </div>
 
                         {/* Duration + Start (internships) */}
@@ -501,7 +595,11 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                             {duration && job.startDate && <span>·</span>}
                             {job.startDate && (
                               <span>
-                                Starts {new Date(job.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                Starts{' '}
+                                {new Date(job.startDate).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  year: 'numeric',
+                                })}
                               </span>
                             )}
                             {job.hoursPerWeek && <span>· {job.hoursPerWeek} hrs/wk</span>}
@@ -520,8 +618,16 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                         {/* Deadline (internships) */}
                         {deadline && (
                           <div className="flex items-center gap-2 text-xs">
-                            <CalendarIcon className={`w-4 h-4 flex-shrink-0 ${isDeadlineSoon ? 'text-red-500' : 'text-orange-400'}`} />
-                            <span className={isDeadlineSoon ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-text-sub'}>
+                            <CalendarIcon
+                              className={`w-4 h-4 flex-shrink-0 ${isDeadlineSoon ? 'text-red-500' : 'text-orange-400'}`}
+                            />
+                            <span
+                              className={
+                                isDeadlineSoon
+                                  ? 'text-red-600 dark:text-red-400 font-semibold'
+                                  : 'text-text-sub'
+                              }
+                            >
                               Deadline: {deadline}
                             </span>
                           </div>
@@ -530,14 +636,22 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
 
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1.5 mb-4">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${job.jobType === 'INTERNSHIP' ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' :
-                            job.jobType === 'GRADUATE' ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' :
-                              'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                          }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${
+                            job.jobType === 'INTERNSHIP'
+                              ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                              : job.jobType === 'GRADUATE'
+                                ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
                           {formatJobType(job.jobType)}
                         </span>
                         {job.skills?.slice(0, 3).map((skill) => (
-                          <span key={skill} className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-[10px] font-medium text-text-sub">
+                          <span
+                            key={skill}
+                            className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-[10px] font-medium text-text-sub"
+                          >
                             {skill}
                           </span>
                         ))}
@@ -563,7 +677,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                             Apply Now →
                           </button>
                         )}
-                        <span className="text-xs text-gray-400">{timeAgo(job.postedAt || new Date().toISOString())}</span>
+                        <span className="text-xs text-gray-400">
+                          {timeAgo(job.postedAt || new Date().toISOString())}
+                        </span>
                       </div>
                     </div>
                   );
@@ -577,9 +693,14 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       {isAuthenticated && (
         <ApplyJobModal
           isOpen={showApplyModal}
-          onClose={() => { setShowApplyModal(false); setSelectedJob(null); }}
+          onClose={() => {
+            setShowApplyModal(false);
+            setSelectedJob(null);
+          }}
           job={selectedJob}
-          onSuccess={() => { if (selectedJob) handleApplySuccess(selectedJob.id); }}
+          onSuccess={() => {
+            if (selectedJob) handleApplySuccess(selectedJob.id);
+          }}
         />
       )}
     </div>

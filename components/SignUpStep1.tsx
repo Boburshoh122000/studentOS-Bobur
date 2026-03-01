@@ -71,31 +71,37 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
     setIsLoading(true);
 
-    const { data, error: apiError } = await authApi.register({
-      email,
-      password,
-      fullName,
-    });
+    try {
+      const { data, error: apiError } = await authApi.register({
+        email,
+        password,
+        fullName,
+      });
 
-    if (apiError) {
-      setError(apiError);
-      setIsLoading(false);
-      return;
-    }
-
-    if (data) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-
-      toast.success('Account created successfully!');
-
-      // Navigate to onboarding (role selection)
-      const redirectTo = searchParams.get('redirect');
-      if (redirectTo) {
-        navigate(redirectTo, { replace: true });
-      } else {
-        navigate('/signup/step-2', { replace: true });
+      if (apiError) {
+        setError(apiError);
+        return;
       }
+
+      if (data) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+
+        toast.success('Account created successfully!');
+
+        // Navigate to onboarding (role selection)
+        const redirectTo = searchParams.get('redirect');
+        if (redirectTo) {
+          navigate(redirectTo, { replace: true });
+        } else {
+          navigate('/signup/step-2', { replace: true });
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 

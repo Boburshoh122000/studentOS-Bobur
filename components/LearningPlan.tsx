@@ -28,22 +28,6 @@ interface Resource {
   isCompleted: boolean;
 }
 
-interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string | null;
-  userAnswer: number | null;
-}
-
-interface Quiz {
-  id: string;
-  phaseId: string;
-  score: number | null;
-  questions: QuizQuestion[];
-}
-
 interface Phase {
   id: string;
   title: string;
@@ -51,7 +35,6 @@ interface Phase {
   orderIndex: number;
   isCompleted: boolean;
   resources: Resource[];
-  quiz: Quiz | null;
 }
 
 interface Plan {
@@ -60,16 +43,6 @@ interface Plan {
   durationWeeks: number;
   createdAt: string;
   phases: Phase[];
-}
-
-interface QuizResult {
-  questionId: string;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  userAnswer: number;
-  isCorrect: boolean;
-  explanation: string | null;
 }
 
 /* ─── Pegtop Loader ───────────────────────────────────────────────────────── */
@@ -245,8 +218,9 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     [plan, fetchActivePlan]
   );
 
-  // Hard reset: delete from backend + clear all local state
-  const handleStartNew = async () => {
+  // ══ BULLETPROOF HARD RESET ══
+  // Deletes plan from backend DB + wipes ALL local state back to initial
+  const handleHardReset = useCallback(async () => {
     if (plan) {
       try {
         await learningPlanApi.deletePlan(plan.id);
@@ -254,89 +228,30 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         console.error('Failed to delete plan:', err);
       }
     }
+    // Force wipe every piece of local state
     setPlan(null);
     setTopic('');
+    setDuration('4 weeks');
     setDifficulty('intermediate');
+    setIsGenerating(false);
     setError(null);
-  };
+    setShowInsufficientModal(false);
+    setCreditErrorData(null);
+  }, [plan]);
 
-  // ── Quiz state ──
-  const [quizPhaseId, setQuizPhaseId] = useState<string | null>(null);
-  const [quizLoading, setQuizLoading] = useState(false);
-  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
-  const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>([]);
-  const [quizStep, setQuizStep] = useState(0); // 0-4 = question index, 5 = results
-  const [quizResults, setQuizResults] = useState<QuizResult[] | null>(null);
-  const [quizScore, setQuizScore] = useState<number | null>(null);
-
-  const handleStartQuiz = useCallback(async (phaseId: string) => {
-    setQuizPhaseId(phaseId);
-    setQuizLoading(true);
-    setQuizStep(0);
-    setQuizAnswers([]);
-    setQuizResults(null);
-    setQuizScore(null);
-    try {
-      const res = await learningPlanApi.generateQuiz(phaseId);
-      const data = res.data as { quiz: Quiz };
-      if (data?.quiz) {
-        setActiveQuiz(data.quiz);
-        setQuizAnswers(new Array(data.quiz.questions.length).fill(null));
-        // If already submitted, show results
-        if (data.quiz.score !== null) {
-          setQuizStep(data.quiz.questions.length);
-          setQuizScore(data.quiz.score);
-          setQuizResults(
-            data.quiz.questions.map((q) => ({
-              questionId: q.id,
-              question: q.question,
-              options: q.options,
-              correctIndex: q.correctIndex,
-              userAnswer: q.userAnswer ?? -1,
-              isCorrect: q.userAnswer === q.correctIndex,
-              explanation: q.explanation,
-            }))
-          );
-        }
-      }
-    } catch {
-      setError('Failed to generate quiz');
-    } finally {
-      setQuizLoading(false);
-    }
+  // ══ AGGRESSIVE UNMOUNT CLEANUP ══
+  // When the user navigates away from this page, wipe local state
+  // so stale data never persists across route changes
+  useEffect(() => {
+    return () => {
+      setPlan(null);
+      setTopic('');
+      setDuration('4 weeks');
+      setDifficulty('intermediate');
+      setIsGenerating(false);
+      setError(null);
+    };
   }, []);
-
-  const handleSubmitQuiz = useCallback(async () => {
-    if (!activeQuiz) return;
-    const answers = quizAnswers.map((a) => a ?? -1);
-    try {
-      const res = await learningPlanApi.submitQuiz(activeQuiz.id, answers);
-      const data = res.data as { score: number; results: QuizResult[] };
-      if (data) {
-        setQuizScore(data.score);
-        setQuizResults(data.results);
-        setQuizStep(activeQuiz.questions.length); // Go to results view
-        // Update plan state locally
-        if (plan) {
-          setPlan({
-            ...plan,
-            phases: plan.phases.map((p) =>
-              p.id === quizPhaseId ? { ...p, quiz: { ...activeQuiz, score: data.score } } : p
-            ),
-          });
-        }
-      }
-    } catch {
-      setError('Failed to submit quiz');
-    }
-  }, [activeQuiz, quizAnswers, plan, quizPhaseId]);
-
-  const closeQuiz = () => {
-    setQuizPhaseId(null);
-    setActiveQuiz(null);
-    setQuizResults(null);
-    setQuizScore(null);
-  };
 
   // ── Computed values ──
   const totalResources = plan?.phases.reduce((sum, p) => sum + p.resources.length, 0) || 0;
@@ -669,6 +584,20 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               </div>
             )}
 
+            {/* ── Create New Plan action ── */}
+            <div className="flex justify-end mb-6 w-full sticky top-0 z-10">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleHardReset();
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Create New Plan
+              </button>
+            </div>
+
             <div className="flex gap-8">
               {/* ── Timeline Column ── */}
               <div className="flex-1 space-y-8 relative pb-20">
@@ -704,42 +633,18 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
                       {/* Phase card */}
                       {isCompleted ? (
-                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-80">
-                          <div className="flex justify-between items-start mb-3">
+                        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800/60 opacity-60">
+                          <div className="flex justify-between items-start mb-4">
                             <div>
                               <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500 line-through">
                                 {phase.title}
                               </h3>
                               <p className="text-sm text-gray-400">Completed</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {phase.quiz?.score !== null && phase.quiz?.score !== undefined && (
-                                <span
-                                  className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                                    phase.quiz.score >= 80
-                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                      : phase.quiz.score >= 50
-                                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                                        : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                                  }`}
-                                >
-                                  Quiz: {phase.quiz.score}%
-                                </span>
-                              )}
-                              <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
-                                Done
-                              </span>
-                            </div>
+                            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
+                              Done
+                            </span>
                           </div>
-                          <button
-                            onClick={() => handleStartQuiz(phase.id)}
-                            className="w-full mt-1 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-                          >
-                            <SparklesIcon className="w-4 h-4" />
-                            {phase.quiz?.score !== null && phase.quiz?.score !== undefined
-                              ? 'View Quiz Results'
-                              : 'Take Quiz'}
-                          </button>
                         </div>
                       ) : isLocked ? (
                         <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 border-dashed">

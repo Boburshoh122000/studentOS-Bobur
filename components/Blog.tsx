@@ -4,7 +4,13 @@ import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, ArrowRightIcon, DocumentTextIcon, ExclamationCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowRightIcon,
+  DocumentTextIcon,
+  ExclamationCircleIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/solid';
 
 interface BlogPost {
   id: string;
@@ -53,7 +59,8 @@ export default function Blog({ navigateTo }: NavigationProps) {
         params.tag = activeCategory;
       }
       const response = await blogApi.list(params);
-      setPosts(response.data.posts || []);
+      const data = response.data as any;
+      setPosts(data?.posts || []);
     } catch (err: any) {
       console.error('Failed to fetch blog posts:', err);
       setError('Failed to load blog posts. Please try again.');
@@ -120,8 +127,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                       onClick={() => navigate('/blog/mastering-deep-work')}
                       className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
                     >
-                      Read Article{' '}
-                      <ArrowRightIcon className="w-3.5 h-3.5" />
+                      Read Article <ArrowRightIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

@@ -3,7 +3,13 @@ import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
-import { ArrowDownTrayIcon, ClipboardIcon, ClockIcon, DocumentTextIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowDownTrayIcon,
+  ClipboardIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
@@ -31,10 +37,16 @@ export default function CoverLetterGenerator({ navigateTo }: NavigationProps) {
         company: company.trim(),
         jobDescription: jobDescription.trim(),
       });
-      setGeneratedLetter((response.data as { coverLetter: string }).coverLetter || '');
-    } catch (err: any) {
+      if (response.error) {
+        setError(response.error);
+        return;
+      }
+      setGeneratedLetter((response.data as { coverLetter: string })?.coverLetter || '');
+    } catch (err: unknown) {
       console.error('Failed to generate cover letter:', err);
-      setError(err.response?.data?.error || 'Failed to generate cover letter. Please try again.');
+      setError(
+        err instanceof Error ? err.message : 'Failed to generate cover letter. Please try again.'
+      );
     } finally {
       setIsGenerating(false);
     }
