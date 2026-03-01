@@ -272,7 +272,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       <DashboardLayout currentScreen={Screen.PLAGIARISM} navigateTo={navigateTo}>
         <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] bg-gray-50 dark:bg-background-dark overflow-hidden">
           {/* ═══════ LEFT: Document Editor ═══════ */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-card-dark m-3 md:m-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white dark:bg-card-dark m-3 md:m-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2.5">
                 <DocumentTextIcon className="w-5 h-5 text-indigo-500" />
@@ -348,6 +348,96 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <span>{wordCount} words</span>
               </div>
             </div>
+
+            {/* ══ Scanning Overlay ══ */}
+            {isChecking && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 dark:bg-card-dark/80 backdrop-blur-md rounded-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="pencil">
+                  <defs>
+                    <clipPath id="pencil-eraser">
+                      <rect rx="5" ry="5" width="30" height="30" />
+                    </clipPath>
+                  </defs>
+                  <circle
+                    className="pencil__stroke"
+                    cx="100"
+                    cy="100"
+                    r="70"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray="439.82 439.82"
+                    strokeDashoffset="439.82"
+                    strokeLinecap="round"
+                    transform="rotate(-113,100,100)"
+                  />
+                  <g className="pencil__rotate" transform="translate(100,100)">
+                    <g fill="none">
+                      <circle
+                        className="pencil__body1"
+                        cx="0"
+                        cy="0"
+                        r="64"
+                        stroke="hsl(223,90%,50%)"
+                        strokeWidth="30"
+                        strokeDasharray="402.12 402.12"
+                        strokeDashoffset="351.86"
+                        transform="rotate(-90)"
+                      />
+                      <circle
+                        className="pencil__body2"
+                        cx="0"
+                        cy="0"
+                        r="74"
+                        stroke="hsl(223,90%,60%)"
+                        strokeWidth="10"
+                        strokeDasharray="464.96 464.96"
+                        strokeDashoffset="406.84"
+                        transform="rotate(-90)"
+                      />
+                      <circle
+                        className="pencil__body3"
+                        cx="0"
+                        cy="0"
+                        r="54"
+                        stroke="hsl(223,90%,40%)"
+                        strokeWidth="10"
+                        strokeDasharray="339.29 339.29"
+                        strokeDashoffset="296.88"
+                        transform="rotate(-90)"
+                      />
+                    </g>
+                    <g className="pencil__eraser" transform="rotate(-90) translate(49,0)">
+                      <g className="pencil__eraser-skew">
+                        <rect fill="hsl(223,90%,70%)" rx="3" ry="3" width="30" height="30" />
+                        <rect
+                          fill="hsl(223,90%,60%)"
+                          width="5"
+                          height="30"
+                          clipPath="url(#pencil-eraser)"
+                        />
+                        <rect fill="hsl(223,10%,90%)" width="30" height="20" />
+                        <rect fill="hsl(223,10%,70%)" width="15" height="20" />
+                        <rect fill="hsl(223,10%,80%)" width="5" height="20" />
+                        <rect fill="hsla(223,10%,10%,0.2)" y="6" width="30" height="2" />
+                        <rect fill="hsla(223,10%,10%,0.2)" y="13" width="30" height="2" />
+                      </g>
+                    </g>
+                    <g className="pencil__point" transform="rotate(-90) translate(49,-30)">
+                      <polygon fill="hsl(33,90%,70%)" points="15 0,30 30,0 30" />
+                      <polygon fill="hsl(33,90%,50%)" points="15 0,6 30,0 30" />
+                      <polygon fill="hsl(223,10%,10%)" points="15 0,20 10,10 10" />
+                    </g>
+                  </g>
+                </svg>
+                <p className="mt-6 text-lg font-semibold text-gray-700 dark:text-gray-200">
+                  Scanning document...
+                </p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Analyzing {selectedOptions.length} module{selectedOptions.length > 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* ═══════ RIGHT: Analysis Sidebar ═══════ */}
