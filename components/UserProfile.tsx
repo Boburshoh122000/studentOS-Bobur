@@ -4,7 +4,24 @@ import { userApi, authApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
-import { AcademicCapIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, BoltIcon, BriefcaseIcon, BuildingOffice2Icon, CheckIcon, DocumentTextIcon, EyeIcon, PencilIcon, PhotoIcon, PlusIcon, ShareIcon, TrashIcon, TrophyIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  BoltIcon,
+  BriefcaseIcon,
+  BuildingOffice2Icon,
+  CheckIcon,
+  DocumentTextIcon,
+  EyeIcon,
+  PencilIcon,
+  PhotoIcon,
+  PlusIcon,
+  ShareIcon,
+  TrashIcon,
+  TrophyIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface EducationEntry {
@@ -268,7 +285,6 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
     <DashboardLayout currentScreen={Screen.PROFILE} navigateTo={navigateTo}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
           {/* ═══ LEFT COLUMN — Main Content ═══ */}
           <div className="lg:col-span-2 space-y-5">
             {/* ═══ HEADER CARD ═══ */}
@@ -307,7 +323,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         {fullName || 'Your Name'}
                       </h1>
                       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                        <BriefcaseIcon className="w-5 h-5" className="text-gray-400" />
+                        <BriefcaseIcon className="w-4 h-4 text-gray-400" />
                         {headline || 'Add a headline'}
                       </p>
                     </div>
@@ -324,12 +340,20 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     >
                       <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
-                    <button onClick={saveHeader} disabled={saving === 'header'} className={saveBtnCls}>
+                    <button
+                      onClick={saveHeader}
+                      disabled={saving === 'header'}
+                      className={saveBtnCls}
+                    >
                       <CheckIcon className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditingHeader(true)} className={actionBtnCls} title="Edit">
+                  <button
+                    onClick={() => setEditingHeader(true)}
+                    className={actionBtnCls}
+                    title="Edit"
+                  >
                     <PencilIcon className="w-4 h-4" />
                   </button>
                 )}
@@ -395,7 +419,11 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     >
                       <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
-                    <button onClick={saveSkills} disabled={saving === 'skills'} className={saveBtnCls}>
+                    <button
+                      onClick={saveSkills}
+                      disabled={saving === 'skills'}
+                      className={saveBtnCls}
+                    >
                       <CheckIcon className="w-3.5 h-3.5" /> Save
                     </button>
                   </div>
@@ -526,7 +554,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                             <p className="text-xs text-gray-500 dark:text-gray-400">{w.company}</p>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-gray-400 font-medium mr-2">{w.duration}</span>
+                            <span className="text-xs text-gray-400 font-medium mr-2">
+                              {w.duration}
+                            </span>
                             <button
                               onClick={() => setEditingWorkIdx(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-600 rounded transition"
@@ -679,7 +709,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                             <p className="text-xs text-gray-500 dark:text-gray-400">{ed.degree}</p>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-gray-400 font-medium mr-2">{ed.year}</span>
+                            <span className="text-xs text-gray-400 font-medium mr-2">
+                              {ed.year}
+                            </span>
                             <button
                               onClick={() => setEditingEduIdx(i)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-600 rounded transition"
@@ -741,7 +773,11 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     <button onClick={() => setAddingEdu(false)} className={cancelBtnCls}>
                       <XMarkIcon className="w-3.5 h-3.5" /> Cancel
                     </button>
-                    <button onClick={confirmAddEdu} disabled={saving === 'edu'} className={saveBtnCls}>
+                    <button
+                      onClick={confirmAddEdu}
+                      disabled={saving === 'edu'}
+                      className={saveBtnCls}
+                    >
                       <PlusIcon className="w-3.5 h-3.5" /> Add
                     </button>
                   </div>
@@ -792,7 +828,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       {cert.fileName?.endsWith('.pdf') ? (
                         <DocumentTextIcon className="w-[18px] h-[18px]" />
                       ) : (
-                        <ImageIcon className="w-[18px] h-[18px]" />
+                        <PhotoIcon className="w-[18px] h-[18px]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -884,7 +920,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
           <div className="space-y-5">
             {/* Profile Strength */}
             <div className={cardCls}>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Profile Strength</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
+                Profile Strength
+              </h3>
               {(() => {
                 const sections = [
                   { label: 'Name & Headline', done: !!(fullName && headline) },
@@ -894,7 +932,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   { label: 'Education', done: educationHistory.length > 0 },
                   { label: 'Certificates', done: certificates.length > 0 },
                 ];
-                const completed = sections.filter(s => s.done).length;
+                const completed = sections.filter((s) => s.done).length;
                 const pct = Math.round((completed / sections.length) * 100);
                 const circumference = 2 * Math.PI * 40;
                 const offset = circumference - (pct / 100) * circumference;
@@ -903,21 +941,48 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     <div className="flex justify-center mb-5">
                       <div className="relative size-28">
                         <svg viewBox="0 0 100 100" className="size-full -rotate-90">
-                          <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="none" className="text-gray-100 dark:text-gray-800" />
-                          <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset} className="text-primary transition-all duration-700" />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            className="text-gray-100 dark:text-gray-800"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            className="text-primary transition-all duration-700"
+                          />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-2xl font-bold text-gray-900 dark:text-white">{pct}%</span>
+                          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {pct}%
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-2.5">
                       {sections.map((s) => (
                         <div key={s.label} className="flex items-center gap-2.5">
-                          <div className={`size-5 rounded-full flex items-center justify-center text-white text-[10px] ${s.done ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                          <div
+                            className={`size-5 rounded-full flex items-center justify-center text-white text-[10px] ${s.done ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                          >
                             {s.done && <CheckIcon className="w-3 h-3" />}
                           </div>
-                          <span className={`text-sm ${s.done ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>{s.label}</span>
+                          <span
+                            className={`text-sm ${s.done ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}
+                          >
+                            {s.label}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -928,7 +993,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
 
             {/* Quick Actions */}
             <div className={cardCls}>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
+                Quick Actions
+              </h3>
               <div className="space-y-2">
                 <button
                   onClick={() => {
@@ -966,13 +1033,13 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                 <div>
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Pro Tip</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Complete all profile sections to stand out to employers. Profiles with 100% completion get 3× more visibility.
+                    Complete all profile sections to stand out to employers. Profiles with 100%
+                    completion get 3× more visibility.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
