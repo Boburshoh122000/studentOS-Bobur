@@ -1,6 +1,6 @@
 // API Configuration and HTTP Client
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -313,6 +313,7 @@ export const scholarshipApi = {
   update: (id: string, data: any) => api.patch(`/scholarships/${id}`, data),
   delete: (id: string) => api.delete(`/scholarships/${id}`),
   scrape: (url: string) => api.post<any>('/scholarships/admin/scrape', { url }),
+  autoMatch: (filters: any) => api.post<any>('/scholarships/auto-match', filters),
 };
 
 // Jobs API

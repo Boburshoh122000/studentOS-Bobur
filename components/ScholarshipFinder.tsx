@@ -275,13 +275,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   /* ── Saved state ── */
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
-  /* ── AI Scraper state ── */
-  const [scrapeUrl, setScrapeUrl] = useState('');
-  const [isScraping, setIsScraping] = useState(false);
-  const [scrapeMessage, setScrapeMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  /* ── AI Auto-Match state ── */
+  const [isAiSearching, setIsAiSearching] = useState(false);
 
   /* ── Fetch all scholarships on mount ── */
   const fetchScholarships = useCallback(async () => {
@@ -364,8 +359,33 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     profile.gpa > 0 ||
     profile.langTest !== 'None';
 
-  const handleFindMatch = () => {
+  const handleFindMatch = async () => {
     setFiltersApplied(true);
+    setIsAiSearching(true);
+    try {
+      const res = await scholarshipApi.autoMatch({
+        studyLevel: profile.studyLevel,
+        countries: profile.countries,
+        major: profile.major,
+        gpa: profile.gpa,
+        fundingTypes: profile.fundingTypes,
+      });
+      const aiResults = (res.data as any)?.scholarships || [];
+      if (aiResults.length > 0) {
+        // Merge AI-scraped results with existing, deduplicate by title
+        setAllScholarships((prev) => {
+          const existingTitles = new Set(prev.map((s: Scholarship) => s.title.toLowerCase()));
+          const newOnes = aiResults.filter(
+            (s: Scholarship) => !existingTitles.has(s.title.toLowerCase())
+          );
+          return [...prev, ...newOnes];
+        });
+      }
+    } catch (err) {
+      console.error('AI auto-match failed:', err);
+    } finally {
+      setIsAiSearching(false);
+    }
   };
 
   const handleResetFilters = () => {
@@ -496,10 +516,10 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 flex overflow-hidden bg-slate-50/80 dark:bg-[#0f111a] h-full p-4 gap-4">
+      <div className="flex-1 flex overflow-hidden bg-slate-50/80 dark:bg-[#0f111a] h-full p-6 gap-8">
         {/* ═══════════ LEFT SIDEBAR — AI PROFILE BUILDER ═══════════ */}
-        <aside className="w-[300px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+        <aside className="w-[320px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
                 <SparklesIcon className="w-5 h-5 text-blue-500" />
@@ -519,7 +539,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-1">
             {/* ── Field of Study ── */}
             <FilterSection
               title="Field of Study"
@@ -685,97 +705,36 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             </FilterSection>
           </div>
 
-          {/* ── AI URL Scraper ── */}
-          <div className="p-5 border-t border-gray-100 dark:border-gray-800">
-            <div className="mb-3">
-              <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                <GlobeAltIcon className="w-3.5 h-3.5 text-emerald-500" />
-                AI URL Scraper
-              </h4>
-              <p className="text-[10px] text-gray-400 mb-2">
-                Paste a scholarship page URL to auto-extract data.
-              </p>
-              <div className="flex gap-1.5">
-                <input
-                  type="url"
-                  value={scrapeUrl}
-                  onChange={(e) => {
-                    setScrapeUrl(e.target.value);
-                    setScrapeMessage(null);
-                  }}
-                  placeholder="https://example.com/scholarship"
-                  aria-label="Scholarship URL to scrape"
-                  className="flex-1 min-w-0 px-2.5 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
-                />
-                <button
-                  onClick={async () => {
-                    if (!scrapeUrl.trim()) return;
-                    try {
-                      new URL(scrapeUrl);
-                    } catch {
-                      setScrapeMessage({ type: 'error', text: 'Invalid URL format.' });
-                      return;
-                    }
-                    setIsScraping(true);
-                    setScrapeMessage(null);
-                    try {
-                      const res = await scholarshipApi.scrape(scrapeUrl.trim());
-                      if (res.error) {
-                        setScrapeMessage({ type: 'error', text: res.error });
-                      } else {
-                        const title = (res.data as any)?.extracted?.title || 'Scholarship';
-                        setScrapeMessage({ type: 'success', text: `"${title}" added!` });
-                        setScrapeUrl('');
-                        fetchScholarships(); // refresh the list
-                      }
-                    } catch {
-                      setScrapeMessage({ type: 'error', text: 'Failed to scrape. Try again.' });
-                    } finally {
-                      setIsScraping(false);
-                    }
-                  }}
-                  disabled={isScraping || !scrapeUrl.trim()}
-                  title="Scrape scholarship from URL"
-                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shrink-0"
-                >
-                  {isScraping ? (
-                    <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <SparklesIcon className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-              {scrapeMessage && (
-                <p
-                  className={`text-[10px] mt-1.5 font-medium ${
-                    scrapeMessage.type === 'success'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-red-500 dark:text-red-400'
-                  }`}
-                >
-                  {scrapeMessage.text}
-                </p>
-              )}
-            </div>
-          </div>
-
           {/* ── Find My Match Button ── */}
-          <div className="p-5 border-t border-gray-100 dark:border-gray-800">
+          <div className="p-6 border-t border-gray-100 dark:border-gray-800">
             <button
               onClick={handleFindMatch}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 flex items-center justify-center gap-2 active:scale-[0.98]"
+              disabled={isAiSearching}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 flex items-center justify-center gap-2.5 active:scale-[0.98]"
             >
-              <SparklesIcon className="w-5 h-5" />
-              Find My Match
+              {isAiSearching ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  AI is searching the web…
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="w-5 h-5" />
+                  Find My Match
+                </>
+              )}
             </button>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mt-2">
+              Searches scholarshipscorner.website + our database
+            </p>
           </div>
         </aside>
 
         {/* ═══════════ RIGHT PANEL — RESULTS ═══════════ */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1300px] mx-auto p-6 md:p-8">
+          <div className="max-w-[1300px] mx-auto p-8 md:p-10">
             {/* ── Search Bar ── */}
-            <div className="mb-6">
+            <div className="mb-8">
               <div className="flex shadow-sm rounded-xl overflow-hidden max-w-2xl">
                 <div className="relative flex-1 bg-white dark:bg-card-dark border border-r-0 border-gray-200 dark:border-gray-700 rounded-l-xl">
                   <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -798,32 +757,47 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </div>
             </div>
 
-            {/* ── Loading ── */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-800 animate-pulse"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
-                      <div className="flex-1">
-                        <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-1.5" />
-                        <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
-                      </div>
+            {/* ── Loading / AI Searching ── */}
+            {isLoading || isAiSearching ? (
+              <>
+                {isAiSearching && (
+                  <div className="flex items-center gap-3 mb-8 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl">
+                    <span className="inline-block w-5 h-5 border-2 border-blue-400/30 border-t-blue-500 rounded-full animate-spin" />
+                    <div>
+                      <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                        AI is searching the web…
+                      </p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                        Scraping scholarshipscorner.website and matching to your profile
+                      </p>
                     </div>
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-3" />
-                    <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-28 mb-4" />
-                    <div className="h-8 bg-gray-50 dark:bg-gray-800/50 rounded w-full" />
                   </div>
-                ))}
-              </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-800 animate-pulse"
+                    >
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                        <div className="flex-1">
+                          <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
+                          <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                        </div>
+                      </div>
+                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-4" />
+                      <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-28 mb-5" />
+                      <div className="h-8 bg-gray-50 dark:bg-gray-800/50 rounded w-full" />
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : filtersApplied || searchQuery ? (
               /* ═══ STATE A & B: Filtered Results ═══ */
               <>
                 {/* Results count + partial match banner */}
-                <div className="mb-5">
+                <div className="mb-8">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Showing{' '}
@@ -860,7 +834,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 </div>
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {(filtersApplied ? displayScholarships : scoredScholarships).map((s) => (
                     <ScholarshipCard
                       key={s.id}
@@ -1035,7 +1009,7 @@ function ScholarshipCard({
   const isUrgent = days !== null && days > 0 && days <= 15;
 
   return (
-    <div className="bg-white/80 dark:bg-card-dark/80 backdrop-blur-xl rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group relative">
+    <div className="bg-white/80 dark:bg-card-dark/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group relative">
       {/* Save button */}
       <button
         onClick={(e) => {

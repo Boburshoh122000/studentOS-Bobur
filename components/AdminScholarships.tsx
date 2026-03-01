@@ -59,7 +59,7 @@ const emptyScholarship = {
   deadline: '',
   description: '',
   applicationUrl: '',
-  status: 'DRAFT' as const,
+  status: 'DRAFT' as Scholarship['status'],
 };
 
 const countries = [
@@ -143,7 +143,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
   const fetchStats = async () => {
     try {
       const response = await scholarshipApi.adminStats();
-      setStats(response.data);
+      if (response.data) setStats(response.data as Stats);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }

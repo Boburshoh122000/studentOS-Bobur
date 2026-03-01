@@ -126,7 +126,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         toast.error('Failed to load posts');
         console.error(error);
       } else if (data) {
-        setPosts(data);
+        setPosts(data as BlogPost[]);
       }
     } catch (err) {
       toast.error('Network error loading posts');
