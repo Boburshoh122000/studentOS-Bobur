@@ -4,7 +4,18 @@ import { learningPlanApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { AcademicCapIcon, ArrowLeftIcon, ArrowRightIcon, ArrowTopRightOnSquareIcon, CheckIcon, ComputerDesktopIcon, DocumentTextIcon, LockClosedIcon, SparklesIcon, TrashIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowTopRightOnSquareIcon,
+  CheckIcon,
+  ComputerDesktopIcon,
+  DocumentTextIcon,
+  LockClosedIcon,
+  SparklesIcon,
+  TrashIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -33,6 +44,55 @@ interface Plan {
   durationWeeks: number;
   createdAt: string;
   phases: Phase[];
+}
+
+/* ─── Pegtop Loader ───────────────────────────────────────────────────────── */
+
+const PegtopSVG = () => (
+  <svg width="36" height="40" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <path
+        d="M18 0C18 0 0 16 0 26C0 33.732 8.059 40 18 40C27.941 40 36 33.732 36 26C36 16 18 0 18 0Z"
+        fill="#4f46e5"
+      />
+      <path
+        d="M18 0C18 0 0 16 0 26C0 33.732 8.059 40 18 40C27.941 40 36 33.732 36 26C36 16 18 0 18 0Z"
+        fill="url(#shine)"
+        fillOpacity="0.5"
+      />
+      <ellipse
+        cx="12"
+        cy="18"
+        rx="4"
+        ry="6"
+        fill="white"
+        fillOpacity="0.3"
+        transform="rotate(-15 12 18)"
+      />
+    </g>
+    <defs>
+      <linearGradient id="shine" x1="18" y1="0" x2="18" y2="40" gradientUnits="userSpaceOnUse">
+        <stop stopColor="white" stopOpacity="0.6" />
+        <stop offset="1" stopColor="white" stopOpacity="0" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+function PegtopLoader() {
+  return (
+    <div className="loader" style={{ width: 100, height: 100 }}>
+      <div id="pegtopone">
+        <PegtopSVG />
+      </div>
+      <div id="pegtoptwo">
+        <PegtopSVG />
+      </div>
+      <div id="pegtopthree">
+        <PegtopSVG />
+      </div>
+    </div>
+  );
 }
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
@@ -237,8 +297,8 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     return (
       <DashboardLayout currentScreen={Screen.LEARNING_PLAN} navigateTo={navigateTo}>
         <div className="flex h-full items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <ArrowPathIcon className="w-8 h-8 text-primary animate-spin" />
+          <div className="flex flex-col items-center gap-6">
+            <PegtopLoader />
             <p className="text-sm text-text-sub">Loading your learning plan...</p>
           </div>
         </div>
@@ -325,11 +385,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
                 <button
@@ -372,13 +428,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
           <div className="max-w-6xl mx-auto p-8">
             {/* Thinking message */}
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white dark:bg-card-dark rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
-                <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
-                <span className="text-sm font-medium text-text-main dark:text-white">
-                  AI is structuring your learning journey...
-                </span>
-              </div>
+            <div className="flex flex-col items-center mb-10">
+              <PegtopLoader />
+              <p className="text-sm font-medium text-text-main dark:text-white mt-4">
+                AI is structuring your learning journey...
+              </p>
             </div>
 
             <div className="flex gap-8">
@@ -573,10 +627,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
                                     <h4
-                                      className={`text-base font-semibold transition-colors ${resource.isCompleted
-                                        ? 'text-gray-400 dark:text-gray-500 line-through'
-                                        : 'text-text-main dark:text-white group-hover/item:text-primary'
-                                        }`}
+                                      className={`text-base font-semibold transition-colors ${
+                                        resource.isCompleted
+                                          ? 'text-gray-400 dark:text-gray-500 line-through'
+                                          : 'text-text-main dark:text-white group-hover/item:text-primary'
+                                      }`}
                                     >
                                       {resource.title}
                                     </h4>
@@ -601,19 +656,21 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                       href={resource.url!}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${resource.isCompleted
-                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                        : 'border-gray-100 dark:border-gray-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-700/50'
-                                        }`}
+                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                                        resource.isCompleted
+                                          ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                          : 'border-gray-100 dark:border-gray-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-700/50'
+                                      }`}
                                     >
                                       {resourceContent}
                                     </a>
                                   ) : (
                                     <div
-                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all ${resource.isCompleted
-                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                        : 'border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                                        }`}
+                                      className={`group/item flex-1 flex items-start gap-4 p-4 rounded-xl border transition-all ${
+                                        resource.isCompleted
+                                          ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                                          : 'border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                      }`}
                                     >
                                       {resourceContent}
                                     </div>
@@ -752,18 +809,16 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       </DashboardLayout>
 
       {/* Insufficient Credits Modal */}
-      {
-        creditErrorData && (
-          <InsufficientCreditsModal
-            isOpen={showInsufficientModal}
-            onClose={() => setShowInsufficientModal(false)}
-            toolName={creditErrorData.toolName}
-            required={creditErrorData.required}
-            available={creditErrorData.available}
-            shortfall={creditErrorData.shortfall}
-          />
-        )
-      }
+      {creditErrorData && (
+        <InsufficientCreditsModal
+          isOpen={showInsufficientModal}
+          onClose={() => setShowInsufficientModal(false)}
+          toolName={creditErrorData.toolName}
+          required={creditErrorData.required}
+          available={creditErrorData.available}
+          shortfall={creditErrorData.shortfall}
+        />
+      )}
     </>
   );
 }
