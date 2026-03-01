@@ -338,8 +338,9 @@ router.get('/plagiarism-history', authenticate, async (req: AuthenticatedRequest
 // Plagiarism Report — get full report for a document
 router.get('/plagiarism-report/:id', authenticate, async (req: AuthenticatedRequest, res) => {
   try {
+    const docId = String(req.params.id);
     const doc = await prisma.plagiarismDocument.findFirst({
-      where: { id: req.params.id, userId: req.user!.id },
+      where: { id: docId, userId: req.user!.id },
       include: { report: true },
     });
     if (!doc) {
@@ -355,8 +356,9 @@ router.get('/plagiarism-report/:id', authenticate, async (req: AuthenticatedRequ
 // Delete Plagiarism Document
 router.delete('/plagiarism-document/:id', authenticate, async (req: AuthenticatedRequest, res) => {
   try {
+    const docId = String(req.params.id);
     const doc = await prisma.plagiarismDocument.findFirst({
-      where: { id: req.params.id, userId: req.user!.id },
+      where: { id: docId, userId: req.user!.id },
     });
     if (!doc) {
       res.status(404).json({ error: 'Document not found' });
