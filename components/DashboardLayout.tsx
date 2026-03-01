@@ -120,7 +120,7 @@ export default function DashboardLayout({
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Open navigation menu"
           >
-            <Bars3Icon className="w-5 h-5 text-white dark:text-white" />
+            <Bars3Icon className="w-5 h-5 text-gray-700 dark:text-white" />
           </button>
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">

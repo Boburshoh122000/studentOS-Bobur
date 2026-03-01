@@ -6,7 +6,38 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../src/contexts/AuthContext';
 import PostJobModal from './PostJobModal';
 import ViewApplicantModal from './ViewApplicantModal';
-import { AcademicCapIcon, ArrowDownTrayIcon, ArrowTrendingUpIcon, ArrowsUpDownIcon, Bars3Icon, BriefcaseIcon, BuildingOffice2Icon, CameraIcon, CheckIcon, ChevronRightIcon, ClipboardDocumentListIcon, ClockIcon, CloudArrowUpIcon, DocumentTextIcon, EllipsisHorizontalIcon, EllipsisVerticalIcon, ExclamationTriangleIcon, EyeIcon, FunnelIcon, GlobeAltIcon, LockClosedIcon, MagnifyingGlassIcon, MapPinIcon, PlusIcon, StarIcon, UserIcon, UserPlusIcon, UsersIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
+  ArrowTrendingUpIcon,
+  ArrowsUpDownIcon,
+  Bars3Icon,
+  BriefcaseIcon,
+  BuildingOffice2Icon,
+  CameraIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  ClipboardDocumentListIcon,
+  ClockIcon,
+  CloudArrowUpIcon,
+  DocumentTextIcon,
+  EllipsisHorizontalIcon,
+  EllipsisVerticalIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  FunnelIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  PlusIcon,
+  StarIcon,
+  UserIcon,
+  UserPlusIcon,
+  UsersIcon,
+  VideoCameraIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 interface EmployerStats {
   activeJobs: number;
@@ -64,15 +95,20 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
-    const [statsRes, appsRes] = await Promise.all([
-      employerApi.getStats(),
-      employerApi.getApplications({ limit: 5 }),
-    ]);
+    try {
+      const [statsRes, appsRes] = await Promise.all([
+        employerApi.getStats(),
+        employerApi.getApplications({ limit: 5 }),
+      ]);
 
-    if (statsRes.data) setStats(statsRes.data);
-    if (appsRes.data) setRecentApps((appsRes.data as any).applications);
-
-    setIsLoading(false);
+      if (statsRes.data) setStats(statsRes.data);
+      if (appsRes.data) setRecentApps((appsRes.data as any).applications);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchJobs = async () => {
@@ -135,11 +171,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
     setIsLoading(true);
     try {
       await employerApi.updateProfile(company);
-      // alert('Profile updated successfully'); // Temporary feedback
+      toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Failed to update profile', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleCompanyChange = (
@@ -378,6 +416,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   </div>
                   <button
                     onClick={() => setIsMobileSidebarOpen(false)}
+                    aria-label="Close navigation menu"
                     className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     <XMarkIcon className="w-5 h-5 text-slate-500" />
@@ -539,8 +578,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-1.5 text-sm">
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
-                        <ArrowTrendingUpIcon className="w-4 h-4" />
-                        2 New
+                        <ArrowTrendingUpIcon className="w-4 h-4" />2 New
                       </span>
                       <span className="text-slate-400 font-medium">this week</span>
                     </div>
@@ -689,7 +727,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <h3 className="font-bold text-lg text-slate-900 dark:text-white">
                         Application Trends
                       </h3>
-                      <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                      <button
+                        aria-label="Application trends options"
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                      >
                         <EllipsisHorizontalIcon className="w-5 h-5" />
                       </button>
                     </div>
@@ -953,7 +994,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">
-                              <button className="text-slate-400 hover:text-primary transition-colors">
+                              <button
+                                aria-label="Job options"
+                                className="text-slate-400 hover:text-primary transition-colors"
+                              >
                                 <EllipsisVerticalIcon className="w-5 h-5" />
                               </button>
                             </td>
@@ -1080,7 +1124,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       />
                       <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                     </div>
-                    <button className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-transparent dark:border-slate-700">
+                    <button
+                      aria-label="Filter applications"
+                      className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-transparent dark:border-slate-700"
+                    >
                       <FunnelIcon className="w-5 h-5" />
                     </button>
                   </div>
@@ -1555,7 +1602,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-3xl border-4 border-white dark:border-slate-700 shadow-lg">
                           {getInitials(company.companyName || 'HR')}
                         </div>
-                        <button className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <button
+                          aria-label="Change company photo"
+                          className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
                           <CameraIcon className="w-[18px] h-[18px] text-slate-600 dark:text-slate-300" />
                         </button>
                       </div>
@@ -1636,6 +1686,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <div className="flex items-center gap-3">
                       <input
                         type="email"
+                        aria-label="Email Address"
                         value="hr@techflow.com"
                         disabled
                         className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"

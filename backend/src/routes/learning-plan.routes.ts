@@ -244,7 +244,15 @@ router.post('/quiz/:quizId/submit', async (req: AuthenticatedRequest, res, next)
 
     // Grade and save each answer
     let correct = 0;
-    const results = [];
+    const results: {
+      questionId: string;
+      question: string;
+      options: string[];
+      correctIndex: number;
+      userAnswer: number;
+      isCorrect: boolean;
+      explanation: string | null;
+    }[] = [];
 
     for (let i = 0; i < quiz.questions.length; i++) {
       const q = quiz.questions[i];

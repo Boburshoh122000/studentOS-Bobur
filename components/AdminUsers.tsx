@@ -4,7 +4,28 @@ import { Screen, NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { AcademicCapIcon, ArrowDownTrayIcon, BellIcon, BriefcaseIcon, BuildingOffice2Icon, CheckCircleIcon, CreditCardIcon, DocumentTextIcon, EllipsisVerticalIcon, ExclamationTriangleIcon, EyeIcon, MagnifyingGlassIcon, NoSymbolIcon, ShieldCheckIcon, Squares2X2Icon, TrashIcon, UserIcon, UserMinusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
+  BellIcon,
+  BriefcaseIcon,
+  BuildingOffice2Icon,
+  CheckCircleIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  EllipsisVerticalIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  MagnifyingGlassIcon,
+  NoSymbolIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  TrashIcon,
+  UserIcon,
+  UserMinusIcon,
+  UsersIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 // User type from backend
 interface User {
@@ -133,7 +154,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
-  const [showUserDetails, setShowUserDetails] = useState<UserIcon | null>(null);
+  const [showUserDetails, setShowUserDetails] = useState<User | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const actionMenuRef = useRef<HTMLDivElement>(null);
 

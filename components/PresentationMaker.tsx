@@ -4,7 +4,19 @@ import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import { useCredits } from '../src/contexts/CreditContext';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { ArrowDownTrayIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon, ChevronDownIcon, ChevronRightIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, PhotoIcon, PlusIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowDownTrayIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  PhotoIcon,
+  PlusIcon,
+  SparklesIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface Slide {
@@ -200,20 +212,45 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
             </div>
 
             {/* Bottom Toolbar */}
-            <div className="h-12 bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-4 px-4">
-              <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <ArrowUturnLeftIcon className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <ArrowUturnRightIcon className="w-5 h-5" />
-              </button>
-              <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-              <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <MagnifyingGlassMinusIcon className="w-5 h-5" />
-              </button>
-              <span className="text-xs font-medium text-text-sub">Fit</span>
-              <button className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors">
-                <MagnifyingGlassPlusIcon className="w-5 h-5" />
+            <div className="h-12 bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 flex items-center justify-between gap-4 px-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Undo"
+                  className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
+                >
+                  <ArrowUturnLeftIcon className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Redo"
+                  className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
+                >
+                  <ArrowUturnRightIcon className="w-5 h-5" />
+                </button>
+                <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                <button
+                  type="button"
+                  aria-label="Zoom out"
+                  className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
+                >
+                  <MagnifyingGlassMinusIcon className="w-5 h-5" />
+                </button>
+                <span className="text-xs font-medium text-text-sub">Fit</span>
+                <button
+                  type="button"
+                  aria-label="Zoom in"
+                  className="p-2 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
+                >
+                  <MagnifyingGlassPlusIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <button
+                onClick={() => setShowGenerateModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-xs font-medium transition-all shadow-sm"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                AI Generate
               </button>
             </div>
           </div>

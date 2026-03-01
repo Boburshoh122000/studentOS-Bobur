@@ -5,7 +5,24 @@ import { adminApi } from '../src/services/api';
 import { downloadCSV } from '../src/utils/csv';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { AcademicCapIcon, ArrowDownTrayIcon, ArrowTrendingUpIcon, BellIcon, BriefcaseIcon, CalendarIcon, CheckBadgeIcon, ClockIcon, CreditCardIcon, DocumentTextIcon, ExclamationCircleIcon, ReceiptPercentIcon, ShieldCheckIcon, Squares2X2Icon, StopIcon, UsersIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
+  ArrowTrendingUpIcon,
+  BellIcon,
+  BriefcaseIcon,
+  CalendarIcon,
+  CheckBadgeIcon,
+  ClockIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  ExclamationCircleIcon,
+  ReceiptPercentIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  StopIcon,
+  UsersIcon,
+} from '@heroicons/react/24/solid';
 import UserDemographics from './UserDemographics';
 
 interface AdminStats {
@@ -44,6 +61,9 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
 
   useEffect(() => {
     fetchStats();
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
   }, []);
 
   const fetchStats = async () => {

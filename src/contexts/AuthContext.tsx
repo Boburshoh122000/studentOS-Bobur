@@ -93,12 +93,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      await authApi.logout(refreshToken);
+    try {
+      if (refreshToken) {
+        await authApi.logout(refreshToken);
+      }
+    } catch {
+      // Best-effort server-side logout — always clear local state below
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setUser(null);
     }
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setUser(null);
   };
 
   const updateUser = (updates: Partial<User>) => {
