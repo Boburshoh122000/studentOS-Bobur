@@ -36,6 +36,7 @@ interface Scholarship {
   applicationUrl: string | null;
   imageUrl: string | null;
   isActive: boolean;
+  isTrending: boolean;
   status: 'DRAFT' | 'PENDING' | 'PUBLISHED';
   createdAt: string;
   updatedAt: string;
@@ -59,6 +60,7 @@ const emptyScholarship = {
   deadline: '',
   description: '',
   applicationUrl: '',
+  isTrending: false,
   status: 'DRAFT' as Scholarship['status'],
 };
 
@@ -172,6 +174,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
       deadline: scholarship.deadline ? scholarship.deadline.split('T')[0] : '',
       description: scholarship.description || '',
       applicationUrl: scholarship.applicationUrl || '',
+      isTrending: scholarship.isTrending ?? false,
       status: scholarship.status,
     });
     setShowModal(true);
@@ -189,6 +192,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
       deadline: scholarship.deadline ? scholarship.deadline.split('T')[0] : '',
       description: scholarship.description || '',
       applicationUrl: scholarship.applicationUrl || '',
+      isTrending: scholarship.isTrending ?? false,
       status: scholarship.status,
     });
   };
@@ -866,6 +870,22 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                       <option value="PUBLISHED">Published</option>
                     </select>
                   </div>
+                  <div className="flex items-center gap-3 py-2">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editorData.isTrending}
+                        onChange={(e) =>
+                          setEditorData({ ...editorData, isTrending: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary/30 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      ⭐ Mark as Trending
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1021,6 +1041,20 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                   <option value="PENDING">Pending Review</option>
                   <option value="PUBLISHED">Published</option>
                 </select>
+              </div>
+              <div className="flex items-center gap-3 py-2">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editorData.isTrending}
+                    onChange={(e) => setEditorData({ ...editorData, isTrending: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary/30 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+                <span className="text-sm font-medium text-slate-900 dark:text-white">
+                  ⭐ Mark as Trending
+                </span>
               </div>
             </div>
             <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">

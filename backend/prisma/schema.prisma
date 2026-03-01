@@ -263,6 +263,7 @@ model Scholarship {
   applicationUrl String?
   imageUrl       String?
   isActive       Boolean           @default(true)
+  isTrending     Boolean           @default(false)
   status         ScholarshipStatus @default(DRAFT)
 
   createdAt DateTime @default(now())
