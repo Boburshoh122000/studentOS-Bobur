@@ -328,10 +328,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   if (isLoading) {
     return (
       <DashboardLayout currentScreen={Screen.LEARNING_PLAN} navigateTo={navigateTo}>
-        <div className="flex h-full items-center justify-center">
+        <div className="flex-1 w-full min-h-[70vh] flex items-center justify-center bg-gray-50/50 dark:bg-[#0f111a] backdrop-blur-sm rounded-3xl">
           <div className="flex flex-col items-center gap-6">
             <PegtopLoader />
-            <p className="text-sm text-text-sub">Loading your learning plan...</p>
+            <p className="text-sm text-text-sub animate-pulse">Loading your learning plan...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -577,30 +577,39 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         headerContent={headerContent}
       >
         <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
-          <div className="max-w-6xl mx-auto p-8">
+          <div className="flex flex-col w-full max-w-7xl mx-auto p-8 animate-in fade-in duration-500">
             {error && (
               <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
 
-            {/* ── Create New Plan action ── */}
-            <div className="flex justify-end mb-6 w-full sticky top-0 z-10">
+            {/* ── TOP HEADER ── */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full mb-8 pb-4 border-b border-gray-200 dark:border-gray-800 gap-4">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
+                  Your Personalized Plan
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Follow these steps to reach your goal.
+                </p>
+              </div>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   handleHardReset();
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 shrink-0"
               >
                 <PlusIcon className="w-5 h-5" />
                 Create New Plan
               </button>
             </div>
 
-            <div className="flex gap-8">
+            {/* ── MAIN CONTENT GRID ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               {/* ── Timeline Column ── */}
-              <div className="flex-1 space-y-8 relative pb-20">
+              <div className="lg:col-span-2 flex flex-col gap-8 relative pb-20">
                 {/* Vertical line */}
                 <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 -z-10" />
 
@@ -782,7 +791,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               </div>
 
               {/* ── Sidebar ── */}
-              <div className="w-80 flex-shrink-0 space-y-6">
+              <div className="lg:col-span-1 flex flex-col gap-6 sticky top-8">
                 {/* Weekly Goals */}
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
                   <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
