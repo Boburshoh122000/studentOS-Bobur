@@ -3,7 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, ArrowLeftIcon, ExclamationCircleIcon, ShareIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowLeftIcon,
+  ExclamationCircleIcon,
+  ShareIcon,
+} from '@heroicons/react/24/solid';
 
 interface BlogPostData {
   id: string;
@@ -144,7 +149,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
             {error && !loading && (
               <div className="py-20 text-center">
                 <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                  <ExclamationCircleIcon className="w-5 h-5" className="text-red-500" />
+                  <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                   Article not found

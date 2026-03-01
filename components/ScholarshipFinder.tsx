@@ -275,6 +275,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   /* ── Saved state ── */
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
+  /* ── AI Scraper state ── */
+  const [scrapeUrl, setScrapeUrl] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
+  const [scrapeMessage, setScrapeMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
   /* ── Fetch all scholarships on mount ── */
   const fetchScholarships = useCallback(async () => {
     try {
@@ -675,6 +683,80 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 ))}
               </div>
             </FilterSection>
+          </div>
+
+          {/* ── AI URL Scraper ── */}
+          <div className="p-5 border-t border-gray-100 dark:border-gray-800">
+            <div className="mb-3">
+              <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                <GlobeAltIcon className="w-3.5 h-3.5 text-emerald-500" />
+                AI URL Scraper
+              </h4>
+              <p className="text-[10px] text-gray-400 mb-2">
+                Paste a scholarship page URL to auto-extract data.
+              </p>
+              <div className="flex gap-1.5">
+                <input
+                  type="url"
+                  value={scrapeUrl}
+                  onChange={(e) => {
+                    setScrapeUrl(e.target.value);
+                    setScrapeMessage(null);
+                  }}
+                  placeholder="https://example.com/scholarship"
+                  aria-label="Scholarship URL to scrape"
+                  className="flex-1 min-w-0 px-2.5 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+                />
+                <button
+                  onClick={async () => {
+                    if (!scrapeUrl.trim()) return;
+                    try {
+                      new URL(scrapeUrl);
+                    } catch {
+                      setScrapeMessage({ type: 'error', text: 'Invalid URL format.' });
+                      return;
+                    }
+                    setIsScraping(true);
+                    setScrapeMessage(null);
+                    try {
+                      const res = await scholarshipApi.scrape(scrapeUrl.trim());
+                      if (res.error) {
+                        setScrapeMessage({ type: 'error', text: res.error });
+                      } else {
+                        const title = (res.data as any)?.extracted?.title || 'Scholarship';
+                        setScrapeMessage({ type: 'success', text: `"${title}" added!` });
+                        setScrapeUrl('');
+                        fetchScholarships(); // refresh the list
+                      }
+                    } catch {
+                      setScrapeMessage({ type: 'error', text: 'Failed to scrape. Try again.' });
+                    } finally {
+                      setIsScraping(false);
+                    }
+                  }}
+                  disabled={isScraping || !scrapeUrl.trim()}
+                  title="Scrape scholarship from URL"
+                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shrink-0"
+                >
+                  {isScraping ? (
+                    <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <SparklesIcon className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+              {scrapeMessage && (
+                <p
+                  className={`text-[10px] mt-1.5 font-medium ${
+                    scrapeMessage.type === 'success'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-red-500 dark:text-red-400'
+                  }`}
+                >
+                  {scrapeMessage.text}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* ── Find My Match Button ── */}

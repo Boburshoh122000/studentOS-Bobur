@@ -102,7 +102,7 @@ RAW PAGE TEXT:
 ${rawText}`;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4',
     messages: [
       {
         role: 'system',
@@ -156,18 +156,18 @@ export async function saveScrapedScholarship(data: ScrapedScholarshipData): Prom
       data: {
         ...data,
         deadline: data.deadline ? new Date(data.deadline) : null,
-        status: 'PENDING', // Re-mark for admin review after update
+        status: 'PUBLISHED',
       },
     });
   }
 
-  // Create new scholarship with PENDING status
+  // Create new scholarship — immediately visible on finder
   return prisma.scholarship.create({
     data: {
       ...data,
       deadline: data.deadline ? new Date(data.deadline) : null,
       isActive: true,
-      status: 'PENDING',
+      status: 'PUBLISHED',
     },
   });
 }

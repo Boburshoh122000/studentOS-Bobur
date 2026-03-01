@@ -5,7 +5,28 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, ArrowDownTrayIcon, ArrowTrendingUpIcon, BellIcon, BriefcaseIcon, BuildingOffice2Icon, ClipboardDocumentCheckIcon, ClockIcon, CreditCardIcon, DocumentTextIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PencilIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, StarIcon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
+  ArrowTrendingUpIcon,
+  BellIcon,
+  BriefcaseIcon,
+  BuildingOffice2Icon,
+  ClipboardDocumentCheckIcon,
+  ClockIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  StarIcon,
+  TrashIcon,
+  UsersIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Employer {
@@ -960,7 +981,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
             <div className="mx-auto h-14 w-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-              <ExclamationTriangleIcon className="w-5 h-5" className="text-red-600 dark:text-red-400" />
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Delete Employer?

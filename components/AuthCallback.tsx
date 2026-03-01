@@ -96,7 +96,7 @@ export default function AuthCallback() {
         <div className="bg-white dark:bg-[#1e2130] rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="size-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <ExclamationCircleIcon className="w-5 h-5" className="text-red-500" />
+              <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Authentication Failed

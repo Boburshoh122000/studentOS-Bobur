@@ -312,6 +312,7 @@ export const scholarshipApi = {
   create: (data: any) => api.post('/scholarships', data),
   update: (id: string, data: any) => api.patch(`/scholarships/${id}`, data),
   delete: (id: string) => api.delete(`/scholarships/${id}`),
+  scrape: (url: string) => api.post<any>('/scholarships/admin/scrape', { url }),
 };
 
 // Jobs API

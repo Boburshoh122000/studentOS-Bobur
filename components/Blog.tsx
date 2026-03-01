@@ -178,7 +178,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {error && !loading && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                    <ExclamationCircleIcon className="w-5 h-5" className="text-red-500" />
+                    <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     Failed to load articles
@@ -199,7 +199,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
               {!loading && !error && filteredPosts.length === 0 && (
                 <div className="py-20 text-center">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-                    <MagnifyingGlassIcon className="w-5 h-5" className="text-slate-400" />
+                    <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                     No articles found

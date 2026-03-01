@@ -54,7 +54,9 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         {!compact && (
           <>
             <span className="font-semibold">{current.label}</span>
-            <ChevronDownIcon className="w-5 h-5" className={`text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`} />
+            <ChevronDownIcon
+              className={`w-5 h-5 text-[14px] transition-transform duration-200 ${isOpen ? '-rotate-180' : ''}`}
+            />
           </>
         )}
       </button>
@@ -90,9 +92,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
               >
                 <span className="text-lg leading-none">{flag}</span>
                 <span>{label}</span>
-                {isActive && (
-                  <CheckIcon className="w-4 h-4 text-indigo-500" />
-                )}
+                {isActive && <CheckIcon className="w-4 h-4 text-indigo-500" />}
               </button>
             );
           })}
