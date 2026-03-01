@@ -18,14 +18,17 @@ import {
   StarIcon,
   TrophyIcon,
   XMarkIcon,
+  ArrowTopRightOnSquareIcon,
+  FunnelIcon,
+  ArrowsUpDownIcon,
+  BuildingLibraryIcon,
+  LanguageIcon,
 } from '@heroicons/react/24/solid';
-import {
-  BookmarkIcon as BookmarkOutlineIcon,
-  FireIcon,
-  MapPinIcon,
-} from '@heroicons/react/24/outline';
+import { BookmarkIcon as BookmarkOutlineIcon, FireIcon } from '@heroicons/react/24/outline';
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
 /* ─── Types ────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
 interface Scholarship {
   id: string;
@@ -43,43 +46,33 @@ interface Scholarship {
   isSaved?: boolean;
 }
 
-interface UserProfile {
-  major: string;
-  studyLevel: string;
+interface AIRecommendation {
+  id: string;
+  score: number;
+  note: string;
+  warnings: string[];
+}
+
+interface Filters {
   countries: string[];
-  gpa: number;
-  langTest: string;
-  langScore: number;
+  studyLevel: string;
+  languages: string[];
+  minGpa: number;
+  fields: string[];
   fundingTypes: string[];
+  deadlineRange: string;
+  scholarshipTypes: string[];
 }
 
-interface ScoredScholarship extends Scholarship {
-  matchScore: number;
-  matchType: 'exact' | 'partial';
-}
+type SortOption = 'relevance' | 'deadline' | 'amount' | 'recent';
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
 /* ─── Constants ────────────────────────────────────────────────────────────── */
-
-const MAJORS = [
-  'All Fields',
-  'Computer Science',
-  'Engineering',
-  'Business & Management',
-  'Medicine & Health',
-  'Law',
-  'Arts & Humanities',
-  'Social Sciences',
-  'Natural Sciences',
-  'Education',
-  'Architecture',
-  'Agriculture',
-  'Media & Journalism',
-];
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const COUNTRIES = [
   'USA',
   'UK',
-  'United Kingdom',
   'Japan',
   'Germany',
   'Australia',
@@ -90,134 +83,163 @@ const COUNTRIES = [
   'South Korea',
   'China',
   'Turkey',
+  'Hungary',
   'Malaysia',
   'New Zealand',
+  'Sweden',
+  'Norway',
+  'Italy',
 ];
 
-const STUDY_LEVELS = ['UNDERGRADUATE', 'POSTGRADUATE', 'PHD', 'ANY'];
+const STUDY_LEVELS = [
+  { value: '', label: 'All Levels' },
+  { value: 'UNDERGRADUATE', label: "Bachelor's" },
+  { value: 'POSTGRADUATE', label: "Master's" },
+  { value: 'PHD', label: 'PhD' },
+  { value: 'POSTDOCTORAL', label: 'Postdoctoral' },
+];
 
-const FUNDING_TYPES = ['Fully Funded', 'Partial', 'Government', 'University'];
+const LANGUAGES = [
+  'English',
+  'German',
+  'French',
+  'Japanese',
+  'Korean',
+  'Chinese',
+  'Turkish',
+  'No Requirement',
+];
 
-const LANG_TESTS = ['None', 'IELTS', 'TOEFL', 'Duolingo'];
+const FIELDS = [
+  'Computer Science',
+  'Engineering',
+  'Medicine & Health',
+  'Business & Management',
+  'Law',
+  'Arts & Humanities',
+  'Natural Sciences',
+  'Social Sciences',
+  'Education',
+  'Agriculture',
+  'Architecture',
+  'Any Field',
+];
 
-/* ─── Match Score Calculator ───────────────────────────────────────────────── */
+const FUNDING_TYPES = [
+  'Full Scholarship',
+  'Partial Scholarship',
+  'Tuition Only',
+  'Living Stipend',
+  'Travel Grant',
+];
 
-function calculateMatchScore(profile: UserProfile, s: Scholarship): number {
-  let score = 0;
+const DEADLINE_OPTIONS = [
+  { value: '', label: 'All Deadlines' },
+  { value: 'open', label: 'Open Now' },
+  { value: '30', label: 'Next 30 Days' },
+  { value: '90', label: 'Next 3 Months' },
+  { value: '180', label: 'Next 6 Months' },
+];
 
-  // Country match (30 pts)
-  if (profile.countries.length === 0) {
-    score += 15; // no preference = partial credit
-  } else if (profile.countries.some((c) => s.country.toLowerCase().includes(c.toLowerCase()))) {
-    score += 30;
-  }
+const SCHOLARSHIP_TYPES = ['Government', 'University', 'Private/Foundation', 'Research Grant'];
 
-  // Study level match (25 pts)
-  if (!profile.studyLevel || profile.studyLevel === 'ANY') {
-    score += 12;
-  } else {
-    const sLevel = s.studyLevel?.toUpperCase() || '';
-    const pLevel = profile.studyLevel.toUpperCase();
-    if (
-      sLevel === pLevel ||
-      sLevel === 'ANY' ||
-      sLevel.includes(pLevel) ||
-      pLevel.includes(sLevel.replace('POSTGRADUATE', 'MASTER'))
-    ) {
-      score += 25;
-    } else if (
-      (pLevel === 'POSTGRADUATE' && sLevel.includes('MASTER')) ||
-      (pLevel === 'PHD' && sLevel.includes('DOCTOR'))
-    ) {
-      score += 25;
-    }
-  }
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'relevance', label: 'Relevance' },
+  { value: 'deadline', label: 'Deadline (Soonest)' },
+  { value: 'amount', label: 'Amount (Highest)' },
+  { value: 'recent', label: 'Recently Added' },
+];
 
-  // Funding type match (20 pts)
-  if (profile.fundingTypes.length === 0) {
-    score += 10;
-  } else {
-    const awardLower =
-      (s.awardType || '').toLowerCase() + ' ' + (s.awardAmount || '').toLowerCase();
-    if (
-      profile.fundingTypes.some(
-        (f) =>
-          awardLower.includes(f.toLowerCase()) ||
-          (f === 'Fully Funded' && (awardLower.includes('full') || awardLower.includes('tuition')))
-      )
-    ) {
-      score += 20;
-    }
-  }
+const DEFAULT_FILTERS: Filters = {
+  countries: [],
+  studyLevel: '',
+  languages: [],
+  minGpa: 0,
+  fields: [],
+  fundingTypes: [],
+  deadlineRange: '',
+  scholarshipTypes: [],
+};
 
-  // Deadline still open (10 pts)
-  if (s.deadline) {
-    const dl = new Date(s.deadline);
-    if (dl > new Date()) score += 10;
-  } else {
-    score += 5; // no deadline = probably rolling
-  }
+const FLAG_MAP: Record<string, string> = {
+  USA: '🇺🇸',
+  UK: '🇬🇧',
+  Japan: '🇯🇵',
+  Germany: '🇩🇪',
+  Australia: '🇦🇺',
+  Canada: '🇨🇦',
+  France: '🇫🇷',
+  Netherlands: '🇳🇱',
+  Switzerland: '🇨🇭',
+  'South Korea': '🇰🇷',
+  China: '🇨🇳',
+  Turkey: '🇹🇷',
+  Hungary: '🇭🇺',
+  Malaysia: '🇲🇾',
+  'New Zealand': '🇳🇿',
+  Sweden: '🇸🇪',
+  Norway: '🇳🇴',
+  Italy: '🇮🇹',
+  'United Kingdom': '🇬🇧',
+};
 
-  // GPA bonus (10 pts) — generous since we can't verify requirements
-  if (profile.gpa >= 3.5) score += 10;
-  else if (profile.gpa >= 3.0) score += 7;
-  else if (profile.gpa >= 2.5) score += 4;
-  else if (profile.gpa > 0) score += 2;
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* ─── Helpers ──────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
-  // Language bonus (5 pts)
-  if (profile.langTest !== 'None' && profile.langScore > 0) {
-    if (profile.langTest === 'IELTS' && profile.langScore >= 6.5) score += 5;
-    else if (profile.langTest === 'TOEFL' && profile.langScore >= 80) score += 5;
-    else if (profile.langTest === 'Duolingo' && profile.langScore >= 105) score += 5;
-    else score += 2;
-  }
-
-  return Math.min(100, score);
+function daysUntil(d: string | null | undefined): number | null {
+  if (!d) return null;
+  const diff = (new Date(d).getTime() - Date.now()) / 86_400_000;
+  return Math.ceil(diff);
 }
 
-/* ─── Helpers ──────────────────────────────────────────────────────────────── */
-
-function formatDate(dateString?: string | null): string {
-  if (!dateString) return 'Rolling';
-  return new Date(dateString).toLocaleDateString(undefined, {
+function formatDate(d: string | null | undefined): string {
+  if (!d) return 'No deadline';
+  return new Date(d).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 }
 
-function daysUntil(dateString?: string | null): number | null {
-  if (!dateString) return null;
-  const diff = new Date(dateString).getTime() - Date.now();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+function parseAmount(amt: string | null): number {
+  if (!amt) return 0;
+  const match = amt.replace(/,/g, '').match(/[\d]+/);
+  return match ? parseInt(match[0]) : 0;
 }
 
-function getScoreBadge(score: number) {
-  if (score >= 80)
-    return {
-      bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-      text: 'text-emerald-700 dark:text-emerald-300',
-      border: 'border-emerald-200 dark:border-emerald-800/40',
-      label: 'Excellent Match',
-    };
-  if (score >= 60)
-    return {
-      bg: 'bg-amber-50 dark:bg-amber-900/20',
-      text: 'text-amber-700 dark:text-amber-300',
-      border: 'border-amber-200 dark:border-amber-800/40',
-      label: 'Good Match',
-    };
-  return {
-    bg: 'bg-slate-50 dark:bg-slate-800/40',
-    text: 'text-slate-600 dark:text-slate-400',
-    border: 'border-slate-200 dark:border-slate-700',
-    label: 'Potential Match',
-  };
+function getFlag(country: string): string {
+  return FLAG_MAP[country] || '🌍';
 }
 
-/* ─── Collapsible Section ──────────────────────────────────────────────────── */
+function deadlineBadge(days: number | null): { color: string; label: string } | null {
+  if (days === null || days <= 0) return null;
+  if (days <= 7)
+    return {
+      color:
+        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800/30',
+      label: `${days}d left`,
+    };
+  if (days <= 30)
+    return {
+      color:
+        'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800/30',
+      label: `${days}d left`,
+    };
+  if (days <= 90)
+    return {
+      color:
+        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800/30',
+      label: `${days}d left`,
+    };
+  return null;
+}
 
-function FilterSection({
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* ─── Filter Section UI ───────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+function FilterGroup({
   title,
   icon,
   children,
@@ -230,65 +252,56 @@ function FilterSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-gray-100 dark:border-gray-800 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full text-left group"
+        className="w-full flex items-center justify-between py-3.5 text-left group"
+        type="button"
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
           {icon}
           {title}
         </span>
         {open ? (
-          <ChevronUpIcon className="w-4 h-4 text-gray-400" />
+          <ChevronUpIcon className="w-3.5 h-3.5 text-gray-400" />
         ) : (
-          <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+          <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
         )}
       </button>
-      {open && <div className="mt-3">{children}</div>}
+      {open && <div className="pb-4">{children}</div>}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── Component ────────────────────────────────────────────────────────────── */
+/* ─── Main Component ──────────────────────────────────────────────────────── */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
-  /* ── Data ── */
+  /* ── State ── */
   const [isLoading, setIsLoading] = useState(true);
   const [allScholarships, setAllScholarships] = useState<Scholarship[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-
-  /* ── Profile / Filters ── */
-  const [profile, setProfile] = useState<UserProfile>({
-    major: 'All Fields',
-    studyLevel: '',
-    countries: [],
-    gpa: 0,
-    langTest: 'None',
-    langScore: 0,
-    fundingTypes: [],
-  });
+  const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS });
   const [filtersApplied, setFiltersApplied] = useState(false);
-
-  /* ── Saved state ── */
+  const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-
-  /* ── AI Auto-Match state ── */
   const [isAiSearching, setIsAiSearching] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  /* ── Fetch all scholarships on mount ── */
+  /* ── Fetch scholarships ── */
   const fetchScholarships = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await scholarshipApi.list({ limit: 50 } as any);
-      const list = (res.data as any)?.scholarships || (Array.isArray(res.data) ? res.data : []);
-      setAllScholarships(list);
+      const res = await scholarshipApi.list({ page: 1 });
+      const list =
+        (res.data as Record<string, unknown>)?.scholarships ||
+        (Array.isArray(res.data) ? res.data : []);
+      setAllScholarships(list as Scholarship[]);
 
-      // Track saved
       const ids = new Set<string>();
-      list.forEach((s: any) => {
+      (list as Scholarship[]).forEach((s) => {
         if (s.isSaved) ids.add(s.id);
       });
       setSavedIds(ids);
@@ -328,59 +341,69 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     }
   };
 
-  /* ── Profile helpers ── */
-  const updateProfile = (key: keyof UserProfile, value: any) => {
-    setProfile((prev) => ({ ...prev, [key]: value }));
+  /* ── Filter helpers ── */
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleCountry = (country: string) => {
-    setProfile((prev) => ({
+  const toggleArrayFilter = (
+    key: 'countries' | 'languages' | 'fields' | 'fundingTypes' | 'scholarshipTypes',
+    value: string
+  ) => {
+    setFilters((prev) => ({
       ...prev,
-      countries: prev.countries.includes(country)
-        ? prev.countries.filter((c) => c !== country)
-        : [...prev.countries, country],
-    }));
-  };
-
-  const toggleFunding = (type: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      fundingTypes: prev.fundingTypes.includes(type)
-        ? prev.fundingTypes.filter((t) => t !== type)
-        : [...prev.fundingTypes, type],
+      [key]: prev[key].includes(value)
+        ? prev[key].filter((v) => v !== value)
+        : [...prev[key], value],
     }));
   };
 
   const isAnyFilterActive =
-    profile.studyLevel !== '' ||
-    profile.countries.length > 0 ||
-    profile.fundingTypes.length > 0 ||
-    profile.major !== 'All Fields' ||
-    profile.gpa > 0 ||
-    profile.langTest !== 'None';
+    filters.countries.length > 0 ||
+    filters.studyLevel !== '' ||
+    filters.languages.length > 0 ||
+    filters.minGpa > 0 ||
+    filters.fields.length > 0 ||
+    filters.fundingTypes.length > 0 ||
+    filters.deadlineRange !== '' ||
+    filters.scholarshipTypes.length > 0;
 
-  const handleFindMatch = async () => {
+  const handleResetFilters = () => {
+    setFilters({ ...DEFAULT_FILTERS });
+    setSearchQuery('');
+    setFiltersApplied(false);
+    setAiRecommendations([]);
+    setSortBy('relevance');
+  };
+
+  /* ── Apply Filters (AI auto-match) ── */
+  const handleApplyFilters = async () => {
     setFiltersApplied(true);
     setIsAiSearching(true);
+    setAiRecommendations([]);
     try {
       const res = await scholarshipApi.autoMatch({
-        studyLevel: profile.studyLevel,
-        countries: profile.countries,
-        major: profile.major,
-        gpa: profile.gpa,
-        fundingTypes: profile.fundingTypes,
+        studyLevel: filters.studyLevel,
+        countries: filters.countries,
+        major: filters.fields.length > 0 ? filters.fields[0] : 'Any Field',
+        gpa: filters.minGpa,
+        fundingTypes: filters.fundingTypes,
+        languages: filters.languages,
+        deadlineRange: filters.deadlineRange,
+        scholarshipTypes: filters.scholarshipTypes,
       });
-      const aiResults = (res.data as any)?.scholarships || [];
+      const data = res.data as Record<string, unknown>;
+      const aiResults = (data?.scholarships as Scholarship[]) || [];
+      const recs = (data?.aiRecommendations as AIRecommendation[]) || [];
+
       if (aiResults.length > 0) {
-        // Merge AI-scraped results with existing, deduplicate by title
         setAllScholarships((prev) => {
-          const existingTitles = new Set(prev.map((s: Scholarship) => s.title.toLowerCase()));
-          const newOnes = aiResults.filter(
-            (s: Scholarship) => !existingTitles.has(s.title.toLowerCase())
-          );
+          const existingTitles = new Set(prev.map((s) => s.title.toLowerCase()));
+          const newOnes = aiResults.filter((s) => !existingTitles.has(s.title.toLowerCase()));
           return [...prev, ...newOnes];
         });
       }
+      setAiRecommendations(recs);
     } catch (err) {
       console.error('AI auto-match failed:', err);
     } finally {
@@ -388,23 +411,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     }
   };
 
-  const handleResetFilters = () => {
-    setProfile({
-      major: 'All Fields',
-      studyLevel: '',
-      countries: [],
-      gpa: 0,
-      langTest: 'None',
-      langScore: 0,
-      fundingTypes: [],
-    });
-    setSearchQuery('');
-    setFiltersApplied(false);
-  };
-
-  /* ── Scoring & Filtering ── */
-  const scoredScholarships: ScoredScholarship[] = useMemo(() => {
-    let list = allScholarships;
+  /* ── Scoring & Sorting ── */
+  const displayScholarships = useMemo(() => {
+    let list = [...allScholarships];
 
     // Text search
     if (searchQuery.trim()) {
@@ -413,33 +422,58 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         (s) =>
           s.title.toLowerCase().includes(q) ||
           s.institution.toLowerCase().includes(q) ||
-          s.country.toLowerCase().includes(q)
+          s.country.toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q)
       );
     }
 
-    return list
-      .map((s) => ({
-        ...s,
-        matchScore: filtersApplied ? calculateMatchScore(profile, s) : 0,
-        matchType: 'exact' as const,
-      }))
-      .sort((a, b) => b.matchScore - a.matchScore);
-  }, [allScholarships, profile, filtersApplied, searchQuery]);
+    // Apply hard filters
+    if (filtersApplied) {
+      if (filters.studyLevel) {
+        list = list.filter((s) => s.studyLevel === filters.studyLevel || s.studyLevel === 'ANY');
+      }
+      if (filters.countries.length > 0) {
+        list = list.filter((s) =>
+          filters.countries.some((c) => s.country.toLowerCase().includes(c.toLowerCase()))
+        );
+      }
+      if (filters.deadlineRange) {
+        const maxDays = parseInt(filters.deadlineRange) || 365;
+        list = list.filter((s) => {
+          const d = daysUntil(s.deadline);
+          return d !== null && d > 0 && d <= maxDays;
+        });
+      }
+    }
 
-  // Determine exact vs partial
-  const exactMatches = scoredScholarships.filter((s) => s.matchScore >= 50);
-  const hasExactMatches = filtersApplied && exactMatches.length > 0;
-  const hasNoExactButPartial =
-    filtersApplied && exactMatches.length === 0 && scoredScholarships.length > 0;
+    // Sort
+    switch (sortBy) {
+      case 'deadline':
+        list.sort((a, b) => {
+          const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+          const db = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+          return da - db;
+        });
+        break;
+      case 'amount':
+        list.sort((a, b) => parseAmount(b.awardAmount) - parseAmount(a.awardAmount));
+        break;
+      case 'recent':
+        list.reverse();
+        break;
+      case 'relevance':
+      default:
+        if (aiRecommendations.length > 0) {
+          const scoreMap = new Map(aiRecommendations.map((r) => [r.id, r.score]));
+          list.sort((a, b) => (scoreMap.get(b.id) || 0) - (scoreMap.get(a.id) || 0));
+        }
+        break;
+    }
 
-  // Sorted display list
-  const displayScholarships = filtersApplied
-    ? hasExactMatches
-      ? exactMatches
-      : scoredScholarships.slice(0, 12)
-    : [];
+    return list;
+  }, [allScholarships, searchQuery, filters, filtersApplied, sortBy, aiRecommendations]);
 
-  /* ── Initial state sections (State C) ── */
+  // Curated sections for initial state
   const featuredScholarships = useMemo(
     () =>
       allScholarships
@@ -460,44 +494,25 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     () =>
       allScholarships
         .filter((s) => {
-          const days = daysUntil(s.deadline);
-          return days !== null && days > 0 && days <= 90;
+          const d = daysUntil(s.deadline);
+          return d !== null && d > 0 && d <= 90;
         })
         .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
         .slice(0, 6),
     [allScholarships]
   );
 
-  const governmentScholarships = useMemo(
-    () =>
-      allScholarships
-        .filter((s) => {
-          const text = (s.awardType + ' ' + s.institution + ' ' + s.title).toLowerCase();
-          return (
-            text.includes('government') ||
-            text.includes('fulbright') ||
-            text.includes('chevening') ||
-            text.includes('mext') ||
-            text.includes('daad') ||
-            text.includes('erasmus') ||
-            text.includes('korea scholarship') ||
-            text.includes('confederation')
-          );
-        })
-        .slice(0, 6),
-    [allScholarships]
-  );
-
-  /* ─── Header ─────────────────────────────────────────────────────────────── */
-
+  /* ─── Header ─── */
   const headerContent = (
     <header className="h-16 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800">
       <div className="flex items-center gap-3">
-        <div className="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-          <TrophyIcon className="w-5 h-5" />
+        <div className="size-9 rounded-lg bg-[#2D3A8C]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center">
+          <TrophyIcon className="w-5 h-5 text-[#2D3A8C] dark:text-[#4F6EF7]" />
         </div>
-        <span className="font-bold text-lg text-gray-900 dark:text-white">Scholarship Finder</span>
-        <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider">
+        <span className="font-bold text-lg text-[#1A1A2E] dark:text-white tracking-tight">
+          Scholarship Finder
+        </span>
+        <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-[#4F6EF7]/10 text-[#4F6EF7] text-[10px] font-bold uppercase tracking-widest">
           AI Powered
         </span>
       </div>
@@ -508,118 +523,108 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     </header>
   );
 
-  /* ─── Render ─────────────────────────────────────────────────────────────── */
-
+  /* ─── Render ─── */
   return (
     <DashboardLayout
       currentScreen={Screen.SCHOLARSHIPS}
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 flex overflow-hidden bg-slate-50/80 dark:bg-[#0f111a] h-full p-6 gap-8">
-        {/* ═══════════ LEFT SIDEBAR — AI PROFILE BUILDER ═══════════ */}
-        <aside className="w-[320px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex-1 flex overflow-hidden bg-[#F8F9FC] dark:bg-[#0f111a] h-full">
+        {/* ═══════════ LEFT SIDEBAR — SMART FILTERS ═══════════ */}
+        <aside className="w-[300px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-[#161b2e] border-r border-gray-200 dark:border-gray-800 overflow-hidden">
+          {/* Header */}
           <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                <SparklesIcon className="w-5 h-5 text-blue-500" />
-                AI Profile Builder
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#1A1A2E] dark:text-white flex items-center gap-2">
+                <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" />
+                Filters
               </h3>
               {isAnyFilterActive && (
                 <button
                   onClick={handleResetFilters}
-                  className="text-xs text-red-500 hover:text-red-600 font-medium"
+                  className="text-xs text-[#4F6EF7] hover:text-[#2D3A8C] font-medium transition-colors"
                 >
-                  Clear all
+                  Reset all
                 </button>
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Tell us about yourself for better matches.
-            </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-1">
-            {/* ── Field of Study ── */}
-            <FilterSection
-              title="Field of Study"
-              icon={<AcademicCapIcon className="w-4 h-4 text-indigo-500" />}
-            >
-              <select
-                value={profile.major}
-                onChange={(e) => updateProfile('major', e.target.value)}
-                aria-label="Field of Study"
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800 dark:text-gray-200"
-              >
-                {MAJORS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </FilterSection>
-
-            {/* ── Study Level ── */}
-            <FilterSection
-              title="Study Level"
-              icon={<StarIcon className="w-4 h-4 text-amber-500" />}
-            >
-              <div className="flex flex-wrap gap-2">
-                {STUDY_LEVELS.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() =>
-                      updateProfile('studyLevel', profile.studyLevel === level ? '' : level)
-                    }
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all capitalize ${
-                      profile.studyLevel === level
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {level === 'ANY'
-                      ? 'All Levels'
-                      : level === 'POSTGRADUATE'
-                        ? "Master's"
-                        : level.charAt(0) + level.slice(1).toLowerCase()}
-                  </button>
-                ))}
-              </div>
-            </FilterSection>
-
-            {/* ── Target Country ── */}
-            <FilterSection
-              title="Target Country"
-              icon={<GlobeAltIcon className="w-4 h-4 text-emerald-500" />}
-            >
-              <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
-                {COUNTRIES.map((country) => (
-                  <label key={country} className="flex items-center gap-2 cursor-pointer group">
+          {/* Filter Groups */}
+          <div className="flex-1 overflow-y-auto px-6">
+            {/* Country */}
+            <FilterGroup title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-[#4F6EF7]" />}>
+              <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                {COUNTRIES.map((c) => (
+                  <label key={c} className="flex items-center gap-2.5 py-1 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={profile.countries.includes(country)}
-                      onChange={() => toggleCountry(country)}
-                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                      checked={filters.countries.includes(c)}
+                      onChange={() => toggleArrayFilter('countries', c)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">
-                      {country}
+                    <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                      {getFlag(c)} {c}
                     </span>
                   </label>
                 ))}
               </div>
-            </FilterSection>
+            </FilterGroup>
 
-            {/* ── GPA Score ── */}
-            <FilterSection
-              title="GPA Score"
-              icon={<TrophyIcon className="w-4 h-4 text-yellow-500" />}
+            {/* Study Level */}
+            <FilterGroup
+              title="Study Level"
+              icon={<AcademicCapIcon className="w-4 h-4 text-[#4F6EF7]" />}
+            >
+              <select
+                value={filters.studyLevel}
+                onChange={(e) => updateFilter('studyLevel', e.target.value)}
+                aria-label="Study Level"
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] px-3 py-2.5 text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+              >
+                {STUDY_LEVELS.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </FilterGroup>
+
+            {/* Language */}
+            <FilterGroup
+              title="Language"
+              icon={<LanguageIcon className="w-4 h-4 text-[#4F6EF7]" />}
+              defaultOpen={false}
+            >
+              <div className="flex flex-wrap gap-1.5">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => toggleArrayFilter('languages', lang)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      filters.languages.includes(lang)
+                        ? 'bg-[#4F6EF7] text-white shadow-sm'
+                        : 'bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </FilterGroup>
+
+            {/* GPA */}
+            <FilterGroup
+              title="Minimum GPA"
+              icon={<StarIcon className="w-4 h-4 text-[#F59E0B]" />}
               defaultOpen={false}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">Your GPA</span>
-                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {profile.gpa > 0 ? profile.gpa.toFixed(1) : 'Not set'}
+                  <span className="text-sm font-bold text-[#4F6EF7] tabular-nums">
+                    {filters.minGpa > 0 ? filters.minGpa.toFixed(1) : 'Any'}
                   </span>
                 </div>
                 <input
@@ -627,9 +632,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   min="0"
                   max="4"
                   step="0.1"
-                  value={profile.gpa}
-                  onChange={(e) => updateProfile('gpa', parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-blue-600"
+                  value={filters.minGpa}
+                  onChange={(e) => updateFilter('minGpa', parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-[#4F6EF7]"
                 />
                 <div className="flex justify-between text-[10px] text-gray-400">
                   <span>0.0</span>
@@ -637,265 +642,351 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <span>4.0</span>
                 </div>
               </div>
-            </FilterSection>
+            </FilterGroup>
 
-            {/* ── Language ── */}
-            <FilterSection
-              title="Language Requirements"
-              icon={<GlobeAltIcon className="w-4 h-4 text-sky-500" />}
+            {/* Field of Study */}
+            <FilterGroup
+              title="Field of Study"
+              icon={<BookmarkIcon className="w-4 h-4 text-[#4F6EF7]" />}
               defaultOpen={false}
             >
-              <div className="space-y-3">
-                <select
-                  value={profile.langTest}
-                  onChange={(e) => updateProfile('langTest', e.target.value)}
-                  aria-label="Language Test Type"
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800 dark:text-gray-200"
-                >
-                  {LANG_TESTS.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-                {profile.langTest !== 'None' && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Score</span>
-                      <span className="font-bold text-blue-600 dark:text-blue-400 tabular-nums">
-                        {profile.langScore > 0 ? profile.langScore : 'Not set'}
-                      </span>
-                    </div>
+              <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                {FIELDS.map((f) => (
+                  <label key={f} className="flex items-center gap-2.5 py-1 cursor-pointer group">
                     <input
-                      type="range"
-                      min={profile.langTest === 'IELTS' ? 0 : 0}
-                      max={
-                        profile.langTest === 'IELTS' ? 9 : profile.langTest === 'TOEFL' ? 120 : 160
-                      }
-                      step={profile.langTest === 'IELTS' ? 0.5 : 5}
-                      value={profile.langScore}
-                      onChange={(e) => updateProfile('langScore', parseFloat(e.target.value))}
-                      className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-blue-600"
+                      type="checkbox"
+                      checked={filters.fields.includes(f)}
+                      onChange={() => toggleArrayFilter('fields', f)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
                     />
-                  </div>
-                )}
+                    <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                      {f}
+                    </span>
+                  </label>
+                ))}
               </div>
-            </FilterSection>
+            </FilterGroup>
 
-            {/* ── Funding Type ── */}
-            <FilterSection
+            {/* Funding Type */}
+            <FilterGroup
               title="Funding Type"
-              icon={<CurrencyDollarIcon className="w-4 h-4 text-green-500" />}
+              icon={<CurrencyDollarIcon className="w-4 h-4 text-[#10B981]" />}
             >
-              <div className="flex flex-wrap gap-2">
-                {FUNDING_TYPES.map((type) => (
+              <div className="space-y-1">
+                {FUNDING_TYPES.map((t) => (
+                  <label key={t} className="flex items-center gap-2.5 py-1 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={filters.fundingTypes.includes(t)}
+                      onChange={() => toggleArrayFilter('fundingTypes', t)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-[#10B981] focus:ring-[#10B981] w-3.5 h-3.5"
+                    />
+                    <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                      {t}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </FilterGroup>
+
+            {/* Deadline */}
+            <FilterGroup
+              title="Deadline"
+              icon={<CalendarIcon className="w-4 h-4 text-[#F59E0B]" />}
+              defaultOpen={false}
+            >
+              <div className="space-y-1">
+                {DEADLINE_OPTIONS.map((opt) => (
                   <button
-                    key={type}
-                    onClick={() => toggleFunding(type)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                      profile.fundingTypes.includes(type)
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    key={opt.value}
+                    onClick={() =>
+                      updateFilter(
+                        'deadlineRange',
+                        filters.deadlineRange === opt.value ? '' : opt.value
+                      )
+                    }
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      filters.deadlineRange === opt.value
+                        ? 'bg-[#4F6EF7] text-white'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-[#F8F9FC] dark:hover:bg-[#1a1f35]'
                     }`}
                   >
-                    {type}
+                    {opt.label}
                   </button>
                 ))}
               </div>
-            </FilterSection>
+            </FilterGroup>
+
+            {/* Scholarship Type */}
+            <FilterGroup
+              title="Scholarship Type"
+              icon={<BuildingLibraryIcon className="w-4 h-4 text-[#2D3A8C]" />}
+              defaultOpen={false}
+            >
+              <div className="space-y-1">
+                {SCHOLARSHIP_TYPES.map((t) => (
+                  <label key={t} className="flex items-center gap-2.5 py-1 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={filters.scholarshipTypes.includes(t)}
+                      onChange={() => toggleArrayFilter('scholarshipTypes', t)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-[#2D3A8C] focus:ring-[#2D3A8C] w-3.5 h-3.5"
+                    />
+                    <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
+                      {t}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </FilterGroup>
           </div>
 
-          {/* ── Find My Match Button ── */}
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800">
+          {/* Apply Button */}
+          <div className="p-5 border-t border-gray-100 dark:border-gray-800">
             <button
-              onClick={handleFindMatch}
+              onClick={handleApplyFilters}
               disabled={isAiSearching}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 flex items-center justify-center gap-2.5 active:scale-[0.98]"
+              className="w-full bg-[#2D3A8C] hover:bg-[#222d6e] disabled:bg-[#2D3A8C]/50 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-[#2D3A8C]/20 hover:shadow-lg hover:shadow-[#2D3A8C]/30 flex items-center justify-center gap-2.5 active:scale-[0.98]"
             >
               {isAiSearching ? (
                 <>
                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  AI is searching the web…
+                  AI is searching…
                 </>
               ) : (
                 <>
-                  <SparklesIcon className="w-5 h-5" />
-                  Find My Match
+                  <SparklesIcon className="w-4.5 h-4.5" />
+                  Apply Filters
                 </>
               )}
             </button>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mt-2">
-              Searches scholarshipscorner.website + our database
-            </p>
           </div>
         </aside>
 
         {/* ═══════════ RIGHT PANEL — RESULTS ═══════════ */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1300px] mx-auto p-8 md:p-10">
-            {/* ── Search Bar ── */}
-            <div className="mb-8">
-              <div className="flex shadow-sm rounded-xl overflow-hidden max-w-2xl">
-                <div className="relative flex-1 bg-white dark:bg-card-dark border border-r-0 border-gray-200 dark:border-gray-700 rounded-l-xl">
-                  <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                  <input
-                    className="w-full h-11 pl-11 pr-4 text-sm border-0 focus:ring-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-400"
-                    placeholder="Search scholarships by name, university, or country..."
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+          <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-8">
+            {/* ── Search + Sort Row ── */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+              {/* Search */}
+              <div className="relative flex-1 max-w-xl">
+                <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 pointer-events-none" />
+                <input
+                  className="w-full h-11 pl-11 pr-4 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+                  placeholder="Search by name, university, country..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="bg-gray-100 dark:bg-gray-800 px-3 border-y border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    title="Clear search"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 )}
               </div>
+
+              {/* Sort */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortDropdown(!showSortDropdown)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl hover:border-[#4F6EF7] transition-all"
+                >
+                  <ArrowsUpDownIcon className="w-4 h-4" />
+                  {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+                </button>
+                {showSortDropdown && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 min-w-[180px] py-1">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          setSortBy(opt.value);
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          sortBy === opt.value
+                            ? 'text-[#4F6EF7] font-semibold bg-[#4F6EF7]/5'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1f35]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* ── AI Recommendation Banner ── */}
+            {aiRecommendations.length > 0 && !isAiSearching && (
+              <div className="mb-8 p-5 bg-gradient-to-r from-[#2D3A8C]/5 to-[#4F6EF7]/5 dark:from-[#2D3A8C]/10 dark:to-[#4F6EF7]/10 border border-[#4F6EF7]/20 rounded-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <SparklesIcon className="w-5 h-5 text-[#4F6EF7]" />
+                  <p className="text-sm font-bold text-[#2D3A8C] dark:text-[#4F6EF7]">
+                    AI Recommendations for You
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {aiRecommendations.slice(0, 5).map((rec) => {
+                    const s = allScholarships.find(
+                      (sc) =>
+                        sc.id === rec.id ||
+                        sc.title.toLowerCase().includes((rec.id || '').toLowerCase())
+                    );
+                    return (
+                      <div
+                        key={rec.id}
+                        className="flex items-center gap-2 bg-white dark:bg-[#161b2e] px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-700 text-xs"
+                      >
+                        <span className="font-bold text-[#4F6EF7]">{rec.score}%</span>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">
+                          {s?.title || rec.id}
+                        </span>
+                        {rec.note && (
+                          <span className="text-gray-400 hidden sm:inline">— {rec.note}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* ── Loading / AI Searching ── */}
             {isLoading || isAiSearching ? (
               <>
                 {isAiSearching && (
-                  <div className="flex items-center gap-3 mb-8 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl">
-                    <span className="inline-block w-5 h-5 border-2 border-blue-400/30 border-t-blue-500 rounded-full animate-spin" />
+                  <div className="flex items-center gap-3 mb-8 p-4 bg-[#4F6EF7]/5 dark:bg-[#4F6EF7]/10 border border-[#4F6EF7]/20 rounded-xl">
+                    <span className="inline-block w-5 h-5 border-2 border-[#4F6EF7]/30 border-t-[#4F6EF7] rounded-full animate-spin" />
                     <div>
-                      <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                      <p className="text-sm font-semibold text-[#2D3A8C] dark:text-[#4F6EF7]">
                         AI is searching the web…
                       </p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                        Scraping scholarshipscorner.website and matching to your profile
+                      <p className="text-xs text-[#4F6EF7]/70 mt-0.5">
+                        Scraping scholarshipscorner.website and ranking matches for your profile
                       </p>
                     </div>
                   </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div
+                  className="grid gap-6"
+                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
+                >
                   {[0, 1, 2, 3, 4, 5].map((i) => (
                     <div
                       key={i}
-                      className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-800 animate-pulse"
+                      className="bg-white dark:bg-[#161b2e] rounded-xl p-6 border border-gray-100 dark:border-gray-800 animate-pulse"
                     >
                       <div className="flex items-center gap-3 mb-5">
-                        <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                        <div className="size-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
                         <div className="flex-1">
                           <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
                           <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
                         </div>
                       </div>
                       <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-4" />
-                      <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-28 mb-5" />
-                      <div className="h-8 bg-gray-50 dark:bg-gray-800/50 rounded w-full" />
+                      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-full mb-3" />
+                      <div className="flex gap-2 mb-4">
+                        <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20" />
+                        <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
+                      </div>
+                      <div className="h-10 bg-gray-50 dark:bg-gray-800/50 rounded-lg w-full" />
                     </div>
                   ))}
                 </div>
               </>
             ) : filtersApplied || searchQuery ? (
-              /* ═══ STATE A & B: Filtered Results ═══ */
+              /* ═══ FILTERED RESULTS ═══ */
               <>
-                {/* Results count + partial match banner */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Showing{' '}
-                      <span className="font-bold text-gray-900 dark:text-white">
-                        {displayScholarships.length || scoredScholarships.length}
-                      </span>{' '}
-                      {filtersApplied ? 'matched scholarships' : 'results'}
-                    </p>
-                    {filtersApplied && (
-                      <button
-                        onClick={handleResetFilters}
-                        className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                      >
-                        <XMarkIcon className="w-3.5 h-3.5" />
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-
-                  {hasNoExactButPartial && (
-                    <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4 flex items-start gap-3 mb-4">
-                      <SparklesIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                          No exact matches found
-                        </p>
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                          We couldn&apos;t find exact matches for your criteria, but here are some
-                          great alternatives close to your profile.
-                        </p>
-                      </div>
-                    </div>
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-sm text-[#6B7280]">
+                    Showing{' '}
+                    <span className="font-bold text-[#1A1A2E] dark:text-white">
+                      {displayScholarships.length}
+                    </span>{' '}
+                    {filtersApplied ? 'matched scholarships' : 'results'}
+                  </p>
+                  {filtersApplied && (
+                    <button
+                      onClick={handleResetFilters}
+                      className="text-xs text-[#4F6EF7] hover:text-[#2D3A8C] font-medium flex items-center gap-1 transition-colors"
+                    >
+                      <XMarkIcon className="w-3.5 h-3.5" />
+                      Clear filters
+                    </button>
                   )}
                 </div>
 
-                {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {(filtersApplied ? displayScholarships : scoredScholarships).map((s) => (
-                    <ScholarshipCard
-                      key={s.id}
-                      scholarship={s}
-                      showScore={filtersApplied}
-                      isSaved={savedIds.has(s.id)}
-                      onToggleSave={() => toggleSave(s.id)}
-                    />
-                  ))}
-                </div>
-
-                {scoredScholarships.length === 0 && (
-                  <div className="text-center py-16">
-                    <MagnifyingGlassIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">
-                      No scholarships match your search.
+                {displayScholarships.length === 0 ? (
+                  <div className="text-center py-20">
+                    <MagnifyingGlassIcon className="w-14 h-14 text-gray-200 dark:text-gray-700 mx-auto mb-5" />
+                    <p className="text-lg font-semibold text-[#1A1A2E] dark:text-white mb-2">
+                      No scholarships match your criteria
+                    </p>
+                    <p className="text-sm text-[#6B7280] mb-6">
+                      Try adjusting your filters or broadening your search.
                     </p>
                     <button
-                      onClick={() => setSearchQuery('')}
-                      className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      onClick={handleResetFilters}
+                      className="text-sm text-[#4F6EF7] hover:text-[#2D3A8C] font-semibold transition-colors"
                     >
-                      Clear search
+                      Reset all filters
                     </button>
+                  </div>
+                ) : (
+                  <div
+                    className="grid gap-6"
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
+                  >
+                    {displayScholarships.map((s) => (
+                      <ScholarshipCard
+                        key={s.id}
+                        scholarship={s}
+                        isSaved={savedIds.has(s.id)}
+                        onToggleSave={() => toggleSave(s.id)}
+                        aiRec={aiRecommendations.find((r) => r.id === s.id)}
+                      />
+                    ))}
                   </div>
                 )}
               </>
             ) : (
-              /* ═══ STATE C: Initial / Zero Filters ═══ */
-              <div className="space-y-10">
-                {/* ── Featured Banner ── */}
+              /* ═══ INITIAL STATE — TRENDING ═══ */
+              <div className="space-y-12">
+                {/* Featured */}
                 {featuredScholarships.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2 mb-4">
-                      <SparklesIcon className="w-5 h-5 text-blue-500" />
-                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
-                        Featured Scholarships
+                    <div className="flex items-center gap-2.5 mb-5">
+                      <FireIcon className="w-5 h-5 text-[#F59E0B]" />
+                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
+                        Trending Scholarships
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {featuredScholarships.map((s) => (
                         <div
                           key={s.id}
-                          className="relative bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white overflow-hidden group cursor-pointer hover:shadow-xl transition-shadow"
+                          className="relative bg-gradient-to-br from-[#2D3A8C] to-[#4F6EF7] rounded-2xl p-6 text-white overflow-hidden group cursor-pointer hover:shadow-2xl hover:shadow-[#2D3A8C]/20 transition-all duration-300"
                           onClick={() =>
                             s.applicationUrl && window.open(s.applicationUrl, '_blank')
                           }
                         >
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+                          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
+                          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
                           <div className="relative z-10">
-                            <p className="text-blue-200 text-xs font-semibold mb-1 uppercase tracking-wider">
+                            <p className="text-blue-200 text-xs font-semibold mb-1.5 uppercase tracking-wider">
                               {s.institution}
                             </p>
-                            <h3 className="text-lg font-bold mb-2 leading-tight">{s.title}</h3>
-                            <div className="flex items-center gap-3 text-sm">
-                              <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                <MapPinIcon className="w-3.5 h-3.5" />
-                                {s.country}
+                            <h3 className="text-lg font-bold mb-3 leading-tight">{s.title}</h3>
+                            <div className="flex items-center gap-2.5 text-sm flex-wrap">
+                              <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-medium">
+                                {getFlag(s.country)} {s.country}
                               </span>
                               {s.awardAmount && (
-                                <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                  <CurrencyDollarIcon className="w-3.5 h-3.5" />
+                                <span className="flex items-center gap-1 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-medium">
                                   {s.awardAmount}
                                 </span>
                               )}
@@ -907,21 +998,23 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </section>
                 )}
 
-                {/* ── Upcoming Deadlines ── */}
+                {/* Upcoming Deadlines */}
                 {upcomingDeadlines.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2 mb-4">
-                      <FireIcon className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
+                    <div className="flex items-center gap-2.5 mb-5">
+                      <ClockIcon className="w-5 h-5 text-[#EF4444]" />
+                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
                         Upcoming Deadlines
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <div
+                      className="grid gap-6"
+                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
+                    >
                       {upcomingDeadlines.map((s) => (
                         <ScholarshipCard
                           key={s.id}
-                          scholarship={{ ...s, matchScore: 0, matchType: 'exact' }}
-                          showScore={false}
+                          scholarship={s}
                           isSaved={savedIds.has(s.id)}
                           onToggleSave={() => toggleSave(s.id)}
                           showUrgency
@@ -931,21 +1024,26 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </section>
                 )}
 
-                {/* ── Government / Top Scholarships ── */}
-                {governmentScholarships.length > 0 && (
+                {/* All */}
+                {allScholarships.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2 mb-4">
-                      <TrophyIcon className="w-5 h-5 text-yellow-500" />
-                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
-                        Top Government Scholarships
+                    <div className="flex items-center gap-2.5 mb-5">
+                      <AcademicCapIcon className="w-5 h-5 text-[#4F6EF7]" />
+                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
+                        All Scholarships
                       </h2>
+                      <span className="text-xs text-[#6B7280] font-medium">
+                        ({allScholarships.length})
+                      </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                      {governmentScholarships.map((s) => (
+                    <div
+                      className="grid gap-6"
+                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
+                    >
+                      {allScholarships.slice(0, 12).map((s) => (
                         <ScholarshipCard
                           key={s.id}
-                          scholarship={{ ...s, matchScore: 0, matchType: 'exact' }}
-                          showScore={false}
+                          scholarship={s}
                           isSaved={savedIds.has(s.id)}
                           onToggleSave={() => toggleSave(s.id)}
                         />
@@ -954,30 +1052,17 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </section>
                 )}
 
-                {/* ── All Scholarships fallback ── */}
-                {featuredScholarships.length === 0 &&
-                  upcomingDeadlines.length === 0 &&
-                  governmentScholarships.length === 0 && (
-                    <section>
-                      <div className="flex items-center gap-2 mb-4">
-                        <AcademicCapIcon className="w-5 h-5 text-blue-500" />
-                        <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
-                          All Scholarships
-                        </h2>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                        {allScholarships.slice(0, 12).map((s) => (
-                          <ScholarshipCard
-                            key={s.id}
-                            scholarship={{ ...s, matchScore: 0, matchType: 'exact' }}
-                            showScore={false}
-                            isSaved={savedIds.has(s.id)}
-                            onToggleSave={() => toggleSave(s.id)}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  )}
+                {allScholarships.length === 0 && !isLoading && (
+                  <div className="text-center py-20">
+                    <TrophyIcon className="w-14 h-14 text-gray-200 dark:text-gray-700 mx-auto mb-5" />
+                    <p className="text-lg font-semibold text-[#1A1A2E] dark:text-white mb-2">
+                      No scholarships yet
+                    </p>
+                    <p className="text-sm text-[#6B7280]">
+                      Scholarships will appear here once they are added to the database.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -988,57 +1073,55 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* ─── ScholarshipCard Component ────────────────────────────────────────────── */
+/* ─── ScholarshipCard ─────────────────────────────────────────────────────── */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function ScholarshipCard({
   scholarship: s,
-  showScore,
   isSaved,
   onToggleSave,
   showUrgency = false,
+  aiRec,
 }: {
-  scholarship: ScoredScholarship;
-  showScore: boolean;
+  scholarship: Scholarship;
   isSaved: boolean;
   onToggleSave: () => void;
   showUrgency?: boolean;
+  aiRec?: AIRecommendation;
 }) {
   const days = daysUntil(s.deadline);
-  const badge = getScoreBadge(s.matchScore);
+  const urgencyBadge = deadlineBadge(days);
   const isUrgent = days !== null && days > 0 && days <= 15;
 
   return (
-    <div className="bg-white/80 dark:bg-card-dark/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group relative">
-      {/* Save button */}
+    <div className="bg-white dark:bg-[#161b2e] rounded-xl p-6 border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 flex flex-col h-full group relative">
+      {/* Save */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onToggleSave();
         }}
-        className="absolute top-4 right-4 z-10 text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+        className="absolute top-5 right-5 z-10 text-gray-300 dark:text-gray-600 hover:text-[#4F6EF7] transition-colors"
+        title={isSaved ? 'Remove bookmark' : 'Save scholarship'}
       >
         {isSaved ? (
-          <BookmarkIcon className="w-5 h-5 text-blue-500" />
+          <BookmarkIcon className="w-5 h-5 text-[#4F6EF7]" />
         ) : (
           <BookmarkOutlineIcon className="w-5 h-5" />
         )}
       </button>
 
-      {/* Institution */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0 border border-blue-100 dark:border-blue-800/30">
-          <AcademicCapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+      {/* Institution + Country */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="size-10 rounded-lg bg-[#4F6EF7]/8 dark:bg-[#4F6EF7]/15 flex items-center justify-center flex-shrink-0">
+          <AcademicCapIcon className="w-5 h-5 text-[#4F6EF7]" />
         </div>
-        <div className="min-w-0 flex-1 pr-6">
-          <h4
-            className="text-sm font-semibold text-blue-600 dark:text-blue-400 truncate"
-            title={s.institution}
-          >
+        <div className="min-w-0 flex-1 pr-7">
+          <h4 className="text-sm font-semibold text-[#4F6EF7] truncate" title={s.institution}>
             {s.institution}
           </h4>
-          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-            <MapPinIcon className="w-3 h-3" />
+          <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+            <span>{getFlag(s.country)}</span>
             <span>{s.country}</span>
           </div>
         </div>
@@ -1046,26 +1129,30 @@ function ScholarshipCard({
 
       {/* Title */}
       <h3
-        className="text-base font-bold text-gray-900 dark:text-white mb-3 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+        className="text-[15px] font-bold text-[#1A1A2E] dark:text-white mb-2 leading-snug group-hover:text-[#4F6EF7] transition-colors line-clamp-2"
         title={s.title}
       >
         {s.title}
       </h3>
 
-      {/* Match Score Badge */}
-      {showScore && s.matchScore > 0 && (
-        <div
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mb-3 border self-start ${badge.bg} ${badge.text} ${badge.border}`}
-        >
-          <SparklesIcon className="w-3.5 h-3.5" />
-          {s.matchScore}% — {badge.label}
+      {/* Description */}
+      {s.description && (
+        <p className="text-xs text-[#6B7280] leading-relaxed mb-3 line-clamp-2">{s.description}</p>
+      )}
+
+      {/* AI Score */}
+      {aiRec && aiRec.score > 0 && (
+        <div className="flex items-center gap-2 mb-3 p-2 bg-[#4F6EF7]/5 dark:bg-[#4F6EF7]/10 rounded-lg border border-[#4F6EF7]/10">
+          <SparklesIcon className="w-3.5 h-3.5 text-[#4F6EF7] flex-shrink-0" />
+          <span className="text-xs font-bold text-[#4F6EF7]">{aiRec.score}% match</span>
+          {aiRec.note && <span className="text-xs text-[#6B7280] truncate">— {aiRec.note}</span>}
         </div>
       )}
 
-      {/* Award Amount */}
+      {/* Amount */}
       {s.awardAmount && (
         <div className="mb-3">
-          <span className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/15 text-emerald-700 dark:text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-800/30">
+          <span className="inline-flex items-center gap-1.5 bg-[#10B981]/8 dark:bg-[#10B981]/15 text-[#10B981] text-xs font-bold px-2.5 py-1.5 rounded-lg border border-[#10B981]/15">
             <CurrencyDollarIcon className="w-3.5 h-3.5" />
             {s.awardAmount}
           </span>
@@ -1074,35 +1161,52 @@ function ScholarshipCard({
 
       {/* Tags */}
       <div className="flex flex-wrap gap-1.5 mb-4">
-        <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[10px] font-semibold px-2 py-0.5 rounded-md capitalize">
+        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-1 rounded-md capitalize border border-gray-100 dark:border-gray-700">
           {s.studyLevel?.toLowerCase().replace('_', ' ')}
         </span>
-        <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[10px] font-semibold px-2 py-0.5 rounded-md">
+        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-1 rounded-md border border-gray-100 dark:border-gray-700">
           {s.awardType}
         </span>
       </div>
 
-      {/* Footer — Deadline */}
-      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium">
+      {/* Footer */}
+      <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-xs text-[#6B7280] font-medium">
           <CalendarIcon className="w-3.5 h-3.5" />
           <span>{formatDate(s.deadline)}</span>
+          {(showUrgency || isUrgent) && urgencyBadge && (
+            <span
+              className={`ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${urgencyBadge.color}`}
+            >
+              <ClockIcon className="w-3 h-3" />
+              {urgencyBadge.label}
+            </span>
+          )}
         </div>
-        {(showUrgency || isUrgent) && days !== null && days > 0 && (
-          <span
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-              days <= 7
-                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                : days <= 30
-                  ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
-                  : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-            }`}
+        {s.applicationUrl && (
+          <a
+            href={s.applicationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#4F6EF7] hover:text-[#2D3A8C] transition-colors"
           >
-            <ClockIcon className="w-3 h-3" />
-            {days}d left
-          </span>
+            Apply Now
+            <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+          </a>
         )}
       </div>
+
+      {/* AI Warnings */}
+      {aiRec && aiRec.warnings && aiRec.warnings.length > 0 && (
+        <div className="mt-3 space-y-1">
+          {aiRec.warnings.map((w, i) => (
+            <p key={i} className="text-[10px] text-[#F59E0B] font-medium flex items-center gap-1">
+              <span>⚠️</span> {w}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

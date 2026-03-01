@@ -45,7 +45,7 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
       setError(null);
       const response = await blogApi.get(postSlug);
       if (response.data) {
-        setPost(response.data);
+        setPost(response.data as BlogPostData);
       } else {
         setError('Post not found');
       }

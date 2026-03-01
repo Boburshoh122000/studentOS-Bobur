@@ -357,31 +357,51 @@ router.post(
 );
 
 // Authenticated: AI Auto-Match
-// Scrapes scholarshipscorner.website, uses AI to filter results matching user profile
+// Queries DB + scrapes scholarshipscorner.website, sends to GPT-4 for ranking
 router.post('/auto-match', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { studyLevel, countries, major, gpa, fundingTypes } = req.body;
+    const {
+      studyLevel,
+      countries,
+      major,
+      gpa,
+      fundingTypes,
+      languages,
+      deadlineRange,
+      scholarshipTypes,
+    } = req.body;
 
-    // Build target URLs to scrape from scholarshipscorner.website
+    // 1. Query existing DB scholarships
+    const dbWhere: any = { isActive: true, status: 'PUBLISHED' };
+    if (studyLevel) {
+      dbWhere.OR = [{ studyLevel: studyLevel }, { studyLevel: 'ANY' }];
+    }
+    if (countries?.length) {
+      dbWhere.country = { in: countries, mode: 'insensitive' };
+    }
+
+    const dbResults = await prisma.scholarship.findMany({
+      where: dbWhere,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+
+    // 2. Scrape scholarshipscorner.website in parallel
     const baseUrl = 'https://scholarshipscorner.website';
     const urls = [baseUrl];
 
-    // Add country-specific pages if countries are specified
-    if (countries && countries.length > 0) {
+    if (countries?.length) {
       countries.forEach((country: string) => {
         const slug = country.toLowerCase().replace(/\s+/g, '-');
         urls.push(`${baseUrl}/scholarships-in-${slug}/`);
         urls.push(`${baseUrl}/${slug}-scholarships/`);
       });
     }
-
-    // Add study-level pages
     if (studyLevel) {
       const levelSlug = studyLevel.toLowerCase().replace('_', '-');
       urls.push(`${baseUrl}/${levelSlug}-scholarships/`);
     }
 
-    // Scrape all target pages (best effort — skip failures)
     const allRawTexts: string[] = [];
     const { scrapePageText } = await import('../services/scholarship-scraper.service.js');
 
@@ -389,111 +409,132 @@ router.post('/auto-match', authenticate, async (req: AuthenticatedRequest, res, 
       urls.map(async (url) => {
         try {
           const text = await scrapePageText(url);
-          if (text.length > 100) {
-            allRawTexts.push(text);
-          }
+          if (text.length > 100) allRawTexts.push(text);
         } catch {
-          // Skip failed URLs silently
+          /* skip */
         }
       })
     );
 
-    // Combine raw text (cap at 12000 chars for AI)
     const combinedText = allRawTexts.join('\n\n---PAGE BREAK---\n\n').slice(0, 12000);
 
-    if (combinedText.length < 100) {
-      // Fallback: return database results only
-      const dbResults = await prisma.scholarship.findMany({
-        where: { isActive: true, status: 'PUBLISHED' },
-        orderBy: { createdAt: 'desc' },
-        take: 12,
-      });
-      res.json({ scholarships: dbResults, source: 'database' });
-      return;
-    }
-
-    // Send to AI for structured extraction + filtering
+    // 3. Build AI prompt with both datasets
     const OpenAI = (await import('openai')).default;
     const { env } = await import('../config/env.js');
 
     if (!env.OPENAI_API_KEY) {
-      // Fallback: return database results
-      const dbResults = await prisma.scholarship.findMany({
-        where: { isActive: true, status: 'PUBLISHED' },
-        orderBy: { createdAt: 'desc' },
-        take: 12,
-      });
-      res.json({ scholarships: dbResults, source: 'database' });
+      res.json({ scholarships: dbResults, aiRecommendations: [], source: 'database' });
       return;
     }
 
     const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
-    const filterDescription = [
+    const profileDesc = [
       studyLevel ? `Study Level: ${studyLevel}` : '',
       countries?.length ? `Countries: ${countries.join(', ')}` : '',
-      major && major !== 'All Fields' ? `Field of Study: ${major}` : '',
+      major && major !== 'Any Field' ? `Field of Study: ${major}` : '',
       gpa ? `GPA: ${gpa}` : '',
-      fundingTypes?.length ? `Funding: ${fundingTypes.join(', ')}` : '',
+      fundingTypes?.length ? `Funding preference: ${fundingTypes.join(', ')}` : '',
+      languages?.length ? `Language proficiency: ${languages.join(', ')}` : '',
+      deadlineRange ? `Deadline window: next ${deadlineRange} days` : '',
+      scholarshipTypes?.length ? `Scholarship type: ${scholarshipTypes.join(', ')}` : '',
     ]
       .filter(Boolean)
-      .join('. ');
+      .join('\n');
 
-    const prompt = `You are a scholarship data extraction specialist.
+    const dbSummary =
+      dbResults.length > 0
+        ? `\n\nEXISTING DATABASE SCHOLARSHIPS:\n${JSON.stringify(
+            dbResults.map((s) => ({
+              id: s.id,
+              title: s.title,
+              institution: s.institution,
+              country: s.country,
+              studyLevel: s.studyLevel,
+              awardType: s.awardType,
+              awardAmount: s.awardAmount,
+              deadline: s.deadline,
+            })),
+            null,
+            0
+          )}`
+        : '';
 
-From the following scraped web content from scholarshipscorner.website, extract ALL individual scholarships mentioned.
-For each scholarship, extract these fields into a JSON array.
+    const scrapedSection =
+      combinedText.length > 100
+        ? `\n\nSCRAPED WEB CONTENT (from scholarshipscorner.website):\n${combinedText}`
+        : '';
 
-USER PROFILE FILTERS:
-${filterDescription || 'No specific filters — return all scholarships found.'}
+    const prompt = `You are a scholarship advisor AI. You have two jobs:
 
-PRIORITIZE scholarships that match the user's filters above. Put the best matches first.
+1. EXTRACT new scholarships from scraped web content (if provided)
+2. RANK all scholarships by relevance to the student's profile
 
-REQUIRED JSON SCHEMA for each scholarship:
+STUDENT PROFILE:
+${profileDesc || 'No specific filters — return all scholarships.'}
+${dbSummary}${scrapedSection}
+
+RESPOND with a JSON object containing TWO arrays:
+
 {
-  "id": "auto-<unique-number>",
-  "title": "Full scholarship name",
-  "institution": "Organization offering it",
-  "country": "Country",
-  "studyLevel": "One of: UNDERGRADUATE, POSTGRADUATE, PHD, ANY",
-  "awardType": "Full Scholarship, Full Tuition, Partial, Stipend, Grant, or Fellowship",
-  "awardAmount": "Amount description or null",
-  "deadline": "ISO date YYYY-MM-DD or null",
-  "description": "1-2 sentence summary (max 200 chars)",
-  "applicationUrl": "URL if found, otherwise null",
-  "isActive": true
+  "scholarships": [
+    {
+      "id": "auto-1",
+      "title": "Full scholarship name",
+      "institution": "Organization",
+      "country": "Country",
+      "studyLevel": "UNDERGRADUATE | POSTGRADUATE | PHD | ANY",
+      "awardType": "Full Scholarship | Partial | Tuition Only | Stipend | Grant | Fellowship",
+      "awardAmount": "Amount or null",
+      "deadline": "YYYY-MM-DD or null",
+      "description": "1-2 sentence summary (max 200 chars)",
+      "applicationUrl": "URL or null",
+      "isActive": true
+    }
+  ],
+  "aiRecommendations": [
+    {
+      "id": "scholarship-id-or-title",
+      "score": 85,
+      "note": "Short personalized reason why this is a good fit",
+      "warnings": ["Deadline in 2 weeks!", "Requires Japanese N2"]
+    }
+  ]
 }
 
-Return a JSON object: { "scholarships": [...] }
-Extract up to 10 scholarships. Only include real scholarships with actual data — no fabricated entries.
-
-RAW SCRAPED TEXT:
-${combinedText}`;
+RULES:
+- Extract up to 10 NEW scholarships from scraped content (real data only, no fabrication)
+- For aiRecommendations, include BOTH database and newly extracted scholarships
+- Score = 0-100 relevance to student profile
+- Sort aiRecommendations by score descending
+- Warnings: upcoming deadlines, language requirements, GPA thresholds
+- Return at least 5 recommendations if possible`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content:
-            'You are a helpful assistant. Always respond with valid JSON only. No markdown, no code fences.',
+          content: 'You are a helpful assistant. Always respond with valid JSON only.',
         },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.1,
+      temperature: 0.2,
       max_completion_tokens: 4096,
       response_format: { type: 'json_object' as const },
     });
 
-    const raw = completion.choices[0]?.message?.content || '{"scholarships":[]}';
+    const raw =
+      completion.choices[0]?.message?.content || '{"scholarships":[],"aiRecommendations":[]}';
     const cleaned = raw
       .replace(/```json\s*/gi, '')
       .replace(/```\s*/gi, '')
       .trim();
     const parsed = JSON.parse(cleaned);
     const aiScholarships = parsed.scholarships || [];
+    const aiRecommendations = parsed.aiRecommendations || [];
 
-    // Save AI results to database (so they persist)
+    // 4. Save new AI results to DB
     const { saveScrapedScholarship } = await import('../services/scholarship-scraper.service.js');
     for (const s of aiScholarships) {
       try {
@@ -509,25 +550,25 @@ ${combinedText}`;
           applicationUrl: s.applicationUrl || null,
         });
       } catch {
-        // Skip duplicates or save errors
+        /* skip duplicates */
       }
     }
 
     res.json({
       scholarships: aiScholarships,
+      aiRecommendations,
       source: 'ai-scrape',
       pagesScraped: allRawTexts.length,
     });
   } catch (error: any) {
     console.error('[Auto-Match] Error:', error.message);
-    // Fallback to database results on any error
     try {
       const dbResults = await prisma.scholarship.findMany({
         where: { isActive: true, status: 'PUBLISHED' },
         orderBy: { createdAt: 'desc' },
         take: 12,
       });
-      res.json({ scholarships: dbResults, source: 'database-fallback' });
+      res.json({ scholarships: dbResults, aiRecommendations: [], source: 'database-fallback' });
     } catch {
       next(error);
     }

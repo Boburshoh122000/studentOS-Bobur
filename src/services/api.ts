@@ -1,6 +1,6 @@
 // API Configuration and HTTP Client
 
-const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -156,29 +156,6 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify(data),
     });
-  }
-
-  async postFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    const token = this.getToken();
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers,
-        body: data,
-      });
-      const responseData = await response.json();
-      if (!response.ok) {
-        return { error: responseData.error || 'An error occurred' };
-      }
-      return { data: responseData };
-    } catch (error) {
-      console.error('API Error:', error);
-      return { error: 'Network error. Please check your connection.' };
-    }
   }
 }
 
