@@ -9,9 +9,12 @@ import {
   generateCoverLetter,
   generateLearningPlan,
   checkPlagiarism,
+  runPlagiarismPipeline,
+  calculatePlagiarismCreditCost,
   generatePresentationContent,
   extractTextFromFile,
 } from '../services/ai.service.js';
+import { CheckModule } from '@prisma/client';
 
 // Configure multer for memory storage (for PDF processing)
 const upload = multer({
@@ -148,117 +151,236 @@ router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
 });
 
 // CV/ATS Analysis
-router.post('/analyze-cv', requireCredits('ats-checker'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { cvText, jobDescription } = req.body;
-
-    if (!cvText) {
-      res.status(400).json({ error: 'CV text is required' });
-      return;
-    }
-
-    const analysis = await analyzeCV(cvText, jobDescription);
-
-    // Update user's ATS score (use upsert to handle missing profile)
+router.post(
+  '/analyze-cv',
+  requireCredits('ats-checker'),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
-      await prisma.studentProfile.upsert({
-        where: { userId: req.user!.id },
-        update: { atsScore: analysis.score },
-        create: {
-          userId: req.user!.id,
-          atsScore: analysis.score,
-          fullName: req.user!.email?.split('@')[0] || 'User',
-        },
-      });
-    } catch (dbError) {
-      console.error('Failed to update ATS score in profile:', dbError);
-    }
+      const { cvText, jobDescription } = req.body;
 
-    // Save scan to history
-    try {
-      await prisma.atsScan.create({
-        data: {
-          userId: req.user!.id,
-          score: analysis.score,
-          jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
-          jobDescription: jobDescription || null,
-          result: analysis as any,
-        },
-      });
-    } catch (dbError) {
-      console.error('Failed to save ATS scan history:', dbError);
-    }
+      if (!cvText) {
+        res.status(400).json({ error: 'CV text is required' });
+        return;
+      }
 
-    res.json({ ...analysis, remainingCredits: (req as any).remainingBalance ?? null });
-  } catch (error: any) {
-    handleAIError(error, res, next);
+      const analysis = await analyzeCV(cvText, jobDescription);
+
+      // Update user's ATS score (use upsert to handle missing profile)
+      try {
+        await prisma.studentProfile.upsert({
+          where: { userId: req.user!.id },
+          update: { atsScore: analysis.score },
+          create: {
+            userId: req.user!.id,
+            atsScore: analysis.score,
+            fullName: req.user!.email?.split('@')[0] || 'User',
+          },
+        });
+      } catch (dbError) {
+        console.error('Failed to update ATS score in profile:', dbError);
+      }
+
+      // Save scan to history
+      try {
+        await prisma.atsScan.create({
+          data: {
+            userId: req.user!.id,
+            score: analysis.score,
+            jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+            jobDescription: jobDescription || null,
+            result: analysis as any,
+          },
+        });
+      } catch (dbError) {
+        console.error('Failed to save ATS scan history:', dbError);
+      }
+
+      res.json({ ...analysis, remainingCredits: (req as any).remainingBalance ?? null });
+    } catch (error: any) {
+      handleAIError(error, res, next);
+    }
   }
-});
+);
 
 // Cover Letter Generation
-router.post('/cover-letter', requireCredits('cover-letter'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { jobTitle, company, jobDescription } = req.body;
+router.post(
+  '/cover-letter',
+  requireCredits('cover-letter'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { jobTitle, company, jobDescription } = req.body;
 
-    if (!jobTitle || !company || !jobDescription) {
-      res.status(400).json({ error: 'Job title, company, and description are required' });
-      return;
+      if (!jobTitle || !company || !jobDescription) {
+        res.status(400).json({ error: 'Job title, company, and description are required' });
+        return;
+      }
+
+      // Get user profile
+      const profile = await prisma.studentProfile.findUnique({
+        where: { userId: req.user!.id },
+      });
+
+      const coverLetter = await generateCoverLetter(jobTitle, company, jobDescription, {
+        name: profile?.fullName || 'Applicant',
+        skills: profile?.skills || [],
+        experience: profile?.bio || undefined,
+      });
+
+      res.json({ coverLetter, remainingCredits: (req as any).remainingBalance ?? null });
+    } catch (error: any) {
+      handleAIError(error, res, next);
     }
-
-    // Get user profile
-    const profile = await prisma.studentProfile.findUnique({
-      where: { userId: req.user!.id },
-    });
-
-    const coverLetter = await generateCoverLetter(jobTitle, company, jobDescription, {
-      name: profile?.fullName || 'Applicant',
-      skills: profile?.skills || [],
-      experience: profile?.bio || undefined,
-    });
-
-    res.json({ coverLetter, remainingCredits: (req as any).remainingBalance ?? null });
-  } catch (error: any) {
-    handleAIError(error, res, next);
   }
-});
+);
 
 // Learning Plan Generation
-router.post('/learning-plan', requireCredits('learning-plan'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { goal, timeframe = '4 weeks' } = req.body;
+router.post(
+  '/learning-plan',
+  requireCredits('learning-plan'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { goal, timeframe = '4 weeks' } = req.body;
 
-    if (!goal) {
-      res.status(400).json({ error: 'Learning goal is required' });
-      return;
+      if (!goal) {
+        res.status(400).json({ error: 'Learning goal is required' });
+        return;
+      }
+
+      // Get user's current skills
+      const profile = await prisma.studentProfile.findUnique({
+        where: { userId: req.user!.id },
+      });
+
+      const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
+
+      res.json({ ...plan, remainingCredits: (req as any).remainingBalance ?? null });
+    } catch (error: any) {
+      handleAIError(error, res, next);
     }
+  }
+);
 
-    // Get user's current skills
-    const profile = await prisma.studentProfile.findUnique({
+// Plagiarism Check — New Pipeline
+router.post(
+  '/plagiarism-check',
+  requireCredits('plagiarism-checker'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { text, modules, documentName } = req.body;
+
+      if (!text) {
+        res.status(400).json({ error: 'Text is required' });
+        return;
+      }
+
+      // Map frontend option IDs to CheckModule enum values
+      const MODULE_MAP: Record<string, CheckModule> = {
+        'advanced-ai': CheckModule.ADVANCED_AI,
+        plagiarism: CheckModule.PLAGIARISM,
+        hallucinations: CheckModule.HALLUCINATIONS,
+        feedback: CheckModule.FEEDBACK,
+      };
+
+      const selectedModules: CheckModule[] = (modules || ['advanced-ai'])
+        .map((m: string) => MODULE_MAP[m])
+        .filter(Boolean);
+
+      // Always include PLAGIARISM for baseline originality
+      if (!selectedModules.includes(CheckModule.PLAGIARISM)) {
+        selectedModules.push(CheckModule.PLAGIARISM);
+      }
+
+      const result = await runPlagiarismPipeline(
+        text,
+        selectedModules,
+        req.user!.id,
+        documentName || 'Untitled Document'
+      );
+
+      res.json({ ...result, remainingCredits: (req as any).remainingBalance ?? null });
+    } catch (error: any) {
+      handleAIError(error, res, next);
+    }
+  }
+);
+
+// Plagiarism History — list user's past documents
+router.get('/plagiarism-history', authenticate, async (req: AuthenticatedRequest, res) => {
+  try {
+    const documents = await prisma.plagiarismDocument.findMany({
       where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        wordCount: true,
+        status: true,
+        modules: true,
+        creditCost: true,
+        createdAt: true,
+        report: {
+          select: {
+            originalityScore: true,
+            aiProbabilityScore: true,
+            isOriginal: true,
+            summary: true,
+          },
+        },
+      },
     });
-
-    const plan = await generateLearningPlan(goal, profile?.skills || [], timeframe);
-
-    res.json({ ...plan, remainingCredits: (req as any).remainingBalance ?? null });
+    res.json(documents);
   } catch (error: any) {
-    handleAIError(error, res, next);
+    res.status(500).json({ error: 'Failed to fetch plagiarism history' });
   }
 });
 
-// Plagiarism Check
-router.post('/plagiarism-check', requireCredits('plagiarism-checker'), async (req: AuthenticatedRequest, res, next) => {
+// Plagiarism Report — get full report for a document
+router.get('/plagiarism-report/:id', authenticate, async (req: AuthenticatedRequest, res) => {
   try {
-    const { text } = req.body;
-
-    if (!text) {
-      res.status(400).json({ error: 'Text is required' });
+    const doc = await prisma.plagiarismDocument.findFirst({
+      where: { id: req.params.id, userId: req.user!.id },
+      include: { report: true },
+    });
+    if (!doc) {
+      res.status(404).json({ error: 'Document not found' });
       return;
     }
-
-    const result = await checkPlagiarism(text);
-    res.json({ ...result, remainingCredits: (req as any).remainingBalance ?? null });
+    res.json(doc);
   } catch (error: any) {
-    handleAIError(error, res, next);
+    res.status(500).json({ error: 'Failed to fetch report' });
+  }
+});
+
+// Delete Plagiarism Document
+router.delete('/plagiarism-document/:id', authenticate, async (req: AuthenticatedRequest, res) => {
+  try {
+    const doc = await prisma.plagiarismDocument.findFirst({
+      where: { id: req.params.id, userId: req.user!.id },
+    });
+    if (!doc) {
+      res.status(404).json({ error: 'Document not found' });
+      return;
+    }
+    await prisma.plagiarismDocument.delete({ where: { id: doc.id } });
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to delete document' });
+  }
+});
+
+// Credit cost preview
+router.post('/plagiarism-cost', authenticate, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { wordCount } = req.body;
+    if (!wordCount || wordCount < 1) {
+      res.status(400).json({ error: 'wordCount is required' });
+      return;
+    }
+    const cost = calculatePlagiarismCreditCost(wordCount);
+    res.json({ wordCount, creditCost: cost });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to calculate cost' });
   }
 });
 
@@ -301,95 +423,104 @@ router.post(
 );
 
 // CV Upload with PDF/DOCX Text Extraction + Analysis (legacy endpoint)
-router.post('/upload-cv', upload.single('file'), requireCredits('ats-checker'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No file uploaded' });
-      return;
-    }
-
-    const { jobDescription } = req.body;
-
-    let extractedText: string;
-    if (req.file.mimetype === 'text/plain') {
-      extractedText = req.file.buffer.toString('utf-8');
-    } else {
-      extractedText = await extractTextFromFile(req.file.buffer, req.file.mimetype);
-    }
-
-    // Truncate to 20,000 characters
-    if (extractedText.length > 20000) {
-      extractedText = extractedText.substring(0, 20000);
-    }
-
-    // Analyze the CV
-    const analysis = await analyzeCV(extractedText, jobDescription);
-
-    // Update user's ATS score (use upsert to handle missing profile)
+router.post(
+  '/upload-cv',
+  upload.single('file'),
+  requireCredits('ats-checker'),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
-      await prisma.studentProfile.upsert({
-        where: { userId: req.user!.id },
-        update: { atsScore: analysis.score },
-        create: {
-          userId: req.user!.id,
-          atsScore: analysis.score,
-          fullName: req.user!.email?.split('@')[0] || 'User',
-        },
-      });
-    } catch (dbError) {
-      console.error('Failed to update ATS score in profile:', dbError);
-    }
+      if (!req.file) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
 
-    // Save scan to history
-    try {
-      await prisma.atsScan.create({
-        data: {
-          userId: req.user!.id,
-          score: analysis.score,
-          jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
-          fileName: req.file!.originalname || null,
-          jobDescription: jobDescription || null,
-          result: analysis as any,
-        },
-      });
-    } catch (dbError) {
-      console.error('Failed to save ATS scan history:', dbError);
-    }
+      const { jobDescription } = req.body;
 
-    res.json({
-      extractedText,
-      analysis,
-      remainingCredits: (req as any).remainingBalance ?? null,
-    });
-  } catch (error: any) {
-    handleAIError(error, res, next);
+      let extractedText: string;
+      if (req.file.mimetype === 'text/plain') {
+        extractedText = req.file.buffer.toString('utf-8');
+      } else {
+        extractedText = await extractTextFromFile(req.file.buffer, req.file.mimetype);
+      }
+
+      // Truncate to 20,000 characters
+      if (extractedText.length > 20000) {
+        extractedText = extractedText.substring(0, 20000);
+      }
+
+      // Analyze the CV
+      const analysis = await analyzeCV(extractedText, jobDescription);
+
+      // Update user's ATS score (use upsert to handle missing profile)
+      try {
+        await prisma.studentProfile.upsert({
+          where: { userId: req.user!.id },
+          update: { atsScore: analysis.score },
+          create: {
+            userId: req.user!.id,
+            atsScore: analysis.score,
+            fullName: req.user!.email?.split('@')[0] || 'User',
+          },
+        });
+      } catch (dbError) {
+        console.error('Failed to update ATS score in profile:', dbError);
+      }
+
+      // Save scan to history
+      try {
+        await prisma.atsScan.create({
+          data: {
+            userId: req.user!.id,
+            score: analysis.score,
+            jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+            fileName: req.file!.originalname || null,
+            jobDescription: jobDescription || null,
+            result: analysis as any,
+          },
+        });
+      } catch (dbError) {
+        console.error('Failed to save ATS scan history:', dbError);
+      }
+
+      res.json({
+        extractedText,
+        analysis,
+        remainingCredits: (req as any).remainingBalance ?? null,
+      });
+    } catch (error: any) {
+      handleAIError(error, res, next);
+    }
   }
-});
+);
 
 // Presentation Content Generation
-router.post('/generate-presentation', requireCredits('presentation-maker'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { topic, slideCount = 5, style = 'professional' } = req.body;
+router.post(
+  '/generate-presentation',
+  requireCredits('presentation-maker'),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { topic, slideCount = 5, style = 'professional' } = req.body;
 
-    if (!topic) {
-      res.status(400).json({ error: 'Presentation topic is required' });
-      return;
+      if (!topic) {
+        res.status(400).json({ error: 'Presentation topic is required' });
+        return;
+      }
+
+      // Get user's name for author field
+      const profile = await prisma.studentProfile.findUnique({
+        where: { userId: req.user!.id },
+      });
+
+      const presentation = await generatePresentationContent(topic, slideCount, style);
+
+      // Set author name if available
+      presentation.author = profile?.fullName || '';
+
+      res.json({ ...presentation, remainingCredits: (req as any).remainingBalance ?? null });
+    } catch (error: any) {
+      handleAIError(error, res, next);
     }
-
-    // Get user's name for author field
-    const profile = await prisma.studentProfile.findUnique({
-      where: { userId: req.user!.id },
-    });
-
-    const presentation = await generatePresentationContent(topic, slideCount, style);
-
-    // Set author name if available
-    presentation.author = profile?.fullName || '';
-
-    res.json({ ...presentation, remainingCredits: (req as any).remainingBalance ?? null });
-  } catch (error: any) {
-    handleAIError(error, res, next);
   }
-});
+);
 
 export default router;

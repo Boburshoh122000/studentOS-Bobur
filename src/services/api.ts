@@ -247,8 +247,7 @@ export const authApi = {
   updateEmail: (data: { newEmail: string; password: string }) =>
     api.post<{ message: string }>('/auth/update-email', data),
 
-  deleteAccount: () =>
-    api.delete<{ message: string }>('/auth/account'),
+  deleteAccount: () => api.delete<{ message: string }>('/auth/account'),
 
   googleCallback: async (data: {
     supabaseAccessToken: string;
@@ -429,11 +428,25 @@ export const aiApi = {
     api.post('/ai/cover-letter', data),
   generateLearningPlan: (data: { goal: string; timeframe?: string }) =>
     api.post('/ai/learning-plan', data),
-  checkPlagiarism: (text: string) => api.post('/ai/plagiarism-check', { text }),
+  checkPlagiarism: (text: string, modules?: string[], documentName?: string) =>
+    api.post('/ai/plagiarism-check', { text, modules, documentName }),
+  getPlagiarismHistory: () => api.get('/ai/plagiarism-history'),
+  getPlagiarismReport: (id: string) => api.get(`/ai/plagiarism-report/${id}`),
+  deletePlagiarismDocument: (id: string) => api.delete(`/ai/plagiarism-document/${id}`),
+  getPlagiarismCost: (wordCount: number) => api.post('/ai/plagiarism-cost', { wordCount }),
   generatePresentation: (data: { topic: string; slideCount?: number; style?: string }) =>
     api.post('/ai/generate-presentation', data),
   getAtsHistory: () =>
-    api.get<{ success: boolean; data: Array<{ id: string; score: number; jobRole: string | null; fileName: string | null; createdAt: string }> }>('/ai/ats-history'),
+    api.get<{
+      success: boolean;
+      data: Array<{
+        id: string;
+        score: number;
+        jobRole: string | null;
+        fileName: string | null;
+        createdAt: string;
+      }>;
+    }>('/ai/ats-history'),
 };
 
 // Learning Plan API
