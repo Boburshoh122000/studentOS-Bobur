@@ -488,9 +488,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 flex overflow-hidden bg-slate-50/80 dark:bg-[#0f111a] h-full">
+      <div className="flex-1 flex overflow-hidden bg-slate-50/80 dark:bg-[#0f111a] h-full p-4 gap-4">
         {/* ═══════════ LEFT SIDEBAR — AI PROFILE BUILDER ═══════════ */}
-        <aside className="w-[310px] flex-shrink-0 hidden lg:flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-card-dark/60 backdrop-blur-xl overflow-y-auto">
+        <aside className="w-[300px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
@@ -520,6 +520,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <select
                 value={profile.major}
                 onChange={(e) => updateProfile('major', e.target.value)}
+                aria-label="Field of Study"
                 className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800 dark:text-gray-200"
               >
                 {MAJORS.map((m) => (
@@ -620,6 +621,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <select
                   value={profile.langTest}
                   onChange={(e) => updateProfile('langTest', e.target.value)}
+                  aria-label="Language Test Type"
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-800 dark:text-gray-200"
                 >
                   {LANG_TESTS.map((t) => (

@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/role.middleware.js';
 import { mediumCache } from '../middleware/cache.middleware.js';
+import { scrapeAndSaveScholarship } from '../services/scholarship-scraper.service.js';
 
 const router = Router();
 
@@ -21,146 +22,162 @@ const querySchema = z.object({
 });
 
 // Admin: Get all scholarships (including drafts)
-router.get('/admin/list', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { search, status, page = '1', limit = '50' } = req.query as any;
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Max 100 per page
+router.get(
+  '/admin/list',
+  authenticate,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { search, status, page = '1', limit = '50' } = req.query as any;
+      const pageNum = Math.max(1, parseInt(page));
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Max 100 per page
 
-    const where: any = {};
+      const where: any = {};
 
-    if (status && status !== 'all') {
-      where.status = status;
+      if (status && status !== 'all') {
+        where.status = status;
+      }
+
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { institution: { contains: search, mode: 'insensitive' } },
+          { country: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [scholarships, total] = await Promise.all([
+        prisma.scholarship.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
+        }),
+        prisma.scholarship.count({ where }),
+      ]);
+
+      res.json({
+        scholarships,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
+      });
+    } catch (error) {
+      next(error);
     }
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { institution: { contains: search, mode: 'insensitive' } },
-        { country: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    const [scholarships, total] = await Promise.all([
-      prisma.scholarship.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (pageNum - 1) * limitNum,
-        take: limitNum,
-      }),
-      prisma.scholarship.count({ where }),
-    ]);
-
-    res.json({
-      scholarships,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // Admin: Get scholarship stats
-router.get('/admin/stats', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const [published, pending, draft, total] = await Promise.all([
-      prisma.scholarship.count({ where: { status: 'PUBLISHED' } }),
-      prisma.scholarship.count({ where: { status: 'PENDING' } }),
-      prisma.scholarship.count({ where: { status: 'DRAFT' } }),
-      prisma.scholarship.count(),
-    ]);
+router.get(
+  '/admin/stats',
+  authenticate,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const [published, pending, draft, total] = await Promise.all([
+        prisma.scholarship.count({ where: { status: 'PUBLISHED' } }),
+        prisma.scholarship.count({ where: { status: 'PENDING' } }),
+        prisma.scholarship.count({ where: { status: 'DRAFT' } }),
+        prisma.scholarship.count(),
+      ]);
 
-    // Calculate total funding (parse awardAmount strings)
-    const allScholarships = await prisma.scholarship.findMany({
-      where: { status: 'PUBLISHED' },
-      select: { awardAmount: true },
-    });
+      // Calculate total funding (parse awardAmount strings)
+      const allScholarships = await prisma.scholarship.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { awardAmount: true },
+      });
 
-    let totalFunding = 0;
-    allScholarships.forEach((s) => {
-      if (s.awardAmount) {
-        // Extract numeric value from strings like "$25,000" or "Full Tuition"
-        const match = s.awardAmount.replace(/,/g, '').match(/\d+/);
-        if (match) {
-          totalFunding += parseInt(match[0]);
+      let totalFunding = 0;
+      allScholarships.forEach((s) => {
+        if (s.awardAmount) {
+          // Extract numeric value from strings like "$25,000" or "Full Tuition"
+          const match = s.awardAmount.replace(/,/g, '').match(/\d+/);
+          if (match) {
+            totalFunding += parseInt(match[0]);
+          }
         }
-      }
-    });
+      });
 
-    res.json({
-      published,
-      pending,
-      draft,
-      total,
-      totalFunding,
-    });
-  } catch (error) {
-    next(error);
+      res.json({
+        published,
+        pending,
+        draft,
+        total,
+        totalFunding,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Get all scholarships - PUBLIC (only PUBLISHED status)
-router.get('/', optionalAuth, mediumCache, validate(querySchema), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  try {
-    const { country, studyLevel, minAmount, search, page = '1', limit = '10' } = req.query as any;
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 per page for public
+router.get(
+  '/',
+  optionalAuth,
+  mediumCache,
+  validate(querySchema),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { country, studyLevel, minAmount, search, page = '1', limit = '10' } = req.query as any;
+      const pageNum = Math.max(1, parseInt(page));
+      const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 per page for public
 
-    const where: any = {
-      isActive: true,
-      status: 'PUBLISHED',
-    };
+      const where: any = {
+        isActive: true,
+        status: 'PUBLISHED',
+      };
 
-    if (country) where.country = country;
-    if (studyLevel) where.studyLevel = studyLevel;
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { institution: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+      if (country) where.country = country;
+      if (studyLevel) where.studyLevel = studyLevel;
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { institution: { contains: search, mode: 'insensitive' } },
+        ];
+      }
 
-    const [scholarships, total] = await Promise.all([
-      prisma.scholarship.findMany({
-        where,
-        orderBy: { deadline: 'asc' },
-        skip: (pageNum - 1) * limitNum,
-        take: limitNum,
-      }),
-      prisma.scholarship.count({ where }),
-    ]);
+      const [scholarships, total] = await Promise.all([
+        prisma.scholarship.findMany({
+          where,
+          orderBy: { deadline: 'asc' },
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
+        }),
+        prisma.scholarship.count({ where }),
+      ]);
 
-    // Get saved scholarships for authenticated user
-    let savedIds: string[] = [];
-    if (req.user) {
-      const saved = await prisma.savedScholarship.findMany({
-        where: { userId: req.user.id },
-        select: { scholarshipId: true },
+      // Get saved scholarships for authenticated user
+      let savedIds: string[] = [];
+      if (req.user) {
+        const saved = await prisma.savedScholarship.findMany({
+          where: { userId: req.user.id },
+          select: { scholarshipId: true },
+        });
+        savedIds = saved.map((s) => s.scholarshipId);
+      }
+
+      res.json({
+        scholarships: scholarships.map((s) => ({
+          ...s,
+          isSaved: savedIds.includes(s.id),
+        })),
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
       });
-      savedIds = saved.map((s) => s.scholarshipId);
+    } catch (error) {
+      next(error);
     }
-
-    res.json({
-      scholarships: scholarships.map((s) => ({
-        ...s,
-        isSaved: savedIds.includes(s.id),
-      })),
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // Get single scholarship
 router.get('/:id', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
@@ -279,5 +296,64 @@ router.delete('/:id', authenticate, requireAdmin, async (req: AuthenticatedReque
     next(error);
   }
 });
+
+// Admin: AI Scholarship Scraper
+// Accepts a URL, scrapes the page, extracts structured data via AI, saves to DB
+router.post(
+  '/admin/scrape',
+  authenticate,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { url } = req.body;
+
+      if (!url || typeof url !== 'string') {
+        res.status(400).json({ error: 'A valid URL is required.' });
+        return;
+      }
+
+      // Basic URL validation
+      try {
+        new URL(url);
+      } catch {
+        res.status(400).json({ error: 'Invalid URL format.' });
+        return;
+      }
+
+      const result = await scrapeAndSaveScholarship(url);
+
+      res.status(201).json({
+        message: 'Scholarship scraped and saved successfully.',
+        ...result,
+      });
+    } catch (error: any) {
+      console.error('[Scholarship Scraper] Error:', error.message);
+
+      if (error.message?.includes('Failed to fetch URL')) {
+        res.status(502).json({
+          error: `Could not reach the URL. The page may be down or blocking automated requests.`,
+          details: error.message,
+        });
+        return;
+      }
+
+      if (error.message?.includes('AI_CONFIG_ERROR')) {
+        res.status(503).json({
+          error: 'AI service is not configured. Please set OPENAI_API_KEY.',
+        });
+        return;
+      }
+
+      if (error.message?.includes('too short')) {
+        res.status(422).json({
+          error: error.message,
+        });
+        return;
+      }
+
+      next(error);
+    }
+  }
+);
 
 export default router;
