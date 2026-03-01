@@ -7,7 +7,6 @@ import InsufficientCreditsModal from './InsufficientCreditsModal';
 import {
   ArrowRightIcon,
   BookOpenIcon,
-  ChatBubbleBottomCenterTextIcon,
   ClipboardDocumentIcon,
   CpuChipIcon,
   DocumentArrowUpIcon,
@@ -27,14 +26,12 @@ import {
 import { ArrowPathIcon, CheckIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
 interface MatchedSegment {
   text: string;
   possibleSource: string;
   similarityPercent: number;
   type: 'exact' | 'paraphrased' | 'common_knowledge';
 }
-
 interface PlagiarismDetails {
   originalityScore: number;
   isOriginal: boolean;
@@ -44,7 +41,6 @@ interface PlagiarismDetails {
   readabilityLevel: string;
   summary: string;
 }
-
 interface AIDetectionDetails {
   aiProbabilityScore: number;
   humanProbabilityScore: number;
@@ -54,36 +50,23 @@ interface AIDetectionDetails {
   detectedPatterns: string[];
   verdict: string;
 }
-
 interface HallucinationDetails {
   totalClaimsChecked: number;
   verifiedClaims: number;
-  unverifiedClaims: {
-    claim: string;
-    issue: string;
-    severity: string;
-    suggestion: string;
-  }[];
+  unverifiedClaims: { claim: string; issue: string; severity: string; suggestion: string }[];
   hallucinationRisk: string;
   summary: string;
 }
-
 interface FeedbackDetails {
   overallScore: number;
   grammarScore: number;
   clarityScore: number;
   toneScore: number;
-  grammarIssues: {
-    text: string;
-    issue: string;
-    correction: string;
-    type: string;
-  }[];
+  grammarIssues: { text: string; issue: string; correction: string; type: string }[];
   suggestions: string[];
   strengths: string[];
   summary: string;
 }
-
 interface PipelineResult {
   documentId: string;
   reportId: string;
@@ -158,8 +141,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   const [activeResultTab, setActiveResultTab] = useState<string>('overview');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { balance } = useCredits();
-
-  // Credit-gate modal state
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
     required: number;
@@ -172,28 +153,21 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
     () => (textContent.trim() ? textContent.trim().split(/\s+/).filter(Boolean).length : 0),
     [textContent]
   );
-
   const estimatedCost = useMemo(() => Math.max(5, Math.ceil(wordCount / 100)), [wordCount]);
 
-  // ── File Upload Handler ──
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Plain text — read client-side
     if (file.type === 'text/plain') {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const text = ev.target?.result as string;
-        setTextContent(text);
+        setTextContent(ev.target?.result as string);
         setDocumentName(file.name.replace(/\.[^.]+$/, ''));
         setError(null);
       };
       reader.readAsText(file);
       return;
     }
-
-    // PDF / DOCX — send to backend for extraction
     setIsUploading(true);
     setError(null);
     try {
@@ -202,16 +176,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       const data = response.data as { extractedText: string; fileName: string; truncated: boolean };
       setTextContent(data.extractedText);
       setDocumentName(file.name.replace(/\.[^.]+$/, ''));
-      if (data.truncated) {
-        setError('Document was truncated to 20,000 characters. Full text may not be shown.');
-      }
+      if (data.truncated) setError('Document was truncated to 20,000 characters.');
     } catch (err: unknown) {
-      console.error('File upload failed:', err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to extract text from file. Please try pasting the text directly.'
-      );
+      setError(err instanceof Error ? err.message : 'Failed to extract text from file.');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -246,33 +213,28 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       setResult(response.data as PipelineResult);
       setActiveResultTab('overview');
     } catch (err: unknown) {
-      console.error('Failed to check plagiarism:', err);
       setError(err instanceof Error ? err.message : 'Failed to check content. Please try again.');
     } finally {
       setIsChecking(false);
     }
   };
 
-  const toggleOption = (id: string) => {
+  const toggleOption = (id: string) =>
     setSelectedOptions((prev) =>
       prev.includes(id) ? prev.filter((o) => o !== id) : [...prev, id]
     );
-  };
-
   const handleCopy = async () => {
     if (!textContent) return;
     await navigator.clipboard.writeText(textContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   const handleClear = () => {
     setTextContent('');
     setResult(null);
     setError(null);
   };
 
-  // ── Color helpers ──
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-emerald-500';
     if (score >= 40) return 'text-amber-500';
@@ -294,9 +256,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
     return 'bg-gray-100 text-gray-600';
   };
 
-  const circumference = 2 * Math.PI * 40;
-
-  // ── Tab definitions (dynamic based on result) ──
   const resultTabs = useMemo(() => {
     if (!result) return [];
     return [
@@ -314,7 +273,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
         <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] bg-gray-50 dark:bg-background-dark overflow-hidden">
           {/* ═══════ LEFT: Document Editor ═══════ */}
           <div className="flex-1 flex flex-col bg-white dark:bg-card-dark m-3 md:m-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {/* Editor Top Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2.5">
                 <DocumentTextIcon className="w-5 h-5 text-indigo-500" />
@@ -349,8 +307,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 </button>
               </div>
             </div>
-
-            {/* Text Editor */}
             <textarea
               className="flex-1 w-full p-8 md:p-12 resize-none outline-none border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-lg leading-relaxed placeholder-gray-400 dark:placeholder-gray-600 bg-transparent"
               placeholder="Paste your text here or upload a document to check for plagiarism and AI-generated content..."
@@ -360,16 +316,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 if (error) setError(null);
               }}
             />
-
-            {/* Error Banner */}
             {error && (
               <div className="mx-5 mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
                 <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0" />
                 {error}
               </div>
             )}
-
-            {/* Bottom Toolbar */}
             <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/30">
               <div className="flex items-center gap-3">
                 <button
@@ -407,11 +359,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <button
                     key={opt.id}
                     onClick={() => toggleOption(opt.id)}
-                    className={`w-full flex items-start gap-3 p-4 bg-white dark:bg-card-dark border rounded-2xl cursor-pointer transition-all duration-200 text-left shadow-sm ${
-                      isSelected
-                        ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-200 dark:ring-indigo-800'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
-                    }`}
+                    className={`w-full flex items-start gap-3 p-4 bg-white dark:bg-card-dark border rounded-2xl cursor-pointer transition-all duration-200 text-left shadow-sm ${isSelected ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-200 dark:ring-indigo-800' : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'}`}
                   >
                     <div
                       className={`w-10 h-10 rounded-xl ${opt.iconBg} flex items-center justify-center flex-shrink-0`}
@@ -427,11 +375,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </p>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                        isSelected
-                          ? 'bg-indigo-600 border-indigo-600'
-                          : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600'}`}
                     >
                       {isSelected && <CheckIcon className="w-3 h-3 text-white" strokeWidth={3} />}
                     </div>
@@ -453,8 +397,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <SparklesIcon className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
               </button>
             </div>
-
-            {/* Bottom: Scan + Credits */}
             <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleCheck}
@@ -472,11 +414,11 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Cost:{' '}
                   <span className="text-gray-900 dark:text-white font-bold">
-                    {wordCount > 0 ? estimatedCost : '—'} Credits
+                    {wordCount > 0 ? estimatedCost : '\u2014'} Credits
                   </span>
                 </p>
                 <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
-                  <span>💎</span> You have{' '}
+                  <span>\uD83D\uDC8E</span> You have{' '}
                   <span className="font-semibold text-gray-700 dark:text-gray-300">{balance}</span>{' '}
                   credits remaining
                 </p>
@@ -485,219 +427,183 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* ═══════ PREMIUM ANALYSIS REPORT MODAL ═══════ */}
-        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* ═══════ ANALYSIS REPORT MODAL ═══════ */}
         {result && !isChecking && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 md:p-8">
-            <div className="bg-white dark:bg-card-dark rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
-              {/* ── Modal Header ── */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex flex-col">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+            <div className="bg-gray-50 dark:bg-background-dark flex flex-col w-full max-w-5xl max-h-[90vh] rounded-[2rem] shadow-2xl overflow-hidden">
+              {/* Fixed Header */}
+              <div className="flex-shrink-0 bg-white dark:bg-card-dark px-8 py-6 flex justify-between items-start">
+                <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
                     <MagnifyingGlassIcon className="w-6 h-6 text-indigo-500" />
                     Analysis Report
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-2">
                     <span>{result.wordCount} words</span>
-                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                    <span className="text-gray-300 dark:text-gray-600">&middot;</span>
                     <span className="flex items-center gap-1">
-                      <ClockIcon className="w-3.5 h-3.5" />{' '}
+                      <ClockIcon className="w-3.5 h-3.5" />
                       {(result.processingTimeMs / 1000).toFixed(1)}s
                     </span>
-                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                    <span className="text-gray-300 dark:text-gray-600">&middot;</span>
                     <span>{result.creditCost} credits used</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setResult(null)}
                   className="p-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition"
+                  aria-label="Close report"
                 >
                   <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
 
-              {/* ── Tab Navigation ── */}
-              <div className="flex gap-8 px-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 overflow-x-auto">
+              {/* Sticky Tabs */}
+              <div className="flex-shrink-0 bg-white/80 dark:bg-card-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-8 flex gap-6 overflow-x-auto">
                 {resultTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveResultTab(tab.id)}
-                    className={`py-4 px-1 whitespace-nowrap text-sm font-medium border-b-2 transition-colors ${
-                      activeResultTab === tab.id
-                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400 font-semibold'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
+                    className={`py-4 whitespace-nowrap text-sm border-b-2 transition-colors cursor-pointer ${activeResultTab === tab.id ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 dark:border-indigo-400 font-semibold' : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium'}`}
                   >
                     {tab.label}
                   </button>
                 ))}
               </div>
 
-              {/* ── Scrollable Content ── */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50 dark:bg-background-dark">
-                {/* ════ OVERVIEW ════ */}
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-8">
+                {/* ── OVERVIEW ── */}
                 {activeResultTab === 'overview' && (
-                  <div className="space-y-8">
-                    {/* Stats Grid */}
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Originality */}
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Originality Score
-                        </span>
-                        <div className="relative w-28 h-28 mt-4 mb-3">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                            <circle
-                              className="text-gray-100 dark:text-gray-800 stroke-current"
-                              cx="50"
-                              cy="50"
-                              fill="none"
-                              r="40"
-                              strokeWidth="7"
-                            />
-                            <circle
-                              className={`${getScoreColor(result.originalityScore)} stroke-current transition-all duration-1000 ease-out`}
-                              cx="50"
-                              cy="50"
-                              fill="none"
-                              r="40"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={
-                                circumference - (result.originalityScore / 100) * circumference
-                              }
-                              strokeLinecap="round"
-                              strokeWidth="7"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span
-                              className={`text-4xl font-black ${getScoreColor(result.originalityScore)}`}
-                            >
-                              {result.originalityScore}%
-                            </span>
-                          </div>
+                        </p>
+                        <div className="flex items-baseline gap-3">
+                          <span
+                            className={`text-4xl font-black ${getScoreColor(result.originalityScore)}`}
+                          >
+                            {result.originalityScore}%
+                          </span>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.isOriginal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}
+                          >
+                            {result.isOriginal ? '\u2713 Passed' : '\u2717 Review'}
+                          </span>
                         </div>
-                        <span
-                          className={`text-xs font-bold px-3 py-1 rounded-full ${result.isOriginal ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'}`}
-                        >
-                          {result.isOriginal ? '✓ Passed' : '✗ Review Needed'}
-                        </span>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${getScoreBg(result.originalityScore)}`}
+                            style={{ width: `${result.originalityScore}%` }}
+                          />
+                        </div>
                       </div>
-
                       {/* AI Probability */}
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           AI Probability
-                        </span>
-                        <div className="relative w-28 h-28 mt-4 mb-3">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                            <circle
-                              className="text-gray-100 dark:text-gray-800 stroke-current"
-                              cx="50"
-                              cy="50"
-                              fill="none"
-                              r="40"
-                              strokeWidth="7"
-                            />
-                            <circle
-                              className={`${getScoreColor(100 - result.aiProbabilityScore)} stroke-current transition-all duration-1000 ease-out`}
-                              cx="50"
-                              cy="50"
-                              fill="none"
-                              r="40"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={
-                                circumference - (result.aiProbabilityScore / 100) * circumference
-                              }
-                              strokeLinecap="round"
-                              strokeWidth="7"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span
-                              className={`text-4xl font-black ${getScoreColor(100 - result.aiProbabilityScore)}`}
-                            >
-                              {result.aiProbabilityScore}%
-                            </span>
-                          </div>
+                        </p>
+                        <div className="flex items-baseline gap-3">
+                          <span
+                            className={`text-4xl font-black ${getScoreColor(100 - result.aiProbabilityScore)}`}
+                          >
+                            {result.aiProbabilityScore}%
+                          </span>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.aiProbabilityScore <= 30 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : result.aiProbabilityScore <= 60 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}
+                          >
+                            {result.aiProbabilityScore <= 30
+                              ? 'Human'
+                              : result.aiProbabilityScore <= 60
+                                ? 'Mixed'
+                                : 'Likely AI'}
+                          </span>
                         </div>
-                        <span
-                          className={`text-xs font-bold px-3 py-1 rounded-full ${result.aiProbabilityScore <= 30 ? 'text-emerald-700 bg-emerald-100' : result.aiProbabilityScore <= 60 ? 'text-amber-700 bg-amber-100' : 'text-red-700 bg-red-100'}`}
-                        >
-                          {result.aiProbabilityScore <= 30
-                            ? 'Likely Human'
-                            : result.aiProbabilityScore <= 60
-                              ? 'Mixed Content'
-                              : 'Likely AI'}
-                        </span>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${getScoreBg(100 - result.aiProbabilityScore)}`}
+                            style={{ width: `${result.aiProbabilityScore}%` }}
+                          />
+                        </div>
                       </div>
-
                       {/* Readability */}
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Readability
-                        </span>
-                        <div className="w-28 h-28 mt-4 mb-3 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                          <BookOpenIcon className="w-12 h-12 text-indigo-500" />
+                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <BookOpenIcon className="w-8 h-8 text-indigo-500" />
+                          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {result.readabilityLevel}
+                          </span>
                         </div>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
-                          {result.readabilityLevel}
-                        </span>
                       </div>
                     </div>
-
-                    {/* Summary Card */}
-                    <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                      <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
                         Summary
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.summary}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* ════ PLAGIARISM TAB ════ */}
+                {/* ── PLAGIARISM ── */}
                 {activeResultTab === 'plagiarism' && result.plagiarismDetails && (
-                  <div className="space-y-8">
-                    {/* Stats Row */}
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Originality Score
-                        </span>
-                        <span
-                          className={`text-4xl font-black mt-2 ${getScoreColor(result.plagiarismDetails.originalityScore)}`}
-                        >
-                          {result.plagiarismDetails.originalityScore}%
-                        </span>
+                        </p>
+                        <div className="flex items-baseline gap-3">
+                          <span
+                            className={`text-4xl font-black ${getScoreColor(result.plagiarismDetails.originalityScore)}`}
+                          >
+                            {result.plagiarismDetails.originalityScore}%
+                          </span>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.plagiarismDetails.isOriginal ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}
+                          >
+                            {result.plagiarismDetails.isOriginal
+                              ? '\u2713 Original'
+                              : '\u2717 Flagged'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${getScoreBg(result.plagiarismDetails.originalityScore)}`}
+                            style={{ width: `${result.plagiarismDetails.originalityScore}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Citation Quality
-                        </span>
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+                        </p>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
                           {result.plagiarismDetails.citationQuality}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Sources Found
-                        </span>
-                        <span className="text-4xl font-black text-gray-900 dark:text-white mt-2">
+                        </p>
+                        <span className="text-4xl font-black text-gray-900 dark:text-white">
                           {result.plagiarismDetails.sourcesFound}
                         </span>
                       </div>
                     </div>
-
-                    {/* Matched Segments */}
                     {result.plagiarismDetails.matchedSegments.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <LinkIcon className="w-5 h-5 text-gray-400" />
-                          Matched Segments ({result.plagiarismDetails.matchedSegments.length})
+                          <LinkIcon className="w-5 h-5 text-gray-400" /> Matched Segments (
+                          {result.plagiarismDetails.matchedSegments.length})
                         </h3>
                         <div className="flex flex-col gap-4">
                           {result.plagiarismDetails.matchedSegments.map((seg, i) => (
@@ -705,7 +611,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                               key={i}
                               className="bg-white dark:bg-card-dark rounded-2xl border border-red-100 dark:border-red-900/30 p-5 shadow-sm"
                             >
-                              <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed italic bg-red-50 dark:bg-red-900/10 p-4 rounded-xl mb-4">
+                              <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed italic bg-red-50 dark:bg-red-900/10 p-4 rounded-xl mb-4">
                                 &ldquo;{seg.text}&rdquo;
                               </p>
                               <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -723,9 +629,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       </div>
                     )}
-
-                    {/* Summary */}
-                    <div className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.plagiarismDetails.summary}
                       </p>
@@ -733,102 +637,119 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* ════ AI DETECTION TAB ════ */}
+                {/* ── AI DETECTION ── */}
                 {activeResultTab === 'ai' && result.aiDetectionDetails && (
-                  <div className="space-y-8">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           AI Probability
-                        </span>
-                        <span
-                          className={`text-4xl font-black mt-2 ${getScoreColor(100 - result.aiDetectionDetails.aiProbabilityScore)}`}
-                        >
-                          {result.aiDetectionDetails.aiProbabilityScore}%
-                        </span>
+                        </p>
+                        <div className="flex items-baseline gap-3">
+                          <span
+                            className={`text-4xl font-black ${getScoreColor(100 - result.aiDetectionDetails.aiProbabilityScore)}`}
+                          >
+                            {result.aiDetectionDetails.aiProbabilityScore}%
+                          </span>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.aiDetectionDetails.aiProbabilityScore <= 30 ? 'bg-emerald-50 text-emerald-700' : result.aiDetectionDetails.aiProbabilityScore <= 60 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}
+                          >
+                            {result.aiDetectionDetails.aiProbabilityScore <= 30
+                              ? 'Human'
+                              : result.aiDetectionDetails.aiProbabilityScore <= 60
+                                ? 'Mixed'
+                                : 'Likely AI'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${getScoreBg(100 - result.aiDetectionDetails.aiProbabilityScore)}`}
+                            style={{ width: `${result.aiDetectionDetails.aiProbabilityScore}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Confidence
-                        </span>
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white mt-2 capitalize">
+                        </p>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
                           {result.aiDetectionDetails.confidence}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Perplexity
-                        </span>
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white mt-2 capitalize">
+                        </p>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
                           {result.aiDetectionDetails.perplexityLevel}
                         </span>
                       </div>
                     </div>
-
                     {result.aiDetectionDetails.detectedPatterns.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                           Detected Patterns
                         </h3>
-                        <div className="space-y-3">
+                        <div className="flex flex-col gap-3">
                           {result.aiDetectionDetails.detectedPatterns.map((pattern, i) => (
                             <div
                               key={i}
-                              className="flex items-start gap-3 bg-white dark:bg-card-dark border border-orange-100 dark:border-orange-900/30 rounded-2xl p-4 shadow-sm"
+                              className="flex items-start gap-3 bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 rounded-xl p-4"
                             >
-                              <CpuChipIcon className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                              <ExclamationTriangleIcon className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
                               <p className="text-sm text-gray-700 dark:text-gray-300">{pattern}</p>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-
-                    <div className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                        Verdict
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.aiDetectionDetails.verdict}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* ════ HALLUCINATIONS TAB ════ */}
+                {/* ── HALLUCINATIONS ── */}
                 {activeResultTab === 'hallucinations' && result.hallucinationDetails && (
-                  <div className="space-y-8">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Claims Checked
-                        </span>
-                        <span className="text-4xl font-black text-gray-900 dark:text-white mt-2">
+                        </p>
+                        <span className="text-4xl font-black text-gray-900 dark:text-white">
                           {result.hallucinationDetails.totalClaimsChecked}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Verified
-                        </span>
-                        <span className="text-4xl font-black text-emerald-500 mt-2">
+                        </p>
+                        <span className="text-4xl font-black text-emerald-500">
                           {result.hallucinationDetails.verifiedClaims}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Risk Level
-                        </span>
+                        </p>
                         <span
-                          className={`text-sm font-bold px-4 py-1.5 rounded-full mt-2 uppercase ${getRiskBadge(result.hallucinationDetails.hallucinationRisk)}`}
+                          className={`text-sm font-bold px-4 py-1.5 rounded-full uppercase ${getRiskBadge(result.hallucinationDetails.hallucinationRisk)}`}
                         >
                           {result.hallucinationDetails.hallucinationRisk}
                         </span>
                       </div>
                     </div>
-
                     {result.hallucinationDetails.unverifiedClaims.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />
-                          Unverified Claims ({result.hallucinationDetails.unverifiedClaims.length})
+                          <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" /> Unverified
+                          Claims ({result.hallucinationDetails.unverifiedClaims.length})
                         </h3>
                         <div className="flex flex-col gap-4">
                           {result.hallucinationDetails.unverifiedClaims.map((claim, i) => (
@@ -849,7 +770,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                                   {claim.severity}
                                 </span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  💡 {claim.suggestion}
+                                  {claim.suggestion}
                                 </span>
                               </div>
                             </div>
@@ -857,8 +778,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       </div>
                     )}
-
-                    <div className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.hallucinationDetails.summary}
                       </p>
@@ -866,10 +786,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   </div>
                 )}
 
-                {/* ════ WRITING FEEDBACK TAB ════ */}
+                {/* ── WRITING FEEDBACK ── */}
                 {activeResultTab === 'feedback' && result.feedbackDetails && (
-                  <div className="space-y-8">
-                    {/* Score Cards */}
+                  <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
                         { label: 'Overall', score: result.feedbackDetails.overallScore },
@@ -879,11 +798,11 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       ].map((item) => (
                         <div
                           key={item.label}
-                          className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm text-center"
+                          className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm text-center hover:shadow-md transition-shadow"
                         >
-                          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {item.label}
-                          </span>
+                          </p>
                           <p className={`text-3xl font-black mt-1 ${getScoreColor(item.score)}`}>
                             {item.score}
                           </p>
@@ -896,12 +815,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       ))}
                     </div>
-
-                    {/* Strengths */}
                     {result.feedbackDetails.strengths.length > 0 && (
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-                          ✅ Strengths
+                          {'\u2705'} Strengths
                         </h3>
                         <div className="space-y-2">
                           {result.feedbackDetails.strengths.map((s, i) => (
@@ -915,14 +832,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       </div>
                     )}
-
-                    {/* Grammar Issues */}
                     {result.feedbackDetails.grammarIssues.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                           Grammar Issues ({result.feedbackDetails.grammarIssues.length})
                         </h3>
-                        <div className="space-y-3">
+                        <div className="flex flex-col gap-3">
                           {result.feedbackDetails.grammarIssues.map((issue, i) => (
                             <div
                               key={i}
@@ -933,7 +848,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                               </span>
                               <p className="text-sm text-gray-700 dark:text-gray-300 mt-3">
                                 <span className="line-through text-red-400">{issue.text}</span>
-                                <span className="mx-2">→</span>
+                                <span className="mx-2">{'\u2192'}</span>
                                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                                   {issue.correction}
                                 </span>
@@ -946,12 +861,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       </div>
                     )}
-
-                    {/* Suggestions */}
                     {result.feedbackDetails.suggestions.length > 0 && (
-                      <div className="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                      <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-                          💡 Suggestions
+                          {'\uD83D\uDCA1'} Suggestions
                         </h3>
                         <div className="space-y-2">
                           {result.feedbackDetails.suggestions.map((s, i) => (
@@ -965,9 +878,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                         </div>
                       </div>
                     )}
-
-                    {/* Summary */}
-                    <div className="bg-white dark:bg-card-dark rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.feedbackDetails.summary}
                       </p>
@@ -980,7 +891,6 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
         )}
       </DashboardLayout>
 
-      {/* Insufficient Credits Modal */}
       {creditErrorData && (
         <InsufficientCreditsModal
           isOpen={showInsufficientModal}
