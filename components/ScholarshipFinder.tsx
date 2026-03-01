@@ -755,7 +755,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 </>
               ) : (
                 <>
-                  <SparklesIcon className="w-4.5 h-4.5" />
+                  <SparklesIcon className="w-5 h-5" />
                   Apply Filters
                 </>
               )}
@@ -965,7 +965,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         Trending Scholarships
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                       {featuredScholarships.map((s) => (
                         <div
                           key={s.id}
@@ -974,8 +974,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                             s.applicationUrl && window.open(s.applicationUrl, '_blank')
                           }
                         >
-                          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
-                          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
+                          <div className="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+                          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
                           <div className="relative z-10">
                             <p className="text-blue-200 text-xs font-semibold mb-1.5 uppercase tracking-wider">
                               {s.institution}
