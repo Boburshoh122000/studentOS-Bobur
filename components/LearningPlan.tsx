@@ -294,7 +294,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         <ThemeToggle />
         {plan ? (
           <button
-            onClick={handleStartNew}
+            onClick={handleHardReset}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-sm text-sm"
           >
             <PlusIcon className="w-[18px] h-[18px]" />

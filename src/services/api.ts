@@ -423,8 +423,6 @@ export const aiApi = {
     }
     return api.postFormData('/ai/upload-cv', formData);
   },
-  generateCoverLetter: (data: { jobTitle: string; company: string; jobDescription: string }) =>
-    api.post('/ai/cover-letter', data),
   generateLearningPlan: (data: { goal: string; timeframe?: string }) =>
     api.post('/ai/learning-plan', data),
   checkPlagiarism: (text: string, modules?: string[], documentName?: string) =>
