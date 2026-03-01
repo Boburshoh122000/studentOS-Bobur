@@ -20,7 +20,6 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   TrashIcon,
-  WrenchScrewdriverIcon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowPathIcon, CheckIcon, ClockIcon } from '@heroicons/react/24/outline';
@@ -85,6 +84,19 @@ interface PipelineResult {
   processingTimeMs: number;
 }
 
+// Custom Diamond SVG to avoid broken unicode emoji
+const DiamondIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M11.644 1.59a.75.75 0 01.712 0l9.75 5.25c.12.064.212.154.275.26.063.106.095.228.094.35 0 .121-.031.243-.094.35-.063.105-.155.195-.275.26l-9.75 5.25a.75.75 0 01-.712 0l-9.75-5.25a.763.763 0 01-.275-.26A.753.753 0 011.5 7.5c0-.122.031-.244.094-.35.063-.106.155-.196.275-.26l9.75-5.25z" />
+    <path d="M2.261 10.142l9.36 5.039a.75.75 0 00.758 0l9.36-5.039-.982 5.094a2.25 2.25 0 01-1.423 1.68l-6.584 2.35a2.25 2.25 0 01-1.5 0l-6.584-2.35a2.25 2.25 0 01-1.423-1.68l-.982-5.094z" />
+  </svg>
+);
+
 type ScanOption = {
   id: string;
   label: string;
@@ -100,32 +112,32 @@ const SCAN_OPTIONS: ScanOption[] = [
     label: 'Advanced AI Scan',
     description: 'In-depth AI analysis',
     icon: CpuChipIcon,
-    iconBg: 'bg-violet-100 dark:bg-violet-900/30',
-    iconColor: 'text-violet-600 dark:text-violet-400',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-900/30',
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
   },
   {
     id: 'plagiarism',
     label: 'Plagiarism Check',
     description: 'Check for copied content',
     icon: ShieldCheckIcon,
-    iconBg: 'bg-rose-100 dark:bg-rose-900/30',
-    iconColor: 'text-rose-600 dark:text-rose-400',
+    iconBg: 'bg-red-50 dark:bg-red-900/30',
+    iconColor: 'text-red-500 dark:text-red-400',
   },
   {
     id: 'hallucinations',
     label: 'AI Hallucinations',
     description: 'Check claims and cite sources',
     icon: ExclamationTriangleIcon,
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-yellow-50 dark:bg-yellow-900/30',
+    iconColor: 'text-yellow-600 dark:text-yellow-400',
   },
   {
     id: 'feedback',
     label: 'Writing Feedback',
     description: 'Content, clarity, and grammar',
     icon: PencilSquareIcon,
-    iconBg: 'bg-sky-100 dark:bg-sky-900/30',
-    iconColor: 'text-sky-600 dark:text-sky-400',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/30',
+    iconColor: 'text-blue-500 dark:text-blue-400',
   },
 ];
 
@@ -472,19 +484,19 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   </button>
                 );
               })}
-              <button className="w-full flex items-start gap-3 p-4 bg-indigo-50/60 dark:bg-indigo-900/15 border border-indigo-100 dark:border-indigo-800/40 rounded-2xl cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-all text-left">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
-                  <WrenchScrewdriverIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <button className="w-full flex items-start gap-3 p-4 bg-purple-50/60 dark:bg-purple-900/15 border border-purple-100 dark:border-purple-800/40 rounded-2xl cursor-pointer hover:border-purple-300 dark:hover:border-purple-600 transition-all text-left">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
+                  <SparklesIcon className="w-5 h-5 text-purple-500 dark:text-purple-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">
+                  <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">
                     Create Custom Reviewer
                   </p>
-                  <p className="text-xs text-indigo-600/70 dark:text-indigo-400/70 mt-0.5">
+                  <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mt-0.5">
                     Add review instructions
                   </p>
                 </div>
-                <SparklesIcon className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                <SparklesIcon className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
               </button>
             </div>
             <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -500,18 +512,20 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <ArrowRightIcon className="w-5 h-5" />
                 )}
               </button>
-              <div className="mt-3 text-center flex flex-col gap-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <div className="mt-4 text-center flex flex-col gap-1">
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Cost:{' '}
                   <span className="text-gray-900 dark:text-white font-bold">
-                    {wordCount > 0 ? estimatedCost : '\u2014'} Credits
+                    {wordCount > 0 ? estimatedCost : '—'} Credits
                   </span>
-                </p>
-                <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
-                  <span>\uD83D\uDC8E</span> You have{' '}
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">{balance}</span>{' '}
-                  credits remaining
-                </p>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5 mt-1">
+                  <DiamondIcon className="w-4 h-4 text-blue-500" />
+                  <span>
+                    You have <strong className="text-gray-800 dark:text-gray-200">{balance}</strong>{' '}
+                    credits remaining
+                  </span>
+                </div>
               </div>
             </div>
           </div>
