@@ -5,7 +5,26 @@ import { blogApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, ArrowLeftIcon, ArrowTrendingUpIcon, BellIcon, BriefcaseIcon, CheckCircleIcon, CreditCardIcon, DocumentTextIcon, MagnifyingGlassIcon, PencilIcon, PencilSquareIcon, PhotoIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowLeftIcon,
+  ArrowTrendingUpIcon,
+  BellIcon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  PencilSquareIcon,
+  PhotoIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  TrashIcon,
+  UsersIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 interface BlogPost {
   id: string;
@@ -894,7 +913,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                             </div>
                           ) : (
                             <>
-                              <PhotoIcon className="w-5 h-5" className="text-slate-400" />
+                              <PhotoIcon className="w-5 h-5 text-slate-400" />
                               <span className="text-xs text-slate-500">
                                 Click to upload cover image
                               </span>

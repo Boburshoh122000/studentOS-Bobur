@@ -2,7 +2,7 @@ import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireCredits } from '../middleware/credits.middleware.js';
-import { generateLearningPlan, generatePhaseQuiz } from '../services/ai.service.js';
+import { generateLearningPlan } from '../services/ai.service.js';
 
 const router = Router();
 
@@ -19,7 +19,6 @@ router.get('/', async (req: AuthenticatedRequest, res, next) => {
           orderBy: { orderIndex: 'asc' },
           include: {
             resources: true,
-            quiz: { include: { questions: true } },
           },
         },
       },
@@ -154,138 +153,6 @@ router.patch('/resources/:id/toggle', async (req: AuthenticatedRequest, res, nex
     }
 
     res.json({ resource: updated, phaseCompleted: allDone });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// ─── POST generate quiz for a phase ──────────────────────────────────────────
-router.post('/:phaseId/quiz', async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const phaseId = req.params.phaseId as string;
-
-    // Verify ownership
-    const phase = await prisma.planPhase.findUnique({
-      where: { id: phaseId },
-      include: {
-        plan: true,
-        resources: true,
-        quiz: { include: { questions: true } },
-      },
-    });
-
-    if (!phase || phase.plan.userId !== req.user!.id) {
-      res.status(404).json({ error: 'Phase not found' });
-      return;
-    }
-
-    // Return existing quiz if already generated
-    if (phase.quiz) {
-      res.json({ quiz: phase.quiz });
-      return;
-    }
-
-    // Generate quiz via AI
-    const phaseTopic = `${phase.title}${phase.description ? ' — ' + phase.description : ''}`;
-    const resourceTitles = phase.resources.map((r) => r.title);
-    const aiQuiz = await generatePhaseQuiz(phaseTopic, resourceTitles);
-
-    if (!aiQuiz.questions.length) {
-      res.status(500).json({ error: 'Failed to generate quiz questions' });
-      return;
-    }
-
-    // Save to DB
-    const quiz = await prisma.planQuiz.create({
-      data: {
-        phaseId,
-        questions: {
-          create: aiQuiz.questions.map((q) => ({
-            question: q.question,
-            options: q.options,
-            correctIndex: q.correctIndex,
-            explanation: q.explanation,
-          })),
-        },
-      },
-      include: { questions: true },
-    });
-
-    res.json({ quiz });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// ─── POST submit quiz answers ────────────────────────────────────────────────
-router.post('/quiz/:quizId/submit', async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const quizId = req.params.quizId as string;
-    const { answers } = req.body as { answers: number[] };
-
-    if (!answers || !Array.isArray(answers)) {
-      res.status(400).json({ error: 'answers array is required' });
-      return;
-    }
-
-    // Verify ownership
-    const quiz = await prisma.planQuiz.findUnique({
-      where: { id: quizId },
-      include: {
-        questions: true,
-        phase: { include: { plan: true } },
-      },
-    });
-
-    if (!quiz || quiz.phase.plan.userId !== req.user!.id) {
-      res.status(404).json({ error: 'Quiz not found' });
-      return;
-    }
-
-    // Grade and save each answer
-    let correct = 0;
-    const results: {
-      questionId: string;
-      question: string;
-      options: string[];
-      correctIndex: number;
-      userAnswer: number;
-      isCorrect: boolean;
-      explanation: string | null;
-    }[] = [];
-
-    for (let i = 0; i < quiz.questions.length; i++) {
-      const q = quiz.questions[i];
-      const userAnswer = answers[i] ?? -1;
-      const isCorrect = userAnswer === q.correctIndex;
-      if (isCorrect) correct++;
-
-      // Save user answer
-      await prisma.quizQuestion.update({
-        where: { id: q.id },
-        data: { userAnswer },
-      });
-
-      results.push({
-        questionId: q.id,
-        question: q.question,
-        options: q.options,
-        correctIndex: q.correctIndex,
-        userAnswer,
-        isCorrect,
-        explanation: q.explanation,
-      });
-    }
-
-    const score = Math.round((correct / quiz.questions.length) * 100);
-
-    // Save score
-    await prisma.planQuiz.update({
-      where: { id: quizId },
-      data: { score },
-    });
-
-    res.json({ score, correct, total: quiz.questions.length, results });
   } catch (error) {
     next(error);
   }
