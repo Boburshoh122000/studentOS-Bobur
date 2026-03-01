@@ -770,9 +770,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
               {/* Search */}
               <div className="relative flex-1 max-w-xl">
-                <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 pointer-events-none" />
                 <input
-                  className="w-full h-11 pl-11 pr-4 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+                  className="w-full h-11 pl-4 pr-4 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
                   placeholder="Search by name, university, country..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
