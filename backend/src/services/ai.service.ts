@@ -309,7 +309,8 @@ Return ONLY the cover letter text. No extra formatting.`;
 export const generateLearningPlan = async (
   goal: string,
   currentSkills: string[],
-  duration: string = '4 weeks'
+  duration: string = '4 weeks',
+  difficulty: string = 'intermediate'
 ): Promise<{
   title: string;
   overview: string;
@@ -317,6 +318,7 @@ export const generateLearningPlan = async (
     phase: string;
     theme: string;
     tasks: { title: string; type: 'task'; duration: string; url: string }[];
+    exercises: { title: string; type: 'exercise'; duration: string; description: string }[];
     resources: {
       videos: { title: string; url: string }[];
       articles: { title: string; url: string }[];
@@ -328,12 +330,17 @@ export const generateLearningPlan = async (
       ? `\nThe learner already has experience with: ${currentSkills.join(', ')}. Tailor the plan so it skips basics they already know and focuses on growth areas.`
       : '';
 
-    const prompt = `You are an elite Educational Curriculum Architect with 15+ years of experience designing world-class learning programs.
+    const difficultyContext = `\nDIFFICULTY LEVEL: ${difficulty.toUpperCase()}
+- BEGINNER: Start from absolute zero. Explain concepts simply. Focus on fundamentals and building confidence.
+- INTERMEDIATE: Skip basics. Focus on practical application, real projects, and industry best practices.
+- ADVANCED: Assume strong foundation. Focus on edge cases, optimization, portfolio-quality projects, and interview prep.`;
 
-The user will provide a learning topic or a specific personal goal. Your task is to analyze their intent and create a highly structured, actionable learning roadmap with REAL, CLICKABLE resource links.
+    const prompt = `You are an elite Educational Curriculum Architect with 15+ years of experience designing personalized, career-focused learning programs.
 
-USER INPUT: "${goal}"
-DURATION: ${duration}${skillsContext}
+The user has a SPECIFIC CAREER GOAL or learning objective. Your task is to create a structured, actionable learning roadmap that feels like a guided experience — NOT a reading list.
+
+USER GOAL: "${goal}"
+DURATION: ${duration}${difficultyContext}${skillsContext}
 
 ═══════════════════════════════════════════════
 RULE 1 — COMPREHENSION & SYNTHESIS (CRITICAL):
@@ -347,17 +354,24 @@ EXAMPLES:
   → Phase theme: "Mastering Task 2 Essay Structures for Band 7+"
   → WRONG: "Mastering I have already IELTS 6.0 and i neednt basic info..."
 
-- User says "i wanna learn react but already know html css js"
-  → Title: "React Development Mastery Plan"
-  → Phase theme: "Component Architecture & JSX Fundamentals"
-  → WRONG: "Mastering i wanna learn react..."
+- User says "prepare for journalism internship at Kun.uz"
+  → Title: "Journalism Internship Preparation — Kun.uz Ready"
+  → Phase theme: "Newswriting Fundamentals: Lead, Structure & AP Style"
 
 ═══════════════════════════════════════════════
-RULE 2 — NO GENERIC TEMPLATES:
+RULE 2 — MIXED CONTENT TYPES (MANDATORY):
 ═══════════════════════════════════════════════
-NEVER use lazy, generic phase titles like:
-- "[Topic] Core Concepts" / "[Topic] in Action" / "Getting Started with [Topic]" / "Advanced [Topic]"
-Instead, write HIGHLY SPECIFIC, level-appropriate titles relevant to the user's actual goal.
+Each phase MUST contain ALL of these content types:
+- 2-3 TASKS (actionable steps with URLs — e.g., "Read this guide", "Set up your environment")
+- 1-2 EXERCISES (hands-on practice WITHOUT URLs — e.g., "Write a 500-word news article about a local event", "Build a REST API with 3 endpoints")
+- 2+ VIDEOS (YouTube tutorials/lectures)
+- 2+ ARTICLES (guides, documentation, blog posts)
+
+EXERCISES are the KEY differentiator. They must be:
+- Concrete and measurable ("Write X", "Build Y", "Analyze Z")
+- Have a clear deliverable the student can self-assess
+- Include estimated duration
+- Include a brief description of what to do
 
 ═══════════════════════════════════════════════
 RULE 3 — DURATION MAPPING (STRICT):
@@ -370,55 +384,56 @@ Each phase = 1 week. Label each phase "Week N".
 ═══════════════════════════════════════════════
 RULE 4 — MANDATORY CLICKABLE URLS (ZERO EXCEPTIONS):
 ═══════════════════════════════════════════════
-EVERY task, video, and article MUST have a "url" field. No exceptions. NEVER leave url empty or null.
+EVERY task, video, and article MUST have a "url" field. No exceptions.
 ANTI-HALLUCINATION: Do NOT invent fake YouTube video IDs or fabricate URLs.
 
 Strategy:
 a) If you know the EXACT permanent URL (freeCodeCamp, CS50, MDN, official docs), use it directly.
 b) Otherwise, construct a GUARANTEED SEARCH URL:
-   - Videos: https://www.youtube.com/results?search_query=best+<specific+subtopic>+tutorial+<channel+if+known>
-   - Articles: https://www.google.com/search?q=comprehensive+guide+<specific+subtopic>+<source+if+known>
+   - Videos: https://www.youtube.com/results?search_query=best+<specific+subtopic>+tutorial
+   - Articles: https://www.google.com/search?q=comprehensive+guide+<specific+subtopic>
    - Tasks: https://www.google.com/search?q=step+by+step+<specific+task>+tutorial
-c) Make queries HYPER-SPECIFIC with known channel/source names (Traversy Media, freeCodeCamp, Fireship, TED-Ed, MDN, W3Schools).
+c) Make queries HYPER-SPECIFIC with known channel/source names.
 
 ═══════════════════════════════════════════════
-RULE 5 — CONTENT QUALITY:
+RULE 5 — NO GENERIC TEMPLATES:
 ═══════════════════════════════════════════════
-- Each phase MUST have 3-5 tasks and at least 2 videos + 2 articles.
-- Progressive plan: foundations → core skills → practice → advanced techniques & portfolio.
-- Tasks must be concrete (e.g., "Write a Band 7 Task 2 essay on technology" NOT "Practice writing").
-- Skip basics if the user indicates prior knowledge. Tailor to their stated level.
+NEVER use lazy, generic phase titles like:
+- "[Topic] Core Concepts" / "[Topic] in Action" / "Getting Started with [Topic]"
+Instead, write HIGHLY SPECIFIC, level-appropriate titles.
 
 ═══════════════════════════════════════════════
 
 Return a JSON object with this EXACT structure:
 {
-  "title": "A clean, synthesized, professional title (NOT the user's raw text)",
-  "overview": "A short, encouraging 1-2 sentence summary of what the learner will achieve.",
+  "title": "Clean, professional title synthesized from the user's goal",
+  "overview": "Encouraging 1-2 sentence summary of what the learner will achieve and why it matters for their career.",
   "roadmap": [
     {
       "phase": "Week 1",
-      "theme": "A specific, descriptive theme (NOT generic)",
+      "theme": "Specific, descriptive theme",
       "tasks": [
         {
-          "title": "Specific actionable task",
+          "title": "Actionable task with a link",
           "type": "task",
           "duration": "15 min",
-          "url": "https://www.google.com/search?q=specific+task+tutorial"
+          "url": "https://..."
+        }
+      ],
+      "exercises": [
+        {
+          "title": "Hands-on exercise title",
+          "type": "exercise",
+          "duration": "45 min",
+          "description": "Clear instructions for what the student should create or practice"
         }
       ],
       "resources": {
         "videos": [
-          {
-            "title": "Specific video title (Channel Name)",
-            "url": "https://www.youtube.com/results?search_query=specific+topic+tutorial"
-          }
+          { "title": "Video title (Channel)", "url": "https://..." }
         ],
         "articles": [
-          {
-            "title": "Article title (Source Name)",
-            "url": "https://www.google.com/search?q=specific+topic+guide"
-          }
+          { "title": "Article title (Source)", "url": "https://..." }
         ]
       }
     }

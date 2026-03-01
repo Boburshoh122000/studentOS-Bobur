@@ -452,7 +452,7 @@ export const aiApi = {
 // Learning Plan API
 export const learningPlanApi = {
   getActive: () => api.get('/learning-plans'),
-  generate: (data: { topic: string; duration: string }) =>
+  generate: (data: { topic: string; goal?: string; duration: string; difficulty?: string }) =>
     api.post('/learning-plans/generate', data),
   toggleResource: (id: string) => api.patch(`/learning-plans/resources/${id}/toggle`, {}),
   deletePlan: (id: string) => api.delete(`/learning-plans/${id}`),

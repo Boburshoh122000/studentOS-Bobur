@@ -7,7 +7,6 @@ import InsufficientCreditsModal from './InsufficientCreditsModal';
 import {
   AcademicCapIcon,
   ArrowLeftIcon,
-  ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   CheckIcon,
   ComputerDesktopIcon,
@@ -23,7 +22,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 interface Resource {
   id: string;
   title: string;
-  type: 'VIDEO' | 'ARTICLE';
+  type: 'VIDEO' | 'ARTICLE' | 'EXERCISE';
   url: string | null;
   durationText: string | null;
   isCompleted: boolean;
@@ -100,6 +99,9 @@ function PegtopLoader() {
 export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [topic, setTopic] = useState('');
   const [duration, setDuration] = useState('4 weeks');
+  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>(
+    'intermediate'
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +145,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await learningPlanApi.generate({ topic: topic.trim(), duration });
+      const res = await learningPlanApi.generate({
+        topic: topic.trim(),
+        goal: topic.trim(),
+        duration,
+        difficulty,
+      });
 
       // Handle 402 Insufficient Credits from backend
       if (res.error && (res.data as any)?.code === 'INSUFFICIENT_CREDITS') {
@@ -222,6 +229,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     }
     setPlan(null);
     setTopic('');
+    setDifficulty('intermediate');
     setError(null);
   };
 
@@ -250,10 +258,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
       <div className="flex flex-col">
         <div
           className="flex items-center gap-2 text-text-sub mb-1 cursor-pointer"
-          onClick={() => navigateTo(Screen.DASHBOARD)}
+          onClick={() => navigateTo(Screen.ACADEMIC_TOOLS)}
         >
           <ArrowLeftIcon className="w-[18px] h-[18px]" />
-          <span className="text-sm font-medium">Back to Dashboard</span>
+          <span className="text-sm font-medium">Academic Tools</span>
         </div>
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
           Learning Plan Generator
@@ -330,88 +338,115 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               <AcademicCapIcon className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">
-              Create Your Learning Plan
+              What are you preparing for?
             </h3>
-            <p className="text-text-sub text-center max-w-md mb-8">
-              Enter a topic below and our AI will generate a personalized, phased learning path with
-              curated resources.
+            <p className="text-text-sub text-center max-w-md mb-6">
+              Describe your career goal and our AI will generate a personalized, phased learning
+              plan with mixed exercises, videos, and articles.
             </p>
-            <div className="grid grid-cols-3 gap-6 w-full max-w-lg">
+
+            {/* Feature pills */}
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
               {[
-                { icon: 'timeline', label: 'Phased Roadmap', desc: 'Step-by-step phases' },
-                { icon: 'smart_display', label: 'Video & Articles', desc: 'Curated resources' },
-                { icon: 'trending_up', label: 'Track Progress', desc: 'Mark completions' },
+                { emoji: '🎯', label: 'Career-focused' },
+                { emoji: '🎬', label: 'Videos + Articles' },
+                { emoji: '✍️', label: 'Hands-on Exercises' },
+                { emoji: '📈', label: 'Progress tracking' },
               ].map((f) => (
-                <div
-                  key={f.icon}
-                  className="flex flex-col items-center text-center p-4 bg-white dark:bg-card-dark rounded-xl border border-gray-100 dark:border-gray-800"
+                <span
+                  key={f.label}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-800 rounded-full text-xs font-medium text-text-main dark:text-white shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-primary text-[28px] mb-2">
-                    {f.icon}
-                  </span>
-                  <p className="text-sm font-semibold text-text-main dark:text-white">{f.label}</p>
-                  <p className="text-xs text-text-sub mt-1">{f.desc}</p>
-                </div>
+                  {f.emoji} {f.label}
+                </span>
               ))}
             </div>
 
-            {/* ── Premium AI Prompt Bar ── */}
-            <div className="w-full max-w-2xl mx-auto mt-16">
-              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-full p-2 flex items-center">
-                <div className="flex-1 flex items-center gap-2 pl-4">
-                  <SparklesIcon className="w-5 h-5 text-primary" />
+            {/* ── Prompt Bar ── */}
+            <div className="w-full max-w-2xl mx-auto">
+              {/* Goal input */}
+              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-2xl p-4 mb-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <SparklesIcon className="w-4 h-4 text-primary flex-shrink-0" />
                   <input
                     type="text"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-                    placeholder="What do you want to learn? e.g. Become a Junior Product Designer"
-                    className="flex-1 bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 py-2"
+                    placeholder="e.g. Prepare for journalism internship at Kun.uz, Learn React from scratch, Get IELTS 7.0+"
+                    className="flex-1 bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 </div>
-                <div className="relative flex items-center border-l border-gray-100 dark:border-gray-700">
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    aria-label="Duration"
-                    className="bg-transparent text-gray-600 dark:text-gray-300 font-medium text-sm cursor-pointer appearance-none border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent pl-4 pr-8 py-2 hover:text-primary transition-colors"
-                  >
-                    <option value="1 week">1 week</option>
-                    <option value="2 weeks">2 weeks</option>
-                    <option value="3 weeks">3 weeks</option>
-                    <option value="4 weeks">4 weeks</option>
-                    <option value="2 months">2 months</option>
-                    <option value="3 months">3 months</option>
-                  </select>
-                  <svg
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+
+                {/* Controls row */}
+                <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                  {/* Difficulty pills */}
+                  <div className="flex items-center gap-1.5">
+                    {(['beginner', 'intermediate', 'advanced'] as const).map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setDifficulty(d)}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-all ${
+                          difficulty === d
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Duration select */}
+                    <div className="relative flex items-center">
+                      <select
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        aria-label="Duration"
+                        className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium text-xs cursor-pointer appearance-none border-none outline-none ring-0 rounded-full pl-3 pr-7 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <option value="1 week">1 week</option>
+                        <option value="2 weeks">2 weeks</option>
+                        <option value="3 weeks">3 weeks</option>
+                        <option value="4 weeks">4 weeks</option>
+                        <option value="2 months">2 months</option>
+                        <option value="3 months">3 months</option>
+                      </select>
+                      <svg
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+
+                    {/* Generate button */}
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating || !topic.trim()}
+                      className="px-4 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-full text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-md shadow-primary/20"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <SparklesIcon className="w-3.5 h-3.5" />
+                          Generate Plan
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !topic.trim()}
-                  className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
-                >
-                  {isGenerating ? (
-                    <>
-                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <ArrowRightIcon className="w-4 h-4" />
-                      Generate
-                    </>
-                  )}
-                </button>
               </div>
-              <p className="text-xs text-text-sub text-center mt-3">
-                Powered by AI · Generates phased roadmaps with curated resources
+              <p className="text-xs text-text-sub text-center">
+                AI generates a phased roadmap with exercises, videos &amp; articles tailored to your
+                goal
               </p>
             </div>
           </div>
@@ -613,6 +648,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                           <div className="space-y-4">
                             {phaseResources.map((resource) => {
                               const isVideo = resource.type === 'VIDEO';
+                              const isExercise = resource.type === 'EXERCISE';
                               const hasUrl = !!resource.url;
 
                               const resourceContent = (
@@ -621,6 +657,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                   {isVideo ? (
                                     <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
                                       <ComputerDesktopIcon className="w-5 h-5" />
+                                    </div>
+                                  ) : isExercise ? (
+                                    <div className="size-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
+                                      <SparklesIcon className="w-5 h-5" />
                                     </div>
                                   ) : (
                                     <div className="size-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm group-hover/item:scale-110 transition-transform">
@@ -640,7 +680,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                       {resource.title}
                                     </h4>
                                     <p className="text-xs text-text-sub mt-1">
-                                      {isVideo ? 'Video' : 'Article'}
+                                      {isVideo ? 'Video' : isExercise ? '✍️ Exercise' : 'Article'}
                                       {resource.durationText && ` • ${resource.durationText}`}
                                     </p>
                                   </div>
@@ -780,29 +820,62 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                   </div>
                 </div>
 
-                {/* Plan Info */}
+                {/* Plan Info — Motivational */}
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-                  <h3 className="text-sm font-bold text-text-sub uppercase mb-3 tracking-wide">
-                    Plan Details
+                  <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
+                    Your Journey
                   </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-text-sub">Topic</span>
-                      <span className="font-medium text-text-main dark:text-white truncate max-w-[160px]">
+                  <div className="space-y-3">
+                    {/* Goal */}
+                    <div className="p-3 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/10">
+                      <p className="text-xs text-primary font-semibold mb-0.5">Goal</p>
+                      <p className="text-sm font-medium text-text-main dark:text-white leading-snug">
                         {plan!.topic}
+                      </p>
+                    </div>
+                    {/* Estimated completion */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-text-sub">Est. completion</span>
+                      <span className="text-xs font-semibold text-text-main dark:text-white">
+                        {new Date(
+                          new Date(plan!.createdAt).getTime() +
+                            plan!.durationWeeks * 7 * 24 * 60 * 60 * 1000
+                        ).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-text-sub">Duration</span>
-                      <span className="font-medium text-text-main dark:text-white">
-                        {plan!.durationWeeks} weeks
+                    {/* Exercises */}
+                    {(() => {
+                      const exerciseCount = plan!.phases
+                        .flatMap((p) => p.resources)
+                        .filter((r) => r.type === 'EXERCISE').length;
+                      return exerciseCount > 0 ? (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-text-sub">Exercises</span>
+                          <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                            ✍️ {exerciseCount} hands-on
+                          </span>
+                        </div>
+                      ) : null;
+                    })()}
+                    {/* Duration */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-text-sub">Duration</span>
+                      <span className="text-xs font-semibold text-text-main dark:text-white">
+                        {plan!.durationWeeks} weeks · {plan!.phases.length} phases
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-text-sub">Phases</span>
-                      <span className="font-medium text-text-main dark:text-white">
-                        {plan!.phases.length}
-                      </span>
+                    {/* Progress bar */}
+                    <div className="pt-1">
+                      <div className="flex justify-between text-xs text-text-sub mb-1">
+                        <span>Progress</span>
+                        <span className="font-semibold text-primary">{progressPercent}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-primary h-full rounded-full transition-all duration-500"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

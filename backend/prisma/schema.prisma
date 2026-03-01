@@ -759,6 +759,7 @@ model Notification {
 enum ResourceType {
   VIDEO
   ARTICLE
+  EXERCISE
 }
 
 model LearningPlan {

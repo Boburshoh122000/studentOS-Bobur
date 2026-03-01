@@ -29,73 +29,83 @@ router.get('/', async (req: AuthenticatedRequest, res, next) => {
 });
 
 // ─── POST generate plan ──────────────────────────────────────────────────────
-router.post('/generate', requireCredits('learning-plan'), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { topic, duration = '4 weeks' } = req.body;
-
-    if (!topic?.trim()) {
-      res.status(400).json({ error: 'Topic is required' });
-      return;
-    }
-
-    // Get user skills for better plan
-    const profile = await prisma.studentProfile.findUnique({
-      where: { userId: req.user!.id },
-    });
-
-    // Generate via OpenAI with user-specified duration
-    let generated: any;
+router.post(
+  '/generate',
+  requireCredits('learning-plan'),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
-      generated = await generateLearningPlan(topic.trim(), profile?.skills || [], duration);
-    } catch {
-      // Fallback mock if AI unavailable
-      generated = null;
+      const { topic, goal, duration = '4 weeks', difficulty = 'intermediate' } = req.body;
+      const userGoal = (goal || topic || '').trim();
+
+      if (!userGoal) {
+        res.status(400).json({ error: 'Topic is required' });
+        return;
+      }
+
+      // Get user skills for better plan
+      const profile = await prisma.studentProfile.findUnique({
+        where: { userId: req.user!.id },
+      });
+
+      // Generate via OpenAI with user-specified duration + difficulty
+      let generated: any;
+      try {
+        generated = await generateLearningPlan(
+          userGoal,
+          profile?.skills || [],
+          duration,
+          difficulty
+        );
+      } catch {
+        // Fallback mock if AI unavailable
+        generated = null;
+      }
+
+      // Derive duration from what the AI returned
+      const durationWeeks = generated?.roadmap?.length || 4;
+
+      // Transform to phases + resources structure
+      const phases = transformToPhases(userGoal, generated, durationWeeks);
+
+      // Delete existing plan for this user (one active plan at a time)
+      await prisma.learningPlan.deleteMany({ where: { userId: req.user!.id } });
+
+      // Create plan with nested phases and resources
+      const plan = await prisma.learningPlan.create({
+        data: {
+          userId: req.user!.id,
+          topic: userGoal,
+          durationWeeks,
+          phases: {
+            create: phases.map((phase, pi) => ({
+              title: phase.title,
+              description: phase.description,
+              orderIndex: pi,
+              resources: {
+                create: phase.resources.map((r) => ({
+                  title: r.title,
+                  type: r.type,
+                  url: r.url || null,
+                  durationText: r.durationText || null,
+                })),
+              },
+            })),
+          },
+        },
+        include: {
+          phases: {
+            orderBy: { orderIndex: 'asc' },
+            include: { resources: true },
+          },
+        },
+      });
+
+      res.json({ plan });
+    } catch (error) {
+      next(error);
     }
-
-    // Derive duration from what the AI returned
-    const durationWeeks = generated?.roadmap?.length || 4;
-
-    // Transform to phases + resources structure
-    const phases = transformToPhases(topic.trim(), generated, durationWeeks);
-
-    // Delete existing plan for this user (one active plan at a time)
-    await prisma.learningPlan.deleteMany({ where: { userId: req.user!.id } });
-
-    // Create plan with nested phases and resources
-    const plan = await prisma.learningPlan.create({
-      data: {
-        userId: req.user!.id,
-        topic: topic.trim(),
-        durationWeeks,
-        phases: {
-          create: phases.map((phase, pi) => ({
-            title: phase.title,
-            description: phase.description,
-            orderIndex: pi,
-            resources: {
-              create: phase.resources.map((r) => ({
-                title: r.title,
-                type: r.type,
-                url: r.url || null,
-                durationText: r.durationText || null,
-              })),
-            },
-          })),
-        },
-      },
-      include: {
-        phases: {
-          orderBy: { orderIndex: 'asc' },
-          include: { resources: true },
-        },
-      },
-    });
-
-    res.json({ plan });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // ─── PATCH toggle resource completion ────────────────────────────────────────
 router.patch('/resources/:id/toggle', async (req: AuthenticatedRequest, res, next) => {
@@ -169,7 +179,12 @@ router.delete('/:id', async (req: AuthenticatedRequest, res, next) => {
 interface PhaseInput {
   title: string;
   description: string;
-  resources: { title: string; type: 'VIDEO' | 'ARTICLE'; url?: string; durationText?: string }[];
+  resources: {
+    title: string;
+    type: 'VIDEO' | 'ARTICLE' | 'EXERCISE';
+    url?: string;
+    durationText?: string;
+  }[];
 }
 
 function transformToPhases(topic: string, aiResult: any, durationWeeks: number): PhaseInput[] {
@@ -193,6 +208,18 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
             type: 'ARTICLE' as const,
             url: taskUrl,
             durationText: taskDuration,
+          });
+        }
+      }
+
+      // Map exercises → EXERCISE resources (hands-on practice, no URL)
+      if (entry.exercises?.length) {
+        for (const ex of entry.exercises.slice(0, 3)) {
+          resources.push({
+            title: ex.title,
+            type: 'EXERCISE' as const,
+            url: null as any,
+            durationText: `${ex.duration || '30 min'} — ${ex.description || 'Complete this exercise'}`,
           });
         }
       }
@@ -232,13 +259,13 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
           resources.length > 0
             ? resources
             : [
-              {
-                title: `Introduction to ${topic}`,
-                type: 'VIDEO' as const,
-                durationText: '25 mins',
-              },
-              { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
-            ],
+                {
+                  title: `Introduction to ${topic}`,
+                  type: 'VIDEO' as const,
+                  durationText: '25 mins',
+                },
+                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+              ],
       };
     });
   }
@@ -283,13 +310,13 @@ function transformToPhases(topic: string, aiResult: any, durationWeeks: number):
           resources.length > 0
             ? resources
             : [
-              {
-                title: `Introduction to ${topic}`,
-                type: 'VIDEO' as const,
-                durationText: '25 mins',
-              },
-              { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
-            ],
+                {
+                  title: `Introduction to ${topic}`,
+                  type: 'VIDEO' as const,
+                  durationText: '25 mins',
+                },
+                { title: `${topic} Guide`, type: 'ARTICLE' as const, durationText: '10 min read' },
+              ],
       };
     });
   }
