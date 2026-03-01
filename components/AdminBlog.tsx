@@ -346,6 +346,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
       >
         <button
           onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
         >
           <span className="material-symbols-outlined text-[14px]">
@@ -613,6 +614,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                     <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                     <input
                       className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
+                      aria-label="Search posts"
                       placeholder="Search posts..."
                       type="text"
                       value={searchQuery}
@@ -715,6 +717,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                   <div className="flex items-center justify-end gap-2">
                                     <button
                                       onClick={() => handleEditPost(post)}
+                                      aria-label="Edit post"
                                       className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                                       title="Edit"
                                     >
@@ -722,6 +725,11 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                     </button>
                                     <button
                                       onClick={() => handleToggleStatus(post)}
+                                      aria-label={
+                                        post.status === 'PUBLISHED'
+                                          ? 'Unpublish post'
+                                          : 'Publish post'
+                                      }
                                       className={`rounded-lg p-1.5 ${post.status === 'PUBLISHED' ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'} transition-colors`}
                                       title={post.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
                                     >
@@ -731,6 +739,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                     </button>
                                     <button
                                       onClick={() => handleDeletePost(post.id)}
+                                      aria-label="Delete post"
                                       className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                       title="Delete"
                                     >
@@ -906,6 +915,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                     coverImagePreview: '',
                                   }));
                                 }}
+                                aria-label="Remove cover image"
                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                               >
                                 <XMarkIcon className="w-3.5 h-3.5" />

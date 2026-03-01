@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
 import { CheckIcon, ClockIcon, LockClosedIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';

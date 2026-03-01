@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { userApi, authApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
 import toast from 'react-hot-toast';
-import { AcademicCapIcon, BriefcaseIcon, CheckIcon, PlusIcon, UserIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  BriefcaseIcon,
+  CheckIcon,
+  PlusIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */
 interface EducationEntry {

@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid';
 

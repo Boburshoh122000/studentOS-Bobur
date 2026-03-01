@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';

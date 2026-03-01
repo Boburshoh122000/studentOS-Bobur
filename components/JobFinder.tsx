@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { jobApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';

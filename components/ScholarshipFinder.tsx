@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -6,14 +6,11 @@ import { NotificationDropdown } from './NotificationDropdown';
 import DashboardLayout from './DashboardLayout';
 import {
   AcademicCapIcon,
-  BookmarkIcon,
   CalendarIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ClockIcon,
-  CurrencyDollarIcon,
   GlobeAltIcon,
-  SparklesIcon,
   TrophyIcon,
   XMarkIcon,
   ArrowTopRightOnSquareIcon,
@@ -21,7 +18,7 @@ import {
   ArrowsUpDownIcon,
   BuildingLibraryIcon,
   Bars3Icon,
-  ExclamationTriangleIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/solid';
 import { BookmarkIcon as BookmarkOutlineIcon, FireIcon } from '@heroicons/react/24/outline';
 
@@ -203,9 +200,9 @@ const SCHOLARSHIP_TYPES = ['Government', 'University', 'Private/Foundation', 'Re
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'relevance', label: 'Relevance' },
-  { value: 'deadline', label: 'Deadline (Soonest)' },
-  { value: 'amount', label: 'Amount (Highest)' },
-  { value: 'recent', label: 'Recently Added' },
+  { value: 'deadline', label: 'Deadline' },
+  { value: 'amount', label: 'Amount' },
+  { value: 'recent', label: 'Recent' },
 ];
 
 const DEFAULT_FILTERS: Filters = {
@@ -215,7 +212,7 @@ const DEFAULT_FILTERS: Filters = {
   scholarshipTypes: [],
 };
 
-const FLAG_MAP: Record<string, string> = {
+const FLAG: Record<string, string> = {
   USA: '🇺🇸',
   'United Kingdom': '🇬🇧',
   UK: '🇬🇧',
@@ -336,13 +333,17 @@ const FLAG_MAP: Record<string, string> = {
 /*  Helpers                                                                  */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
+const getFlag = (c: string) => FLAG[c] || '🌍';
+const titleCase = (s: string) =>
+  s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+
 function daysUntil(d: string | null | undefined): number | null {
   if (!d) return null;
   return Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000);
 }
 
-function formatDate(d: string | null | undefined): string {
-  if (!d) return 'No deadline';
+function fmtDate(d: string | null | undefined): string {
+  if (!d) return 'Open';
   return new Date(d).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -350,63 +351,25 @@ function formatDate(d: string | null | undefined): string {
   });
 }
 
-function parseAmount(amt: string | null): number {
-  if (!amt) return 0;
-  const match = amt.replace(/,/g, '').match(/[\d]+/);
-  return match ? parseInt(match[0]) : 0;
+function parseAmount(a: string | null): number {
+  if (!a) return 0;
+  const m = a.replace(/,/g, '').match(/[\d]+/);
+  return m ? parseInt(m[0]) : 0;
 }
 
-function getFlag(country: string): string {
-  return FLAG_MAP[country] || '🌍';
-}
-
-function isExpired(deadline: string | null): boolean {
-  if (!deadline) return false;
-  return new Date(deadline).getTime() < Date.now();
-}
-
-function deadlineBadge(days: number | null): { color: string; label: string } | null {
-  if (days === null) return null;
-  if (days <= 0)
-    return {
-      color:
-        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30',
-      label: 'Expired',
-    };
-  if (days <= 7)
-    return {
-      color:
-        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30',
-      label: `${days}d left`,
-    };
-  if (days <= 30)
-    return {
-      color:
-        'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/30',
-      label: `${days}d left`,
-    };
-  if (days <= 90)
-    return {
-      color:
-        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/30',
-      label: `${days}d left`,
-    };
-  return null;
-}
-
-function titleCase(str: string): string {
-  return str.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+function isExpired(d: string | null): boolean {
+  return d ? new Date(d).getTime() < Date.now() : false;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  FilterGroup                                                              */
+/*  Filter Section (text-driven, collapsed by default)                       */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-function FilterGroup({
+function FilterSection({
   title,
   icon,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -415,29 +378,31 @@ function FilterGroup({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+    <div className="py-3 first:pt-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-3.5 text-left"
+        className="w-full flex items-center justify-between text-left group"
         type="button"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+        <span className="flex items-center gap-2.5 text-[13px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
           {icon}
           {title}
         </span>
-        {open ? (
-          <ChevronUpIcon className="w-3.5 h-3.5 text-gray-400" />
-        ) : (
-          <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-        )}
+        <ChevronDownIcon
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
-      {open && <div className="pb-4">{children}</div>}
+      <div
+        className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-[500px] opacity-100 mt-3' : 'max-h-0 opacity-0'}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Searchable Country Dropdown                                              */
+/*  Searchable Country Select                                                */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function CountrySelect({
@@ -445,97 +410,96 @@ function CountrySelect({
   onChange,
 }: {
   selected: string[];
-  onChange: (countries: string[]) => void;
+  onChange: (c: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [q, setQ] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const h = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return ALL_COUNTRIES;
-    return ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(search.toLowerCase()));
-  }, [search]);
+  const list = useMemo(
+    () =>
+      q.trim()
+        ? ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(q.toLowerCase()))
+        : ALL_COUNTRIES,
+    [q]
+  );
 
-  const toggle = (country: string) => {
-    onChange(
-      selected.includes(country) ? selected.filter((c) => c !== country) : [...selected, country]
-    );
-  };
+  const toggle = (c: string) =>
+    onChange(selected.includes(c) ? selected.filter((x) => x !== c) : [...selected, c]);
 
   return (
     <div ref={ref} className="relative">
-      {/* Trigger button */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-800 dark:text-gray-200 hover:border-[#4F6EF7]/50 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.03] text-gray-600 dark:text-gray-400 hover:border-gray-200 dark:hover:border-gray-700 transition-colors"
       >
-        <span className="truncate text-left">
-          {selected.length === 0 ? 'Select countries...' : `${selected.length} selected`}
+        <span className="truncate">
+          {selected.length === 0 ? 'Any country' : `${selected.length} selected`}
         </span>
-        <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        <ChevronDownIcon
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
-      {/* Selected tags */}
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {selected.map((c) => (
             <span
               key={c}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#4F6EF7]/10 text-[#4F6EF7] text-[10px] font-semibold rounded-md"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-gray-400 text-[10px] font-medium rounded-lg"
             >
               {getFlag(c)} {c}
               <button
                 onClick={() => toggle(c)}
-                className="hover:text-red-500"
+                className="hover:text-red-500 ml-0.5"
                 title={`Remove ${c}`}
                 type="button"
               >
-                <XMarkIcon className="w-3 h-3" />
+                <XMarkIcon className="w-2.5 h-2.5" />
               </button>
             </span>
           ))}
         </div>
       )}
 
-      {/* Dropdown */}
       {open && (
-        <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
-          <div className="p-2">
+        <div className="absolute z-30 left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#1a1f2e] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-lg shadow-black/[0.06] overflow-hidden">
+          <div className="p-2.5">
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search countries..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search..."
               autoFocus
               aria-label="Search countries"
-              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-white/[0.04] border-0 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-1 focus:ring-gray-200 dark:focus:ring-gray-700 outline-none"
             />
           </div>
-          <div className="max-h-48 overflow-y-auto px-2 pb-2">
-            {filtered.length === 0 && (
-              <p className="text-xs text-gray-400 py-3 text-center">No countries found</p>
+          <div className="max-h-48 overflow-y-auto px-1.5 pb-1.5">
+            {list.length === 0 && (
+              <p className="text-[11px] text-gray-400 py-4 text-center">No results</p>
             )}
-            {filtered.map((c) => (
+            {list.map((c) => (
               <label
                 key={c}
-                className="flex items-center gap-2 py-1.5 px-2 cursor-pointer rounded-md hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2.5 py-1.5 px-2.5 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
               >
                 <input
                   type="checkbox"
                   checked={selected.includes(c)}
                   onChange={() => toggle(c)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
+                  className="rounded border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-gray-300 w-3.5 h-3.5"
                 />
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-[12px] text-gray-600 dark:text-gray-400">
                   {getFlag(c)} {c}
                 </span>
               </label>
@@ -553,104 +517,97 @@ function CountrySelect({
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [allScholarships, setAllScholarships] = useState<Scholarship[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [all, setAll] = useState<Scholarship[]>([]);
+  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS });
-  const [filtersApplied, setFiltersApplied] = useState(false);
+  const [applied, setApplied] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [showSort, setShowSort] = useState(false);
+  const [mobileFilters, setMobileFilters] = useState(false);
 
   /* ── Fetch ── */
-  const fetchScholarships = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await scholarshipApi.list({ page: 1 });
-      const data = res.data as Record<string, unknown>;
-      const list = (data?.scholarships ||
-        (Array.isArray(res.data) ? res.data : [])) as Scholarship[];
-      setAllScholarships(list);
+      const d = res.data as Record<string, unknown>;
+      const list = (d?.scholarships || (Array.isArray(res.data) ? res.data : [])) as Scholarship[];
+      setAll(list);
       const ids = new Set<string>();
       list.forEach((s) => {
         if (s.isSaved) ids.add(s.id);
       });
-      setSavedIds(ids);
+      setSaved(ids);
     } catch (err) {
-      console.error('Failed to load scholarships:', err);
+      console.error('Failed to load:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchScholarships();
-  }, [fetchScholarships]);
+    load();
+  }, [load]);
 
-  /* ── Save/Unsave ── */
+  /* ── Save ── */
   const toggleSave = async (id: string) => {
-    const wasSaved = savedIds.has(id);
-    const next = new Set(savedIds);
-    if (wasSaved) {
+    const was = saved.has(id);
+    const next = new Set(saved);
+    if (was) {
       next.delete(id);
     } else {
       next.add(id);
     }
-    setSavedIds(next);
+    setSaved(next);
     try {
-      if (wasSaved) {
+      if (was) {
         await scholarshipApi.unsave(id);
       } else {
         await scholarshipApi.save(id);
       }
     } catch {
-      if (wasSaved) {
+      if (was) {
         next.add(id);
       } else {
         next.delete(id);
       }
-      setSavedIds(new Set(next));
+      setSaved(new Set(next));
     }
   };
 
   /* ── Filter helpers ── */
-  const toggleArrayFilter = (key: 'fields' | 'scholarshipTypes', value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: prev[key].includes(value)
-        ? prev[key].filter((v) => v !== value)
-        : [...prev[key], value],
+  const toggleArr = (key: 'fields' | 'scholarshipTypes', val: string) => {
+    setFilters((p) => ({
+      ...p,
+      [key]: p[key].includes(val) ? p[key].filter((v) => v !== val) : [...p[key], val],
     }));
   };
 
-  const isAnyFilterActive =
+  const hasFilters =
     filters.countries.length > 0 ||
     filters.studyLevel !== '' ||
     filters.fields.length > 0 ||
     filters.scholarshipTypes.length > 0;
-  const handleResetFilters = () => {
+  const resetFilters = () => {
     setFilters({ ...DEFAULT_FILTERS });
-    setSearchQuery('');
-    setFiltersApplied(false);
+    setSearch('');
+    setApplied(false);
     setSortBy('relevance');
   };
-  const handleApplyFilters = () => {
-    setFiltersApplied(true);
-    setShowMobileFilters(false);
+  const applyFilters = () => {
+    setApplied(true);
+    setMobileFilters(false);
   };
 
-  /* ── Active (non-expired) scholarships ── */
-  const activeScholarships = useMemo(
-    () => allScholarships.filter((s) => !isExpired(s.deadline)),
-    [allScholarships]
-  );
+  /* ── Active items ── */
+  const active = useMemo(() => all.filter((s) => !isExpired(s.deadline)), [all]);
 
-  /* ── Display Logic ── */
-  const displayScholarships = useMemo(() => {
-    let list = [...activeScholarships];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+  /* ── Display ── */
+  const display = useMemo(() => {
+    let list = [...active];
+    if (search.trim()) {
+      const q = search.toLowerCase();
       list = list.filter(
         (s) =>
           s.title.toLowerCase().includes(q) ||
@@ -659,8 +616,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           (s.description || '').toLowerCase().includes(q)
       );
     }
-
-    if (filtersApplied) {
+    if (applied) {
       if (filters.studyLevel)
         list = list.filter((s) => s.studyLevel === filters.studyLevel || s.studyLevel === 'ANY');
       if (filters.countries.length > 0)
@@ -668,7 +624,6 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           filters.countries.some((c) => s.country.toLowerCase() === c.toLowerCase())
         );
     }
-
     switch (sortBy) {
       case 'deadline':
         list.sort(
@@ -687,43 +642,40 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         break;
     }
     return list;
-  }, [activeScholarships, searchQuery, filters, filtersApplied, sortBy]);
+  }, [active, search, filters, applied, sortBy]);
 
-  const trendingScholarships = useMemo(
-    () => activeScholarships.filter((s) => s.isTrending),
-    [activeScholarships]
-  );
-  const upcomingDeadlines = useMemo(
+  const trending = useMemo(() => active.filter((s) => s.isTrending), [active]);
+  const upcoming = useMemo(
     () =>
-      activeScholarships
+      active
         .filter((s) => {
           const d = daysUntil(s.deadline);
           return d !== null && d > 0 && d <= 90;
         })
         .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
         .slice(0, 6),
-    [activeScholarships]
+    [active]
   );
 
-  /* ── Render filter sidebar content (shared between desktop + mobile) ── */
-  const filterContent = (
+  /* ── Shared filter UI ── */
+  const filterUI = (
     <>
-      <FilterGroup title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-[#4F6EF7]" />}>
+      <FilterSection title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}>
         <CountrySelect
           selected={filters.countries}
-          onChange={(countries) => setFilters((prev) => ({ ...prev, countries }))}
+          onChange={(c) => setFilters((p) => ({ ...p, countries: c }))}
         />
-      </FilterGroup>
+      </FilterSection>
 
-      <FilterGroup
+      <FilterSection
         title="Study Level"
-        icon={<AcademicCapIcon className="w-4 h-4 text-[#4F6EF7]" />}
+        icon={<AcademicCapIcon className="w-4 h-4 text-gray-400" />}
       >
         <select
           value={filters.studyLevel}
-          onChange={(e) => setFilters((prev) => ({ ...prev, studyLevel: e.target.value }))}
+          onChange={(e) => setFilters((p) => ({ ...p, studyLevel: e.target.value }))}
           aria-label="Study Level"
-          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-[#F8F9FC] dark:bg-[#1a1f35] px-3 py-2.5 text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+          className="w-full rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.03] px-3 py-2 text-[13px] text-gray-600 dark:text-gray-400 focus:ring-1 focus:ring-gray-200 dark:focus:ring-gray-700 outline-none"
         >
           {STUDY_LEVELS.map((l) => (
             <option key={l.value} value={l.value}>
@@ -731,74 +683,67 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             </option>
           ))}
         </select>
-      </FilterGroup>
+      </FilterSection>
 
-      <FilterGroup
+      <FilterSection
         title="Field of Study"
-        icon={<BookmarkIcon className="w-4 h-4 text-[#4F6EF7]" />}
-        defaultOpen={false}
+        icon={<BookmarkIcon className="w-4 h-4 text-gray-400" />}
       >
-        <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1">
+        <div className="max-h-40 overflow-y-auto space-y-0.5">
           {FIELDS.map((f) => (
-            <label key={f} className="flex items-center gap-2 py-1 cursor-pointer group">
+            <label key={f} className="flex items-center gap-2.5 py-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={filters.fields.includes(f)}
-                onChange={() => toggleArrayFilter('fields', f)}
-                className="rounded border-gray-300 dark:border-gray-600 text-[#4F6EF7] focus:ring-[#4F6EF7] w-3.5 h-3.5"
+                onChange={() => toggleArr('fields', f)}
+                className="rounded border-gray-300 dark:border-gray-600 text-gray-900 focus:ring-gray-300 w-3.5 h-3.5"
               />
-              <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
-                {f}
-              </span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">{f}</span>
             </label>
           ))}
         </div>
-      </FilterGroup>
+      </FilterSection>
 
-      <FilterGroup
+      <FilterSection
         title="Scholarship Type"
-        icon={<BuildingLibraryIcon className="w-4 h-4 text-[#2D3A8C]" />}
-        defaultOpen={false}
+        icon={<BuildingLibraryIcon className="w-4 h-4 text-gray-400" />}
       >
         <div className="space-y-0.5">
           {SCHOLARSHIP_TYPES.map((t) => (
-            <label key={t} className="flex items-center gap-2 py-1 cursor-pointer group">
+            <label key={t} className="flex items-center gap-2.5 py-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={filters.scholarshipTypes.includes(t)}
-                onChange={() => toggleArrayFilter('scholarshipTypes', t)}
-                className="rounded border-gray-300 dark:border-gray-600 text-[#2D3A8C] focus:ring-[#2D3A8C] w-3.5 h-3.5"
+                onChange={() => toggleArr('scholarshipTypes', t)}
+                className="rounded border-gray-300 dark:border-gray-600 text-gray-900 focus:ring-gray-300 w-3.5 h-3.5"
               />
-              <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-[#1A1A2E] dark:group-hover:text-white transition-colors">
-                {t}
-              </span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">{t}</span>
             </label>
           ))}
         </div>
-      </FilterGroup>
+      </FilterSection>
     </>
   );
 
-  /* ─── Header ─── */
+  /* ── Header ── */
   const headerContent = (
-    <header className="h-16 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800">
+    <header className="h-16 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-background-dark border-b border-gray-100/80 dark:border-gray-800/50">
       <div className="flex items-center gap-3">
-        {/* Mobile filter toggle */}
         <button
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-          className="lg:hidden p-2 -ml-2 text-gray-500 hover:text-[#4F6EF7] transition-colors"
+          onClick={() => setMobileFilters(!mobileFilters)}
+          className="lg:hidden p-1.5 -ml-1 text-gray-400 hover:text-gray-600 transition-colors"
           title="Toggle filters"
         >
           <Bars3Icon className="w-5 h-5" />
         </button>
-        <div className="size-9 rounded-lg bg-[#2D3A8C]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center">
-          <TrophyIcon className="w-5 h-5 text-[#2D3A8C] dark:text-[#4F6EF7]" />
+        <div className="size-8 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center">
+          <TrophyIcon className="w-4 h-4 text-white dark:text-gray-900" />
         </div>
-        <span className="font-bold text-lg text-[#1A1A2E] dark:text-white tracking-tight">
+        <span className="font-semibold text-[15px] text-gray-900 dark:text-white tracking-tight">
           Scholarship Finder
         </span>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <ThemeToggle />
         <NotificationDropdown />
       </div>
@@ -811,90 +756,90 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="flex-1 flex overflow-hidden bg-[#F8F9FC] dark:bg-[#0f111a] h-full relative">
-        {/* ══ Mobile filter overlay ══ */}
-        {showMobileFilters && (
+      <div className="flex-1 flex overflow-hidden bg-[#FAFAFA] dark:bg-[#0c0e18] h-full relative">
+        {/* ═══ Mobile filter overlay ═══ */}
+        {mobileFilters && (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div
-              className="absolute inset-0 bg-black/40"
-              onClick={() => setShowMobileFilters(false)}
+              className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+              onClick={() => setMobileFilters(false)}
             />
-            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#161b2e] shadow-2xl flex flex-col z-50 overflow-hidden">
-              <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#1A1A2E] dark:text-white flex items-center gap-2">
-                  <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" /> Filters
-                </h3>
+            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#141722] shadow-2xl flex flex-col z-50">
+              <div className="p-6 flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">Filters</span>
                 <button
-                  onClick={() => setShowMobileFilters(false)}
+                  onClick={() => setMobileFilters(false)}
                   className="text-gray-400 hover:text-gray-600"
-                  title="Close filters"
+                  title="Close"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto px-5">{filterContent}</div>
-              <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-2">
-                {isAnyFilterActive && (
+              <div className="flex-1 overflow-y-auto px-6 divide-y divide-gray-100/80 dark:divide-gray-800/50">
+                {filterUI}
+              </div>
+              <div className="p-6 flex gap-2">
+                {hasFilters && (
                   <button
-                    onClick={handleResetFilters}
-                    className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400"
+                    onClick={resetFilters}
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 border border-gray-100 dark:border-gray-800"
                   >
                     Reset
                   </button>
                 )}
                 <button
-                  onClick={handleApplyFilters}
-                  className="flex-1 bg-[#2D3A8C] hover:bg-[#222d6e] text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                  onClick={applyFilters}
+                  className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-xl text-[13px] transition-all hover:opacity-90"
                 >
-                  <SparklesIcon className="w-4 h-4" /> Apply
+                  Apply
                 </button>
               </div>
             </aside>
           </div>
         )}
 
-        {/* ══ Desktop sidebar ══ */}
-        <aside className="w-[280px] flex-shrink-0 hidden lg:flex flex-col bg-white dark:bg-[#161b2e] border-r border-gray-200 dark:border-gray-800 overflow-hidden ml-2">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+        {/* ═══ Desktop sidebar ═══ */}
+        <aside className="w-[260px] flex-shrink-0 hidden lg:flex flex-col overflow-hidden">
+          <div className="pt-8 pb-4 px-8">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#1A1A2E] dark:text-white flex items-center gap-2">
-                <FunnelIcon className="w-4 h-4 text-[#4F6EF7]" /> Filters
-              </h3>
-              {isAnyFilterActive && (
+              <span className="text-[13px] font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <FunnelIcon className="w-3.5 h-3.5 text-gray-400" /> Filters
+              </span>
+              {hasFilters && (
                 <button
-                  onClick={handleResetFilters}
-                  className="text-xs text-[#4F6EF7] hover:text-[#2D3A8C] font-medium transition-colors"
+                  onClick={resetFilters}
+                  className="text-[11px] text-gray-400 hover:text-gray-600 font-medium transition-colors"
                 >
-                  Reset all
+                  Reset
                 </button>
               )}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-5">{filterContent}</div>
-          <div className="p-5 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex-1 overflow-y-auto px-8 divide-y divide-gray-100/80 dark:divide-gray-800/50">
+            {filterUI}
+          </div>
+          <div className="p-6 px-8">
             <button
-              onClick={handleApplyFilters}
-              className="w-full bg-[#2D3A8C] hover:bg-[#222d6e] text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-[#2D3A8C]/20 hover:shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.98]"
+              onClick={applyFilters}
+              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-xl text-[13px] transition-all hover:opacity-90 active:scale-[0.98]"
             >
-              <SparklesIcon className="w-5 h-5" /> Apply Filters
+              Apply Filters
             </button>
           </div>
         </aside>
 
-        {/* ══ RIGHT PANEL ══ */}
+        {/* ═══ Main Content ═══ */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 py-6">
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
             {/* Search + Sort */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-              {/* Mobile filter button (inline) */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
               <button
-                onClick={() => setShowMobileFilters(true)}
-                className="lg:hidden flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl"
+                onClick={() => setMobileFilters(true)}
+                className="lg:hidden flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-gray-500 bg-white dark:bg-[#141722] border border-gray-100 dark:border-gray-800 rounded-xl hover:border-gray-200 transition-colors"
               >
-                <FunnelIcon className="w-4 h-4" />
-                Filters{' '}
-                {isAnyFilterActive && (
-                  <span className="bg-[#4F6EF7] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <FunnelIcon className="w-3.5 h-3.5" /> Filters
+                {hasFilters && (
+                  <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {filters.countries.length +
                       (filters.studyLevel ? 1 : 0) +
                       filters.fields.length +
@@ -903,45 +848,45 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 )}
               </button>
 
-              <div className="relative flex-1 max-w-xl w-full">
+              <div className="relative flex-1 max-w-lg w-full">
                 <input
-                  className="w-full h-11 pl-4 pr-10 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#161b2e] text-[#1A1A2E] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] outline-none transition-all"
+                  className="w-full h-10 pl-4 pr-9 text-[13px] border border-gray-100 dark:border-gray-800 rounded-xl bg-white dark:bg-[#141722] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-gray-200 dark:focus:ring-gray-700 outline-none transition-all"
                   placeholder="Search by name, university, country..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
-                {searchQuery && (
+                {search && (
                   <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    title="Clear search"
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+                    title="Clear"
                   >
-                    <XMarkIcon className="w-4 h-4" />
+                    <XMarkIcon className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
               <div className="relative">
                 <button
-                  onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl hover:border-[#4F6EF7] transition-all"
+                  onClick={() => setShowSort(!showSort)}
+                  className="flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-gray-500 bg-white dark:bg-[#141722] border border-gray-100 dark:border-gray-800 rounded-xl hover:border-gray-200 dark:hover:border-gray-700 transition-colors"
                 >
-                  <ArrowsUpDownIcon className="w-4 h-4" />
+                  <ArrowsUpDownIcon className="w-3.5 h-3.5" />
                   {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
-                  <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
+                  <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                 </button>
-                {showSortDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#161b2e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 min-w-[180px] py-1">
-                    {SORT_OPTIONS.map((opt) => (
+                {showSort && (
+                  <div className="absolute right-0 top-full mt-1.5 bg-white dark:bg-[#141722] border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg shadow-black/[0.06] z-20 min-w-[160px] py-1">
+                    {SORT_OPTIONS.map((o) => (
                       <button
-                        key={opt.value}
+                        key={o.value}
                         onClick={() => {
-                          setSortBy(opt.value);
-                          setShowSortDropdown(false);
+                          setSortBy(o.value);
+                          setShowSort(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-[#4F6EF7] font-semibold bg-[#4F6EF7]/5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1f35]'}`}
+                        className={`w-full text-left px-4 py-2 text-[13px] transition-colors ${sortBy === o.value ? 'text-gray-900 dark:text-white font-semibold bg-gray-50 dark:bg-white/[0.04]' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
                       >
-                        {opt.label}
+                        {o.label}
                       </button>
                     ))}
                   </div>
@@ -949,182 +894,147 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </div>
             </div>
 
-            {/* ── Loading ── */}
+            {/* Loading skeleton */}
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="bg-white dark:bg-[#161b2e] rounded-xl p-6 border border-gray-100 dark:border-gray-800 animate-pulse"
+                    className="bg-white dark:bg-[#141722] rounded-3xl p-8 animate-pulse border border-gray-100/50 dark:border-gray-800/30"
                   >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="size-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-                      <div className="flex-1">
-                        <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
-                        <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
-                      </div>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="size-5 rounded-full bg-gray-100 dark:bg-gray-800" />
+                      <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-16" />
                     </div>
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-3" />
-                    <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-full mb-3" />
-                    <div className="flex gap-2 mb-3">
-                      <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20" />
-                      <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
-                    </div>
-                    <div className="h-10 bg-gray-50 dark:bg-gray-800/50 rounded-lg w-full" />
+                    <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-4/5 mb-3" />
+                    <div className="h-3 bg-gray-50 dark:bg-gray-800/50 rounded w-2/3 mb-6" />
+                    <div className="h-9 bg-gray-50 dark:bg-gray-800/50 rounded-xl w-28" />
                   </div>
                 ))}
               </div>
-            ) : filtersApplied || searchQuery ? (
-              /* ═══ FILTERED RESULTS ═══ */
+            ) : applied || search ? (
+              /* ═══ Filtered results ═══ */
               <>
-                <div className="flex items-center justify-between mb-5">
-                  <p className="text-sm text-[#6B7280]">
-                    Showing{' '}
-                    <span className="font-bold text-[#1A1A2E] dark:text-white">
-                      {displayScholarships.length}
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-[13px] text-gray-400">
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {display.length}
                     </span>{' '}
                     scholarships
                   </p>
-                  {filtersApplied && (
+                  {applied && (
                     <button
-                      onClick={handleResetFilters}
-                      className="text-xs text-[#4F6EF7] hover:text-[#2D3A8C] font-medium flex items-center gap-1 transition-colors"
+                      onClick={resetFilters}
+                      className="text-[12px] text-gray-400 hover:text-gray-600 font-medium flex items-center gap-1 transition-colors"
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" /> Clear filters
+                      <XMarkIcon className="w-3 h-3" /> Clear
                     </button>
                   )}
                 </div>
-                {displayScholarships.length === 0 ? (
-                  <div className="text-center py-16">
-                    <TrophyIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-                    <p className="text-base font-semibold text-[#1A1A2E] dark:text-white mb-1.5">
-                      No scholarships match your criteria
+                {display.length === 0 ? (
+                  <div className="text-center py-20">
+                    <div className="size-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                      <TrophyIcon className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
+                      No matches
                     </p>
-                    <p className="text-sm text-[#6B7280] mb-5">
-                      Try adjusting your filters or broadening your search.
-                    </p>
+                    <p className="text-[13px] text-gray-400 mb-5">Try adjusting your filters.</p>
                     <button
-                      onClick={handleResetFilters}
-                      className="text-sm text-[#4F6EF7] hover:text-[#2D3A8C] font-semibold transition-colors"
+                      onClick={resetFilters}
+                      className="text-[13px] text-gray-900 dark:text-white font-medium hover:underline"
                     >
-                      Reset all filters
+                      Reset filters
                     </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {displayScholarships.map((s) => (
-                      <ScholarshipCard
+                    {display.map((s) => (
+                      <BentoCard
                         key={s.id}
-                        scholarship={s}
-                        isSaved={savedIds.has(s.id)}
-                        onToggleSave={() => toggleSave(s.id)}
+                        s={s}
+                        isSaved={saved.has(s.id)}
+                        onSave={() => toggleSave(s.id)}
                       />
                     ))}
                   </div>
                 )}
               </>
             ) : (
-              /* ═══ INITIAL STATE ═══ */
-              <div className="space-y-8">
+              /* ═══ Initial state ═══ */
+              <div className="space-y-10">
                 {/* Trending */}
-                {trendingScholarships.length > 0 && (
+                {trending.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <FireIcon className="w-5 h-5 text-[#F59E0B]" />
-                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
-                        Trending Scholarships
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {trendingScholarships.map((s) => (
-                        <div
+                    <SectionHeader
+                      icon={<FireIcon className="w-4 h-4 text-orange-400" />}
+                      title="Trending Scholarships"
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {trending.map((s) => (
+                        <BentoCard
                           key={s.id}
-                          className="relative bg-gradient-to-br from-[#2D3A8C] to-[#4F6EF7] rounded-2xl p-5 text-white overflow-hidden group cursor-pointer hover:shadow-xl hover:shadow-[#2D3A8C]/15 transition-all duration-300"
-                          onClick={() =>
-                            s.applicationUrl && window.open(s.applicationUrl, '_blank')
-                          }
-                        >
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
-                          <div className="relative z-10">
-                            <p className="text-blue-200 text-[10px] font-semibold mb-1 uppercase tracking-wider truncate">
-                              {titleCase(s.institution)}
-                            </p>
-                            <h3 className="text-base font-bold mb-2.5 leading-snug line-clamp-2">
-                              {s.title}
-                            </h3>
-                            <div className="flex items-center gap-2 text-sm flex-wrap">
-                              <span className="flex items-center gap-1 bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-md text-[11px] font-medium">
-                                {getFlag(s.country)} {s.country}
-                              </span>
-                              {s.awardAmount && (
-                                <span className="bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-md text-[11px] font-medium">
-                                  {s.awardAmount}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Upcoming Deadlines */}
-                {upcomingDeadlines.length > 0 && (
-                  <section>
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <ClockIcon className="w-5 h-5 text-[#EF4444]" />
-                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
-                        Upcoming Deadlines
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                      {upcomingDeadlines.map((s) => (
-                        <ScholarshipCard
-                          key={s.id}
-                          scholarship={s}
-                          isSaved={savedIds.has(s.id)}
-                          onToggleSave={() => toggleSave(s.id)}
-                          showUrgency
+                          s={s}
+                          isSaved={saved.has(s.id)}
+                          onSave={() => toggleSave(s.id)}
                         />
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* All Scholarships */}
-                {activeScholarships.length > 0 && (
+                {/* Upcoming */}
+                {upcoming.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <AcademicCapIcon className="w-5 h-5 text-[#4F6EF7]" />
-                      <h2 className="text-base font-bold text-[#1A1A2E] dark:text-white">
-                        All Scholarships
-                      </h2>
-                      <span className="text-xs text-[#6B7280] font-medium">
-                        ({activeScholarships.length})
-                      </span>
-                    </div>
+                    <SectionHeader
+                      icon={<ClockIcon className="w-4 h-4 text-red-400" />}
+                      title="Upcoming Deadlines"
+                    />
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                      {activeScholarships.slice(0, 12).map((s) => (
-                        <ScholarshipCard
+                      {upcoming.map((s) => (
+                        <BentoCard
                           key={s.id}
-                          scholarship={s}
-                          isSaved={savedIds.has(s.id)}
-                          onToggleSave={() => toggleSave(s.id)}
+                          s={s}
+                          isSaved={saved.has(s.id)}
+                          onSave={() => toggleSave(s.id)}
+                          showDeadline
                         />
                       ))}
                     </div>
                   </section>
                 )}
 
-                {activeScholarships.length === 0 && !isLoading && (
-                  <div className="text-center py-16">
-                    <TrophyIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-                    <p className="text-base font-semibold text-[#1A1A2E] dark:text-white mb-1.5">
+                {/* All */}
+                {active.length > 0 && (
+                  <section>
+                    <SectionHeader
+                      icon={<AcademicCapIcon className="w-4 h-4 text-gray-400" />}
+                      title="All Scholarships"
+                      count={active.length}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                      {active.slice(0, 12).map((s) => (
+                        <BentoCard
+                          key={s.id}
+                          s={s}
+                          isSaved={saved.has(s.id)}
+                          onSave={() => toggleSave(s.id)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {active.length === 0 && !isLoading && (
+                  <div className="text-center py-20">
+                    <div className="size-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                      <TrophyIcon className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
                       No scholarships yet
                     </p>
-                    <p className="text-sm text-[#6B7280]">
-                      Scholarships will appear here once added by an admin.
+                    <p className="text-[13px] text-gray-400">
+                      They'll appear once added by an admin.
                     </p>
                   </div>
                 )}
@@ -1138,123 +1048,137 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  ScholarshipCard                                                          */
+/*  Section Header                                                           */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-function ScholarshipCard({
-  scholarship: s,
-  isSaved,
-  onToggleSave,
-  showUrgency = false,
+function SectionHeader({
+  icon,
+  title,
+  count,
 }: {
-  scholarship: Scholarship;
+  icon: React.ReactNode;
+  title: string;
+  count?: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-5">
+      {icon}
+      <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white tracking-tight">
+        {title}
+      </h2>
+      {count !== undefined && (
+        <span className="text-[11px] text-gray-400 font-medium ml-1">({count})</span>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  Bento Card                                                               */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+function BentoCard({
+  s,
+  isSaved,
+  onSave,
+  showDeadline = false,
+}: {
+  s: Scholarship;
   isSaved: boolean;
-  onToggleSave: () => void;
-  showUrgency?: boolean;
+  onSave: () => void;
+  showDeadline?: boolean;
 }) {
   const days = daysUntil(s.deadline);
-  const urgencyBadge = deadlineBadge(days);
-  const expired = isExpired(s.deadline);
-  const isUrgent = days !== null && days > 0 && days <= 15;
 
   return (
-    <div
-      className={`bg-white dark:bg-[#161b2e] rounded-xl p-5 border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 flex flex-col group relative ${expired ? 'opacity-50' : ''}`}
-    >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleSave();
-        }}
-        className="absolute top-4 right-4 z-10 text-gray-300 dark:text-gray-600 hover:text-[#4F6EF7] transition-colors"
-        title={isSaved ? 'Remove bookmark' : 'Save scholarship'}
-      >
-        {isSaved ? (
-          <BookmarkIcon className="w-5 h-5 text-[#4F6EF7]" />
-        ) : (
-          <BookmarkOutlineIcon className="w-5 h-5" />
-        )}
-      </button>
-
-      {/* Institution + Country */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="size-9 rounded-lg bg-[#4F6EF7]/10 dark:bg-[#4F6EF7]/15 flex items-center justify-center flex-shrink-0">
-          <AcademicCapIcon className="w-4.5 h-4.5 text-[#4F6EF7]" />
+    <div className="relative bg-white dark:bg-[#141722] rounded-3xl p-7 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:-translate-y-0.5 group border border-gray-100/50 dark:border-gray-800/30 flex flex-col">
+      {/* Top row: flag + trending + bookmark */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg">{getFlag(s.country)}</span>
+          <span className="text-[11px] text-gray-400 font-medium">{s.country}</span>
         </div>
-        <div className="min-w-0 flex-1 pr-7">
-          <h4 className="text-xs font-semibold text-[#4F6EF7] truncate" title={s.institution}>
-            {titleCase(s.institution)}
-          </h4>
-          <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
-            <span>{getFlag(s.country)}</span>
-            <span>{s.country}</span>
-          </div>
+        <div className="flex items-center gap-2">
+          {s.isTrending && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-orange-50/80 dark:bg-orange-500/10 text-orange-500 border border-orange-100 dark:border-orange-500/20 rounded-full text-[10px] font-bold tracking-wide">
+              <FireIcon className="w-3 h-3" /> Trending
+            </span>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSave();
+            }}
+            className="text-gray-200 dark:text-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+            title={isSaved ? 'Unsave' : 'Save'}
+          >
+            {isSaved ? (
+              <BookmarkIcon className="w-4 h-4 text-gray-900 dark:text-white" />
+            ) : (
+              <BookmarkOutlineIcon className="w-4 h-4" />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Title */}
-      <h3
-        className="text-sm font-bold text-[#1A1A2E] dark:text-white mb-1.5 leading-snug group-hover:text-[#4F6EF7] transition-colors line-clamp-2"
-        title={s.title}
-      >
+      {/* Title + Institution */}
+      <h3 className="text-[16px] font-bold text-[#111827] dark:text-white mb-1.5 leading-snug line-clamp-2 tracking-tight">
         {s.title}
       </h3>
+      <p className="text-[13px] text-[#6b7280] dark:text-gray-500 mb-4">
+        {titleCase(s.institution)}
+      </p>
 
       {/* Description */}
-      <p className="text-[11px] text-[#6B7280] leading-relaxed mb-3 line-clamp-2 min-h-[2.5em]">
+      <p className="text-[12px] text-gray-400 leading-relaxed mb-5 line-clamp-2 min-h-[2.5em]">
         {s.description && s.description.length > 3 ? s.description : 'No description available.'}
       </p>
 
-      {/* Amount */}
-      {s.awardAmount && (
-        <div className="mb-3">
-          <span className="inline-flex items-center gap-1 bg-[#10B981]/10 dark:bg-[#10B981]/15 text-[#10B981] text-[11px] font-bold px-2 py-1 rounded-lg border border-[#10B981]/15">
-            <CurrencyDollarIcon className="w-3.5 h-3.5" />
+      {/* Award + Deadline */}
+      <div className="flex items-center gap-2 flex-wrap mb-5">
+        {s.awardAmount && (
+          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-100/80 dark:border-emerald-500/20">
             {s.awardAmount}
           </span>
-        </div>
-      )}
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-0.5 rounded-md capitalize border border-gray-100 dark:border-gray-700">
-          {s.studyLevel?.toLowerCase().replace('_', ' ')}
-        </span>
-        <span className="bg-[#F8F9FC] dark:bg-[#1a1f35] text-[#6B7280] text-[10px] font-semibold px-2 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">
-          {s.awardType}
-        </span>
+        )}
+        {(showDeadline || (days !== null && days > 0 && days <= 30)) && s.deadline && (
+          <span
+            className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
+              days !== null && days <= 7
+                ? 'text-red-500 bg-red-50/80 dark:bg-red-500/10 border-red-100/80 dark:border-red-500/20'
+                : days !== null && days <= 30
+                  ? 'text-amber-500 bg-amber-50/80 dark:bg-amber-500/10 border-amber-100/80 dark:border-amber-500/20'
+                  : 'text-gray-500 bg-gray-50 dark:bg-white/[0.04] border-gray-100 dark:border-gray-800'
+            }`}
+          >
+            <CalendarIcon className="w-3 h-3 inline mr-1 -mt-0.5" />
+            {fmtDate(s.deadline)}
+            {days !== null && days > 0 && days <= 30 && (
+              <span className="ml-1 opacity-70">· {days}d</span>
+            )}
+          </span>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280] font-medium">
-          <CalendarIcon className="w-3.5 h-3.5" />
-          <span>{formatDate(s.deadline)}</span>
-          {expired && (
-            <span className="ml-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800/30">
-              <ExclamationTriangleIcon className="w-2.5 h-2.5" />
-              Expired
-            </span>
-          )}
-          {!expired && (showUrgency || isUrgent) && urgencyBadge && (
-            <span
-              className={`ml-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${urgencyBadge.color}`}
-            >
-              <ClockIcon className="w-2.5 h-2.5" />
-              {urgencyBadge.label}
-            </span>
-          )}
+      <div className="mt-auto pt-4 flex items-center justify-between">
+        <div className="flex gap-1.5">
+          <span className="text-[10px] font-medium text-gray-400 bg-gray-50 dark:bg-white/[0.04] px-2 py-0.5 rounded-md capitalize">
+            {s.studyLevel?.toLowerCase().replace('_', ' ')}
+          </span>
         </div>
-        {s.applicationUrl && (
+        {s.applicationUrl ? (
           <a
             href={s.applicationUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 text-[11px] font-semibold text-[#4F6EF7] hover:text-[#2D3A8C] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 hover:border-transparent transition-all duration-300"
           >
-            Apply <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            View Details <ArrowTopRightOnSquareIcon className="w-3 h-3" />
           </a>
+        ) : (
+          <span className="text-[11px] text-gray-300 dark:text-gray-700">No link</span>
         )}
       </div>
     </div>

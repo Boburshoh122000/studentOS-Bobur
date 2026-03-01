@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';

@@ -4,7 +4,6 @@ import {
   GiftIcon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
-import React from 'react';
 
 interface InsufficientCreditsModalProps {
   isOpen: boolean;

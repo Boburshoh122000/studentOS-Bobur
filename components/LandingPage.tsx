@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavigationProps } from '../types';
 import MinimalHeader from './MinimalHeader';
 import TrustlineHero from './TrustlineHero';

@@ -5,7 +5,22 @@ import { useAuth } from '../src/contexts/AuthContext';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, BellIcon, BriefcaseIcon, ClockIcon, CreditCardIcon, DocumentTextIcon, GiftIcon, MagnifyingGlassIcon, PencilIcon, PlusIcon, ShieldCheckIcon, Squares2X2Icon, UsersIcon, WalletIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  BellIcon,
+  BriefcaseIcon,
+  ClockIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  GiftIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  UsersIcon,
+  WalletIcon,
+} from '@heroicons/react/24/solid';
 
 // Types
 interface Tool {
@@ -34,7 +49,6 @@ const AVAILABLE_TOOLS = [
   { name: 'Learning Plan', slug: 'learning-plan', category: 'Education' },
   { name: 'Plagiarism Checker', slug: 'plagiarism-checker', category: 'Productivity' },
 ];
-
 
 export default function AdminPricing({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
@@ -268,6 +282,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
       >
         <button
           onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
         >
           <span className="material-symbols-outlined text-[14px]">
@@ -297,6 +312,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </div>
             <nav className="flex flex-col gap-1">
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Dashboard' : ''}
@@ -307,6 +323,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Employers' : ''}
@@ -317,6 +334,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_PRICING)}
                 className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Pricing' : ''}
@@ -327,6 +345,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_USERS)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Users' : ''}
@@ -337,6 +356,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Scholarships' : ''}
@@ -347,6 +367,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_BLOG)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Blog Management' : ''}
@@ -357,6 +378,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_ROLES)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
@@ -367,6 +389,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Notifications' : ''}
@@ -377,6 +400,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => navigateTo(Screen.ADMIN_TEAM)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
                 title={!isSidebarExpanded ? 'Team Management' : ''}
@@ -390,6 +414,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
             <button
+              type="button"
               onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
             >
@@ -408,6 +433,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
               </div>
             </button>
             <button
+              type="button"
               onClick={handleLogout}
               disabled={isLoggingOut}
               className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'} ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -434,6 +460,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </div>
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
                 className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
@@ -441,6 +468,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 <span>View Audit Log</span>
               </button>
               <button
+                type="button"
                 onClick={() => setShowAddToolModal(true)}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
               >
@@ -463,7 +491,10 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4 items-end">
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block">
+                <label
+                  htmlFor="grant-email"
+                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
+                >
                   User Email
                 </label>
                 <input
@@ -474,7 +505,10 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block">
+                <label
+                  htmlFor="grant-amount"
+                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
+                >
                   Credits
                 </label>
                 <input
@@ -487,6 +521,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
               </div>
               <div>
                 <button
+                  type="button"
                   onClick={async () => {
                     const emailEl = document.getElementById('grant-email') as HTMLInputElement;
                     const amountEl = document.getElementById('grant-amount') as HTMLInputElement;
@@ -536,6 +571,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={handleSaveSettings}
                 disabled={saving}
                 className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
@@ -557,11 +593,15 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
 
               {/* Referral Reward */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
+                <label
+                  htmlFor="referral-bonus"
+                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400"
+                >
                   Referral Reward (Credits)
                 </label>
                 <div className="relative">
                   <input
+                    id="referral-bonus"
                     className="w-full rounded-lg border-slate-200 bg-[#f6f6f8] py-2 pl-3 pr-10 text-sm font-medium text-slate-900 focus:border-primary focus:ring-primary dark:border-slate-700 dark:bg-white/5 dark:text-white"
                     type="number"
                     value={referralBonus}
@@ -600,17 +640,22 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
           <section className="flex flex-col gap-4">
             <div className="border-b border-slate-200 dark:border-slate-700">
               <div className="flex gap-8">
-                <button className="relative pb-4 text-sm font-bold text-primary dark:text-primary-dark">
+                <button
+                  type="button"
+                  className="relative pb-4 text-sm font-bold text-primary dark:text-primary-dark"
+                >
                   Credit Pricing
                   <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary dark:bg-primary-dark"></span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => toast('Discount Coupons coming soon!', { icon: '🎟️' })}
                   className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   Discount Coupons
                 </button>
                 <button
+                  type="button"
                   onClick={() => toast('Bundles coming soon!', { icon: '📦' })}
                   className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
@@ -625,6 +670,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 <input
                   className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
+                  aria-label="Search tools"
                   placeholder="Search tools..."
                   type="text"
                   value={searchQuery}
@@ -635,6 +681,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 <select
                   value={filterPlan}
                   onChange={(e) => setFilterPlan(e.target.value as 'all' | 'premium' | 'free')}
+                  aria-label="Filter by plan type"
                   className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 text-sm font-medium text-slate-900 dark:text-white"
                 >
                   <option value="all">All Plans</option>
@@ -655,8 +702,9 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                   <table className="w-full text-left">
                     <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                       <tr>
-                        <th className="w-12 px-6 py-4">
+                        <th className="w-12 px-6 py-4" scope="col" aria-label="Select">
                           <input
+                            aria-label="Select all tools"
                             className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
                             type="checkbox"
                           />
@@ -696,6 +744,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                           >
                             <td className="px-6 py-4">
                               <input
+                                aria-label={`Select ${tool.name}`}
                                 className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
                                 type="checkbox"
                               />
@@ -747,6 +796,8 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleEditTool(tool)}
+                                  type="button"
+                                  aria-label={`Edit credit cost for ${tool.name}`}
                                   className="rounded-lg p-1.5 text-primary hover:bg-indigo-50 dark:text-primary dark:hover:bg-indigo-900/20 transition-colors"
                                   title="Edit Credit Cost"
                                 >
@@ -757,6 +808,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                                     <input
                                       checked={tool.isActive}
                                       onChange={() => handleToggleTool(tool.id)}
+                                      aria-label={`Toggle ${tool.name} active`}
                                       className="peer sr-only"
                                       type="checkbox"
                                     />
@@ -791,10 +843,14 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </div>
             <form onSubmit={handleCreateTool} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor="new-tool-name"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Tool Name
                 </label>
                 <select
+                  id="new-tool-name"
                   value={newTool.name}
                   onChange={(e) => {
                     const selected = AVAILABLE_TOOLS.find((t) => t.name === e.target.value);
@@ -842,11 +898,15 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor="new-tool-credit-cost"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Credit Cost
                 </label>
                 <div className="relative">
                   <input
+                    id="new-tool-credit-cost"
                     type="number"
                     value={newTool.creditCost}
                     onChange={(e) =>
@@ -889,10 +949,14 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </div>
             <form onSubmit={handleUpdateTool} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor="edit-tool-name"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Tool Name
                 </label>
                 <input
+                  id="edit-tool-name"
                   type="text"
                   value={editToolData.name}
                   onChange={(e) => setEditToolData({ ...editToolData, name: e.target.value })}
@@ -900,11 +964,15 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor="edit-tool-credit-cost"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Credit Cost
                 </label>
                 <div className="relative">
                   <input
+                    id="edit-tool-credit-cost"
                     type="number"
                     value={editToolData.creditCost}
                     onChange={(e) =>

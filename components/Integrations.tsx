@@ -1,9 +1,19 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { CalendarIcon, ChatBubbleLeftIcon, CloudIcon, CodeBracketSquareIcon, EnvelopeIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
+import {
+  CalendarIcon,
+  ChatBubbleLeftIcon,
+  CloudIcon,
+  CodeBracketSquareIcon,
+  EnvelopeIcon,
+  VideoCameraIcon,
+} from '@heroicons/react/24/solid';
 
 const integrationIcons = [
-  { id: 'mail', icon: <EnvelopeIcon className="w-8 h-8 text-red-500" />, shadowColor: 'shadow-red-500/10' },
+  {
+    id: 'mail',
+    icon: <EnvelopeIcon className="w-8 h-8 text-red-500" />,
+    shadowColor: 'shadow-red-500/10',
+  },
   {
     id: 'message',
     icon: <ChatBubbleLeftIcon className="w-8 h-8 text-purple-500" />,

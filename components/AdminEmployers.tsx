@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -331,6 +331,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
       >
         <button
           onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
         >
           <span className="material-symbols-outlined text-[14px]">
@@ -503,6 +504,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                 <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 <input
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
+                  aria-label="Search employers"
                   placeholder="Search employers, industries, or contact persons..."
                   type="text"
                   value={search}
@@ -752,12 +754,14 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                                 )}
                                 <button
                                   onClick={() => openEditModal(emp)}
+                                  aria-label="Edit employer"
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
                                 >
                                   <PencilIcon className="w-[18px] h-[18px]" />
                                 </button>
                                 <button
                                   onClick={() => setShowDeleteConfirm(emp.id)}
+                                  aria-label="Delete employer"
                                   className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
                                 >
                                   <TrashIcon className="w-[18px] h-[18px]" />
@@ -813,6 +817,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Add Employer</h3>
               <button
                 onClick={() => setShowAddModal(false)}
+                aria-label="Close"
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
                 <XMarkIcon className="w-5 h-5 text-slate-500" />
@@ -912,6 +917,7 @@ export default function AdminEmployers({ navigateTo }: NavigationProps) {
                   setShowEditModal(false);
                   setEditingEmployer(null);
                 }}
+                aria-label="Close"
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
                 <XMarkIcon className="w-5 h-5 text-slate-500" />

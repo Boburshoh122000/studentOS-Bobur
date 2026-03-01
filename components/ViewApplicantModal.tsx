@@ -1,7 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { employerApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
-import { AcademicCapIcon, ArrowTopRightOnSquareIcon, BookOpenIcon, BriefcaseIcon, CalendarDaysIcon, ChartBarIcon, CodeBracketIcon, DocumentTextIcon, EnvelopeIcon, MapPinIcon, StarIcon, UserIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowTopRightOnSquareIcon,
+  BookOpenIcon,
+  BriefcaseIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  CodeBracketIcon,
+  DocumentTextIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  StarIcon,
+  UserIcon,
+  VideoCameraIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
 interface Applicant {
   id: string;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Screen, NavigationProps } from '../types';
 import DashboardLayout from './DashboardLayout';
 import CVBuilder from './cv-builder/CVBuilder';

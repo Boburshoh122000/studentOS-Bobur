@@ -1,8 +1,15 @@
-import React from 'react';
 import { Screen, NavigationProps } from '../types';
 import MinimalHeader from './MinimalHeader';
 import Team from './Team';
-import { AcademicCapIcon, ArrowRightIcon, GlobeAltIcon, LightBulbIcon, ShareIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/solid';
+import {
+  AcademicCapIcon,
+  ArrowRightIcon,
+  GlobeAltIcon,
+  LightBulbIcon,
+  ShareIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowDownIcon } from '@heroicons/react/24/solid';
 
 export default function AboutUs({ navigateTo }: NavigationProps) {

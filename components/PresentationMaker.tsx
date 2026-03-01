@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';

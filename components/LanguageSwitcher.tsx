@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedLocales, localeLabels, type Locale } from '../src/i18n';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';

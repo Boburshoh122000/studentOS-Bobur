@@ -1,8 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon, ArrowsRightLeftIcon, ChartBarIcon, CheckIcon, CpuChipIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowRightIcon,
+  ArrowsRightLeftIcon,
+  ChartBarIcon,
+  CheckIcon,
+  CpuChipIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from '@heroicons/react/24/solid';
 
 export default function TrustlineHero() {
   const [mounted, setMounted] = useState(false);

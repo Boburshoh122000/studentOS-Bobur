@@ -1,5 +1,3 @@
-import React from 'react';
-
 type ToolType = 'cv' | 'job' | 'scholarship' | 'presentation' | 'plagiarism';
 
 interface ToolCardProps {

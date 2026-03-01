@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 

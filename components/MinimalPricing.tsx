@@ -1,8 +1,15 @@
 'use client';
 
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { BoltIcon, CheckIcon, CpuChipIcon, DocumentTextIcon, ShieldCheckIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import {
+  BoltIcon,
+  CheckIcon,
+  CpuChipIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/solid';
 
 /* ─── Credit Packages Data ──────────────────────────────── */
 const packages = [
