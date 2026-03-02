@@ -636,6 +636,40 @@ export const employerApi = {
     api.patch(`/employer/applications/${id}`, data),
 };
 
+// Universities API
+export const universityApi = {
+  search: (query: string, limit = 20) =>
+    api.get<{
+      universities: {
+        id: number;
+        nameUz: string;
+        nameEn: string | null;
+        region: string | null;
+        type: string | null;
+      }[];
+    }>(`/universities?search=${encodeURIComponent(query)}&limit=${limit}`),
+  syncAdmin: () => api.post('/universities/sync'),
+};
+
+// Demographics API (admin only)
+export const demographicsApi = {
+  universities: (params?: { role?: string; from?: string; to?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.role) q.set('role', params.role);
+    if (params?.from) q.set('from', params.from);
+    if (params?.to) q.set('to', params.to);
+    return api.get(`/admin/demographics/universities?${q}`);
+  },
+  fields: (params?: { role?: string; from?: string; to?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.role) q.set('role', params.role);
+    if (params?.from) q.set('from', params.from);
+    if (params?.to) q.set('to', params.to);
+    return api.get(`/admin/demographics/fields?${q}`);
+  },
+  summary: () => api.get('/admin/demographics/summary'),
+};
+
 // Credits API (Credit System)
 export const creditsApi = {
   // Get user's credit balance

@@ -179,6 +179,21 @@ model User {
   @@index([telegramChatId])
 }
 
+model University {
+  id        Int      @id @default(autoincrement())
+  nameUz    String
+  nameEn    String?
+  region    String?
+  type      String?  // "state" | "private" | "branch"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfiles StudentProfile[]
+
+  @@index([nameUz])
+  @@index([nameEn])
+}
+
 model StudentProfile {
   id     String @id @default(cuid())
   userId String @unique
@@ -188,7 +203,9 @@ model StudentProfile {
   avatarUrl         String?
   bio               String?
   educationLevel    EducationLevel?
-  university        String?
+  university        String?         // plain-text display name (kept for backwards compat)
+  universityId      Int?            // FK to University table
+  universityRef     University?     @relation(fields: [universityId], references: [id])
   graduationYear    Int?
   major             String?
   country           String?

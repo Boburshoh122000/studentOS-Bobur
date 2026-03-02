@@ -12,6 +12,7 @@ import {
   BellIcon,
   BriefcaseIcon,
   CalendarIcon,
+  ChartPieIcon,
   CheckBadgeIcon,
   ClockIcon,
   CreditCardIcon,
@@ -253,6 +254,16 @@ export default function AdminDashboard({ navigateTo }: NavigationProps) {
                 <UsersIcon className="w-5 h-5" />
                 {isSidebarExpanded && (
                   <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
+                )}
+              </button>
+              <button
+                onClick={() => navigateTo(Screen.ADMIN_DEMOGRAPHICS)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
+                title={!isSidebarExpanded ? 'Demographics' : ''}
+              >
+                <ChartPieIcon className="w-5 h-5" />
+                {isSidebarExpanded && (
+                  <span className="text-sm font-medium whitespace-nowrap">Demographics</span>
                 )}
               </button>
             </nav>

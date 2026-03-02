@@ -179,6 +179,196 @@ router.get('/analytics', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
+// ─── Demographics: universities ────────────────────────────────────────────
+router.get('/demographics/universities', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { role, from, to } = req.query as Record<string, string | undefined>;
+
+    const userWhere: any = {};
+    if (role) userWhere.role = role;
+    if (from || to) {
+      userWhere.createdAt = {};
+      if (from) userWhere.createdAt.gte = new Date(from);
+      if (to) userWhere.createdAt.lte = new Date(to);
+    }
+
+    // Users with a known universityId (linked to University table)
+    const byId = await prisma.studentProfile.groupBy({
+      by: ['universityId'],
+      where: {
+        universityId: { not: null },
+        user: userWhere,
+      },
+      _count: true,
+    });
+
+    // Resolve university names
+    const uniIds = byId.map((r) => r.universityId!);
+    const unis = await prisma.university.findMany({
+      where: { id: { in: uniIds } },
+      select: { id: true, nameUz: true, nameEn: true, region: true },
+    });
+    const uniMap = new Map(unis.map((u) => [u.id, u]));
+
+    // Users with a plain-text university (no universityId)
+    const byText = await prisma.$queryRaw<{ university: string; count: bigint }[]>`
+      SELECT sp."university", COUNT(*) AS count
+      FROM "StudentProfile" sp
+      JOIN "User" u ON u.id = sp."userId"
+      WHERE sp."universityId" IS NULL
+        AND sp."university" IS NOT NULL
+        AND sp."university" != ''
+      GROUP BY sp."university"
+      ORDER BY count DESC
+      LIMIT 30
+    `;
+
+    const totalUsers = await prisma.user.count({ where: userWhere });
+
+    const named = byId
+      .map((r) => {
+        const u = uniMap.get(r.universityId!);
+        return {
+          universityId: r.universityId,
+          name: u?.nameEn || u?.nameUz || 'Unknown',
+          nameUz: u?.nameUz,
+          region: u?.region,
+          count: r._count,
+          isVerified: true,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    const custom = byText.map((r) => ({
+      universityId: null,
+      name: r.university,
+      nameUz: null,
+      region: null,
+      count: Number(r.count),
+      isVerified: false,
+    }));
+
+    const all = [...named, ...custom].sort((a, b) => b.count - a.count);
+    const totalRepresented = named.length + custom.length;
+
+    res.json({ universities: all, totalRepresented, totalUsers });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Demographics: fields of study ─────────────────────────────────────────
+router.get('/demographics/fields', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { role, from, to } = req.query as Record<string, string | undefined>;
+
+    const userWhere: any = { role: { in: ['STUDENT', 'EDUCATOR'] } };
+    if (role) userWhere.role = role;
+    if (from || to) {
+      userWhere.createdAt = {};
+      if (from) userWhere.createdAt.gte = new Date(from);
+      if (to) userWhere.createdAt.lte = new Date(to);
+    }
+
+    const byField = await prisma.$queryRaw<{ major: string; count: bigint }[]>`
+      SELECT LOWER(TRIM(sp."major")) AS major, COUNT(*) AS count
+      FROM "StudentProfile" sp
+      JOIN "User" u ON u.id = sp."userId"
+      WHERE sp."major" IS NOT NULL
+        AND sp."major" != ''
+        AND u."role" IN ('STUDENT', 'EDUCATOR')
+      GROUP BY LOWER(TRIM(sp."major"))
+      ORDER BY count DESC
+      LIMIT 30
+    `;
+
+    const total = byField.reduce((s, r) => s + Number(r.count), 0);
+
+    const fields = byField.map((r) => ({
+      name: r.major.charAt(0).toUpperCase() + r.major.slice(1),
+      count: Number(r.count),
+      percentage: total > 0 ? Math.round((Number(r.count) / total) * 100) : 0,
+    }));
+
+    res.json({ fields, total });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Demographics: summary ──────────────────────────────────────────────────
+router.get('/demographics/summary', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const monthAgo = new Date();
+    monthAgo.setDate(monthAgo.getDate() - 30);
+
+    const [totalUsers, totalUniversitiesInDb, newUsersThisMonth] = await Promise.all([
+      prisma.user.count(),
+      prisma.university.count(),
+      prisma.user.count({ where: { createdAt: { gte: monthAgo } } }),
+    ]);
+
+    // Top university
+    const topUniRaw = await prisma.studentProfile.groupBy({
+      by: ['universityId'],
+      where: { universityId: { not: null } },
+      _count: true,
+      orderBy: { _count: { universityId: 'desc' } },
+      take: 1,
+    });
+
+    let topUniversity: { name: string; count: number } | null = null;
+    if (topUniRaw[0]) {
+      const u = await prisma.university.findUnique({
+        where: { id: topUniRaw[0].universityId! },
+        select: { nameEn: true, nameUz: true },
+      });
+      topUniversity = {
+        name: u?.nameEn || u?.nameUz || 'Unknown',
+        count: topUniRaw[0]._count,
+      };
+    }
+
+    // Top field
+    const topFieldRaw = await prisma.$queryRaw<{ major: string; count: bigint }[]>`
+      SELECT LOWER(TRIM(sp."major")) AS major, COUNT(*) AS count
+      FROM "StudentProfile" sp
+      JOIN "User" u ON u.id = sp."userId"
+      WHERE sp."major" IS NOT NULL AND sp."major" != ''
+      GROUP BY LOWER(TRIM(sp."major"))
+      ORDER BY count DESC
+      LIMIT 1
+    `;
+    const topField = topFieldRaw[0]
+      ? {
+          name: topFieldRaw[0].major.charAt(0).toUpperCase() + topFieldRaw[0].major.slice(1),
+          count: Number(topFieldRaw[0].count),
+        }
+      : null;
+
+    // Count distinct universities represented (text + id)
+    const textCount = await prisma.studentProfile.count({
+      where: { universityId: null, university: { not: null } },
+    });
+    const idCountRaw = await prisma.studentProfile.groupBy({
+      by: ['universityId'],
+      where: { universityId: { not: null } },
+    });
+    const totalRepresented = idCountRaw.length + textCount;
+
+    res.json({
+      totalUsers,
+      totalUniversitiesInDb,
+      totalRepresented,
+      newUsersThisMonth,
+      topUniversity,
+      topField,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // User management
 router.get('/users', async (req: AuthenticatedRequest, res, next) => {
   try {
@@ -681,12 +871,9 @@ router.post(
 
       const supabase = getSupabaseAdmin();
       if (!supabase) {
-        return res
-          .status(503)
-          .json({
-            error:
-              'Storage service not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
-          });
+        return res.status(503).json({
+          error: 'Storage service not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+        });
       }
 
       const fileExt = req.file.originalname.split('.').pop() || 'jpg';

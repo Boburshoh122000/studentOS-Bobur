@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { authApi } from '../src/services/api';
@@ -9,12 +9,12 @@ import {
   AcademicCapIcon,
   ArrowRightIcon,
   BookOpenIcon,
-  BuildingLibraryIcon,
   BuildingOffice2Icon,
   CheckIcon,
   GlobeAltIcon,
   SwatchIcon,
 } from '@heroicons/react/24/solid';
+import UniversityAutocomplete, { UniversityValue } from './UniversityAutocomplete';
 
 type Role = 'student' | 'educator' | 'organization' | null;
 
@@ -55,11 +55,11 @@ export default function SignUpStep2() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Student fields
-  const [university, setUniversity] = useState('');
+  const [university, setUniversity] = useState<UniversityValue>({ id: null, name: '' });
   const [major, setMajor] = useState('');
 
   // Educator fields
-  const [institution, setInstitution] = useState('');
+  const [institution, setInstitution] = useState<UniversityValue>({ id: null, name: '' });
   const [department, setDepartment] = useState('');
 
   // Organization fields
@@ -84,10 +84,12 @@ export default function SignUpStep2() {
       const payload: Record<string, string> = { role: selectedRole };
 
       if (selectedRole === 'student') {
-        if (university) payload.university = university;
+        if (university.name) payload.university = university.name;
+        if (university.id) (payload as any).universityId = university.id;
         if (major) payload.major = major;
       } else if (selectedRole === 'educator') {
-        if (institution) payload.institution = institution;
+        if (institution.name) payload.institution = institution.name;
+        if (institution.id) (payload as any).institutionId = institution.id;
         if (department) payload.department = department;
       } else {
         payload.companyName = companyName;
@@ -189,19 +191,12 @@ export default function SignUpStep2() {
                   {selectedRole === 'student' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          University / School
-                        </label>
-                        <div className="relative">
-                          <BuildingLibraryIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="text"
-                            value={university}
-                            onChange={(e) => setUniversity(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-                            placeholder="e.g. Stanford University"
-                          />
-                        </div>
+                        <UniversityAutocomplete
+                          label="University / School"
+                          value={university}
+                          onChange={setUniversity}
+                          placeholder="Search your university…"
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -224,19 +219,12 @@ export default function SignUpStep2() {
                   {selectedRole === 'educator' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          University / Institution
-                        </label>
-                        <div className="relative">
-                          <BuildingLibraryIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="text"
-                            value={institution}
-                            onChange={(e) => setInstitution(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-                            placeholder="e.g. MIT"
-                          />
-                        </div>
+                        <UniversityAutocomplete
+                          label="University / Institution"
+                          value={institution}
+                          onChange={setInstitution}
+                          placeholder="Search your institution…"
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">

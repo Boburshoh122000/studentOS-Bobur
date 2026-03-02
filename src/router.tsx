@@ -99,6 +99,9 @@ const AdminProfile = withNavigate(lazyRetry(() => import('../components/AdminPro
 const AdminNotifications = withNavigate(
   lazyRetry(() => import('../components/AdminNotifications'))
 );
+const AdminDemographicsPage = withNavigate(
+  lazyRetry(() => import('../components/AdminDemographicsPage'))
+);
 
 // Employer
 const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/EmployerDashboard')));
@@ -445,6 +448,14 @@ export const router = createBrowserRouter([
         element: (
           <AdminRoute>
             <AdminNotifications />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: '/admin/demographics',
+        element: (
+          <AdminRoute>
+            <AdminDemographicsPage />
           </AdminRoute>
         ),
       },

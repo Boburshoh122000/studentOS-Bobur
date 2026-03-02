@@ -70,9 +70,11 @@ const onboardingSchema = z.object({
     role: z.enum(['student', 'educator', 'organization']),
     // Student fields
     university: z.string().optional(),
+    universityId: z.number().int().positive().optional(),
     major: z.string().optional(),
     // Educator fields
     institution: z.string().optional(),
+    institutionId: z.number().int().positive().optional(),
     department: z.string().optional(),
     // Organization fields
     companyName: z.string().optional(),
@@ -315,8 +317,18 @@ router.post(
   validate(onboardingSchema),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const { role, university, major, institution, department, companyName, industry, website } =
-        req.body;
+      const {
+        role,
+        university,
+        universityId,
+        major,
+        institution,
+        institutionId,
+        department,
+        companyName,
+        industry,
+        website,
+      } = req.body;
       const userId = req.user!.id;
 
       let userRole: string;
@@ -327,14 +339,22 @@ router.post(
         redirectTo = '/app';
         await prisma.studentProfile.update({
           where: { userId },
-          data: { university: university || null, major: major || null },
+          data: {
+            university: university || null,
+            universityId: universityId || null,
+            major: major || null,
+          },
         });
       } else if (role === 'educator') {
         userRole = 'EDUCATOR';
         redirectTo = '/app';
         await prisma.studentProfile.update({
           where: { userId },
-          data: { university: institution || null, major: department || null },
+          data: {
+            university: institution || null,
+            universityId: institutionId || null,
+            major: department || null,
+          },
         });
       } else {
         // Organization -> create employer profile
@@ -605,30 +625,26 @@ router.post('/google-callback', validate(googleCallbackSchema), async (req, res,
 });
 
 // Delete account (soft-delete: deactivate + revoke tokens)
-router.delete(
-  '/account',
-  authenticate,
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const userId = req.user!.id;
+router.delete('/account', authenticate, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const userId = req.user!.id;
 
-      // Soft-delete: deactivate the account
-      await prisma.user.update({
-        where: { id: userId },
-        data: { isActive: false },
-      });
+    // Soft-delete: deactivate the account
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false },
+    });
 
-      // Revoke all refresh tokens
-      await revokeAllUserTokens(userId);
+    // Revoke all refresh tokens
+    await revokeAllUserTokens(userId);
 
-      // Clear auth cookies
-      clearAuthCookies(res);
+    // Clear auth cookies
+    clearAuthCookies(res);
 
-      res.json({ message: 'Account deleted successfully.' });
-    } catch (error) {
-      next(error);
-    }
+    res.json({ message: 'Account deleted successfully.' });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 export default router;
