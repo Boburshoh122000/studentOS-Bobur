@@ -463,6 +463,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                   <h3 className="font-bold">Filters</h3>
                   <button
                     onClick={() => setShowMobileFilters(false)}
+                    aria-label="Close filters"
                     className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <XMarkIcon className="w-5 h-5" />

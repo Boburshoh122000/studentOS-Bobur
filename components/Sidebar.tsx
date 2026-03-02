@@ -252,6 +252,7 @@ export default function Sidebar({
         {/* Lock/Unlock Toggle */}
         <button
           onClick={() => setIsSidebarLocked(!isSidebarLocked)}
+          aria-label={isSidebarLocked ? 'Unlock Sidebar' : 'Lock Sidebar Open'}
           className={`absolute -right-3 top-10 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6 ${isSidebarLocked ? 'text-primary border-primary' : ''}`}
           title={isSidebarLocked ? 'Unlock Sidebar' : 'Lock Sidebar Open'}
         >
@@ -275,6 +276,7 @@ export default function Sidebar({
             {/* Close button */}
             <button
               onClick={onCloseMobile}
+              aria-label="Close menu"
               className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <XMarkIcon className="w-5 h-5 text-text-sub" />

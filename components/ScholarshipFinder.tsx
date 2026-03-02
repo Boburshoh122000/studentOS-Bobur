@@ -359,6 +359,7 @@ function CountrySelect({
         {q && (
           <button
             onClick={() => setQ('')}
+            aria-label="Clear search"
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             type="button"
           >
@@ -630,6 +631,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setMobileFilters(!mobileFilters)}
+          aria-label="Toggle filters"
           className="lg:hidden p-1.5 -ml-1 text-gray-400 hover:text-gray-600"
           title="Toggle filters"
         >
@@ -669,6 +671,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 <span className="text-sm font-semibold text-gray-900">Filters</span>
                 <button
                   onClick={() => setMobileFilters(false)}
+                  aria-label="Close filters"
                   className="text-gray-400 hover:text-gray-600"
                   title="Close"
                 >
@@ -759,6 +762,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 {search && (
                   <button
                     onClick={() => setSearch('')}
+                    aria-label="Clear search"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
                     title="Clear"
                   >

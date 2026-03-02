@@ -348,6 +348,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                             )}
                             <button
                               onClick={() => handleDeleteHabit(habit.id)}
+                              aria-label="Delete habit"
                               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors"
                             >
                               <TrashIcon className="w-[18px] h-[18px]" />
@@ -372,6 +373,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
               <h3 className="text-xl font-bold text-text-main dark:text-white">Create New Habit</h3>
               <button
                 onClick={() => setShowNewHabitModal(false)}
+                aria-label="Close modal"
                 className="text-text-sub hover:text-text-main transition-colors"
               >
                 <XMarkIcon className="w-5 h-5" />

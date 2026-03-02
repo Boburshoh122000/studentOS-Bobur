@@ -459,6 +459,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setEditingSection(null)}
+                aria-label="Cancel editing"
                 className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
               >
                 <XMarkIcon className="w-4 h-4" />

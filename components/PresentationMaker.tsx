@@ -161,7 +161,10 @@ export default function PresentationMaker({ navigateTo }: NavigationProps) {
               <span className="text-xs font-bold text-text-sub uppercase tracking-wider">
                 Slides (5)
               </span>
-              <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-text-sub">
+              <button
+                aria-label="Add slide"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-text-sub"
+              >
                 <PlusIcon className="w-[18px] h-[18px]" />
               </button>
             </div>

@@ -151,6 +151,7 @@ export function NotificationDropdown() {
                     {!n.isRead && (
                       <button
                         onClick={(e) => handleMarkRead(n.id, e)}
+                        aria-label="Mark as read"
                         className="absolute top-4 right-4 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Mark as read"
                       >
