@@ -655,11 +655,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      {/* Page wrapper — force white bg to remove any parent blue tint */}
-      <div
-        className="flex-1 flex overflow-hidden h-full relative"
-        style={{ background: '#ffffff' }}
-      >
+      {/* Page wrapper — explicit subtle background to create contrast */}
+      <div className="flex-1 flex overflow-hidden h-full relative bg-slate-50 dark:bg-background-dark">
         {/* Mobile filters overlay */}
         {mobileFilters && (
           <div className="fixed inset-0 z-40 lg:hidden">
@@ -700,8 +697,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         )}
 
         {/* ═══ Desktop Filter Sidebar — WHITE CARD, separated from global nav ═══ */}
-        <div className="hidden lg:flex flex-shrink-0 py-6 pl-6">
-          <aside className="w-[260px] bg-white dark:bg-[#141722] rounded-2xl border border-gray-200/60 dark:border-gray-800/40 flex flex-col overflow-hidden shadow-sm">
+        <div className="hidden lg:flex flex-shrink-0 py-8 pl-8">
+          <aside className="w-full lg:w-72 shrink-0 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col overflow-hidden shadow-sm">
             <div className="px-6 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
@@ -718,10 +715,10 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto px-6">{filterUI}</div>
-            <div className="px-6 pb-5 pt-3">
+            <div className="px-6 pb-6 pt-3">
               <button
                 onClick={applyFilters}
-                className="w-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-semibold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]"
+                className="w-full mt-6 py-3.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-sm font-bold rounded-xl transition-all shadow-md active:scale-[0.98]"
               >
                 Apply Filters
               </button>
@@ -977,7 +974,7 @@ function Card({
 }) {
   const days = daysUntil(s.deadline);
   return (
-    <div className="relative bg-white dark:bg-[#141722] rounded-2xl p-7 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 group border border-gray-200/60 dark:border-gray-800/40 flex flex-col">
+    <div className="relative bg-white dark:bg-[#141722] rounded-[2rem] p-6 lg:p-8 transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-300 dark:border-gray-800 dark:hover:border-indigo-500/30 hover:-translate-y-1 flex flex-col h-full group">
       {/* Top: flag + trending + bookmark */}
       <div className="flex items-center justify-between mb-4">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-gray-800/50 text-gray-700 dark:text-gray-400 text-[11px] font-medium rounded-lg">
