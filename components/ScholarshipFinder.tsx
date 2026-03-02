@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -987,9 +988,17 @@ function Card({
   onSave: () => void;
   showDeadline?: boolean;
 }) {
+  const navigate = useNavigate();
   const days = daysUntil(s.deadline);
+
   return (
-    <div className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 flex flex-col h-full group">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/app/scholarships/${s.id}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/app/scholarships/${s.id}`)}
+      className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-200 dark:border-gray-700 border-l-[3px] border-l-primary shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 flex flex-col h-full group cursor-pointer"
+    >
       {/* Top: flag + trending + bookmark */}
       <div className="flex items-center justify-between mb-3.5">
         <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-50 dark:bg-white/[0.04] text-gray-600 dark:text-gray-400 text-[11px] font-medium rounded-md border border-gray-100 dark:border-gray-800">
@@ -1020,7 +1029,7 @@ function Card({
       </div>
 
       {/* Title + Institution */}
-      <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1 leading-snug line-clamp-2">
+      <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 leading-snug line-clamp-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
         {s.title}
       </h3>
       <p className="text-[12px] text-gray-500 dark:text-gray-400 mb-2.5">
@@ -1035,7 +1044,7 @@ function Card({
       {/* Tags */}
       <div className="flex items-center gap-2 flex-wrap mb-4">
         {s.awardAmount && (
-          <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 text-[11px] font-semibold rounded-md">
+          <span className="px-2.5 py-1 bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 border border-primary/20 dark:border-primary/30 text-[12px] font-bold rounded-md">
             {s.awardAmount}
           </span>
         )}
@@ -1069,9 +1078,9 @@ function Card({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-900 hover:text-white hover:border-transparent dark:hover:bg-white dark:hover:text-gray-900 transition-all duration-200"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-white hover:border-transparent transition-all duration-200"
           >
-            View <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            Apply <ArrowTopRightOnSquareIcon className="w-3 h-3" />
           </a>
         ) : (
           <span className="text-[11px] text-gray-300 dark:text-gray-600">No link</span>

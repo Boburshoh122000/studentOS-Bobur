@@ -46,7 +46,7 @@ const lazyRetry = (importFn: () => Promise<any>) => {
           sessionStorage.setItem(storageKey, 'true');
           window.location.reload();
           // Return a never-resolving promise to wait for reload
-          return new Promise(() => { });
+          return new Promise(() => {});
         }
       }
       throw error;
@@ -71,6 +71,7 @@ const AuthCallback = lazyRetry(() => import('../components/AuthCallback'));
 // App (Student)
 const Dashboard = withNavigate(lazyRetry(() => import('../components/Dashboard')));
 const ScholarshipFinder = withNavigate(lazyRetry(() => import('../components/ScholarshipFinder')));
+const ScholarshipDetail = withNavigate(lazyRetry(() => import('../components/ScholarshipDetail')));
 const CareerTracker = withNavigate(lazyRetry(() => import('../components/CareerTracker')));
 const CVChecker = withNavigate(lazyRetry(() => import('../components/CVChecker')));
 const CVBuilderPage = withNavigate(lazyRetry(() => import('../components/CVBuilderPage')));
@@ -271,6 +272,14 @@ export const router = createBrowserRouter([
         element: (
           <StudentRoute>
             <ScholarshipFinder />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/scholarships/:id',
+        element: (
+          <StudentRoute>
+            <ScholarshipDetail />
           </StudentRoute>
         ),
       },
