@@ -332,17 +332,7 @@ function CountrySelect({
   selected: string[];
   onChange: (c: string[]) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, []);
 
   const list = useMemo(
     () =>
@@ -356,22 +346,29 @@ function CountrySelect({
     onChange(selected.includes(name) ? selected.filter((x) => x !== name) : [...selected, name]);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.03] text-gray-500 hover:border-gray-300 transition-colors"
-      >
-        <span className="truncate">
-          {selected.length === 0 ? 'Any country' : `${selected.length} selected`}
-        </span>
-        <ChevronDownIcon
-          className={`w-3.5 h-3.5 text-gray-300 transition-transform ${open ? 'rotate-180' : ''}`}
+    <div className="flex flex-col gap-2">
+      <div className="relative">
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search countries..."
+          aria-label="Search countries"
+          className="w-full pl-3 pr-8 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141722] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-1 focus:ring-gray-300 outline-none transition-all"
         />
-      </button>
+        {q && (
+          <button
+            onClick={() => setQ('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            type="button"
+          >
+            <XMarkIcon className="w-3 h-3" />
+          </button>
+        )}
+      </div>
 
       {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
+        <div className="flex flex-wrap gap-1.5 mt-1 mb-1">
           {selected.map((cn) => (
             <span
               key={cn}
@@ -391,41 +388,26 @@ function CountrySelect({
         </div>
       )}
 
-      {open && (
-        <div className="absolute z-30 left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-2.5">
+      <div className="max-h-48 overflow-y-auto pr-1 space-y-0.5">
+        {list.length === 0 && (
+          <p className="text-[11px] text-gray-400 py-4 text-center">No results</p>
+        )}
+        {list.map((c) => (
+          <label
+            key={c.name}
+            className="flex items-center gap-2.5 py-1.5 px-2 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
+          >
             <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search countries..."
-              autoFocus
-              aria-label="Search countries"
-              className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-1 focus:ring-gray-300 outline-none"
+              type="checkbox"
+              checked={selected.includes(c.name)}
+              onChange={() => toggle(c.name)}
+              className="rounded border-gray-300 dark:border-gray-600 text-gray-900 focus:ring-gray-300 w-3.5 h-3.5"
             />
-          </div>
-          <div className="max-h-48 overflow-y-auto px-1.5 pb-1.5">
-            {list.length === 0 && (
-              <p className="text-[11px] text-gray-400 py-4 text-center">No results</p>
-            )}
-            {list.map((c) => (
-              <label
-                key={c.name}
-                className="flex items-center gap-2.5 py-1.5 px-2.5 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(c.name)}
-                  onChange={() => toggle(c.name)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-gray-900 focus:ring-gray-300 w-3.5 h-3.5"
-                />
-                <CountryFlag country={c.name} size={16} />
-                <span className="text-[12px] text-gray-600 dark:text-gray-400">{c.name}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
+            <CountryFlag country={c.name} size={16} />
+            <span className="text-[12px] text-gray-600 dark:text-gray-400">{c.name}</span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }
@@ -574,7 +556,11 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   /* ── Filter sidebar content (shared desktop + mobile) ── */
   const filterUI = (
     <>
-      <FilterSection title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}>
+      <FilterSection
+        title="Country"
+        icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}
+        defaultOpen
+      >
         <CountrySelect
           selected={filters.countries}
           onChange={(c) => setFilters((p) => ({ ...p, countries: c }))}
