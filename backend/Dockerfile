@@ -37,5 +37,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:5001/health || exit 1
 
-# Push schema to database and start the application
-CMD npx prisma db push --accept-data-loss && npm start
+# Push schema, seed universities, then start the application
+CMD npx prisma db push --accept-data-loss && node dist/scripts/seed-universities.js; npm start
