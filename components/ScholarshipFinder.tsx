@@ -696,18 +696,21 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           </div>
         )}
 
-        {/* ═══ Desktop Filter Sidebar — WHITE CARD, separated from global nav ═══ */}
+        {/* ═══ Desktop Filter Sidebar — Premium Floating Card ═══ */}
         <div className="hidden lg:flex flex-shrink-0 py-8 pl-8">
-          <aside className="w-full lg:w-72 shrink-0 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col overflow-hidden shadow-sm">
-            <div className="px-6 pt-5 pb-3">
+          <aside className="w-full lg:w-72 shrink-0 bg-white dark:bg-[#141722] rounded-[2rem] flex flex-col overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-gray-900/5 dark:ring-white/10 relative">
+            {/* Top gradient accent */}
+            <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-90"></div>
+
+            <div className="px-6 pt-7 pb-3">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                  <FunnelIcon className="w-3.5 h-3.5 text-gray-400" /> Filters
+                <span className="text-[14px] font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
+                  <FunnelIcon className="w-4 h-4 text-indigo-500" /> Filters
                 </span>
                 {hasFilters && (
                   <button
                     onClick={resetFilters}
-                    className="text-[11px] text-gray-400 hover:text-gray-600 font-medium"
+                    className="text-[11px] text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors font-medium bg-gray-50 dark:bg-white/[0.04] px-2 py-1 rounded-md"
                   >
                     Reset
                   </button>
@@ -715,10 +718,10 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto px-6">{filterUI}</div>
-            <div className="px-6 pb-6 pt-3">
+            <div className="px-6 pb-6 pt-4 mt-auto border-t border-gray-50 dark:border-gray-800/50">
               <button
                 onClick={applyFilters}
-                className="w-full mt-6 py-3.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-sm font-bold rounded-xl transition-all shadow-md active:scale-[0.98]"
+                className="w-full py-3.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 dark:from-white dark:to-gray-200 text-white dark:text-gray-900 text-[13px] font-bold tracking-wide rounded-xl transition-all shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Apply Filters
               </button>
