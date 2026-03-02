@@ -300,9 +300,9 @@ function FilterSection({
   return (
     <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-3.5 text-left"
-        type="button"
       >
         <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-700 dark:text-gray-300">
           {icon}
@@ -358,10 +358,10 @@ function CountrySelect({
         />
         {q && (
           <button
+            type="button"
             onClick={() => setQ('')}
             aria-label="Clear search"
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            type="button"
           >
             <XMarkIcon className="w-3 h-3" />
           </button>
@@ -377,10 +377,10 @@ function CountrySelect({
             >
               <CountryFlag country={cn} size={14} /> {cn}
               <button
+                type="button"
                 onClick={() => toggle(cn)}
                 className="hover:text-red-500 ml-0.5"
                 title={`Remove ${cn}`}
-                type="button"
               >
                 <XMarkIcon className="w-2.5 h-2.5" />
               </button>
@@ -559,11 +559,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   /* ── Filter sidebar content (shared desktop + mobile) ── */
   const filterUI = (
     <>
-      <FilterSection
-        title="Country"
-        icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}
-        defaultOpen
-      >
+      <FilterSection title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}>
         <CountrySelect
           selected={filters.countries}
           onChange={(c) => setFilters((p) => ({ ...p, countries: c }))}
@@ -632,6 +628,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     <header className="h-14 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-[#0f111a] border-b border-gray-200 dark:border-gray-800">
       <div className="flex items-center gap-3">
         <button
+          type="button"
           onClick={() => setMobileFilters(!mobileFilters)}
           aria-label="Toggle filters"
           className="lg:hidden p-1.5 -ml-1 text-gray-500 hover:text-gray-700"
@@ -667,6 +664,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
                 <span className="text-sm font-semibold text-gray-900 dark:text-white">Filters</span>
                 <button
+                  type="button"
                   onClick={() => setMobileFilters(false)}
                   aria-label="Close filters"
                   className="text-gray-400 hover:text-gray-600 p-1"
@@ -678,6 +676,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-2">
                 {hasFilters && (
                   <button
+                    type="button"
                     onClick={resetFilters}
                     className="flex-1 py-2.5 rounded-lg text-[13px] font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
@@ -685,8 +684,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={applyFilters}
-                  className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-lg text-[13px] hover:bg-black dark:hover:bg-gray-100 transition-colors"
+                  className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 rounded-lg text-[13px] transition-colors"
                 >
                   Apply
                 </button>
@@ -696,36 +696,40 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         )}
 
         {/* ── Desktop Filter Sidebar ── */}
-        <aside className="hidden lg:flex flex-col w-64 xl:w-72 flex-shrink-0 bg-white dark:bg-[#141722] border-r border-gray-200 dark:border-gray-800 overflow-hidden">
-          {/* Header */}
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-900 dark:text-white">
-              <FunnelIcon className="w-3.5 h-3.5 text-gray-500" />
-              Filters
-            </span>
-            {hasFilters && (
+        <div className="hidden lg:block flex-shrink-0 w-64 xl:w-72 p-4 pr-0">
+          <aside className="flex flex-col h-full bg-white dark:bg-[#141722] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-900 dark:text-white">
+                <FunnelIcon className="w-3.5 h-3.5 text-gray-500" />
+                Filters
+              </span>
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium transition-colors"
+                >
+                  Reset all
+                </button>
+              )}
+            </div>
+
+            {/* Filter sections */}
+            <div className="flex-1 overflow-y-auto px-5">{filterUI}</div>
+
+            {/* Apply button */}
+            <div className="px-5 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800">
               <button
-                onClick={resetFilters}
-                className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium transition-colors"
+                type="button"
+                onClick={applyFilters}
+                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-[13px] font-semibold rounded-lg transition-colors"
               >
-                Reset all
+                Apply Filters
               </button>
-            )}
-          </div>
-
-          {/* Filter sections */}
-          <div className="flex-1 overflow-y-auto px-5">{filterUI}</div>
-
-          {/* Apply button */}
-          <div className="px-5 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800">
-            <button
-              onClick={applyFilters}
-              className="w-full py-2.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-semibold rounded-lg transition-colors"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </aside>
+            </div>
+          </aside>
+        </div>
 
         {/* ── Main Content ── */}
         <div className="flex-1 overflow-y-auto">
@@ -733,6 +737,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             {/* Search + Sort row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-7">
               <button
+                type="button"
                 onClick={() => setMobileFilters(true)}
                 className="lg:hidden flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-white dark:hover:bg-white/5 transition-colors bg-white dark:bg-transparent"
               >
@@ -756,6 +761,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 />
                 {search && (
                   <button
+                    type="button"
                     onClick={() => setSearch('')}
                     aria-label="Clear search"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -767,6 +773,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 
               <div className="relative">
                 <button
+                  type="button"
                   onClick={() => setShowSort(!showSort)}
                   className="flex items-center gap-2 px-3 h-9 text-[13px] font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 transition-colors"
                 >
@@ -778,6 +785,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-20 min-w-[140px] py-1">
                     {SORT_OPTIONS.map((o) => (
                       <button
+                        type="button"
                         key={o.value}
                         onClick={() => {
                           setSortBy(o.value);
@@ -826,6 +834,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   </p>
                   {applied && (
                     <button
+                      type="button"
                       onClick={resetFilters}
                       className="text-[12px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium flex items-center gap-1 transition-colors"
                     >
@@ -841,6 +850,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                     </p>
                     <p className="text-[13px] text-gray-400 mb-5">Try widening your filters.</p>
                     <button
+                      type="button"
                       onClick={resetFilters}
                       className="text-[13px] text-gray-900 dark:text-white font-medium hover:underline"
                     >
@@ -979,7 +989,7 @@ function Card({
 }) {
   const days = daysUntil(s.deadline);
   return (
-    <div className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-md transition-all duration-200 flex flex-col h-full group">
+    <div className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 flex flex-col h-full group">
       {/* Top: flag + trending + bookmark */}
       <div className="flex items-center justify-between mb-3.5">
         <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-50 dark:bg-white/[0.04] text-gray-600 dark:text-gray-400 text-[11px] font-medium rounded-md border border-gray-100 dark:border-gray-800">
@@ -992,6 +1002,7 @@ function Card({
             </span>
           )}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onSave();
