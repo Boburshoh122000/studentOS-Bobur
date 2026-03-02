@@ -182,6 +182,7 @@ model User {
 model University {
   id        Int      @id @default(autoincrement())
   nameUz    String
+  nameRu    String?
   nameEn    String?
   region    String?
   type      String?  // "state" | "private" | "branch"

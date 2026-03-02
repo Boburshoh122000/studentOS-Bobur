@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { universityApi } from '../src/services/api';
 import { BuildingLibraryIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export interface UniversityValue {
   id: number | null;
@@ -11,6 +10,7 @@ export interface UniversityValue {
 interface University {
   id: number;
   nameUz: string;
+  nameRu: string | null;
   nameEn: string | null;
   region: string | null;
   type: string | null;
@@ -25,65 +25,69 @@ interface Props {
   inputClassName?: string;
 }
 
-function useDebounce<T>(val: T, ms: number): T {
-  const [debounced, setDebounced] = useState(val);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(val), ms);
-    return () => clearTimeout(t);
-  }, [val, ms]);
-  return debounced;
+function highlight(text: string, query: string): React.ReactElement {
+  if (!query || query.length < 2) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <strong className="font-bold text-blue-600 dark:text-blue-400">
+        {text.slice(idx, idx + query.length)}
+      </strong>
+      {text.slice(idx + query.length)}
+    </>
+  );
 }
 
 export default function UniversityAutocomplete({
   value,
   onChange,
-  placeholder = 'e.g. Toshkent Davlat Texnika Universiteti',
+  placeholder = 'Search by name in Uzbek, Russian or English…',
   label,
   required,
   inputClassName,
 }: Props) {
   const [query, setQuery] = useState(value.name);
-  const [results, setResults] = useState<University[]>([]);
+  const [allUniversities, setAllUniversities] = useState<University[]>([]);
+  const [filtered, setFiltered] = useState<University[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
-  const [touched, setTouched] = useState(false);
+
+  const listboxId = 'university-listbox';
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const debouncedQuery = useDebounce(query, 300);
-
-  // Fetch suggestions
+  // Load all universities once on mount
   useEffect(() => {
-    if (!touched) return;
-    if (debouncedQuery.trim().length < 2) {
-      setResults([]);
-      setIsOpen(false);
-      return;
-    }
-
-    let cancelled = false;
     setIsLoading(true);
     universityApi
-      .search(debouncedQuery)
+      .search('', 250)
       .then((res) => {
-        if (cancelled) return;
-        setResults(res.data?.universities ?? []);
-        setIsOpen(true);
-        setHighlighted(-1);
+        setAllUniversities(res.data?.universities ?? []);
       })
-      .catch(() => {
-        if (!cancelled) setResults([]);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedQuery, touched]);
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  // Client-side filter whenever query or list changes
+  useEffect(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) {
+      setFiltered([]);
+      return;
+    }
+    const results = allUniversities.filter(
+      (u) =>
+        u.nameUz.toLowerCase().includes(q) ||
+        (u.nameRu?.toLowerCase().includes(q) ?? false) ||
+        (u.nameEn?.toLowerCase().includes(q) ?? false)
+    );
+    setFiltered(results.slice(0, 50));
+  }, [query, allUniversities]);
 
   // Close on outside click
   useEffect(() => {
@@ -96,33 +100,6 @@ export default function UniversityAutocomplete({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Keyboard navigation
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isOpen) return;
-      const total = results.length + (query.trim().length >= 2 ? 1 : 0); // +1 for custom entry
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setHighlighted((h) => Math.min(h + 1, total - 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setHighlighted((h) => Math.max(h - 1, -1));
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (highlighted === results.length) {
-          // Custom entry
-          selectCustom();
-        } else if (highlighted >= 0 && results[highlighted]) {
-          selectItem(results[highlighted]);
-        }
-      } else if (e.key === 'Escape') {
-        setIsOpen(false);
-      }
-    },
-    [isOpen, results, highlighted, query]
-  );
-
   // Scroll highlighted item into view
   useEffect(() => {
     if (!listRef.current || highlighted < 0) return;
@@ -131,11 +108,11 @@ export default function UniversityAutocomplete({
   }, [highlighted]);
 
   const selectItem = (u: University) => {
-    const name = u.nameEn || u.nameUz;
+    const name = u.nameUz;
     setQuery(name);
     onChange({ id: u.id, name });
     setIsOpen(false);
-    setResults([]);
+    setFiltered([]);
   };
 
   const selectCustom = () => {
@@ -143,24 +120,56 @@ export default function UniversityAutocomplete({
     setQuery(name);
     onChange({ id: null, name });
     setIsOpen(false);
-    setResults([]);
+    setFiltered([]);
   };
 
   const clear = () => {
     setQuery('');
     onChange({ id: null, name: '' });
-    setResults([]);
+    setFiltered([]);
     setIsOpen(false);
-    setTouched(false);
     inputRef.current?.focus();
   };
 
-  const isSelected = value.id !== null || (value.name !== '' && !touched);
+  const showCustomOption = query.trim().length >= 2;
+  const totalOptions = filtered.length + (showCustomOption ? 1 : 0);
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen) {
+        if (e.key === 'ArrowDown' && query.trim().length >= 2) {
+          setIsOpen(true);
+          setHighlighted(0);
+        }
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setHighlighted((h) => Math.min(h + 1, totalOptions - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setHighlighted((h) => Math.max(h - 1, -1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlighted === filtered.length) {
+          selectCustom();
+        } else if (highlighted >= 0 && filtered[highlighted]) {
+          selectItem(filtered[highlighted]);
+        }
+      } else if (e.key === 'Escape') {
+        setIsOpen(false);
+        setHighlighted(-1);
+      }
+    },
+    [isOpen, filtered, highlighted, query, totalOptions]
+  );
+
+  const isMatched = value.id !== null;
 
   return (
     <div ref={containerRef} className="relative">
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
           {label}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -174,27 +183,36 @@ export default function UniversityAutocomplete({
           type="text"
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            setTouched(true);
-            if (e.target.value === '') onChange({ id: null, name: '' });
+            const v = e.target.value;
+            setQuery(v);
+            setHighlighted(-1);
+            if (v.trim().length >= 2) {
+              setIsOpen(true);
+            } else {
+              setIsOpen(false);
+            }
+            if (v === '') onChange({ id: null, name: '' });
           }}
           onFocus={() => {
             if (query.trim().length >= 2) setIsOpen(true);
           }}
           onKeyDown={onKeyDown}
-          placeholder={placeholder}
+          placeholder={isLoading ? 'Loading universities…' : placeholder}
+          disabled={isLoading}
+          role="combobox"
           autoComplete="off"
           aria-label={label || 'University or school'}
-          aria-expanded={isOpen}
+          aria-expanded={isOpen ? 'true' : 'false'}
+          aria-controls={listboxId}
           aria-haspopup="listbox"
           aria-autocomplete="list"
           className={
             inputClassName ??
-            'w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all'
+            'w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all disabled:opacity-50'
           }
         />
 
-        {/* Right-side indicator */}
+        {/* Right indicator */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {isLoading && (
             <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -204,46 +222,61 @@ export default function UniversityAutocomplete({
               type="button"
               onClick={clear}
               aria-label="Clear university"
-              className="text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <XMarkIcon className="w-3.5 h-3.5" />
             </button>
           )}
           {!isLoading && !query && (
             <ChevronDownIcon
-              className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
             />
           )}
         </div>
       </div>
 
-      {/* Selected badge */}
-      {isSelected && value.id !== null && (
-        <p className="mt-1 text-[11px] text-blue-600 font-medium">✓ Matched from database</p>
+      {/* Match badge */}
+      {isMatched && (
+        <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+          ✓ Verified university
+        </p>
       )}
 
       {/* Dropdown */}
       {isOpen && (
         <ul
           ref={listRef}
+          id={listboxId}
           role="listbox"
           aria-label="University suggestions"
-          className="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-72 overflow-y-auto"
+          className="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-[300px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150"
         >
-          {results.length === 0 && !isLoading && (
-            <li className="px-4 py-3 text-sm text-slate-400 text-center select-none">
-              No results for &ldquo;{query}&rdquo;
+          {/* No results */}
+          {filtered.length === 0 && !isLoading && (
+            <li
+              role="option"
+              aria-selected="false"
+              aria-disabled="true"
+              className="px-4 py-3 text-sm text-slate-400 text-center select-none"
+            >
+              Natija topilmadi / No results found
             </li>
           )}
 
-          {results.map((u, i) => {
-            const displayName = u.nameEn || u.nameUz;
+          {/* University items */}
+          {filtered.map((u, i) => {
             const isHighlighted = highlighted === i;
+            const q = query.trim();
+            // Determine which name to show as secondary match context
+            const hasRuMatch = u.nameRu?.toLowerCase().includes(q.toLowerCase());
+            const hasEnMatch = u.nameEn?.toLowerCase().includes(q.toLowerCase());
+            const matchedAlt = hasRuMatch ? u.nameRu : hasEnMatch ? u.nameEn : null;
+
             return (
               <li
                 key={u.id}
                 role="option"
-                aria-selected={isHighlighted}
+                aria-selected={isHighlighted ? 'true' : 'false'}
                 data-option
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -252,44 +285,51 @@ export default function UniversityAutocomplete({
                 onMouseEnter={() => setHighlighted(i)}
                 className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
                   isHighlighted
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
+                    ? 'bg-blue-50 dark:bg-blue-900/25'
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
-                <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                <BuildingLibraryIcon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white leading-tight truncate">
-                    {displayName}
+                  {/* Primary: Uzbek name */}
+                  <p className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
+                    {highlight(u.nameUz, q)}
                   </p>
-                  {u.nameEn && u.nameUz !== displayName && (
-                    <p className="text-[11px] text-slate-400 truncate">{u.nameUz}</p>
+                  {/* Secondary: matched translation */}
+                  {matchedAlt && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug mt-0.5 truncate">
+                      {highlight(matchedAlt, q)}
+                    </p>
                   )}
-                  {u.region && <p className="text-[11px] text-slate-400">{u.region}</p>}
+                  {/* Region */}
+                  {u.region && <p className="text-[11px] text-slate-400 mt-0.5">{u.region}</p>}
                 </div>
               </li>
             );
           })}
 
-          {/* Custom entry */}
-          {query.trim().length >= 2 && (
+          {/* Custom entry option */}
+          {showCustomOption && (
             <li
               role="option"
-              aria-selected={highlighted === results.length}
+              aria-selected={highlighted === filtered.length ? 'true' : 'false'}
               data-option
               onMouseDown={(e) => {
                 e.preventDefault();
                 selectCustom();
               }}
-              onMouseEnter={() => setHighlighted(results.length)}
-              className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-t border-slate-100 dark:border-slate-700 transition-colors ${
-                highlighted === results.length
-                  ? 'bg-blue-50 dark:bg-blue-900/20'
+              onMouseEnter={() => setHighlighted(filtered.length)}
+              className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-t border-slate-100 dark:border-slate-700/60 transition-colors ${
+                highlighted === filtered.length
+                  ? 'bg-blue-50 dark:bg-blue-900/25'
                   : 'hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
             >
-              <span className="text-blue-500 text-lg leading-none">+</span>
-              <span className="text-sm text-slate-700 dark:text-slate-300">
-                Use &ldquo;<span className="font-semibold">{query.trim()}</span>&rdquo;
+              <span className="text-blue-500 text-base font-bold leading-none shrink-0">+</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300">
+                Boshqa: &ldquo;
+                <span className="font-semibold text-slate-800 dark:text-white">{query.trim()}</span>
+                &rdquo;
               </span>
             </li>
           )}

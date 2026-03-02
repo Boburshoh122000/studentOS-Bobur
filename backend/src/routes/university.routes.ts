@@ -6,18 +6,19 @@ import { UNIVERSITIES } from '../data/universities.js';
 
 const router = Router();
 
-/* ─── Public: search universities ────────────────────────────────────────── */
+/* ─── Public: get all or search universities ─────────────────────────────── */
 
 router.get('/', async (req, res, next) => {
   try {
     const search = (req.query.search as string | undefined)?.trim() ?? '';
-    const limit = Math.min(parseInt((req.query.limit as string) || '20', 10), 50);
+    const limit = Math.min(parseInt((req.query.limit as string) || '250', 10), 250);
 
     const where =
       search.length >= 2
         ? {
             OR: [
               { nameUz: { contains: search, mode: 'insensitive' as const } },
+              { nameRu: { contains: search, mode: 'insensitive' as const } },
               { nameEn: { contains: search, mode: 'insensitive' as const } },
             ],
           }
@@ -27,7 +28,7 @@ router.get('/', async (req, res, next) => {
       where,
       orderBy: { nameUz: 'asc' },
       take: limit,
-      select: { id: true, nameUz: true, nameEn: true, region: true, type: true },
+      select: { id: true, nameUz: true, nameRu: true, nameEn: true, region: true, type: true },
     });
 
     res.json({ universities });
@@ -41,7 +42,7 @@ router.get('/', async (req, res, next) => {
 router.post('/sync', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
     let created = 0;
-    let skipped = 0;
+    let updated = 0;
 
     for (const u of UNIVERSITIES) {
       const exists = await prisma.university.findFirst({
@@ -49,13 +50,26 @@ router.post('/sync', authenticate, requireAdmin, async (req: AuthenticatedReques
       });
 
       if (exists) {
-        skipped++;
+        // Backfill Russian/English translations if missing
+        if (!exists.nameRu || !exists.nameEn) {
+          await prisma.university.update({
+            where: { id: exists.id },
+            data: {
+              nameRu: u.nameRu ?? exists.nameRu,
+              nameEn: u.nameEn ?? exists.nameEn,
+              region: u.region ?? exists.region,
+              type: u.type ?? exists.type,
+            },
+          });
+          updated++;
+        }
         continue;
       }
 
       await prisma.university.create({
         data: {
           nameUz: u.nameUz,
+          nameRu: u.nameRu ?? null,
           nameEn: u.nameEn ?? null,
           region: u.region ?? null,
           type: u.type ?? null,
@@ -65,7 +79,7 @@ router.post('/sync', authenticate, requireAdmin, async (req: AuthenticatedReques
     }
 
     const total = await prisma.university.count();
-    res.json({ message: 'Sync complete', created, skipped, total });
+    res.json({ message: 'Sync complete', created, updated, total });
   } catch (error) {
     next(error);
   }

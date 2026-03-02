@@ -638,11 +638,12 @@ export const employerApi = {
 
 // Universities API
 export const universityApi = {
-  search: (query: string, limit = 20) =>
+  search: (query: string, limit = 250) =>
     api.get<{
       universities: {
         id: number;
         nameUz: string;
+        nameRu: string | null;
         nameEn: string | null;
         region: string | null;
         type: string | null;
