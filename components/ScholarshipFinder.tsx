@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -229,7 +229,7 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  CountryFlag — flagcdn.com SVG (works everywhere including Windows)       */
+/*  CountryFlag                                                              */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function CountryFlag({ country, size = 20 }: { country: string; size?: number }) {
@@ -282,7 +282,7 @@ function isExpired(d: string | null): boolean {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  FilterSection — collapsed by default, no borders, text-driven           */
+/*  FilterSection                                                            */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function FilterSection({
@@ -298,22 +298,22 @@ function FilterSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="py-3">
+    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between text-left group"
+        className="w-full flex items-center justify-between py-3.5 text-left"
         type="button"
       >
-        <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+        <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-700 dark:text-gray-300">
           {icon}
           {title}
         </span>
         <ChevronDownIcon
-          className={`w-3.5 h-3.5 text-gray-300 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-out ${open ? 'max-h-[500px] opacity-100 mt-3' : 'max-h-0 opacity-0'}`}
+        className={`overflow-hidden transition-all duration-200 ease-out ${open ? 'max-h-[500px] opacity-100 pb-4' : 'max-h-0 opacity-0'}`}
       >
         {children}
       </div>
@@ -354,7 +354,7 @@ function CountrySelect({
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search countries..."
           aria-label="Search countries"
-          className="w-full pl-3 pr-8 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141722] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:ring-1 focus:ring-gray-300 outline-none transition-all"
+          className="w-full pl-3 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/[0.04] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
         />
         {q && (
           <button
@@ -369,11 +369,11 @@ function CountrySelect({
       </div>
 
       {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-1 mb-1">
+        <div className="flex flex-wrap gap-1.5 mb-1">
           {selected.map((cn) => (
             <span
               key={cn}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-gray-400 text-[10px] font-medium rounded-md"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-gray-400 text-[10px] font-medium rounded"
             >
               <CountryFlag country={cn} size={14} /> {cn}
               <button
@@ -389,14 +389,14 @@ function CountrySelect({
         </div>
       )}
 
-      <div className="max-h-48 overflow-y-auto pr-1 space-y-0.5">
+      <div className="max-h-48 overflow-y-auto space-y-0.5">
         {list.length === 0 && (
           <p className="text-[11px] text-gray-400 py-4 text-center">No results</p>
         )}
         {list.map((c) => (
           <label
             key={c.name}
-            className="flex items-center gap-2.5 py-1.5 px-2 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
+            className="flex items-center gap-2.5 py-1.5 px-1.5 cursor-pointer rounded-md hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
           >
             <input
               type="checkbox"
@@ -488,12 +488,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
     filters.studyLevel !== '' ||
     filters.fields.length > 0 ||
     filters.scholarshipTypes.length > 0;
+
   const resetFilters = () => {
     setFilters({ ...DEFAULT_FILTERS });
     setSearch('');
     setApplied(false);
     setSortBy('relevance');
   };
+
   const applyFilters = () => {
     setApplied(true);
     setMobileFilters(false);
@@ -576,7 +578,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           value={filters.studyLevel}
           onChange={(e) => setFilters((p) => ({ ...p, studyLevel: e.target.value }))}
           aria-label="Study Level"
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.03] px-3 py-2 text-[13px] text-gray-600 dark:text-gray-400 outline-none focus:ring-1 focus:ring-gray-300"
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/[0.03] px-3 py-2 text-[13px] text-gray-600 dark:text-gray-400 outline-none focus:ring-1 focus:ring-gray-300"
         >
           {STUDY_LEVELS.map((l) => (
             <option key={l.value} value={l.value}>
@@ -599,7 +601,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 onChange={() => toggleArr('fields', f)}
                 className="rounded border-gray-300 text-gray-800 focus:ring-gray-300 w-3.5 h-3.5"
               />
-              <span className="text-[12px] text-gray-500">{f}</span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">{f}</span>
             </label>
           ))}
         </div>
@@ -618,7 +620,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 onChange={() => toggleArr('scholarshipTypes', t)}
                 className="rounded border-gray-300 text-gray-800 focus:ring-gray-300 w-3.5 h-3.5"
               />
-              <span className="text-[12px] text-gray-500">{t}</span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">{t}</span>
             </label>
           ))}
         </div>
@@ -627,20 +629,19 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   );
 
   const headerContent = (
-    <header className="h-14 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-[#0f111a] border-b border-gray-200/60 dark:border-gray-800/40">
+    <header className="h-14 px-6 flex items-center justify-between flex-shrink-0 bg-white dark:bg-[#0f111a] border-b border-gray-200 dark:border-gray-800">
       <div className="flex items-center gap-3">
         <button
           onClick={() => setMobileFilters(!mobileFilters)}
           aria-label="Toggle filters"
-          className="lg:hidden p-1.5 -ml-1 text-gray-400 hover:text-gray-600"
-          title="Toggle filters"
+          className="lg:hidden p-1.5 -ml-1 text-gray-500 hover:text-gray-700"
         >
           <Bars3Icon className="w-5 h-5" />
         </button>
-        <div className="size-8 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center">
-          <TrophyIcon className="w-4 h-4 text-white dark:text-gray-900" />
+        <div className="size-7 rounded-lg bg-gray-900 dark:bg-white flex items-center justify-center">
+          <TrophyIcon className="w-3.5 h-3.5 text-white dark:text-gray-900" />
         </div>
-        <span className="font-semibold text-[15px] text-gray-900 dark:text-white tracking-tight">
+        <span className="font-semibold text-[15px] text-gray-900 dark:text-white">
           Scholarship Finder
         </span>
       </div>
@@ -657,40 +658,35 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      {/* Page wrapper — explicit subtle background to create contrast */}
-      <div className="flex-1 flex overflow-hidden h-full relative bg-slate-50 dark:bg-background-dark">
+      <div className="flex-1 flex overflow-hidden h-full bg-gray-50 dark:bg-background-dark">
         {/* Mobile filters overlay */}
         {mobileFilters && (
           <div className="fixed inset-0 z-40 lg:hidden">
-            <div
-              className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
-              onClick={() => setMobileFilters(false)}
-            />
-            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#141722] shadow-2xl flex flex-col z-50">
-              <div className="px-6 py-5 flex items-center justify-between border-b border-gray-100">
-                <span className="text-sm font-semibold text-gray-900">Filters</span>
+            <div className="absolute inset-0 bg-black/30" onClick={() => setMobileFilters(false)} />
+            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#141722] flex flex-col z-50">
+              <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">Filters</span>
                 <button
                   onClick={() => setMobileFilters(false)}
                   aria-label="Close filters"
-                  className="text-gray-400 hover:text-gray-600"
-                  title="Close"
+                  className="text-gray-400 hover:text-gray-600 p-1"
                 >
-                  <XMarkIcon className="w-5 h-5" />
+                  <XMarkIcon className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto px-6 py-2">{filterUI}</div>
-              <div className="p-5 border-t border-gray-100 flex gap-2">
+              <div className="flex-1 overflow-y-auto px-5">{filterUI}</div>
+              <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-2">
                 {hasFilters && (
                   <button
                     onClick={resetFilters}
-                    className="flex-1 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 border border-gray-200"
+                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     Reset
                   </button>
                 )}
                 <button
                   onClick={applyFilters}
-                  className="flex-1 bg-gray-900 text-white font-semibold py-2.5 rounded-xl text-[13px] hover:bg-black transition-colors"
+                  className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-lg text-[13px] hover:bg-black dark:hover:bg-gray-100 transition-colors"
                 >
                   Apply
                 </button>
@@ -699,51 +695,50 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           </div>
         )}
 
-        {/* ═══ Desktop Filter Sidebar — Premium Floating Card ═══ */}
-        <div className="hidden lg:flex flex-shrink-0 py-8 pl-8">
-          <aside className="w-full lg:w-72 shrink-0 bg-white dark:bg-[#141722] rounded-[2rem] flex flex-col overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-gray-900/5 dark:ring-white/10 relative">
-            {/* Top gradient accent */}
-            <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-90"></div>
-
-            <div className="px-6 pt-7 pb-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
-                  <FunnelIcon className="w-4 h-4 text-indigo-500" /> Filters
-                </span>
-                {hasFilters && (
-                  <button
-                    onClick={resetFilters}
-                    className="text-[11px] text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors font-medium bg-gray-50 dark:bg-white/[0.04] px-2 py-1 rounded-md"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto px-6">{filterUI}</div>
-            <div className="px-6 pb-6 pt-4 mt-auto border-t border-gray-50 dark:border-gray-800/50">
+        {/* ── Desktop Filter Sidebar ── */}
+        <aside className="hidden lg:flex flex-col w-64 xl:w-72 flex-shrink-0 bg-white dark:bg-[#141722] border-r border-gray-200 dark:border-gray-800 overflow-hidden">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-900 dark:text-white">
+              <FunnelIcon className="w-3.5 h-3.5 text-gray-500" />
+              Filters
+            </span>
+            {hasFilters && (
               <button
-                onClick={applyFilters}
-                className="w-full py-3.5 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 dark:from-white dark:to-gray-200 text-white dark:text-gray-900 text-[13px] font-bold tracking-wide rounded-xl transition-all shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
+                onClick={resetFilters}
+                className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium transition-colors"
               >
-                Apply Filters
+                Reset all
               </button>
-            </div>
-          </aside>
-        </div>
+            )}
+          </div>
 
-        {/* ═══ Main Content — spacious gap from sidebar ═══ */}
+          {/* Filter sections */}
+          <div className="flex-1 overflow-y-auto px-5">{filterUI}</div>
+
+          {/* Apply button */}
+          <div className="px-5 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <button
+              onClick={applyFilters}
+              className="w-full py-2.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-semibold rounded-lg transition-colors"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </aside>
+
+        {/* ── Main Content ── */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1100px] mx-auto px-6 sm:px-8 lg:px-10 py-8">
+          <div className="max-w-[1080px] mx-auto px-5 sm:px-8 py-7">
             {/* Search + Sort row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-7">
               <button
                 onClick={() => setMobileFilters(true)}
-                className="lg:hidden flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                className="lg:hidden flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-white dark:hover:bg-white/5 transition-colors bg-white dark:bg-transparent"
               >
                 <FunnelIcon className="w-3.5 h-3.5" /> Filters
                 {hasFilters && (
-                  <span className="bg-gray-900 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center ml-1">
+                  <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center ml-1">
                     {filters.countries.length +
                       (filters.studyLevel ? 1 : 0) +
                       filters.fields.length +
@@ -754,7 +749,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
 
               <div className="relative flex-1 max-w-lg w-full">
                 <input
-                  className="w-full h-10 pl-4 pr-9 text-[13px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141722] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                  className="w-full h-9 pl-4 pr-9 text-[13px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141722] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all"
                   placeholder="Search by name, university, country..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -763,8 +758,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <button
                     onClick={() => setSearch('')}
                     aria-label="Clear search"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
-                    title="Clear"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <XMarkIcon className="w-3.5 h-3.5" />
                   </button>
@@ -774,14 +768,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <div className="relative">
                 <button
                   onClick={() => setShowSort(!showSort)}
-                  className="flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-gray-500 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 transition-colors"
+                  className="flex items-center gap-2 px-3 h-9 text-[13px] font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 transition-colors"
                 >
                   <ArrowsUpDownIcon className="w-3.5 h-3.5" />
                   {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
-                  <ChevronDownIcon className="w-3 h-3 text-gray-300" />
+                  <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                 </button>
                 {showSort && (
-                  <div className="absolute right-0 top-full mt-1.5 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 min-w-[160px] py-1">
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-20 min-w-[140px] py-1">
                     {SORT_OPTIONS.map((o) => (
                       <button
                         key={o.value}
@@ -789,7 +783,11 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                           setSortBy(o.value);
                           setShowSort(false);
                         }}
-                        className={`w-full text-left px-4 py-2 text-[13px] transition-colors ${sortBy === o.value ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
+                        className={`w-full text-left px-3 py-2 text-[13px] transition-colors ${
+                          sortBy === o.value
+                            ? 'text-gray-900 dark:text-white font-semibold'
+                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'
+                        }`}
                       >
                         {o.label}
                       </button>
@@ -799,56 +797,58 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               </div>
             </div>
 
-            {/* Loading */}
+            {/* Loading skeleton */}
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-2xl p-7 animate-pulse border border-gray-100"
+                    className="bg-white dark:bg-[#141722] rounded-xl p-6 animate-pulse border border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="w-7 h-5 rounded bg-gray-100" />
-                      <div className="h-3 bg-gray-100 rounded w-16" />
+                      <div className="w-7 h-5 rounded bg-gray-100 dark:bg-gray-800" />
+                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-16" />
                     </div>
-                    <div className="h-5 bg-gray-100 rounded w-4/5 mb-3" />
-                    <div className="h-3 bg-gray-50 rounded w-2/3 mb-6" />
-                    <div className="h-9 bg-gray-50 rounded-xl w-24" />
+                    <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-4/5 mb-3" />
+                    <div className="h-3 bg-gray-50 dark:bg-gray-800/50 rounded w-2/3 mb-6" />
+                    <div className="h-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg w-24" />
                   </div>
                 ))}
               </div>
             ) : applied || search ? (
               <>
                 <div className="flex items-center justify-between mb-5">
-                  <p className="text-[13px] text-gray-400">
+                  <p className="text-[13px] text-gray-500 dark:text-gray-400">
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {display.length}
                     </span>{' '}
-                    scholarships
+                    scholarships found
                   </p>
                   {applied && (
                     <button
                       onClick={resetFilters}
-                      className="text-[12px] text-gray-400 hover:text-gray-600 font-medium flex items-center gap-1"
+                      className="text-[12px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium flex items-center gap-1 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" /> Clear
+                      <XMarkIcon className="w-3 h-3" /> Clear filters
                     </button>
                   )}
                 </div>
                 {display.length === 0 ? (
                   <div className="text-center py-20">
-                    <TrophyIcon className="w-10 h-10 text-gray-200 mx-auto mb-4" />
-                    <p className="text-[15px] font-semibold text-gray-900 mb-1">No matches</p>
+                    <TrophyIcon className="w-9 h-9 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                    <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
+                      No matches
+                    </p>
                     <p className="text-[13px] text-gray-400 mb-5">Try widening your filters.</p>
                     <button
                       onClick={resetFilters}
-                      className="text-[13px] text-gray-900 font-medium hover:underline"
+                      className="text-[13px] text-gray-900 dark:text-white font-medium hover:underline"
                     >
                       Reset filters
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {display.map((s) => (
                       <Card
                         key={s.id}
@@ -861,14 +861,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 )}
               </>
             ) : (
-              <div className="space-y-10">
+              <div className="space-y-9">
                 {trending.length > 0 && (
                   <section>
                     <SectionHead
                       icon={<FireIcon className="w-4 h-4 text-orange-400" />}
                       title="Trending Scholarships"
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {trending.map((s) => (
                         <Card
                           key={s.id}
@@ -886,7 +886,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                       icon={<ClockIcon className="w-4 h-4 text-red-400" />}
                       title="Upcoming Deadlines"
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {upcoming.map((s) => (
                         <Card
                           key={s.id}
@@ -906,7 +906,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                       title="All Scholarships"
                       count={active.length}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {active.slice(0, 12).map((s) => (
                         <Card
                           key={s.id}
@@ -920,8 +920,8 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 )}
                 {active.length === 0 && !isLoading && (
                   <div className="text-center py-20">
-                    <TrophyIcon className="w-10 h-10 text-gray-200 mx-auto mb-4" />
-                    <p className="text-[15px] font-semibold text-gray-900 mb-1">
+                    <TrophyIcon className="w-9 h-9 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                    <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
                       No scholarships yet
                     </p>
                     <p className="text-[13px] text-gray-400">
@@ -952,20 +952,18 @@ function SectionHead({
   count?: number;
 }) {
   return (
-    <div className="flex items-center gap-2 mb-5">
+    <div className="flex items-center gap-2 mb-4">
       {icon}
-      <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white tracking-tight">
-        {title}
-      </h2>
+      <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white">{title}</h2>
       {count !== undefined && (
-        <span className="text-[11px] text-gray-400 font-medium ml-1">({count})</span>
+        <span className="text-[11px] text-gray-400 font-medium">({count})</span>
       )}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Bento Card                                                               */
+/*  Card                                                                     */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 function Card({
@@ -981,15 +979,15 @@ function Card({
 }) {
   const days = daysUntil(s.deadline);
   return (
-    <div className="relative bg-white dark:bg-[#141722] rounded-[2rem] p-6 lg:p-8 transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-300 dark:border-gray-800 dark:hover:border-indigo-500/30 hover:-translate-y-1 flex flex-col h-full group">
+    <div className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-md transition-all duration-200 flex flex-col h-full group">
       {/* Top: flag + trending + bookmark */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-gray-800/50 text-gray-700 dark:text-gray-400 text-[11px] font-medium rounded-lg">
-          <CountryFlag country={s.country} size={18} /> {s.country}
+      <div className="flex items-center justify-between mb-3.5">
+        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-50 dark:bg-white/[0.04] text-gray-600 dark:text-gray-400 text-[11px] font-medium rounded-md border border-gray-100 dark:border-gray-800">
+          <CountryFlag country={s.country} size={16} /> {s.country}
         </span>
         <div className="flex items-center gap-2">
           {s.isTrending && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50/80 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-500/20 rounded-full text-[10px] font-bold tracking-wide">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-500/20 rounded-md text-[10px] font-semibold">
               <FireIcon className="w-3 h-3" /> Trending
             </span>
           )}
@@ -998,11 +996,11 @@ function Card({
               e.stopPropagation();
               onSave();
             }}
-            className="text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            title={isSaved ? 'Unsave' : 'Save'}
+            aria-label={isSaved ? 'Unsave scholarship' : 'Save scholarship'}
+            className="text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors"
           >
             {isSaved ? (
-              <BookmarkIcon className="w-4 h-4 text-gray-900 dark:text-white" />
+              <BookmarkIcon className="w-4 h-4 text-gray-800 dark:text-white" />
             ) : (
               <BookmarkOutlineIcon className="w-4 h-4" />
             )}
@@ -1011,30 +1009,32 @@ function Card({
       </div>
 
       {/* Title + Institution */}
-      <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 leading-snug line-clamp-2 tracking-tight">
+      <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1 leading-snug line-clamp-2">
         {s.title}
       </h3>
-      <p className="text-[13px] text-gray-500 mb-3">{titleCase(s.institution)}</p>
+      <p className="text-[12px] text-gray-500 dark:text-gray-400 mb-2.5">
+        {titleCase(s.institution)}
+      </p>
 
       {/* Description */}
       <p className="text-[12px] text-gray-400 leading-relaxed mb-4 line-clamp-2 min-h-[2.5em]">
         {s.description && s.description.length > 3 ? s.description : 'No description available.'}
       </p>
 
-      {/* Tags: amount + deadline */}
-      <div className="flex items-center gap-2 flex-wrap mb-5">
+      {/* Tags */}
+      <div className="flex items-center gap-2 flex-wrap mb-4">
         {s.awardAmount && (
-          <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-500/20 text-[11px] font-bold rounded-lg">
+          <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 text-[11px] font-semibold rounded-md">
             {s.awardAmount}
           </span>
         )}
         {(showDeadline || (days !== null && days > 0 && days <= 30)) && s.deadline && (
           <span
-            className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
+            className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${
               days !== null && days <= 7
-                ? 'text-red-500 bg-red-50/80 border-red-100/80'
+                ? 'text-red-500 bg-red-50 border-red-100'
                 : days !== null && days <= 30
-                  ? 'text-amber-600 bg-amber-50/80 border-amber-100/80'
+                  ? 'text-amber-600 bg-amber-50 border-amber-100'
                   : 'text-gray-500 bg-gray-50 border-gray-100'
             }`}
           >
@@ -1048,8 +1048,8 @@ function Card({
       </div>
 
       {/* Footer */}
-      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-800/30 flex items-center justify-between">
-        <span className="text-[10px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded capitalize">
+      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <span className="text-[10px] font-medium text-gray-400 bg-gray-50 dark:bg-white/[0.04] px-2 py-0.5 rounded capitalize">
           {s.studyLevel?.toLowerCase().replace('_', ' ')}
         </span>
         {s.applicationUrl ? (
@@ -1058,12 +1058,12 @@ function Card({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-gray-500 border border-gray-200 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-900 hover:text-white hover:border-transparent transition-all duration-300"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-900 hover:text-white hover:border-transparent dark:hover:bg-white dark:hover:text-gray-900 transition-all duration-200"
           >
-            View Details <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            View <ArrowTopRightOnSquareIcon className="w-3 h-3" />
           </a>
         ) : (
-          <span className="text-[11px] text-gray-300">No link</span>
+          <span className="text-[11px] text-gray-300 dark:text-gray-600">No link</span>
         )}
       </div>
     </div>
