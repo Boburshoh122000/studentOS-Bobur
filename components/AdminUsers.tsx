@@ -1,25 +1,17 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Screen, NavigationProps } from '../types';
+import { NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
-import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import {
-  AcademicCapIcon,
   ArrowDownTrayIcon,
-  BellIcon,
-  BriefcaseIcon,
   BuildingOffice2Icon,
   CheckCircleIcon,
-  CreditCardIcon,
-  DocumentTextIcon,
   EllipsisVerticalIcon,
   ExclamationTriangleIcon,
   EyeIcon,
   MagnifyingGlassIcon,
   NoSymbolIcon,
   ShieldCheckIcon,
-  Squares2X2Icon,
   TrashIcon,
   UserIcon,
   UserMinusIcon,
@@ -137,9 +129,6 @@ const exportToCSV = (users: User[]) => {
 };
 
 export default function AdminUsers({ navigateTo }: NavigationProps) {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<UsersPagination>({
     page: 1,
@@ -155,21 +144,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showUserDetails, setShowUserDetails] = useState<User | null>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const actionMenuRef = useRef<HTMLDivElement>(null);
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      toast.error('Logout failed. Please try again.');
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -329,540 +304,369 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
   );
 
   return (
-    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      {/* Sidebar */}
-      <aside
-        className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}
-      >
-        <button
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
-          aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-        >
-          <span className="material-symbols-outlined text-[14px]">
-            {isSidebarExpanded ? 'chevron_left' : 'chevron_right'}
-          </span>
-        </button>
-
-        <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
-          <div className="flex flex-col gap-6">
-            <div
-              className={`flex items-center gap-3 px-2 cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
-              onClick={() => navigateTo(Screen.LANDING)}
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <AcademicCapIcon className="w-6 h-6" />
-              </div>
-              <div
-                className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
-              >
-                <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white whitespace-nowrap">
-                  StudentOS
-                </h1>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                  Admin Console
-                </p>
-              </div>
+    <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421]">
+      <div className="mx-auto w-full max-w-7xl px-8 py-8">
+        {/* Header */}
+        <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              User Management
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Manage all registered accounts, roles, and access status.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search */}
+            <div className="relative min-w-[300px]">
+              <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+              <input
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-slate-900 dark:text-white"
+                placeholder="Search users by name, email..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search users"
+              />
             </div>
-            <nav className="flex flex-col gap-1">
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Dashboard' : ''}
+            {/* Filters */}
+            <div className="flex gap-2">
+              <select
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-3 pr-8 text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                aria-label="Filter by role"
               >
-                <Squares2X2Icon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Employers' : ''}
+                <option value="">All Roles</option>
+                <option value="STUDENT">Student</option>
+                <option value="EMPLOYER">Employer</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+              <select
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-3 pr-8 text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                aria-label="Filter by status"
               >
-                <BriefcaseIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Employers</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_PRICING)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Pricing' : ''}
-              >
-                <CreditCardIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Pricing</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_USERS)}
-                className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Users' : ''}
-              >
-                <UsersIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-semibold whitespace-nowrap">Users</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Scholarships' : ''}
-              >
-                <AcademicCapIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Blog Management' : ''}
-              >
-                <DocumentTextIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_ROLES)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
-              >
-                <ShieldCheckIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Notifications' : ''}
-              >
-                <BellIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Team Management' : ''}
-              >
-                <UsersIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
-                )}
-              </button>
-            </nav>
-          </div>
-          <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            {/* Export */}
             <button
-              onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm"
+              onClick={() => exportToCSV(filteredUsers)}
             >
-              <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
-                AD
-              </div>
-              <div
-                className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
-              >
-                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                  Admin
-                </p>
-                <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
-                  Profile Settings
-                </p>
-              </div>
-            </button>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'} ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={!isSidebarExpanded ? 'Logout' : ''}
-            >
-              <span className="material-symbols-outlined text-lg">
-                {isLoggingOut ? 'hourglass_empty' : 'logout'}
-              </span>
-              {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
+              <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
+              Export Users
             </button>
           </div>
-        </div>
-      </aside>
+        </header>
 
-      {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421]">
-        <div className="mx-auto w-full max-w-7xl px-8 py-8">
-          {/* Header */}
-          <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                User Management
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Manage all registered accounts, roles, and access status.
+        {/* Stats Cards */}
+        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Users</p>
+              <UsersIcon className="w-5 h-5 text-primary/80" />
+            </div>
+            <div className="flex items-end gap-3">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {isLoading ? '...' : stats.total.toLocaleString()}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search */}
-              <div className="relative min-w-[300px]">
-                <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <input
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-slate-900 dark:text-white"
-                  placeholder="Search users by name, email..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search users"
-                />
-              </div>
-              {/* Filters */}
-              <div className="flex gap-2">
-                <select
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-3 pr-8 text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  aria-label="Filter by role"
-                >
-                  <option value="">All Roles</option>
-                  <option value="STUDENT">Student</option>
-                  <option value="EMPLOYER">Employer</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-                <select
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] py-2 pl-3 pr-8 text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  aria-label="Filter by status"
-                >
-                  <option value="">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              {/* Export */}
-              <button
-                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm"
-                onClick={() => exportToCSV(filteredUsers)}
-              >
-                <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
-                Export Users
-              </button>
+          </div>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                Active Students
+              </p>
+              <UserIcon className="w-5 h-5 text-emerald-500/80" />
             </div>
-          </header>
+            <div className="flex items-end gap-3">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {isLoading ? '...' : stats.activeStudents.toLocaleString()}
+              </p>
+              {!isLoading && stats.total > 0 && (
+                <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">
+                  {Math.round((stats.activeStudents / users.length) * 100)}% of page
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Admins</p>
+              <ShieldCheckIcon className="w-5 h-5 text-orange-500/80" />
+            </div>
+            <div className="flex items-end gap-3">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {isLoading ? '...' : stats.educators.toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Employers</p>
+              <BuildingOffice2Icon className="w-5 h-5 text-purple-500/80" />
+            </div>
+            <div className="flex items-end gap-3">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {isLoading ? '...' : stats.employers.toLocaleString()}
+              </p>
+              {!isLoading && stats.employers > 0 && (
+                <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">
+                  {stats.activeEmployers} Active
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
 
-          {/* Stats Cards */}
-          <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Total Users
-                </p>
-                <UsersIcon className="w-5 h-5 text-primary/80" />
-              </div>
-              <div className="flex items-end gap-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {isLoading ? '...' : stats.total.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Active Students
-                </p>
-                <UserIcon className="w-5 h-5 text-emerald-500/80" />
-              </div>
-              <div className="flex items-end gap-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {isLoading ? '...' : stats.activeStudents.toLocaleString()}
-                </p>
-                {!isLoading && stats.total > 0 && (
-                  <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">
-                    {Math.round((stats.activeStudents / users.length) * 100)}% of page
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Admins</p>
-                <ShieldCheckIcon className="w-5 h-5 text-orange-500/80" />
-              </div>
-              <div className="flex items-end gap-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {isLoading ? '...' : stats.educators.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Employers</p>
-                <BuildingOffice2Icon className="w-5 h-5 text-purple-500/80" />
-              </div>
-              <div className="flex items-end gap-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {isLoading ? '...' : stats.employers.toLocaleString()}
-                </p>
-                {!isLoading && stats.employers > 0 && (
-                  <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">
-                    {stats.activeEmployers} Active
-                  </span>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Users Table */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="border-b border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-white/5">
+        {/* Users Table */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="border-b border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-white/5">
+                <tr>
+                  <th className="w-12 px-6 py-4">
+                    <input
+                      className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
+                      type="checkbox"
+                      checked={
+                        filteredUsers.length > 0 && selectedUsers.size === filteredUsers.length
+                      }
+                      onChange={handleSelectAll}
+                      aria-label="Select all users"
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Avatar & Name
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Email Address
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Registration
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                {isLoading ? (
+                  <>
+                    <SkeletonRow />
+                    <SkeletonRow />
+                    <SkeletonRow />
+                    <SkeletonRow />
+                    <SkeletonRow />
+                  </>
+                ) : filteredUsers.length === 0 ? (
                   <tr>
-                    <th className="w-12 px-6 py-4">
-                      <input
-                        className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
-                        type="checkbox"
-                        checked={
-                          filteredUsers.length > 0 && selectedUsers.size === filteredUsers.length
-                        }
-                        onChange={handleSelectAll}
-                        aria-label="Select all users"
-                      />
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Avatar & Name
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Email Address
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Role
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Registration
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
-                      Actions
-                    </th>
+                    <td colSpan={7} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <UserMinusIcon className="w-9 h-9 text-slate-300 dark:text-slate-600" />
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No users found</p>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {isLoading ? (
-                    <>
-                      <SkeletonRow />
-                      <SkeletonRow />
-                      <SkeletonRow />
-                      <SkeletonRow />
-                      <SkeletonRow />
-                    </>
-                  ) : filteredUsers.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <UserMinusIcon className="w-9 h-9 text-slate-300 dark:text-slate-600" />
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            No users found
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredUsers.map((user) => {
-                      const name = getUserName(user);
-                      const status = getUserStatus(user);
-                      const statusBadge = getStatusBadge(status);
-                      const avatarUrl =
-                        user.studentProfile?.avatarUrl || user.employerProfile?.logoUrl;
+                ) : (
+                  filteredUsers.map((user) => {
+                    const name = getUserName(user);
+                    const status = getUserStatus(user);
+                    const statusBadge = getStatusBadge(status);
+                    const avatarUrl =
+                      user.studentProfile?.avatarUrl || user.employerProfile?.logoUrl;
 
-                      return (
-                        <tr
-                          key={user.id}
-                          className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                        >
-                          <td className="px-6 py-4">
-                            <input
-                              className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
-                              type="checkbox"
-                              checked={selectedUsers.has(user.id)}
-                              onChange={() => handleSelectUser(user.id)}
-                              aria-label={`Select ${name}`}
-                            />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              {avatarUrl ? (
-                                <div
-                                  className="h-9 w-9 flex-shrink-0 rounded-full bg-cover bg-center border border-slate-200 dark:border-slate-700"
-                                  style={{ backgroundImage: `url('${avatarUrl}')` }}
-                                />
-                              ) : (
-                                <div className="h-9 w-9 flex-shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                                  {getInitials(name)}
-                                </div>
-                              )}
-                              <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
-                                {name}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
-                              {user.email}
-                            </p>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`}
-                            >
-                              {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                            {formatDate(user.createdAt)}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusBadge.className}`}
-                            >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${statusBadge.dotClass}`}
-                              ></span>
-                              {statusBadge.label}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right relative">
-                            <button
-                              className="rounded-lg p-1.5 text-slate-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
-                              onClick={() =>
-                                setActionMenuOpen(actionMenuOpen === user.id ? null : user.id)
-                              }
-                              aria-label="More actions"
-                            >
-                              <EllipsisVerticalIcon className="w-5 h-5" />
-                            </button>
-                            {/* Action dropdown */}
-                            {actionMenuOpen === user.id && (
+                    return (
+                      <tr
+                        key={user.id}
+                        className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <input
+                            className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
+                            type="checkbox"
+                            checked={selectedUsers.has(user.id)}
+                            onChange={() => handleSelectUser(user.id)}
+                            aria-label={`Select ${name}`}
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {avatarUrl ? (
                               <div
-                                ref={actionMenuRef}
-                                className="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-lg z-50"
-                              >
-                                <button
-                                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                  onClick={() => {
-                                    setShowUserDetails(user);
-                                    setActionMenuOpen(null);
-                                  }}
-                                >
-                                  <EyeIcon className="w-[18px] h-[18px]" />
-                                  View Details
-                                </button>
-                                {user.isActive ? (
-                                  <button
-                                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                    onClick={() => handleBanUser(user.id)}
-                                  >
-                                    <NoSymbolIcon className="w-[18px] h-[18px]" />
-                                    Ban User
-                                  </button>
-                                ) : (
-                                  <button
-                                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                    onClick={() => handleActivateUser(user.id)}
-                                  >
-                                    <CheckCircleIcon className="w-[18px] h-[18px]" />
-                                    Activate User
-                                  </button>
-                                )}
-                                <button
-                                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                  onClick={() => {
-                                    setShowDeleteConfirm(user.id);
-                                    setActionMenuOpen(null);
-                                  }}
-                                >
-                                  <TrashIcon className="w-[18px] h-[18px]" />
-                                  Delete User
-                                </button>
+                                className="h-9 w-9 flex-shrink-0 rounded-full bg-cover bg-center border border-slate-200 dark:border-slate-700"
+                                style={{ backgroundImage: `url('${avatarUrl}')` }}
+                              />
+                            ) : (
+                              <div className="h-9 w-9 flex-shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                                {getInitials(name)}
                               </div>
                             )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-6 py-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Showing{' '}
-                <span className="font-semibold">
-                  {filteredUsers.length > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0}-
-                  {Math.min(pagination.page * pagination.limit, pagination.total)}
-                </span>{' '}
-                of <span className="font-semibold">{pagination.total.toLocaleString()}</span> users
-              </p>
-              <div className="flex gap-2">
-                <button
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-slate-900 dark:text-white disabled:opacity-50"
-                  disabled={pagination.page <= 1}
-                  onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
-                >
-                  Previous
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                    let pageNum: number;
-                    if (pagination.pages <= 5) {
-                      pageNum = i + 1;
-                    } else if (pagination.page <= 3) {
-                      pageNum = i + 1;
-                    } else if (pagination.page >= pagination.pages - 2) {
-                      pageNum = pagination.pages - 4 + i;
-                    } else {
-                      pageNum = pagination.page - 2 + i;
-                    }
-                    return (
-                      <button
-                        key={pageNum}
-                        className={`h-8 w-8 rounded-lg text-xs font-bold ${pagination.page === pageNum ? 'bg-primary text-white' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-white/5 dark:text-slate-400'}`}
-                        onClick={() => setPagination((p) => ({ ...p, page: pageNum }))}
-                      >
-                        {pageNum}
-                      </button>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
+                              {name}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`}
+                          >
+                            {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                          {formatDate(user.createdAt)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusBadge.className}`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${statusBadge.dotClass}`}
+                            ></span>
+                            {statusBadge.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right relative">
+                          <button
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors"
+                            onClick={() =>
+                              setActionMenuOpen(actionMenuOpen === user.id ? null : user.id)
+                            }
+                            aria-label="More actions"
+                          >
+                            <EllipsisVerticalIcon className="w-5 h-5" />
+                          </button>
+                          {/* Action dropdown */}
+                          {actionMenuOpen === user.id && (
+                            <div
+                              ref={actionMenuRef}
+                              className="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-lg z-50"
+                            >
+                              <button
+                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                onClick={() => {
+                                  setShowUserDetails(user);
+                                  setActionMenuOpen(null);
+                                }}
+                              >
+                                <EyeIcon className="w-[18px] h-[18px]" />
+                                View Details
+                              </button>
+                              {user.isActive ? (
+                                <button
+                                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                  onClick={() => handleBanUser(user.id)}
+                                >
+                                  <NoSymbolIcon className="w-[18px] h-[18px]" />
+                                  Ban User
+                                </button>
+                              ) : (
+                                <button
+                                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                  onClick={() => handleActivateUser(user.id)}
+                                >
+                                  <CheckCircleIcon className="w-[18px] h-[18px]" />
+                                  Activate User
+                                </button>
+                              )}
+                              <button
+                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                onClick={() => {
+                                  setShowDeleteConfirm(user.id);
+                                  setActionMenuOpen(null);
+                                }}
+                              >
+                                <TrashIcon className="w-[18px] h-[18px]" />
+                                Delete User
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
                     );
-                  })}
-                  {pagination.pages > 5 && pagination.page < pagination.pages - 2 && (
-                    <>
-                      <span className="px-1 text-slate-500 dark:text-slate-400">...</span>
-                      <button
-                        className="h-8 w-8 rounded-lg text-xs font-bold text-slate-500 hover:bg-gray-100 dark:hover:bg-white/5 dark:text-slate-400"
-                        onClick={() => setPagination((p) => ({ ...p, page: p.pages }))}
-                      >
-                        {pagination.pages}
-                      </button>
-                    </>
-                  )}
-                </div>
-                <button
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-slate-900 dark:text-white disabled:opacity-50"
-                  disabled={pagination.page >= pagination.pages}
-                  onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                >
-                  Next
-                </button>
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination */}
+          <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-6 py-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Showing{' '}
+              <span className="font-semibold">
+                {filteredUsers.length > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0}-
+                {Math.min(pagination.page * pagination.limit, pagination.total)}
+              </span>{' '}
+              of <span className="font-semibold">{pagination.total.toLocaleString()}</span> users
+            </p>
+            <div className="flex gap-2">
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-slate-900 dark:text-white disabled:opacity-50"
+                disabled={pagination.page <= 1}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                  let pageNum: number;
+                  if (pagination.pages <= 5) {
+                    pageNum = i + 1;
+                  } else if (pagination.page <= 3) {
+                    pageNum = i + 1;
+                  } else if (pagination.page >= pagination.pages - 2) {
+                    pageNum = pagination.pages - 4 + i;
+                  } else {
+                    pageNum = pagination.page - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      className={`h-8 w-8 rounded-lg text-xs font-bold ${pagination.page === pageNum ? 'bg-primary text-white' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-white/5 dark:text-slate-400'}`}
+                      onClick={() => setPagination((p) => ({ ...p, page: pageNum }))}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                {pagination.pages > 5 && pagination.page < pagination.pages - 2 && (
+                  <>
+                    <span className="px-1 text-slate-500 dark:text-slate-400">...</span>
+                    <button
+                      className="h-8 w-8 rounded-lg text-xs font-bold text-slate-500 hover:bg-gray-100 dark:hover:bg-white/5 dark:text-slate-400"
+                      onClick={() => setPagination((p) => ({ ...p, page: p.pages }))}
+                    >
+                      {pagination.pages}
+                    </button>
+                  </>
+                )}
               </div>
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-slate-900 dark:text-white disabled:opacity-50"
+                disabled={pagination.page >= pagination.pages}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
-      </main>
-
+      </div>
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -992,6 +796,6 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
