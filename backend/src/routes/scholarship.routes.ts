@@ -284,6 +284,29 @@ router.patch('/:id', authenticate, requireAdmin, async (req: AuthenticatedReques
   }
 });
 
+// Admin: Bulk delete scholarships
+router.post(
+  '/bulk-delete',
+  authenticate,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        res.status(400).json({ error: 'ids must be a non-empty array' });
+        return;
+      }
+      const result = await prisma.$transaction(async (tx) => {
+        await tx.savedScholarship.deleteMany({ where: { scholarshipId: { in: ids } } });
+        return tx.scholarship.deleteMany({ where: { id: { in: ids } } });
+      });
+      res.json({ success: true, deleted_count: result.count });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 // Admin: Delete scholarship
 router.delete('/:id', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {

@@ -289,6 +289,8 @@ export const scholarshipApi = {
   create: (data: any) => api.post('/scholarships', data),
   update: (id: string, data: any) => api.patch(`/scholarships/${id}`, data),
   delete: (id: string) => api.delete(`/scholarships/${id}`),
+  bulkDelete: (ids: string[]) =>
+    api.post<{ success: boolean; deleted_count: number }>('/scholarships/bulk-delete', { ids }),
 };
 
 // Jobs API

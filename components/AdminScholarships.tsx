@@ -102,6 +102,9 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -119,6 +122,7 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
   useEffect(() => {
     fetchScholarships();
     fetchStats();
+    setSelectedIds(new Set());
   }, [statusFilter, currentPage]);
 
   const fetchScholarships = async () => {
@@ -266,6 +270,44 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
     } catch (error) {
       console.error('Failed to delete:', error);
       toast.error('Failed to delete scholarship');
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(scholarships.map((s) => s.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleting(true);
+    try {
+      const response = await scholarshipApi.bulkDelete(Array.from(selectedIds));
+      if (response.error) throw new Error(response.error);
+      const count = (response.data as any)?.deleted_count ?? selectedIds.size;
+      toast.success(`${count} scholarship${count !== 1 ? 's' : ''} deleted`);
+      setShowBulkDeleteModal(false);
+      setSelectedIds(new Set());
+      if (selectedId && selectedIds.has(selectedId)) setSelectedId(null);
+      fetchScholarships();
+      fetchStats();
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      toast.error('Failed to delete scholarships');
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -596,6 +638,22 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
               <table className="w-full text-left">
                 <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
                   <tr>
+                    <th className="px-4 py-4 w-10">
+                      <input
+                        type="checkbox"
+                        aria-label="Select all scholarships"
+                        checked={
+                          scholarships.length > 0 && selectedIds.size === scholarships.length
+                        }
+                        ref={(el) => {
+                          if (el)
+                            el.indeterminate =
+                              selectedIds.size > 0 && selectedIds.size < scholarships.length;
+                        }}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                      />
+                    </th>
                     <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       Scholarship Name / University
                     </th>
@@ -619,13 +677,13 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
+                      <td colSpan={7} className="px-6 py-12 text-center">
                         <GlobalLoader fullScreen={false} />
                       </td>
                     </tr>
                   ) : scholarships.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
+                      <td colSpan={7} className="px-6 py-12 text-center">
                         <AcademicCapIcon className="w-9 h-9 text-slate-300 dark:text-slate-600" />
                         <p className="text-sm text-slate-500">No scholarships found</p>
                       </td>
@@ -635,8 +693,23 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                       <tr
                         key={scholarship.id}
                         onClick={() => handleQuickEdit(scholarship)}
-                        className={`group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer ${selectedId === scholarship.id ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-primary' : ''}`}
+                        className={`group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer ${
+                          selectedIds.has(scholarship.id)
+                            ? 'bg-blue-500/5 dark:bg-blue-500/10'
+                            : selectedId === scholarship.id
+                              ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-primary'
+                              : ''
+                        }`}
                       >
+                        <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            aria-label={`Select ${scholarship.title}`}
+                            checked={selectedIds.has(scholarship.id)}
+                            onChange={(e) => handleSelectOne(scholarship.id, e.target.checked)}
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 font-bold">
@@ -1074,6 +1147,98 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
               >
                 {isSaving ? 'Saving...' : editingId ? 'Update Scholarship' : 'Create Scholarship'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating Bulk Action Bar ─────────────────────────────────────────── */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-2xl bg-slate-900 dark:bg-slate-800 px-5 py-3 shadow-2xl border border-slate-700 animate-in slide-in-from-bottom-4 duration-200">
+          <span className="text-sm font-medium text-white">
+            {selectedIds.size} scholarship{selectedIds.size !== 1 ? 's' : ''} selected
+          </span>
+          <div className="h-4 w-px bg-slate-600" />
+          <button
+            type="button"
+            onClick={() => setShowBulkDeleteModal(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-red-500 hover:bg-red-600 px-3 py-1.5 text-sm font-semibold text-white transition-colors"
+          >
+            <TrashIcon className="w-4 h-4" />
+            Delete Selected
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+          >
+            Deselect All
+          </button>
+        </div>
+      )}
+
+      {/* ── Bulk Delete Confirmation Modal ───────────────────────────────────── */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                  <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Delete {selectedIds.size} Scholarship{selectedIds.size !== 1 ? 's' : ''}?
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-3 mb-5 space-y-1">
+                {scholarships
+                  .filter((s) => selectedIds.has(s.id))
+                  .map((s) => (
+                    <div key={s.id} className="flex items-center gap-2 py-1">
+                      <AcademicCapIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                        {s.title}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBulkDeleteModal(false)}
+                  disabled={isBulkDeleting}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="flex items-center gap-2 rounded-lg bg-red-500 hover:bg-red-600 px-5 py-2 text-sm font-bold text-white transition-colors disabled:opacity-50"
+                >
+                  {isBulkDeleting ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin text-[18px]">
+                        progress_activity
+                      </span>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <TrashIcon className="w-4 h-4" />
+                      Delete {selectedIds.size} Scholarship{selectedIds.size !== 1 ? 's' : ''}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
