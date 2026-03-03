@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import RootLayout from './ui/RootLayout';
+import AdminLayout from './ui/AdminLayout';
 import { withNavigate } from './ui/withNavigate';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -110,14 +111,6 @@ const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/Emp
 function StudentRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute allowedRoles={['STUDENT', 'EDUCATOR', 'ADMIN']}>
-      <Wrap>{children}</Wrap>
-    </ProtectedRoute>
-  );
-}
-
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  return (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
       <Wrap>{children}</Wrap>
     </ProtectedRoute>
   );
@@ -369,95 +362,104 @@ export const router = createBrowserRouter([
       },
 
       // ========================================
-      // PROTECTED ROUTES - ADMIN
+      // PROTECTED ROUTES - ADMIN (shared layout keeps sidebar mounted)
       // ========================================
       {
-        path: '/admin',
         element: (
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminLayout />
+          </ProtectedRoute>
         ),
-      },
-      {
-        path: '/admin/employers',
-        element: (
-          <AdminRoute>
-            <AdminEmployers />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/pricing',
-        element: (
-          <AdminRoute>
-            <AdminPricing />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/users',
-        element: (
-          <AdminRoute>
-            <AdminUsers />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/scholarships',
-        element: (
-          <AdminRoute>
-            <AdminScholarships />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/roles',
-        element: (
-          <AdminRoute>
-            <AdminRoles />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/blog',
-        element: (
-          <AdminRoute>
-            <AdminBlog />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/team',
-        element: (
-          <AdminRoute>
-            <AdminTeam />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/settings',
-        element: (
-          <AdminRoute>
-            <AdminProfile />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/notifications',
-        element: (
-          <AdminRoute>
-            <AdminNotifications />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: '/admin/demographics',
-        element: (
-          <AdminRoute>
-            <AdminDemographicsPage />
-          </AdminRoute>
-        ),
+        children: [
+          {
+            path: '/admin',
+            element: (
+              <Wrap>
+                <AdminDashboard />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/employers',
+            element: (
+              <Wrap>
+                <AdminEmployers />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/pricing',
+            element: (
+              <Wrap>
+                <AdminPricing />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/users',
+            element: (
+              <Wrap>
+                <AdminUsers />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/scholarships',
+            element: (
+              <Wrap>
+                <AdminScholarships />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/roles',
+            element: (
+              <Wrap>
+                <AdminRoles />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/blog',
+            element: (
+              <Wrap>
+                <AdminBlog />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/team',
+            element: (
+              <Wrap>
+                <AdminTeam />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/settings',
+            element: (
+              <Wrap>
+                <AdminProfile />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/notifications',
+            element: (
+              <Wrap>
+                <AdminNotifications />
+              </Wrap>
+            ),
+          },
+          {
+            path: '/admin/demographics',
+            element: (
+              <Wrap>
+                <AdminDemographicsPage />
+              </Wrap>
+            ),
+          },
+        ],
       },
 
       // ========================================

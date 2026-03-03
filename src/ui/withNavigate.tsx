@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, NavigationProps } from '../../types';
 
-const screenToPath: Record<Screen, string> = {
+export const screenToPath: Record<Screen, string> = {
   [Screen.LANDING]: '/',
   [Screen.SIGN_IN]: '/signin',
   [Screen.SIGNUP_STEP_1]: '/signup/step-1',
