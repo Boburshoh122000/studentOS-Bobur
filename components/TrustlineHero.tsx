@@ -253,7 +253,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.7 }}
-          className="absolute bottom-[25%] left-1/2 -translate-x-1/2 bg-indigo-600 px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(99,102,241,0.4)] flex items-center gap-2 pointer-events-auto"
+          className="absolute bottom-[18%] left-1/2 -translate-x-1/2 bg-indigo-600 px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(99,102,241,0.4)] flex items-center gap-2 pointer-events-auto"
         >
           <ChartBarIcon className="w-3.5 h-3.5 text-white" />
           <span className="text-xs font-bold text-white tracking-wide">StudentOS</span>
@@ -410,9 +410,6 @@ export default function TrustlineHero() {
         >
           <button className="bg-indigo-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-indigo-700 transition shadow-[0_6px_16px_rgba(79,70,229,0.3)]">
             Get started
-          </button>
-          <button className="bg-white text-slate-900 border border-slate-200 shadow-sm px-8 py-3.5 rounded-full font-medium hover:bg-slate-50 transition flex items-center gap-2">
-            View live demo <ArrowRightIcon className="w-4 h-4" />
           </button>
         </motion.div>
       </div>
