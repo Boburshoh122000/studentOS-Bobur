@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import toast from 'react-hot-toast';
@@ -25,6 +25,8 @@ interface Scholarship {
   awardAmount: string | null;
   deadline: string | null;
   description: string | null;
+  eligibility: string | null;
+  benefits: string | null;
   applicationUrl: string | null;
   imageUrl: string | null;
   isActive: boolean;
@@ -46,29 +48,148 @@ const emptyScholarship = {
   title: '',
   institution: '',
   country: 'USA',
-  studyLevel: 'UNDERGRADUATE',
+  studyLevel: 'Bachelor',
   awardType: 'Full Scholarship',
   awardAmount: '',
   deadline: '',
   description: '',
+  eligibility: '',
+  benefits: '',
   applicationUrl: '',
   isTrending: false,
   status: 'DRAFT' as Scholarship['status'],
 };
 
-const countries = [
-  'USA',
-  'UK',
-  'Canada',
-  'Germany',
-  'Australia',
-  'France',
-  'Netherlands',
-  'Japan',
-  'South Korea',
-  'Other',
+interface CInfo {
+  name: string;
+  iso: string;
+}
+const COUNTRIES: CInfo[] = [
+  { name: 'Afghanistan', iso: 'af' },
+  { name: 'Albania', iso: 'al' },
+  { name: 'Algeria', iso: 'dz' },
+  { name: 'Andorra', iso: 'ad' },
+  { name: 'Angola', iso: 'ao' },
+  { name: 'Argentina', iso: 'ar' },
+  { name: 'Armenia', iso: 'am' },
+  { name: 'Australia', iso: 'au' },
+  { name: 'Austria', iso: 'at' },
+  { name: 'Azerbaijan', iso: 'az' },
+  { name: 'Bahrain', iso: 'bh' },
+  { name: 'Bangladesh', iso: 'bd' },
+  { name: 'Belarus', iso: 'by' },
+  { name: 'Belgium', iso: 'be' },
+  { name: 'Bolivia', iso: 'bo' },
+  { name: 'Bosnia and Herzegovina', iso: 'ba' },
+  { name: 'Brazil', iso: 'br' },
+  { name: 'Brunei', iso: 'bn' },
+  { name: 'Bulgaria', iso: 'bg' },
+  { name: 'Cambodia', iso: 'kh' },
+  { name: 'Cameroon', iso: 'cm' },
+  { name: 'Canada', iso: 'ca' },
+  { name: 'Chile', iso: 'cl' },
+  { name: 'China', iso: 'cn' },
+  { name: 'Colombia', iso: 'co' },
+  { name: 'Costa Rica', iso: 'cr' },
+  { name: 'Croatia', iso: 'hr' },
+  { name: 'Cuba', iso: 'cu' },
+  { name: 'Cyprus', iso: 'cy' },
+  { name: 'Czech Republic', iso: 'cz' },
+  { name: 'Denmark', iso: 'dk' },
+  { name: 'Ecuador', iso: 'ec' },
+  { name: 'Egypt', iso: 'eg' },
+  { name: 'Estonia', iso: 'ee' },
+  { name: 'Ethiopia', iso: 'et' },
+  { name: 'Finland', iso: 'fi' },
+  { name: 'France', iso: 'fr' },
+  { name: 'Georgia', iso: 'ge' },
+  { name: 'Germany', iso: 'de' },
+  { name: 'Ghana', iso: 'gh' },
+  { name: 'Greece', iso: 'gr' },
+  { name: 'Guatemala', iso: 'gt' },
+  { name: 'Hungary', iso: 'hu' },
+  { name: 'Iceland', iso: 'is' },
+  { name: 'India', iso: 'in' },
+  { name: 'Indonesia', iso: 'id' },
+  { name: 'Iran', iso: 'ir' },
+  { name: 'Iraq', iso: 'iq' },
+  { name: 'Ireland', iso: 'ie' },
+  { name: 'Israel', iso: 'il' },
+  { name: 'Italy', iso: 'it' },
+  { name: 'Jamaica', iso: 'jm' },
+  { name: 'Japan', iso: 'jp' },
+  { name: 'Jordan', iso: 'jo' },
+  { name: 'Kazakhstan', iso: 'kz' },
+  { name: 'Kenya', iso: 'ke' },
+  { name: 'Kuwait', iso: 'kw' },
+  { name: 'Latvia', iso: 'lv' },
+  { name: 'Lebanon', iso: 'lb' },
+  { name: 'Libya', iso: 'ly' },
+  { name: 'Lithuania', iso: 'lt' },
+  { name: 'Luxembourg', iso: 'lu' },
+  { name: 'Malaysia', iso: 'my' },
+  { name: 'Maldives', iso: 'mv' },
+  { name: 'Malta', iso: 'mt' },
+  { name: 'Mexico', iso: 'mx' },
+  { name: 'Moldova', iso: 'md' },
+  { name: 'Mongolia', iso: 'mn' },
+  { name: 'Montenegro', iso: 'me' },
+  { name: 'Morocco', iso: 'ma' },
+  { name: 'Myanmar', iso: 'mm' },
+  { name: 'Nepal', iso: 'np' },
+  { name: 'Netherlands', iso: 'nl' },
+  { name: 'New Zealand', iso: 'nz' },
+  { name: 'Nigeria', iso: 'ng' },
+  { name: 'North Macedonia', iso: 'mk' },
+  { name: 'Norway', iso: 'no' },
+  { name: 'Oman', iso: 'om' },
+  { name: 'Pakistan', iso: 'pk' },
+  { name: 'Palestine', iso: 'ps' },
+  { name: 'Panama', iso: 'pa' },
+  { name: 'Peru', iso: 'pe' },
+  { name: 'Philippines', iso: 'ph' },
+  { name: 'Poland', iso: 'pl' },
+  { name: 'Portugal', iso: 'pt' },
+  { name: 'Qatar', iso: 'qa' },
+  { name: 'Romania', iso: 'ro' },
+  { name: 'Russia', iso: 'ru' },
+  { name: 'Saudi Arabia', iso: 'sa' },
+  { name: 'Serbia', iso: 'rs' },
+  { name: 'Singapore', iso: 'sg' },
+  { name: 'Slovakia', iso: 'sk' },
+  { name: 'Slovenia', iso: 'si' },
+  { name: 'South Africa', iso: 'za' },
+  { name: 'South Korea', iso: 'kr' },
+  { name: 'Spain', iso: 'es' },
+  { name: 'Sri Lanka', iso: 'lk' },
+  { name: 'Sweden', iso: 'se' },
+  { name: 'Switzerland', iso: 'ch' },
+  { name: 'Syria', iso: 'sy' },
+  { name: 'Taiwan', iso: 'tw' },
+  { name: 'Tanzania', iso: 'tz' },
+  { name: 'Thailand', iso: 'th' },
+  { name: 'Tunisia', iso: 'tn' },
+  { name: 'Turkey', iso: 'tr' },
+  { name: 'UAE', iso: 'ae' },
+  { name: 'Uganda', iso: 'ug' },
+  { name: 'Ukraine', iso: 'ua' },
+  { name: 'United Kingdom', iso: 'gb' },
+  { name: 'USA', iso: 'us' },
+  { name: 'Uzbekistan', iso: 'uz' },
+  { name: 'Venezuela', iso: 've' },
+  { name: 'Vietnam', iso: 'vn' },
+  { name: 'Zimbabwe', iso: 'zw' },
+  { name: 'Other', iso: '' },
 ];
-const studyLevels = ['HIGHSCHOOL', 'UNDERGRADUATE', 'POSTGRADUATE', 'PHD', 'ANY'];
+const ISO_MAP: Record<string, string> = {};
+COUNTRIES.forEach((c) => {
+  ISO_MAP[c.name.toLowerCase()] = c.iso;
+});
+ISO_MAP['uk'] = 'gb';
+ISO_MAP['united states'] = 'us';
+ISO_MAP['korea'] = 'kr';
+
+const studyLevels = ['Bachelor', "Master's", 'PhD', 'High School', 'Other'];
 const awardTypes = [
   'Full Scholarship',
   'Partial Scholarship',
@@ -93,6 +214,20 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const countryRef = useRef<HTMLDivElement>(null);
+
+  // Close country dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (countryRef.current && !countryRef.current.contains(e.target as Node)) {
+        setCountryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   useEffect(() => {
     fetchScholarships();
@@ -812,17 +947,84 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                   <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
                     Country
                   </label>
-                  <select
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-[#f6f6f8] dark:bg-white/5 p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                    value={editorData.country}
-                    onChange={(e) => setEditorData({ ...editorData, country: e.target.value })}
-                  >
-                    {countries.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  <div ref={countryRef} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCountryOpen(!countryOpen);
+                        setCountrySearch('');
+                      }}
+                      title="Select country"
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-[#f6f6f8] dark:bg-white/5 p-3 text-sm text-left outline-none focus:ring-2 focus:ring-primary focus:border-transparent flex items-center gap-2"
+                    >
+                      {ISO_MAP[editorData.country.toLowerCase()] && (
+                        <img
+                          src={`https://flagcdn.com/w40/${ISO_MAP[editorData.country.toLowerCase()]}.png`}
+                          alt=""
+                          className="w-5 h-4 object-cover rounded-sm"
+                        />
+                      )}
+                      <span>{editorData.country}</span>
+                      <svg
+                        className="w-4 h-4 ml-auto text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-slate-100 dark:border-slate-700">
+                          <input
+                            type="text"
+                            placeholder="Search countries..."
+                            value={countrySearch}
+                            onChange={(e) => setCountrySearch(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 outline-none focus:ring-1 focus:ring-primary"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {COUNTRIES.filter((c) =>
+                            c.name.toLowerCase().includes(countrySearch.toLowerCase())
+                          ).map((c) => (
+                            <button
+                              key={c.name}
+                              type="button"
+                              title={c.name}
+                              onClick={() => {
+                                setEditorData({ ...editorData, country: c.name });
+                                setCountryOpen(false);
+                              }}
+                              className={`w-full px-3 py-2.5 text-sm text-left flex items-center gap-2.5 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors ${
+                                editorData.country === c.name
+                                  ? 'bg-indigo-50 dark:bg-slate-700 font-semibold text-indigo-700 dark:text-indigo-400'
+                                  : 'text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              {c.iso ? (
+                                <img
+                                  src={`https://flagcdn.com/w40/${c.iso}.png`}
+                                  alt=""
+                                  className="w-5 h-4 object-cover rounded-sm flex-shrink-0"
+                                />
+                              ) : (
+                                <span className="w-5 h-4 bg-gray-200 rounded-sm flex-shrink-0" />
+                              )}
+                              {c.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -890,10 +1092,34 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                 </label>
                 <textarea
                   className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-[#f6f6f8] dark:bg-white/5 p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  rows={4}
+                  rows={3}
                   value={editorData.description}
                   onChange={(e) => setEditorData({ ...editorData, description: e.target.value })}
-                  placeholder="Eligibility criteria, benefits, and requirements..."
+                  placeholder="Brief overview of the scholarship..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
+                  Eligibility Criteria
+                </label>
+                <textarea
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-[#f6f6f8] dark:bg-white/5 p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  rows={3}
+                  value={editorData.eligibility || ''}
+                  onChange={(e) => setEditorData({ ...editorData, eligibility: e.target.value })}
+                  placeholder="Who can apply? Nationality, GPA, age requirements..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
+                  Benefits
+                </label>
+                <textarea
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-[#f6f6f8] dark:bg-white/5 p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  rows={3}
+                  value={editorData.benefits || ''}
+                  onChange={(e) => setEditorData({ ...editorData, benefits: e.target.value })}
+                  placeholder="Tuition, stipend, accommodation, travel costs..."
                 />
               </div>
               <div>

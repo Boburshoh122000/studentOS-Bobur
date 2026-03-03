@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -36,6 +36,8 @@ interface Scholarship {
   awardAmount: string | null;
   deadline: string | null;
   description: string | null;
+  eligibility: string | null;
+  benefits: string | null;
   applicationUrl: string | null;
   imageUrl: string | null;
   isActive: boolean;
@@ -428,6 +430,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [showSort, setShowSort] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -866,6 +869,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                         s={s}
                         isSaved={saved.has(s.id)}
                         onSave={() => toggleSave(s.id)}
+                        onSelect={() => setSelectedScholarship(s)}
                       />
                     ))}
                   </div>
@@ -886,6 +890,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                           s={s}
                           isSaved={saved.has(s.id)}
                           onSave={() => toggleSave(s.id)}
+                          onSelect={() => setSelectedScholarship(s)}
                         />
                       ))}
                     </div>
@@ -904,6 +909,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                           s={s}
                           isSaved={saved.has(s.id)}
                           onSave={() => toggleSave(s.id)}
+                          onSelect={() => setSelectedScholarship(s)}
                           showDeadline
                         />
                       ))}
@@ -924,6 +930,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                           s={s}
                           isSaved={saved.has(s.id)}
                           onSave={() => toggleSave(s.id)}
+                          onSelect={() => setSelectedScholarship(s)}
                         />
                       ))}
                     </div>
@@ -945,6 +952,12 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           </div>
         </div>
       </div>
+      {selectedScholarship && (
+        <ScholarshipModal
+          scholarship={selectedScholarship}
+          onClose={() => setSelectedScholarship(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
@@ -981,22 +994,23 @@ function Card({
   s,
   isSaved,
   onSave,
+  onSelect,
   showDeadline = false,
 }: {
   s: Scholarship;
   isSaved: boolean;
   onSave: () => void;
+  onSelect: () => void;
   showDeadline?: boolean;
 }) {
-  const navigate = useNavigate();
   const days = daysUntil(s.deadline);
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/app/scholarships/${s.id}`)}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/app/scholarships/${s.id}`)}
+      onClick={onSelect}
+      onKeyDown={(e) => e.key === 'Enter' && onSelect()}
       className="relative bg-white dark:bg-[#141722] rounded-xl p-5 border border-gray-200 dark:border-gray-700 border-l-[3px] border-l-primary shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 flex flex-col h-full group cursor-pointer"
     >
       {/* Top: flag + trending + bookmark */}
@@ -1085,6 +1099,188 @@ function Card({
         ) : (
           <span className="text-[11px] text-gray-300 dark:text-gray-600">No link</span>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  Scholarship Detail Modal                                                 */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+function ScholarshipModal({
+  scholarship: s,
+  onClose,
+}: {
+  scholarship: Scholarship;
+  onClose: () => void;
+}) {
+  const days = daysUntil(s.deadline);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        className="relative z-10 bg-white dark:bg-[#141722] rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-[#141722] border-b border-gray-100 dark:border-gray-800 px-8 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <CountryFlag country={s.country} size={28} />
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                {s.title}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                {s.institution} · {s.country}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            title="Close"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors flex-shrink-0"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-8 py-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Left: Details (2/3) */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Description */}
+            {s.description && (
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <BookmarkIcon className="w-4 h-4 text-primary" /> Description
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                  {s.description}
+                </p>
+              </div>
+            )}
+
+            {/* Eligibility */}
+            {s.eligibility && (
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <AcademicCapIcon className="w-4 h-4 text-indigo-500" /> Eligibility Criteria
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                  {s.eligibility}
+                </p>
+              </div>
+            )}
+
+            {/* Benefits */}
+            {s.benefits && (
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <FireIcon className="w-4 h-4 text-amber-500" /> Benefits
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                  {s.benefits}
+                </p>
+              </div>
+            )}
+
+            {/* Fallback if no content */}
+            {!s.description && !s.eligibility && !s.benefits && (
+              <p className="text-sm text-gray-400 italic">
+                No details available for this scholarship.
+              </p>
+            )}
+          </div>
+
+          {/* Right: Sticky Summary (1/3) */}
+          <div className="md:col-span-1">
+            <div className="sticky top-24 bg-gray-50 dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
+              {/* Amount */}
+              {s.awardAmount && (
+                <div>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
+                    Award
+                  </p>
+                  <p className="text-lg font-bold text-primary">{s.awardAmount}</p>
+                </div>
+              )}
+
+              {/* Deadline */}
+              {s.deadline && (
+                <div>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
+                    Deadline
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {fmtDate(s.deadline)}
+                    {days !== null && days > 0 && (
+                      <span
+                        className={`ml-2 text-xs font-bold ${
+                          days <= 7
+                            ? 'text-red-500'
+                            : days <= 30
+                              ? 'text-amber-500'
+                              : 'text-gray-400'
+                        }`}
+                      >
+                        ({days} days left)
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              {/* Study Level */}
+              <div>
+                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
+                  Study Level
+                </p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+                  {s.studyLevel?.toLowerCase().replace('_', ' ')}
+                </p>
+              </div>
+
+              {/* Award Type */}
+              <div>
+                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
+                  Award Type
+                </p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {s.awardType}
+                </p>
+              </div>
+
+              {/* Trending */}
+              {s.isTrending && (
+                <div className="flex items-center gap-1.5 text-amber-600">
+                  <FireIcon className="w-4 h-4" />
+                  <span className="text-xs font-bold">Trending Scholarship</span>
+                </div>
+              )}
+
+              {/* Apply Button */}
+              {s.applicationUrl ? (
+                <a
+                  href={s.applicationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center py-3.5 bg-primary hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-md shadow-primary/20 mt-4"
+                >
+                  Apply Now →
+                </a>
+              ) : (
+                <p className="text-xs text-gray-400 text-center mt-4">
+                  No application link available
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
