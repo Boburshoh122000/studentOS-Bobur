@@ -75,8 +75,8 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
       setIsLoading(true);
       const [habitsRes, statsRes] = await Promise.all([habitApi.list(), habitApi.getStats()]);
 
-      if (habitsRes.data) setHabits(habitsRes.data as Habit[]);
-      if (statsRes.data) setStats(statsRes.data as HabitStats);
+      if (Array.isArray(habitsRes.data)) setHabits(habitsRes.data as Habit[]);
+      if (statsRes.data && !statsRes.error) setStats(statsRes.data as HabitStats);
     } catch (error) {
       console.error('Failed to fetch habits:', error);
       toast.error('Failed to load habits');
