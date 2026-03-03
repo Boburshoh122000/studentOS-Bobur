@@ -530,6 +530,10 @@ export const adminApi = {
   },
   assignUserRole: (userId: string, roleId: string) =>
     api.patch<any>(`/admin/users/${userId}/role`, { roleId }),
+  searchNonAdminUsers: (q: string) =>
+    api.get<{ users: any[] }>(`/admin/users/search?q=${encodeURIComponent(q)}`),
+  assignAdmin: (userId: string) => api.post<any>(`/admin/users/${userId}/assign-admin`, {}),
+  removeAdmin: (userId: string) => api.post<any>(`/admin/users/${userId}/remove-admin`, {}),
 
   getAuditLogs: (params?: { page?: number; limit?: number; action?: string; adminId?: string }) => {
     const searchParams = new URLSearchParams();

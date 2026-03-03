@@ -11,6 +11,15 @@ const router = Router();
 // All routes require admin authentication
 router.use(authenticate, requireAdmin);
 
+const SUPER_ADMIN_EMAIL = 'javohirturayev01@gmail.com';
+
+function superAdminOnly(req: AuthenticatedRequest, res: any, next: any) {
+  if (req.user?.email !== SUPER_ADMIN_EMAIL) {
+    return res.status(403).json({ error: 'Super admin access required' });
+  }
+  next();
+}
+
 // =============================================================================
 // Validation Schemas
 // =============================================================================
@@ -397,6 +406,106 @@ router.get('/roles/users', async (req: AuthenticatedRequest, res, next) => {
     next(error);
   }
 });
+
+// GET /api/admin/users/search - Search non-admin users (superAdminOnly)
+router.get('/users/search', superAdminOnly, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { q } = req.query as any;
+    if (!q || q.trim().length < 2) {
+      return res.json({ users: [] });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        role: { not: 'ADMIN' },
+        OR: [
+          { email: { contains: q.trim(), mode: 'insensitive' } },
+          { studentProfile: { fullName: { contains: q.trim(), mode: 'insensitive' } } },
+        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        studentProfile: { select: { fullName: true, avatarUrl: true } },
+      },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({
+      users: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        role: u.role,
+        fullName: u.studentProfile?.fullName || 'Unknown',
+        avatarUrl: u.studentProfile?.avatarUrl,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/users/:userId/assign-admin - Promote user to ADMIN (superAdminOnly)
+router.post(
+  '/users/:userId/assign-admin',
+  superAdminOnly,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.params.userId as string;
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new AppError(404, 'User not found');
+      }
+      if (user.role === 'ADMIN') {
+        throw new AppError(400, 'User is already an admin');
+      }
+
+      await prisma.user.update({ where: { id: userId }, data: { role: 'ADMIN' } });
+
+      await logAdminAction(req, 'ASSIGN_ADMIN', 'USER', userId, { email: user.email });
+
+      res.json({ message: 'User promoted to admin successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// POST /api/admin/users/:userId/remove-admin - Demote admin to STUDENT (superAdminOnly)
+router.post(
+  '/users/:userId/remove-admin',
+  superAdminOnly,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.params.userId as string;
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new AppError(404, 'User not found');
+      }
+      if (user.email === SUPER_ADMIN_EMAIL) {
+        throw new AppError(400, 'Cannot remove super admin access');
+      }
+      if (user.role !== 'ADMIN') {
+        throw new AppError(400, 'User is not an admin');
+      }
+
+      await prisma.$transaction([
+        prisma.userAdminRole.deleteMany({ where: { userId } }),
+        prisma.user.update({ where: { id: userId }, data: { role: 'STUDENT' } }),
+      ]);
+
+      await logAdminAction(req, 'REMOVE_ADMIN', 'USER', userId, { email: user.email });
+
+      res.json({ message: 'Admin access removed successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // PATCH /api/admin/users/:id/role - Assign/change role for an admin user
 router.patch(

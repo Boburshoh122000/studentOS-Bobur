@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
+import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+
+const SUPER_ADMIN_EMAIL = 'javohirturayev01@gmail.com';
 
 // Types
 interface Permission {
@@ -32,6 +35,14 @@ interface AdminUser {
   roles: { id: string; name: string }[];
 }
 
+interface SearchUser {
+  id: string;
+  email: string;
+  role: string;
+  fullName: string;
+  avatarUrl?: string;
+}
+
 // Role badge colors
 const getRoleBadgeStyle = (roleName: string) => {
   const styles: Record<string, string> = {
@@ -59,7 +70,10 @@ const getAvatarColor = (name: string) => {
   return colors[index];
 };
 
-function AdminRoles({ navigateTo }: NavigationProps) {
+function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
+
   // Data states
   const [roles, setRoles] = useState<Role[]>([]);
   const [groupedPermissions, setGroupedPermissions] = useState<Record<string, Permission[]>>({});
@@ -79,11 +93,27 @@ function AdminRoles({ navigateTo }: NavigationProps) {
   const [showEditRoleNameModal, setShowEditRoleNameModal] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
+  // Add Admin modal states
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [addAdminStep, setAddAdminStep] = useState<'search' | 'confirm'>('search');
+  const [addAdminQuery, setAddAdminQuery] = useState('');
+  const [addAdminResults, setAddAdminResults] = useState<SearchUser[]>([]);
+  const [selectedAddUser, setSelectedAddUser] = useState<SearchUser | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  // Remove Admin modal states
+  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
+  const [removingUser, setRemovingUser] = useState<AdminUser | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+
   // Form states
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDescription, setNewRoleDescription] = useState('');
   const [editRoleName, setEditRoleName] = useState('');
   const [editRoleDescription, setEditRoleDescription] = useState('');
+
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get selected role
   const selectedRole = useMemo(
@@ -114,6 +144,35 @@ function AdminRoles({ navigateTo }: NavigationProps) {
     }
   }, [selectedRole]);
 
+  // Debounced search for Add Admin modal
+  useEffect(() => {
+    if (!showAddAdminModal || addAdminStep !== 'search') return;
+
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+
+    if (addAdminQuery.trim().length < 2) {
+      setAddAdminResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await adminApi.searchNonAdminUsers(addAdminQuery.trim());
+        setAddAdminResults(res.data?.users ?? []);
+      } catch {
+        setAddAdminResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [addAdminQuery, showAddAdminModal, addAdminStep]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -133,8 +192,8 @@ function AdminRoles({ navigateTo }: NavigationProps) {
         setGroupedPermissions(permsRes.data.grouped);
       }
       if (usersRes.data) {
-        setAdminUsers(usersRes.data.users);
-        setPagination((prev) => ({ ...prev, total: usersRes.data.pagination.total }));
+        setAdminUsers(usersRes.data.users ?? []);
+        setPagination((prev) => ({ ...prev, total: usersRes.data.pagination?.total ?? 0 }));
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -247,6 +306,49 @@ function AdminRoles({ navigateTo }: NavigationProps) {
     }
   };
 
+  const handleAssignAdmin = async () => {
+    if (!selectedAddUser) return;
+    setIsAssigning(true);
+    try {
+      const result = await adminApi.assignAdmin(selectedAddUser.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`${selectedAddUser.fullName} is now an admin`);
+        setShowAddAdminModal(false);
+        setAddAdminStep('search');
+        setAddAdminQuery('');
+        setAddAdminResults([]);
+        setSelectedAddUser(null);
+        await fetchData();
+      }
+    } catch (error) {
+      toast.error('Failed to assign admin role');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleRemoveAdmin = async () => {
+    if (!removingUser) return;
+    setIsRemoving(true);
+    try {
+      const result = await adminApi.removeAdmin(removingUser.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`Admin access removed from ${removingUser.fullName}`);
+        setShowRemoveConfirmModal(false);
+        setRemovingUser(null);
+        await fetchData();
+      }
+    } catch (error) {
+      toast.error('Failed to remove admin access');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   const formatTimeAgo = (date?: string) => {
     if (!date) return 'Never';
     const d = new Date(date);
@@ -284,13 +386,31 @@ function AdminRoles({ navigateTo }: NavigationProps) {
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
             className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
           >
             <span className="text-lg">📋</span>
             <span>Audit Log</span>
           </button>
+          {isSuperAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddAdminModal(true);
+                setAddAdminStep('search');
+                setAddAdminQuery('');
+                setAddAdminResults([]);
+                setSelectedAddUser(null);
+              }}
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all flex items-center gap-2 text-sm font-medium shadow-sm"
+            >
+              <span className="text-lg">👤</span>
+              <span>Add Admin</span>
+            </button>
+          )}
           <button
+            type="button"
             onClick={() => setShowCreateRoleModal(true)}
             className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 text-sm font-medium shadow-sm"
           >
@@ -300,7 +420,6 @@ function AdminRoles({ navigateTo }: NavigationProps) {
         </div>
       </div>
 
-      {/* ... Rest of the file remains same ... */}
       {loading ? (
         <div className="flex items-center justify-center h-96">
           <GlobalLoader fullScreen={false} />
@@ -361,68 +480,107 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                       </td>
                     </tr>
                   ) : (
-                    paginatedUsers.map((adminUser) => (
-                      <tr key={adminUser.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold ${getAvatarColor(adminUser.fullName || adminUser.email)}`}
-                            >
-                              {adminUser.fullName
-                                ? adminUser.fullName.charAt(0).toUpperCase()
-                                : adminUser.email.charAt(0).toUpperCase()}
+                    paginatedUsers.map((adminUser) => {
+                      const isSuperAdminUser = adminUser.email === SUPER_ADMIN_EMAIL;
+                      return (
+                        <tr key={adminUser.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold ${getAvatarColor(adminUser.fullName || adminUser.email)}`}
+                              >
+                                {adminUser.fullName
+                                  ? adminUser.fullName.charAt(0).toUpperCase()
+                                  : adminUser.email.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="text-sm font-bold text-gray-900 leading-none">
+                                    {adminUser.fullName || 'Unknown'}
+                                  </p>
+                                  {isSuperAdminUser && (
+                                    <span className="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 leading-none">
+                                      Super Admin
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-gray-400 leading-none">
+                                  {adminUser.email}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900 leading-none mb-1">
-                                {adminUser.fullName || 'Unknown'}
-                              </p>
-                              <p className="text-[11px] text-gray-400 leading-none">
-                                {adminUser.email}
-                              </p>
+                          </td>
+                          <td className="px-5 py-4">
+                            {adminUser.roles.length > 0 ? (
+                              <span
+                                className={`inline-flex px-3 py-1 text-[11px] font-semibold rounded-full ${getRoleBadgeStyle(adminUser.roles[0].name)}`}
+                              >
+                                {adminUser.roles[0].name}
+                              </span>
+                            ) : (
+                              <span className="inline-flex px-3 py-1 text-[11px] font-medium rounded-full bg-gray-100 text-gray-500">
+                                No role
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-500 font-medium">
+                            {formatTimeAgo(adminUser.lastLoginAt)}
+                          </td>
+                          <td className="px-5 py-4 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingUser(adminUser);
+                                  setShowEditUserModal(true);
+                                }}
+                                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Change role"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  />
+                                </svg>
+                              </button>
+                              {isSuperAdmin && !isSuperAdminUser && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRemovingUser(adminUser);
+                                    setShowRemoveConfirmModal(true);
+                                  }}
+                                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Remove admin access"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          {adminUser.roles.length > 0 ? (
-                            <span
-                              className={`inline-flex px-3 py-1 text-[11px] font-semibold rounded-full ${getRoleBadgeStyle(adminUser.roles[0].name)}`}
-                            >
-                              {adminUser.roles[0].name}
-                            </span>
-                          ) : (
-                            <span className="inline-flex px-3 py-1 text-[11px] font-medium rounded-full bg-gray-100 text-gray-500">
-                              No role
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4 text-sm text-gray-500 font-medium">
-                          {formatTimeAgo(adminUser.lastLoginAt)}
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <button
-                            onClick={() => {
-                              setEditingUser(adminUser);
-                              setShowEditUserModal(true);
-                            }}
-                            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                              />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -435,6 +593,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
               </span>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
                   disabled={pagination.page === 1}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600"
@@ -442,6 +601,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                   Previous
                 </button>
                 <button
+                  type="button"
                   onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
                   disabled={pagination.page >= totalPages}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600"
@@ -460,6 +620,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
               {/* Role Selector */}
               <div className="relative">
                 <select
+                  aria-label="Select role"
                   value={selectedRoleId || ''}
                   onChange={(e) => setSelectedRoleId(e.target.value)}
                   className="w-full appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-800 text-sm font-medium focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] cursor-pointer outline-none transition-shadow"
@@ -501,6 +662,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                         </h3>
                         {!selectedRole.isSystem && (
                           <button
+                            type="button"
                             onClick={() => setShowEditRoleNameModal(true)}
                             className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap"
                           >
@@ -581,12 +743,14 @@ function AdminRoles({ navigateTo }: NavigationProps) {
             {/* Actions Footer */}
             <div className="p-5 border-t border-gray-100 flex items-center justify-end gap-3 bg-white rounded-b-xl">
               <button
+                type="button"
                 onClick={handleResetPermissions}
                 className="px-4 py-2 text-gray-500 hover:text-gray-900 text-xs font-semibold transition-colors"
               >
                 Reset
               </button>
               <button
+                type="button"
                 onClick={handleSavePermissions}
                 disabled={saving}
                 className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-sm transition-all"
@@ -597,7 +761,11 @@ function AdminRoles({ navigateTo }: NavigationProps) {
           </div>
         </div>
       )}
-      {/* Modals - Clean White Theme */}
+
+      {/* ============================== */}
+      {/* MODALS */}
+      {/* ============================== */}
+
       {/* Create Role Modal */}
       {showCreateRoleModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
@@ -607,8 +775,14 @@ function AdminRoles({ navigateTo }: NavigationProps) {
             </div>
             <form onSubmit={handleCreateRole} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">Role Name</label>
+                <label
+                  htmlFor="new-role-name"
+                  className="block text-xs font-bold text-gray-700 mb-1.5"
+                >
+                  Role Name
+                </label>
                 <input
+                  id="new-role-name"
                   type="text"
                   value={newRoleName}
                   onChange={(e) => setNewRoleName(e.target.value)}
@@ -618,10 +792,14 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="new-role-description"
+                  className="block text-xs font-bold text-gray-700 mb-1.5"
+                >
                   Description <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <textarea
+                  id="new-role-description"
                   value={newRoleDescription}
                   onChange={(e) => setNewRoleDescription(e.target.value)}
                   placeholder="What can this role do?"
@@ -658,8 +836,14 @@ function AdminRoles({ navigateTo }: NavigationProps) {
             </div>
             <form onSubmit={handleUpdateRoleName} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">Role Name</label>
+                <label
+                  htmlFor="edit-role-name"
+                  className="block text-xs font-bold text-gray-700 mb-1.5"
+                >
+                  Role Name
+                </label>
                 <input
+                  id="edit-role-name"
                   type="text"
                   value={editRoleName}
                   onChange={(e) => setEditRoleName(e.target.value)}
@@ -668,8 +852,14 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">Description</label>
+                <label
+                  htmlFor="edit-role-description"
+                  className="block text-xs font-bold text-gray-700 mb-1.5"
+                >
+                  Description
+                </label>
                 <textarea
+                  id="edit-role-description"
                   value={editRoleDescription}
                   onChange={(e) => setEditRoleDescription(e.target.value)}
                   rows={3}
@@ -709,6 +899,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
               <div className="space-y-2">
                 {roles.map((role) => (
                   <button
+                    type="button"
                     key={role.id}
                     onClick={() => handleAssignRole(editingUser.id, role.id)}
                     className={`w-full p-3 text-left rounded-lg border transition-all duration-200 group flex items-center justify-between ${
@@ -747,6 +938,7 @@ function AdminRoles({ navigateTo }: NavigationProps) {
               </div>
               <div className="flex justify-end gap-3 pt-4 mt-2">
                 <button
+                  type="button"
                   onClick={() => {
                     setShowEditUserModal(false);
                     setEditingUser(null);
@@ -754,6 +946,229 @@ function AdminRoles({ navigateTo }: NavigationProps) {
                   className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Admin Modal */}
+      {showAddAdminModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-0 overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Add Admin</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {addAdminStep === 'search'
+                    ? 'Search for a registered user to grant admin access'
+                    : 'Confirm admin role assignment'}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => {
+                  setShowAddAdminModal(false);
+                  setAddAdminStep('search');
+                  setAddAdminQuery('');
+                  setAddAdminResults([]);
+                  setSelectedAddUser(null);
+                }}
+                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {addAdminStep === 'search' ? (
+              <div className="p-6">
+                {/* Search input */}
+                <div className="relative mb-4">
+                  <svg
+                    className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Search by name or email..."
+                    value={addAdminQuery}
+                    onChange={(e) => setAddAdminQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400 text-sm focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all"
+                  />
+                </div>
+
+                {/* Results */}
+                <div className="min-h-[120px]">
+                  {isSearching ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="w-5 h-5 border-2 border-[#4361EE] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : addAdminQuery.trim().length < 2 ? (
+                    <p className="text-center text-gray-400 text-sm py-8">
+                      Type at least 2 characters to search
+                    </p>
+                  ) : addAdminResults.length === 0 ? (
+                    <p className="text-center text-gray-400 text-sm py-8">No users found</p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {addAdminResults.map((u) => (
+                        <button
+                          type="button"
+                          key={u.id}
+                          onClick={() => {
+                            setSelectedAddUser(u);
+                            setAddAdminStep('confirm');
+                          }}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all text-left"
+                        >
+                          <div
+                            className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(u.fullName || u.email)}`}
+                          >
+                            {(u.fullName || u.email).charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-900 truncate">{u.fullName}</p>
+                            <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium shrink-0">
+                            {u.role}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end pt-4 mt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddAdminModal(false)}
+                    className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6">
+                {selectedAddUser && (
+                  <>
+                    {/* User preview */}
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-5">
+                      <div
+                        className={`w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${getAvatarColor(selectedAddUser.fullName || selectedAddUser.email)}`}
+                      >
+                        {(selectedAddUser.fullName || selectedAddUser.email)
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">
+                          {selectedAddUser.fullName}
+                        </p>
+                        <p className="text-xs text-gray-500">{selectedAddUser.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Warning */}
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-5">
+                      <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                        This user will be granted full admin access to the StudentOS admin panel.
+                        This action is logged and can be reversed.
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setAddAdminStep('search')}
+                        className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAssignAdmin}
+                        disabled={isAssigning}
+                        className="px-5 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold shadow-sm transition-all"
+                      >
+                        {isAssigning ? 'Assigning...' : 'Assign Admin Role'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Remove Admin Confirmation Modal */}
+      {showRemoveConfirmModal && removingUser && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-0 overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 bg-red-50/50">
+              <h3 className="text-base font-bold text-gray-900">Remove Admin Access</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                This action will demote the user to Student
+              </p>
+            </div>
+            <div className="p-6">
+              {/* User preview */}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-5">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(removingUser.fullName || removingUser.email)}`}
+                >
+                  {(removingUser.fullName || removingUser.email).charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{removingUser.fullName}</p>
+                  <p className="text-xs text-gray-500">{removingUser.email}</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-red-600 font-medium mb-5 leading-relaxed">
+                Removing admin access will immediately revoke their ability to access the admin
+                panel. Their admin roles will also be cleared.
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRemoveConfirmModal(false);
+                    setRemovingUser(null);
+                  }}
+                  className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveAdmin}
+                  disabled={isRemoving}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold shadow-sm transition-all"
+                >
+                  {isRemoving ? 'Removing...' : 'Remove Admin Access'}
                 </button>
               </div>
             </div>
