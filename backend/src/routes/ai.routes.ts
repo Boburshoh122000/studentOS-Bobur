@@ -134,7 +134,7 @@ router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
     const scans = await prisma.atsScan.findMany({
       where: { userId: req.user!.id },
       orderBy: { createdAt: 'desc' },
-      take: 10,
+      take: 20,
       select: {
         id: true,
         score: true,
@@ -150,13 +150,48 @@ router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// GET /ats-history/:id - Get full scan result by ID
+router.get('/ats-history/:id', async (req: AuthenticatedRequest, res) => {
+  try {
+    const scan = await prisma.atsScan.findFirst({
+      where: { id: String(req.params.id), userId: req.user!.id },
+    });
+    if (!scan) {
+      res.status(404).json({ success: false, error: 'Scan not found' });
+      return;
+    }
+    res.json({ success: true, data: scan });
+  } catch (error) {
+    console.error('Failed to fetch ATS scan:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch scan' });
+  }
+});
+
+// DELETE /ats-history/:id - Delete a scan
+router.delete('/ats-history/:id', async (req: AuthenticatedRequest, res) => {
+  try {
+    const scan = await prisma.atsScan.findFirst({
+      where: { id: String(req.params.id), userId: req.user!.id },
+    });
+    if (!scan) {
+      res.status(404).json({ success: false, error: 'Scan not found' });
+      return;
+    }
+    await prisma.atsScan.delete({ where: { id: scan.id } });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete ATS scan:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete scan' });
+  }
+});
+
 // CV/ATS Analysis
 router.post(
   '/analyze-cv',
   requireCredits('ats-checker'),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const { cvText, jobDescription } = req.body;
+      const { cvText, jobDescription, fileName } = req.body;
 
       if (!cvText) {
         res.status(400).json({ error: 'CV text is required' });
@@ -180,22 +215,25 @@ router.post(
         console.error('Failed to update ATS score in profile:', dbError);
       }
 
-      // Save scan to history
+      // Save scan to history and return scanId
+      let scanId: string | null = null;
       try {
-        await prisma.atsScan.create({
+        const scan = await prisma.atsScan.create({
           data: {
             userId: req.user!.id,
             score: analysis.score,
             jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+            fileName: fileName || null,
             jobDescription: jobDescription || null,
             result: analysis as any,
           },
         });
+        scanId = scan.id;
       } catch (dbError) {
         console.error('Failed to save ATS scan history:', dbError);
       }
 
-      res.json({ ...analysis, remainingCredits: (req as any).remainingBalance ?? null });
+      res.json({ ...analysis, scanId, remainingCredits: (req as any).remainingBalance ?? null });
     } catch (error: any) {
       handleAIError(error, res, next);
     }

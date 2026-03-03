@@ -380,8 +380,8 @@ export const communityApi = {
 
 // AI API
 export const aiApi = {
-  analyzeCV: (cvText: string, jobDescription?: string) =>
-    api.post('/ai/analyze-cv', { cvText, jobDescription }),
+  analyzeCV: (cvText: string, jobDescription?: string, fileName?: string) =>
+    api.post('/ai/analyze-cv', { cvText, jobDescription, fileName }),
   extractText: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -421,6 +421,19 @@ export const aiApi = {
         createdAt: string;
       }>;
     }>('/ai/ats-history'),
+  getAtsScan: (id: string) =>
+    api.get<{
+      success: boolean;
+      data: {
+        id: string;
+        score: number;
+        jobRole: string | null;
+        fileName: string | null;
+        result: any;
+        createdAt: string;
+      };
+    }>(`/ai/ats-history/${id}`),
+  deleteAtsScan: (id: string) => api.delete<{ success: boolean }>(`/ai/ats-history/${id}`),
 };
 
 // Learning Plan API

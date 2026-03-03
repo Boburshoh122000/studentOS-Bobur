@@ -17,6 +17,7 @@ import {
   PencilSquareIcon,
   PlusIcon,
   SparklesIcon,
+  TrashIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
@@ -70,6 +71,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const [error, setError] = useState<string | null>(null);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState(false);
+  const [isLoadingScan, setIsLoadingScan] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -90,14 +93,44 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const fetchHistory = useCallback(async () => {
     try {
       setHistoryLoading(true);
-      const { data } = await aiApi.getAtsHistory();
+      setHistoryError(false);
+      const { data, error } = await aiApi.getAtsHistory();
+      if (error) {
+        setHistoryError(true);
+        return;
+      }
       if (data?.data) setScanHistory(data.data);
     } catch {
-      /* silent */
+      setHistoryError(true);
     } finally {
       setHistoryLoading(false);
     }
   }, []);
+
+  const handleLoadScan = async (id: string) => {
+    setIsLoadingScan(id);
+    try {
+      const { data, error } = await aiApi.getAtsScan(id);
+      if (error || !data?.data?.result) throw new Error(error || 'No result');
+      setAnalysisResult(data.data.result as CVAnalysisResult);
+      setActiveTab('overview');
+    } catch (err) {
+      console.error('Failed to load scan:', err);
+    } finally {
+      setIsLoadingScan(null);
+    }
+  };
+
+  const handleDeleteScan = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this scan from history?')) return;
+    try {
+      await aiApi.deleteAtsScan(id);
+      setScanHistory((prev) => prev.filter((s) => s.id !== id));
+    } catch (err) {
+      console.error('Failed to delete scan:', err);
+    }
+  };
 
   useEffect(() => {
     fetchHistory();
@@ -164,7 +197,11 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const response = await aiApi.analyzeCV(cvText, jobDescription || undefined);
+      const response = await aiApi.analyzeCV(
+        cvText,
+        jobDescription || undefined,
+        selectedFile?.name
+      );
 
       // Handle 402 Insufficient Credits
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -182,10 +219,25 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       }
       if (response.error) throw new Error(response.error);
 
-      const data = response.data as CVAnalysisResult;
-      setAnalysisResult(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response.data as any;
+      setAnalysisResult(data as CVAnalysisResult);
       setActiveTab('overview');
-      fetchHistory();
+
+      // Prepend new scan to sidebar without refetching
+      const scanId = data.scanId as string | null;
+      if (scanId) {
+        const newScan: ScanHistoryItem = {
+          id: scanId,
+          score: data.score,
+          jobRole: jobDescription ? jobDescription.substring(0, 100) : null,
+          fileName: selectedFile?.name || null,
+          createdAt: new Date().toISOString(),
+        };
+        setScanHistory((prev) => [newScan, ...prev].slice(0, 20));
+      } else {
+        fetchHistory();
+      }
       refreshBalance();
     } catch (err: unknown) {
       console.error('Failed to analyze CV:', err);
@@ -1061,12 +1113,24 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <div className="flex items-center justify-center py-6">
                       <ArrowPathIcon className="w-4 h-4 animate-spin text-gray-400" />
                     </div>
+                  ) : historyError ? (
+                    <div className="text-center py-6">
+                      <ExclamationCircleIcon className="w-6 h-6 mx-auto text-red-300 mb-2" />
+                      <p className="text-sm text-gray-400 mb-2">Failed to load history</p>
+                      <button
+                        type="button"
+                        onClick={fetchHistory}
+                        className="text-xs text-indigo-500 hover:text-indigo-600 font-medium"
+                      >
+                        Retry
+                      </button>
+                    </div>
                   ) : scanHistory.length === 0 ? (
                     <div className="text-center py-6">
                       <DocumentTextIcon className="w-6 h-6 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
                       <p className="text-sm text-gray-400">No scans yet</p>
                       <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
-                        Upload a CV to get started
+                        Upload your CV to get started!
                       </p>
                     </div>
                   ) : (
@@ -1074,12 +1138,20 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       {scanHistory.map((scan) => (
                         <div
                           key={scan.id}
-                          className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
+                          onClick={() => handleLoadScan(scan.id)}
+                          className="group flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl cursor-pointer transition border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <DocumentTextIcon className="w-5 h-5 text-gray-400 shrink-0" />
+                            {isLoadingScan === scan.id ? (
+                              <ArrowPathIcon className="w-5 h-5 text-indigo-400 animate-spin shrink-0" />
+                            ) : (
+                              <DocumentTextIcon className="w-5 h-5 text-gray-400 shrink-0" />
+                            )}
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                              <p
+                                className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[130px]"
+                                title={scan.fileName || scan.jobRole || 'CV Analysis'}
+                              >
                                 {scan.fileName || scan.jobRole || 'CV Analysis'}
                               </p>
                               <p className="text-xs text-gray-400 flex items-center gap-1">
@@ -1088,15 +1160,27 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                               </p>
                             </div>
                           </div>
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${
-                              scan.score >= 80
-                                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
-                                : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
-                            }`}
-                          >
-                            {scan.score}%
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteScan(scan.id, e)}
+                              className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 transition-all rounded"
+                              title="Delete scan"
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                scan.score >= 80
+                                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
+                                  : scan.score >= 60
+                                    ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800'
+                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800'
+                              }`}
+                            >
+                              {scan.score}%
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
