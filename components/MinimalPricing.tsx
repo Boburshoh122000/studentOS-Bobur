@@ -14,13 +14,13 @@ import {
 /* ─── Credit Packages Data ──────────────────────────────── */
 const packages = [
   {
-    name: 'Starter Pack',
-    credits: 50,
-    price: 5,
+    name: 'Starter',
+    credits: 25,
+    price: '27,000',
     badge: null,
     highlighted: false,
     features: [
-      '50 one-time credits',
+      '25 one-time credits',
       'Use any tool, any time',
       'Credits never expire',
       'Basic support',
@@ -28,34 +28,34 @@ const packages = [
     cta: 'Buy Starter',
   },
   {
-    name: 'Popular Pack',
-    credits: 250,
-    price: 20,
+    name: 'Standard',
+    credits: 80,
+    price: '77,000',
     badge: 'BEST VALUE',
     highlighted: true,
     features: [
-      '250 one-time credits',
+      '80 one-time credits',
       'Use any tool, any time',
       'Credits never expire',
       'Priority support',
-      'Bonus: 25 free credits',
+      'Bonus: 10 free credits',
     ],
-    cta: 'Buy Popular Pack',
+    cta: 'Buy Standard',
   },
   {
-    name: 'Power Pack',
-    credits: 1000,
-    price: 50,
+    name: 'Pro',
+    credits: 200,
+    price: '165,000',
     badge: null,
     highlighted: false,
     features: [
-      '1,000 one-time credits',
+      '200 one-time credits',
       'Use any tool, any time',
       'Credits never expire',
       'Priority support',
       'Bulk discount applied',
     ],
-    cta: 'Buy Power Pack',
+    cta: 'Buy Pro',
   },
 ];
 
@@ -120,6 +120,12 @@ export default function MinimalPricing() {
   const explainerRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
   const explainerInView = useInView(explainerRef, { once: true, margin: '-80px' });
+
+  const handleBuyClick = (planName: string, credits: number) => {
+    const message = `Men ${planName} (${credits} kredit) bo'yicha sotib olmoqchiman.`;
+    const telegramUrl = `https://t.me/javokhir_tu?text=${encodeURIComponent(message)}`;
+    window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const headingWords = 'Simple, flexible credit pricing.'.split(' ');
 
@@ -199,12 +205,11 @@ export default function MinimalPricing() {
             <p className="text-sm text-gray-400 mb-6">{pkg.credits.toLocaleString()} credits</p>
 
             {/* Price */}
-            <div className="flex items-baseline gap-1 mb-8">
-              <span className="text-gray-400 text-2xl font-medium">$</span>
-              <span className="text-5xl font-extrabold text-indigo-600 tracking-tighter">
+            <div className="flex items-baseline gap-1.5 mb-8">
+              <span className="text-4xl md:text-[2.5rem] font-extrabold text-indigo-600 tracking-tighter leading-none">
                 {pkg.price}
               </span>
-              <span className="text-gray-400 text-sm font-medium ml-1">one-time</span>
+              <span className="text-gray-400 text-sm font-medium">so'm</span>
             </div>
 
             {/* Features */}
@@ -221,6 +226,7 @@ export default function MinimalPricing() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              onClick={() => handleBuyClick(pkg.name, pkg.credits)}
               className={`
                                 w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-200
                                 ${
