@@ -28,6 +28,8 @@ import AdminTeam from './components/AdminTeam';
 import AdminProfile from './components/AdminProfile';
 import EmployerDashboard from './components/EmployerDashboard';
 import StudentSettings from './components/StudentSettings';
+import CareerToolsHub from './components/CareerToolsHub';
+import CVBuilderPage from './components/CVBuilderPage';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.LANDING);
@@ -68,6 +70,8 @@ export default function App() {
       {currentScreen === Screen.ADMIN_TEAM && <AdminTeam navigateTo={navigateTo} />}
       {currentScreen === Screen.ADMIN_SETTINGS && <AdminProfile navigateTo={navigateTo} />}
       {currentScreen === Screen.EMPLOYER_DASHBOARD && <EmployerDashboard navigateTo={navigateTo} />}
+      {currentScreen === Screen.CAREER_TOOLS && <CareerToolsHub navigateTo={navigateTo} />}
+      {currentScreen === Screen.CV_BUILDER && <CVBuilderPage navigateTo={navigateTo} />}
     </div>
   );
 }

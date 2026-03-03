@@ -434,6 +434,20 @@ export const aiApi = {
       };
     }>(`/ai/ats-history/${id}`),
   deleteAtsScan: (id: string) => api.delete<{ success: boolean }>(`/ai/ats-history/${id}`),
+  getCareerActivity: () =>
+    api.get<{
+      success: boolean;
+      activities: Array<{
+        id: string;
+        type: string;
+        title: string;
+        description: string;
+        score: number | null;
+        status: string | null;
+        timestamp: string;
+        scanId: string;
+      }>;
+    }>('/ai/career-activity'),
 };
 
 // Learning Plan API

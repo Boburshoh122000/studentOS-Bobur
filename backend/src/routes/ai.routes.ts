@@ -128,6 +128,34 @@ router.get('/test', async (_req, res) => {
 // All AI routes require authentication AND rate limiting (10 req/min)
 router.use(authenticate, aiRateLimit);
 
+// GET /career-activity - Unified career tools recent activity feed
+router.get('/career-activity', async (req: AuthenticatedRequest, res) => {
+  try {
+    const atsScans = await prisma.atsScan.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+      select: { id: true, score: true, jobRole: true, fileName: true, createdAt: true },
+    });
+
+    const activities = atsScans.map((scan) => ({
+      id: `ats_${scan.id}`,
+      type: 'ats_scan',
+      title: scan.fileName || scan.jobRole || 'CV Analysis',
+      description: 'Scanned',
+      score: scan.score,
+      status: null,
+      timestamp: scan.createdAt,
+      scanId: scan.id,
+    }));
+
+    res.json({ success: true, activities });
+  } catch (error) {
+    console.error('Failed to fetch career activity:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch activity' });
+  }
+});
+
 // GET /ats-history - Get recent ATS scan history
 router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
   try {

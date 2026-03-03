@@ -136,6 +136,14 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     fetchHistory();
   }, [fetchHistory]);
 
+  // Auto-load a specific scan when navigated from Career Tools hub
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem('pendingScanId');
+    if (!pendingId) return;
+    sessionStorage.removeItem('pendingScanId');
+    handleLoadScan(pendingId);
+  }, []);
+
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
