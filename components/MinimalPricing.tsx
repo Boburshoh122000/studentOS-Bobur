@@ -122,7 +122,7 @@ export default function MinimalPricing() {
   const explainerInView = useInView(explainerRef, { once: true, margin: '-80px' });
 
   const handleBuyClick = (planName: string, credits: number) => {
-    const message = `Men ${planName} (${credits} kredit) bo'yicha sotib olmoqchiman.`;
+    const message = `Salom, men ${planName} ta'rifi bo'yicha (${credits} kredit) sotib olmoqchiman. To'lov qilish tartibi va keyingi bosqichlar bo'yicha ma'lumot bersangiz.`;
     const telegramUrl = `https://t.me/javokhir_tu?text=${encodeURIComponent(message)}`;
     window.open(telegramUrl, '_blank', 'noopener,noreferrer');
   };
