@@ -2,6 +2,7 @@ import { NavigationProps } from '../types';
 import MinimalHeader from './MinimalHeader';
 import TrustlineHero from './TrustlineHero';
 import TrustedMarquee from './TrustedMarquee';
+import EcosystemSection from './EcosystemSection';
 import MinimalCoreTools from './MinimalCoreTools';
 import MinimalPricing from './MinimalPricing';
 import MinimalFooter from './MinimalFooter';
@@ -22,6 +23,9 @@ export default function LandingPage({ navigateTo: _navigateTo }: NavigationProps
 
         {/* Phase 2: Trusted Marquee */}
         <TrustedMarquee />
+
+        {/* Phase 2.5: Ecosystem */}
+        <EcosystemSection />
 
         {/* Phase 3: Core Tools & Pricing */}
         <MinimalCoreTools />
