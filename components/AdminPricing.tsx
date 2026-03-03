@@ -1,24 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Screen, NavigationProps } from '../types';
-import { useAuth } from '../src/contexts/AuthContext';
+import { NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
 import {
-  AcademicCapIcon,
-  BellIcon,
-  BriefcaseIcon,
   ClockIcon,
-  CreditCardIcon,
-  DocumentTextIcon,
   GiftIcon,
   MagnifyingGlassIcon,
   PencilIcon,
   PlusIcon,
-  ShieldCheckIcon,
-  Squares2X2Icon,
-  UsersIcon,
   WalletIcon,
 } from '@heroicons/react/24/solid';
 
@@ -51,11 +41,6 @@ const AVAILABLE_TOOLS = [
 ];
 
 export default function AdminPricing({ navigateTo }: NavigationProps) {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
   // Data states
   const [tools, setTools] = useState<Tool[]>([]);
   const [settings, setSettings] = useState<AppSettings>({});
@@ -134,19 +119,6 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
       return matchesSearch && matchesPlan;
     });
   }, [tools, searchQuery, filterPlan]);
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      toast.error('Logout failed. Please try again.');
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   const handleSaveSettings = async () => {
     setSaving(true);
@@ -276,563 +248,391 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
-      <aside
-        className={`${isSidebarExpanded ? 'w-72' : 'w-20'} flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2330] transition-all duration-300 relative z-20`}
-      >
-        <button
-          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-          className="absolute -right-3 top-9 bg-white dark:bg-[#1e2330] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary rounded-full p-1 shadow-md transition-colors z-50 flex items-center justify-center size-6"
-        >
-          <span className="material-symbols-outlined text-[14px]">
-            {isSidebarExpanded ? 'chevron_left' : 'chevron_right'}
-          </span>
-        </button>
-
-        <div className="flex h-full flex-col justify-between p-4 overflow-hidden">
-          <div className="flex flex-col gap-6">
-            <div
-              className={`flex items-center gap-3 px-2 cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
-              onClick={() => navigateTo(Screen.LANDING)}
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                <AcademicCapIcon className="w-6 h-6" />
-              </div>
-              <div
-                className={`flex flex-col transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
-              >
-                <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white whitespace-nowrap">
-                  StudentOS
-                </h1>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                  Admin Console
-                </p>
-              </div>
-            </div>
-            <nav className="flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_DASHBOARD)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Dashboard' : ''}
-              >
-                <Squares2X2Icon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Dashboard</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_EMPLOYERS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Employers' : ''}
-              >
-                <BriefcaseIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Employers</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_PRICING)}
-                className={`flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:text-white dark:bg-primary/20 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Pricing' : ''}
-              >
-                <CreditCardIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_USERS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Users' : ''}
-              >
-                <UsersIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Users</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_SCHOLARSHIPS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Scholarships' : ''}
-              >
-                <AcademicCapIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Scholarships</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_BLOG)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Blog Management' : ''}
-              >
-                <DocumentTextIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Blog Management</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_ROLES)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Roles & Permissions' : ''}
-              >
-                <ShieldCheckIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Roles & Permissions</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_NOTIFICATIONS)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Notifications' : ''}
-              >
-                <BellIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Notifications</span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ADMIN_TEAM)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors w-full ${!isSidebarExpanded ? 'justify-center' : 'text-left'}`}
-                title={!isSidebarExpanded ? 'Team Management' : ''}
-              >
-                <UsersIcon className="w-5 h-5" />
-                {isSidebarExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">Team Management</span>
-                )}
-              </button>
-            </nav>
+    <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421]">
+      <div className="mx-auto w-full max-w-7xl px-6 py-8">
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              Tool Pricing Management
+            </h2>
+            <p className="text-base text-slate-500 dark:text-slate-400">
+              Configure credit costs and manage platform tools
+            </p>
           </div>
-          <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+          <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => navigateTo(Screen.ADMIN_SETTINGS)}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer ${!isSidebarExpanded && 'justify-center px-0'}`}
+              onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
-              <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
-                AD
-              </div>
-              <div
-                className={`flex flex-col transition-opacity duration-200 text-left ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}
-              >
-                <p className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                  Admin
-                </p>
-                <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
-                  Profile Settings
-                </p>
-              </div>
+              <ClockIcon className="w-[18px] h-[18px]" />
+              <span>View Audit Log</span>
             </button>
             <button
               type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ${!isSidebarExpanded ? 'justify-center' : 'justify-center'} ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={!isSidebarExpanded ? 'Logout' : ''}
+              onClick={() => setShowAddToolModal(true)}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
             >
-              <span className="material-symbols-outlined text-lg">
-                {isLoggingOut ? 'hourglass_empty' : 'logout'}
-              </span>
-              {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
+              <PlusIcon className="w-[18px] h-[18px]" />
+              <span>Add New Tool</span>
             </button>
           </div>
-        </div>
-      </aside>
-      <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421]">
-        <div className="mx-auto w-full max-w-7xl px-6 py-8">
-          <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                Tool Pricing Management
-              </h2>
-              <p className="text-base text-slate-500 dark:text-slate-400">
-                Configure credit costs and manage platform tools
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
-                className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-              >
-                <ClockIcon className="w-[18px] h-[18px]" />
-                <span>View Audit Log</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddToolModal(true)}
-                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
-              >
-                <PlusIcon className="w-[18px] h-[18px]" />
-                <span>Add New Tool</span>
-              </button>
-            </div>
-          </header>
+        </header>
 
-          {/* Manual Credit Allocation */}
-          <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <WalletIcon className="w-5 h-5 text-primary" />
-                Manual Credit Allocation
+        {/* Manual Credit Allocation */}
+        <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <WalletIcon className="w-5 h-5 text-primary" />
+              Manual Credit Allocation
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Grant credits to users manually — for rewards, refunds, or promotions
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4 items-end">
+            <div className="md:col-span-2">
+              <label
+                htmlFor="grant-email"
+                className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
+              >
+                User Email
+              </label>
+              <input
+                type="email"
+                id="grant-email"
+                placeholder="user@example.com"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151827] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="grant-amount"
+                className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
+              >
+                Credits
+              </label>
+              <input
+                type="number"
+                id="grant-amount"
+                placeholder="100"
+                min="1"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151827] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const emailEl = document.getElementById('grant-email') as HTMLInputElement;
+                  const amountEl = document.getElementById('grant-amount') as HTMLInputElement;
+                  const email = emailEl?.value?.trim();
+                  const amount = parseInt(amountEl?.value);
+                  if (!email) {
+                    toast.error('Enter a user email');
+                    return;
+                  }
+                  if (!amount || amount <= 0) {
+                    toast.error('Enter a valid amount');
+                    return;
+                  }
+                  try {
+                    const { data, error } = await adminApi.grantCredits({ email, amount });
+                    if (error) {
+                      toast.error(error);
+                      return;
+                    }
+                    toast.success(
+                      `Granted ${amount} credits to ${email}. New balance: ${(data as any)?.newBalance}`
+                    );
+                    emailEl.value = '';
+                    amountEl.value = '';
+                  } catch {
+                    toast.error('Failed to grant credits');
+                  }
+                }}
+                className="w-full px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 flex items-center justify-center gap-2"
+              >
+                <GiftIcon className="w-[18px] h-[18px]" />
+                Grant Credits
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Global Configuration */}
+        <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Global Configuration
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Grant credits to users manually — for rewards, refunds, or promotions
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Manage credit rewards and promotional settings
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4 items-end">
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="grant-email"
-                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
-                >
-                  User Email
-                </label>
-                <input
-                  type="email"
-                  id="grant-email"
-                  placeholder="user@example.com"
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151827] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="grant-amount"
-                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1 block"
-                >
-                  Credits
-                </label>
-                <input
-                  type="number"
-                  id="grant-amount"
-                  placeholder="100"
-                  min="1"
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151827] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                />
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const emailEl = document.getElementById('grant-email') as HTMLInputElement;
-                    const amountEl = document.getElementById('grant-amount') as HTMLInputElement;
-                    const email = emailEl?.value?.trim();
-                    const amount = parseInt(amountEl?.value);
-                    if (!email) {
-                      toast.error('Enter a user email');
-                      return;
-                    }
-                    if (!amount || amount <= 0) {
-                      toast.error('Enter a valid amount');
-                      return;
-                    }
-                    try {
-                      const { data, error } = await adminApi.grantCredits({ email, amount });
-                      if (error) {
-                        toast.error(error);
-                        return;
-                      }
-                      toast.success(
-                        `Granted ${amount} credits to ${email}. New balance: ${(data as any)?.newBalance}`
-                      );
-                      emailEl.value = '';
-                      amountEl.value = '';
-                    } catch {
-                      toast.error('Failed to grant credits');
-                    }
-                  }}
-                  className="w-full px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 flex items-center justify-center gap-2"
-                >
-                  <GiftIcon className="w-[18px] h-[18px]" />
-                  Grant Credits
-                </button>
+            <button
+              type="button"
+              onClick={handleSaveSettings}
+              disabled={saving}
+              className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* System Currency - Read Only */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
+                System Currency
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border-slate-200 bg-[#f6f6f8] py-2.5 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-white/5 dark:text-white">
+                <span className="text-lg">💎</span>
+                <span>Credits</span>
               </div>
             </div>
-          </section>
 
-          {/* Global Configuration */}
-          <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Global Configuration
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Manage credit rewards and promotional settings
-                </p>
+            {/* Referral Reward */}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="referral-bonus"
+                className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400"
+              >
+                Referral Reward (Credits)
+              </label>
+              <div className="relative">
+                <input
+                  id="referral-bonus"
+                  className="w-full rounded-lg border-slate-200 bg-[#f6f6f8] py-2 pl-3 pr-10 text-sm font-medium text-slate-900 focus:border-primary focus:ring-primary dark:border-slate-700 dark:bg-white/5 dark:text-white"
+                  type="number"
+                  value={referralBonus}
+                  onChange={(e) => setReferralBonus(e.target.value)}
+                  min="0"
+                />
+                <span className="absolute right-3 top-2 text-lg">💎</span>
               </div>
+              <p className="text-xs text-slate-400">Credits given when a user invites a friend</p>
+            </div>
+
+            {/* Early Bird Access Toggle */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
+                Early Bird Access
+              </label>
+              <div className="flex items-center gap-3 py-2">
+                <label className="relative inline-flex cursor-pointer items-center">
+                  <input
+                    checked={earlyBirdActive}
+                    onChange={(e) => setEarlyBirdActive(e.target.checked)}
+                    className="peer sr-only"
+                    type="checkbox"
+                  />
+                  <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
+                  <span className="ml-3 text-sm font-medium text-slate-900 dark:text-white">
+                    {earlyBirdActive ? 'Active' : 'Inactive'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tools Table */}
+        <section className="flex flex-col gap-4">
+          <div className="border-b border-slate-200 dark:border-slate-700">
+            <div className="flex gap-8">
               <button
                 type="button"
-                onClick={handleSaveSettings}
-                disabled={saving}
-                className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                className="relative pb-4 text-sm font-bold text-primary dark:text-primary-dark"
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                Credit Pricing
+                <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary dark:bg-primary-dark"></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toast('Discount Coupons coming soon!', { icon: '🎟️' })}
+                className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                Discount Coupons
+              </button>
+              <button
+                type="button"
+                onClick={() => toast('Bundles coming soon!', { icon: '📦' })}
+                className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                Bundles
               </button>
             </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* System Currency - Read Only */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-                  System Currency
-                </label>
-                <div className="flex items-center gap-2 rounded-lg border-slate-200 bg-[#f6f6f8] py-2.5 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-white/5 dark:text-white">
-                  <span className="text-lg">💎</span>
-                  <span>Credits</span>
-                </div>
-              </div>
+          </div>
 
-              {/* Referral Reward */}
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="referral-bonus"
-                  className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400"
-                >
-                  Referral Reward (Credits)
-                </label>
-                <div className="relative">
-                  <input
-                    id="referral-bonus"
-                    className="w-full rounded-lg border-slate-200 bg-[#f6f6f8] py-2 pl-3 pr-10 text-sm font-medium text-slate-900 focus:border-primary focus:ring-primary dark:border-slate-700 dark:bg-white/5 dark:text-white"
-                    type="number"
-                    value={referralBonus}
-                    onChange={(e) => setReferralBonus(e.target.value)}
-                    min="0"
-                  />
-                  <span className="absolute right-3 top-2 text-lg">💎</span>
-                </div>
-                <p className="text-xs text-slate-400">Credits given when a user invites a friend</p>
-              </div>
-
-              {/* Early Bird Access Toggle */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-                  Early Bird Access
-                </label>
-                <div className="flex items-center gap-3 py-2">
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input
-                      checked={earlyBirdActive}
-                      onChange={(e) => setEarlyBirdActive(e.target.checked)}
-                      className="peer sr-only"
-                      type="checkbox"
-                    />
-                    <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
-                    <span className="ml-3 text-sm font-medium text-slate-900 dark:text-white">
-                      {earlyBirdActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </label>
-                </div>
-              </div>
+          {/* Search and Filter */}
+          <div className="flex flex-wrap items-center justify-between gap-4 py-2">
+            <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
+              <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+              <input
+                className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
+                aria-label="Search tools"
+                placeholder="Search tools..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-          </section>
-
-          {/* Tools Table */}
-          <section className="flex flex-col gap-4">
-            <div className="border-b border-slate-200 dark:border-slate-700">
-              <div className="flex gap-8">
-                <button
-                  type="button"
-                  className="relative pb-4 text-sm font-bold text-primary dark:text-primary-dark"
-                >
-                  Credit Pricing
-                  <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary dark:bg-primary-dark"></span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast('Discount Coupons coming soon!', { icon: '🎟️' })}
-                  className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  Discount Coupons
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast('Bundles coming soon!', { icon: '📦' })}
-                  className="pb-4 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  Bundles
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <select
+                value={filterPlan}
+                onChange={(e) => setFilterPlan(e.target.value as 'all' | 'premium' | 'free')}
+                aria-label="Filter by plan type"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 text-sm font-medium text-slate-900 dark:text-white"
+              >
+                <option value="all">All Plans</option>
+                <option value="premium">Premium Only</option>
+                <option value="free">Free Only</option>
+              </select>
             </div>
+          </div>
 
-            {/* Search and Filter */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2">
-              <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 shadow-sm max-w-md">
-                <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <input
-                  className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none"
-                  aria-label="Search tools"
-                  placeholder="Search tools..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2">
-                <select
-                  value={filterPlan}
-                  onChange={(e) => setFilterPlan(e.target.value as 'all' | 'premium' | 'free')}
-                  aria-label="Filter by plan type"
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-3 py-2 text-sm font-medium text-slate-900 dark:text-white"
-                >
-                  <option value="all">All Plans</option>
-                  <option value="premium">Premium Only</option>
-                  <option value="free">Free Only</option>
-                </select>
-              </div>
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <GlobalLoader fullScreen={false} />
             </div>
-
-            {/* Loading State */}
-            {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <GlobalLoader fullScreen={false} />
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">
+                    <tr>
+                      <th className="w-12 px-6 py-4" scope="col" aria-label="Select">
+                        <input
+                          aria-label="Select all tools"
+                          className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
+                          type="checkbox"
+                        />
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Tool Name
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Category
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Plan Type
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Credit Cost
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Last Updated
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                    {filteredTools.length === 0 ? (
                       <tr>
-                        <th className="w-12 px-6 py-4" scope="col" aria-label="Select">
-                          <input
-                            aria-label="Select all tools"
-                            className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
-                            type="checkbox"
-                          />
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Tool Name
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Category
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Plan Type
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Credit Cost
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Last Updated
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
-                          Actions
-                        </th>
+                        <td colSpan={7} className="px-6 py-12 text-center">
+                          <p className="text-slate-500">No tools found</p>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                      {filteredTools.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} className="px-6 py-12 text-center">
-                            <p className="text-slate-500">No tools found</p>
+                    ) : (
+                      filteredTools.map((tool) => (
+                        <tr
+                          key={tool.id}
+                          className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                        >
+                          <td className="px-6 py-4">
+                            <input
+                              aria-label={`Select ${tool.name}`}
+                              className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
+                              type="checkbox"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`flex h-10 w-10 items-center justify-center rounded-lg font-bold ${getIconColor(tool.category)}`}
+                              >
+                                <span className="material-symbols-outlined">
+                                  {tool.icon || 'extension'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                  {tool.name}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {tool.description || tool.slug}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                              {tool.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {tool.creditCost > 0 ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                Premium
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                Free
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1">
+                              {tool.creditCost} <span className="text-lg">💎</span>
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                            {formatDate(tool.updatedAt)}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEditTool(tool)}
+                                type="button"
+                                aria-label={`Edit credit cost for ${tool.name}`}
+                                className="rounded-lg p-1.5 text-primary hover:bg-indigo-50 dark:text-primary dark:hover:bg-indigo-900/20 transition-colors"
+                                title="Edit Credit Cost"
+                              >
+                                <PencilIcon className="w-5 h-5" />
+                              </button>
+                              <div className="flex items-center">
+                                <label className="relative inline-flex cursor-pointer items-center">
+                                  <input
+                                    checked={tool.isActive}
+                                    onChange={() => handleToggleTool(tool.id)}
+                                    aria-label={`Toggle ${tool.name} active`}
+                                    className="peer sr-only"
+                                    type="checkbox"
+                                  />
+                                  <div className="peer h-5 w-9 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
+                                </label>
+                              </div>
+                            </div>
                           </td>
                         </tr>
-                      ) : (
-                        filteredTools.map((tool) => (
-                          <tr
-                            key={tool.id}
-                            className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                          >
-                            <td className="px-6 py-4">
-                              <input
-                                aria-label={`Select ${tool.name}`}
-                                className="h-4 w-4 rounded border-slate-200 text-primary focus:ring-primary dark:border-slate-700 dark:bg-white/10"
-                                type="checkbox"
-                              />
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`flex h-10 w-10 items-center justify-center rounded-lg font-bold ${getIconColor(tool.category)}`}
-                                >
-                                  <span className="material-symbols-outlined">
-                                    {tool.icon || 'extension'}
-                                  </span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                                    {tool.name}
-                                  </p>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {tool.description || tool.slug}
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                {tool.category}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {tool.creditCost > 0 ? (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                  Premium
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                                  Free
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1">
-                                {tool.creditCost} <span className="text-lg">💎</span>
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                              {formatDate(tool.updatedAt)}
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => handleEditTool(tool)}
-                                  type="button"
-                                  aria-label={`Edit credit cost for ${tool.name}`}
-                                  className="rounded-lg p-1.5 text-primary hover:bg-indigo-50 dark:text-primary dark:hover:bg-indigo-900/20 transition-colors"
-                                  title="Edit Credit Cost"
-                                >
-                                  <PencilIcon className="w-5 h-5" />
-                                </button>
-                                <div className="flex items-center">
-                                  <label className="relative inline-flex cursor-pointer items-center">
-                                    <input
-                                      checked={tool.isActive}
-                                      onChange={() => handleToggleTool(tool.id)}
-                                      aria-label={`Toggle ${tool.name} active`}
-                                      className="peer sr-only"
-                                      type="checkbox"
-                                    />
-                                    <div className="peer h-5 w-9 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
-                                  </label>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-6 py-3">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Showing {filteredTools.length} of {tools.length} tools
-                  </p>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </section>
-        </div>
-      </main>
+              <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] px-6 py-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Showing {filteredTools.length} of {tools.length} tools
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
 
       {/* Add Tool Modal */}
       {showAddToolModal && (
@@ -1009,6 +809,6 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
