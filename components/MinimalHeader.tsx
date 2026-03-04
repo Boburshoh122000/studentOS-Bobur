@@ -2,7 +2,18 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
-import { ArrowRightOnRectangleIcon, ChevronDownIcon, Cog8ToothIcon, CpuChipIcon, DocumentTextIcon, GlobeAltIcon, ShieldCheckIcon, Squares2X2Icon } from '@heroicons/react/24/solid';
+import {
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  ChevronDownIcon,
+  Cog8ToothIcon,
+  CpuChipIcon,
+  DocumentTextIcon,
+  GlobeAltIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -85,6 +96,7 @@ export default function MinimalHeader() {
   const [langOpen, setLangOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [activeLang, setActiveLang] = useState('EN');
+  const [mobileOpen, setMobileOpen] = useState(false);
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -161,10 +173,11 @@ export default function MinimalHeader() {
           {/* About */}
           <Link
             to={navLinks[0].href}
-            className={`text-sm font-medium transition-colors relative ${pathname === navLinks[0].href
+            className={`text-sm font-medium transition-colors relative ${
+              pathname === navLinks[0].href
                 ? 'text-[#0A0A0A] font-semibold'
                 : 'text-gray-500 hover:text-[#0A0A0A]'
-              }`}
+            }`}
           >
             {navLinks[0].label}
             {pathname === navLinks[0].href && (
@@ -217,10 +230,11 @@ export default function MinimalHeader() {
             <Link
               key={link.label}
               to={link.href}
-              className={`text-sm font-medium transition-colors relative ${pathname === link.href
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === link.href
                   ? 'text-[#0A0A0A] font-semibold'
                   : 'text-gray-500 hover:text-[#0A0A0A]'
-                }`}
+              }`}
             >
               {link.label}
               {pathname === link.href && (
@@ -232,6 +246,23 @@ export default function MinimalHeader() {
 
         {/* ─── Right Side Actions ─── */}
         <div className="flex items-center gap-3">
+          {/* Mobile Hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex md:hidden items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100/60 transition-colors"
+            title="Menu"
+          >
+            <motion.div
+              animate={{ rotate: mobileOpen ? 90 : 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              {mobileOpen ? (
+                <XMarkIcon className="w-5 h-5 text-gray-700" />
+              ) : (
+                <Bars3Icon className="w-5 h-5 text-gray-700" />
+              )}
+            </motion.div>
+          </button>
           {/* Language Switcher */}
           <div className="relative" onMouseEnter={openLang} onMouseLeave={closeLang}>
             <button
@@ -260,10 +291,11 @@ export default function MinimalHeader() {
                         setActiveLang(lang.code);
                         setLangOpen(false);
                       }}
-                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${activeLang === lang.code
+                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        activeLang === lang.code
                           ? 'bg-indigo-50 text-indigo-600 font-semibold'
                           : 'text-gray-600 hover:bg-gray-50 font-medium'
-                        }`}
+                      }`}
                     >
                       <span>{lang.label}</span>
                       <span className="text-xs text-gray-400">{lang.code}</span>
@@ -369,6 +401,80 @@ export default function MinimalHeader() {
           )}
         </div>
       </motion.nav>
+
+      {/* ─── Mobile Menu Overlay ─── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            className="pointer-events-auto fixed top-24 left-0 w-full z-40 px-4 md:hidden"
+          >
+            <div className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-2xl p-5 flex flex-col gap-1.5">
+              {/* Nav links */}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    pathname === link.href
+                      ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  {link.label}
+                  {pathname === link.href && (
+                    <span className="ml-auto w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                  )}
+                </Link>
+              ))}
+
+              {/* Tools section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Tools
+                </p>
+                {toolItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-4 h-4 text-indigo-600" />
+                    </div>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Auth buttons */}
+              {!isAuthenticated && (
+                <div className="border-t border-gray-100 mt-2 pt-3 flex flex-col gap-2">
+                  <Link
+                    to="/signin"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup/step-1"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full text-center px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
