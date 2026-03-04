@@ -461,6 +461,8 @@ model BlogPost {
   coverImageUrl String?
   authorId      String
   author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorName    String     @default("StudentOS Team")
+  views         Int        @default(0)
   status        BlogStatus @default(DRAFT)
   tags          String[]   @default([])
 

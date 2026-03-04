@@ -8,6 +8,7 @@ import {
   ArrowTrendingUpIcon,
   CheckCircleIcon,
   DocumentTextIcon,
+  EyeIcon,
   MagnifyingGlassIcon,
   PencilIcon,
   PencilSquareIcon,
@@ -28,6 +29,8 @@ interface BlogPost {
   status: 'DRAFT' | 'PUBLISHED';
   publishedAt?: string;
   createdAt: string;
+  authorName?: string;
+  views?: number;
   author?: {
     studentProfile?: {
       fullName?: string;
@@ -44,6 +47,7 @@ interface EditorData {
   slug: string;
   coverImageUrl: string;
   coverImagePreview: string;
+  authorName: string;
 }
 
 const CATEGORIES = [
@@ -74,6 +78,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
     slug: '',
     coverImageUrl: '',
     coverImagePreview: '',
+    authorName: 'StudentOS Team',
   });
 
   // Fetch posts on mount
@@ -117,6 +122,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
       slug: '',
       coverImageUrl: '',
       coverImagePreview: '',
+      authorName: 'StudentOS Team',
     });
     setView('editor');
   };
@@ -131,6 +137,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
       slug: post.slug,
       coverImageUrl: post.coverImageUrl || '',
       coverImagePreview: post.coverImageUrl || '',
+      authorName: post.authorName || 'StudentOS Team',
     });
     setView('editor');
   };
@@ -150,6 +157,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         coverImageUrl: editorData.coverImageUrl || undefined,
         tags: [editorData.category],
         status: 'DRAFT' as const,
+        authorName: editorData.authorName || 'StudentOS Team',
       };
 
       let result;
@@ -191,6 +199,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         coverImageUrl: editorData.coverImageUrl || undefined,
         tags: [editorData.category],
         status: 'PUBLISHED' as const,
+        authorName: editorData.authorName || 'StudentOS Team',
       };
 
       let result;
@@ -301,7 +310,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
   };
 
   const getAuthorName = (post: BlogPost) => {
-    return post.author?.studentProfile?.fullName || 'Admin';
+    return post.authorName || post.author?.studentProfile?.fullName || 'Admin';
   };
 
   const getAuthorInitials = (name: string) => {
@@ -471,6 +480,9 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                               Date
                             </th>
                             <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                              Views
+                            </th>
+                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                               Status
                             </th>
                             <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
@@ -513,6 +525,12 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                                 {formatDate(
                                   post.status === 'PUBLISHED' ? post.publishedAt : post.createdAt
                                 )}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+                                  <EyeIcon className="w-4 h-4" />
+                                  <span>{post.views || 0}</span>
+                                </div>
                               </td>
                               <td className="px-6 py-4">
                                 {post.status === 'PUBLISHED' ? (
@@ -670,6 +688,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                       </label>
                       <select
                         className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5 py-2 px-3 text-sm focus:border-primary focus:ring-primary"
+                        title="Category"
                         value={editorData.category}
                         onChange={(e) => setEditorData({ ...editorData, category: e.target.value })}
                       >
@@ -679,6 +698,20 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                           </option>
                         ))}
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">
+                        Author Name
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5 py-2 px-3 text-sm focus:border-primary focus:ring-primary"
+                        value={editorData.authorName}
+                        onChange={(e) =>
+                          setEditorData({ ...editorData, authorName: e.target.value })
+                        }
+                        placeholder="StudentOS Team"
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">

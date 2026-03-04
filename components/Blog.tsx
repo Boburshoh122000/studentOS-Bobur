@@ -9,6 +9,7 @@ import {
   ArrowRightIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
+  EyeIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/solid';
 
@@ -21,6 +22,7 @@ interface BlogPost {
   coverImageUrl?: string;
   tags: string[];
   publishedAt: string;
+  views?: number;
   author: {
     id: string;
     name: string;
@@ -268,7 +270,13 @@ export default function Blog({ navigateTo }: NavigationProps) {
                             {post.excerpt}
                           </p>
                         )}
-                        <p className="text-xs text-slate-400 mt-1">By {post.author.name}</p>
+                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-3">
+                          <span>By {post.author.name}</span>
+                          <span className="flex items-center gap-1">
+                            <EyeIcon className="w-3.5 h-3.5" />
+                            {post.views || 0}
+                          </span>
+                        </p>
                       </div>
                     </article>
                   ))}

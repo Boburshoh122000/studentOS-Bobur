@@ -34,9 +34,10 @@ router.get('/', optionalAuth, async (req: AuthenticatedRequest, res, next) => {
     res.json({
       posts: posts.map((p) => ({
         ...p,
+        authorName: p.authorName || p.author.studentProfile?.fullName || 'Admin',
         author: {
           id: p.author.id,
-          name: p.author.studentProfile?.fullName || 'Admin',
+          name: p.authorName || p.author.studentProfile?.fullName || 'Admin',
           avatar: p.author.studentProfile?.avatarUrl,
         },
       })),
@@ -74,9 +75,10 @@ router.get('/:slug', optionalAuth, async (req: AuthenticatedRequest, res, next) 
 
     res.json({
       ...post,
+      authorName: post.authorName || post.author.studentProfile?.fullName || 'Admin',
       author: {
         id: post.author.id,
-        name: post.author.studentProfile?.fullName || 'Admin',
+        name: post.authorName || post.author.studentProfile?.fullName || 'Admin',
         avatar: post.author.studentProfile?.avatarUrl,
       },
     });
@@ -86,36 +88,41 @@ router.get('/:slug', optionalAuth, async (req: AuthenticatedRequest, res, next) 
 });
 
 // Admin: Get all posts (including drafts)
-router.get('/admin/list', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const posts = await prisma.blogPost.findMany({
-      include: {
-        author: {
-          select: {
-            studentProfile: { select: { fullName: true } },
+router.get(
+  '/admin/list',
+  authenticate,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const posts = await prisma.blogPost.findMany({
+        include: {
+          author: {
+            select: {
+              studentProfile: { select: { fullName: true } },
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      });
 
-    res.json(posts);
-  } catch (error) {
-    next(error);
+      res.json(posts);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Admin: Create post
 router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { title, content, excerpt, coverImageUrl, tags, status } = req.body;
+    const { title, content, excerpt, coverImageUrl, tags, status, authorName } = req.body;
 
     // Generate slug with collision handling
     let slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-    
+
     // Check for existing slug and make unique if needed
     const existing = await prisma.blogPost.findUnique({ where: { slug } });
     if (existing) {
@@ -132,6 +139,7 @@ router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, r
         tags: tags || [],
         status: status || 'DRAFT',
         authorId: req.user!.id,
+        authorName: authorName || 'StudentOS Team',
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
       },
     });
@@ -171,6 +179,19 @@ router.delete('/:id', authenticate, requireAdmin, async (req: AuthenticatedReque
   try {
     await prisma.blogPost.delete({ where: { id: req.params.id as string } });
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Public: Increment view count
+router.patch('/:id/view', async (req, res, next) => {
+  try {
+    await prisma.blogPost.update({
+      where: { id: req.params.id as string },
+      data: { views: { increment: 1 } },
+    });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

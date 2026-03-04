@@ -7,6 +7,7 @@ import {
   AcademicCapIcon,
   ArrowLeftIcon,
   ExclamationCircleIcon,
+  EyeIcon,
   ShareIcon,
 } from '@heroicons/react/24/solid';
 
@@ -19,6 +20,7 @@ interface BlogPostData {
   coverImageUrl?: string;
   tags: string[];
   publishedAt: string;
+  views?: number;
   author: {
     id: string;
     name: string;
@@ -56,6 +58,13 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
       setLoading(false);
     }
   };
+
+  // Increment view count on mount
+  useEffect(() => {
+    if (post?.id) {
+      blogApi.incrementView(post.id).catch(() => {});
+    }
+  }, [post?.id]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -180,6 +189,10 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                     ))}
                     <span className="text-sm text-slate-400">
                       {estimateReadTime(post.content)} min read
+                    </span>
+                    <span className="flex items-center gap-1 text-sm text-slate-400">
+                      <EyeIcon className="w-4 h-4" />
+                      {post.views || 0} views
                     </span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">

@@ -344,6 +344,7 @@ export const blogApi = {
     return api.get(`/blog?${searchParams}`);
   },
   get: (slug: string) => api.get(`/blog/${slug}`),
+  incrementView: (id: string) => api.patch(`/blog/${id}/view`, {}),
 
   // Admin endpoints
   adminList: () => api.get('/blog/admin/list'),
@@ -354,6 +355,7 @@ export const blogApi = {
     coverImageUrl?: string;
     tags?: string[];
     status?: 'DRAFT' | 'PUBLISHED';
+    authorName?: string;
   }) => api.post('/blog', data),
   update: (
     id: string,
@@ -364,6 +366,7 @@ export const blogApi = {
       coverImageUrl?: string;
       tags?: string[];
       status?: 'DRAFT' | 'PUBLISHED';
+      authorName?: string;
     }
   ) => api.patch(`/blog/${id}`, data),
   delete: (id: string) => api.delete(`/blog/${id}`),
