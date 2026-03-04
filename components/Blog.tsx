@@ -71,15 +71,26 @@ export default function Blog({ navigateTo }: NavigationProps) {
     }
   };
 
-  const filteredPosts = posts.filter((post) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      post.title.toLowerCase().includes(query) ||
-      post.excerpt?.toLowerCase().includes(query) ||
-      post.author.name.toLowerCase().includes(query) ||
-      post.tags.some((tag) => tag.toLowerCase().includes(query))
-    );
-  });
+  // Featured post = most viewed
+  const sortedByViews = [...posts].sort((a, b) => (b.views || 0) - (a.views || 0));
+  const featuredPost = sortedByViews[0] || null;
+
+  const filteredPosts = posts
+    .filter((post) => (featuredPost ? post.id !== featuredPost.id : true))
+    .filter((post) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        post.title.toLowerCase().includes(query) ||
+        post.excerpt?.toLowerCase().includes(query) ||
+        post.author.name.toLowerCase().includes(query) ||
+        post.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    });
+
+  const estimateReadTime = (content: string) => {
+    const words = content.split(/\s+/).length;
+    return Math.max(1, Math.ceil(words / 200));
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -97,66 +108,87 @@ export default function Blog({ navigateTo }: NavigationProps) {
 
         <main className="flex-1 flex flex-col items-center py-8 px-4 md:px-10">
           <div className="w-full max-w-[1024px] flex flex-col gap-10">
-            {/* Hero Section */}
-            <section className="@container">
-              <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 p-1 md:flex-row md:items-stretch">
-                <div className="w-full md:w-1/2 overflow-hidden rounded-xl relative group min-h-[300px] md:min-h-auto">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                    style={{
-                      backgroundImage:
-                        "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAav9q5LsRscRGC0ZO9SOj1e8zqUU1fK6gcRUH4eFEMzVS58hyWABU5NvCVCqPUSq9G56F5yCWkMVa1tqq4uM0CeaLcFV7GBzwTGYdMxkYlpburpgCydW0fwd-mjyJp524TXO3cJ8RXCJ7DppcZl_B7VBfZR2JZmefICcWF33X1UQESaInxPyw48CJyrtI5GDYwMB34siXC8yc4xYH2oovSyvvnGuClH1Y8bWuLe39mQXDub1P80PL7mdhPzVOF3nzqkfPyiCctHes')",
-                    }}
-                  ></div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden"></div>
-                </div>
-                <div className="flex flex-col justify-center gap-4 p-5 md:w-1/2 md:p-8">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wide">
-                      Study Tips
-                    </span>
-                    <span className="text-xs text-slate-400 font-medium">5 min read</span>
+            {/* Hero Section - Most Viewed */}
+            {featuredPost && (
+              <section
+                className="@container cursor-pointer"
+                onClick={() => navigate(`/blog/${featuredPost.slug}`)}
+              >
+                <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 p-1 md:flex-row md:items-stretch group">
+                  <div className="w-full md:w-1/2 overflow-hidden rounded-xl relative min-h-[300px] md:min-h-auto">
+                    {featuredPost.coverImageUrl ? (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                        style={{ backgroundImage: `url('${featuredPost.coverImageUrl}')` }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <DocumentTextIcon className="w-16 h-16 text-primary/30" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
                   </div>
-                  <h1 className="text-2xl font-black leading-tight tracking-tight text-slate-900 dark:text-white md:text-4xl">
-                    Mastering the Art of Deep Work: A Student's Guide
-                  </h1>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base">
-                    Unlock your full academic potential by learning how to focus without distraction
-                    in an increasingly noisy world.
-                  </p>
-                  <div className="pt-2">
-                    <button
-                      onClick={() => navigate('/blog/mastering-deep-work')}
-                      className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
-                    >
-                      Read Article <ArrowRightIcon className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="flex flex-col justify-center gap-4 p-5 md:w-1/2 md:p-8">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {featuredPost.tags.slice(0, 1).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wide"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      <span className="text-xs text-slate-400 font-medium">
+                        {estimateReadTime(featuredPost.content)} min read
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-slate-400 font-medium">
+                        <EyeIcon className="w-3.5 h-3.5" />
+                        {featuredPost.views || 0} views
+                      </span>
+                    </div>
+                    <h1 className="text-2xl font-black leading-tight tracking-tight text-slate-900 dark:text-white md:text-4xl group-hover:text-primary transition-colors">
+                      {featuredPost.title}
+                    </h1>
+                    {featuredPost.excerpt && (
+                      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base line-clamp-3">
+                        {featuredPost.excerpt}
+                      </p>
+                    )}
+                    <div className="pt-2">
+                      <span className="flex items-center gap-2 text-sm font-bold text-primary group-hover:text-blue-600 transition-colors">
+                        Read Article <ArrowRightIcon className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
             {/* Search and Filters */}
-            <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between sticky top-24 z-40 bg-background-light/95 dark:bg-background-dark/95 py-2 backdrop-blur-sm">
-              <div className="flex items-center overflow-x-auto whitespace-nowrap gap-2 w-full pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`flex h-9 flex-shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors border ${
-                      activeCategory === category
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
+            <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-24 z-40 bg-background-light/95 dark:bg-background-dark/95 py-3 backdrop-blur-sm">
+              {/* Categories - Scrollable */}
+              <div className="flex-1 w-full overflow-hidden">
+                <div className="flex overflow-x-auto whitespace-nowrap items-center gap-2 pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setActiveCategory(category)}
+                      className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors border ${
+                        activeCategory === category
+                          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
               </div>
+              {/* Search Bar */}
               <div className="relative w-full md:w-72 shrink-0">
-                <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
+                <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
-                  className="h-10 w-full rounded-full border-0 bg-white dark:bg-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm"
+                  className="h-10 w-full rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm outline-none transition-all"
                   placeholder="Search articles..."
                   type="text"
                   value={searchQuery}
