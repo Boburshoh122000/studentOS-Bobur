@@ -3,6 +3,8 @@ import { NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import {
   ArrowLeftIcon,
   ArrowTrendingUpIcon,
@@ -59,6 +61,16 @@ const CATEGORIES = [
   'Financial Aid',
   'Events',
 ];
+
+const QUILL_MODULES = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ align: [] }],
+    ['link', 'clean'],
+  ],
+};
 
 export default function AdminBlog({ navigateTo }: NavigationProps) {
   const [view, setView] = useState<'list' | 'editor'>('list');
@@ -666,12 +678,16 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
                       <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
                         Content
                       </label>
-                      <textarea
-                        className="w-full h-full min-h-[400px] resize-none bg-transparent border border-slate-200 dark:border-slate-700 rounded-lg focus:border-primary focus:ring-primary p-4 text-slate-600 dark:text-slate-300 leading-relaxed"
-                        placeholder="Start writing your amazing content here..."
-                        value={editorData.content}
-                        onChange={(e) => setEditorData({ ...editorData, content: e.target.value })}
-                      ></textarea>
+                      <div className="bg-white dark:bg-[#1e2330] rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <ReactQuill
+                          theme="snow"
+                          value={editorData.content}
+                          onChange={(val: string) => setEditorData({ ...editorData, content: val })}
+                          className="h-80 mb-12"
+                          modules={QUILL_MODULES}
+                          placeholder="Start writing your amazing content here..."
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
