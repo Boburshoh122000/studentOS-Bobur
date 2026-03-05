@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { jobApi } from '../src/services/api';
+import { CURRENCY_OPTIONS } from '../src/utils/formatSalary';
 import { toast } from 'react-hot-toast';
 import {
   ArrowUpTrayIcon,
@@ -59,7 +60,7 @@ export default function PostJobModal({
     salaryMin: '',
     salaryMax: '',
     salaryPeriod: 'MONTHLY' as SalaryPeriod,
-    currency: 'USD',
+    currency: 'UZS',
     skills: '' as string,
     learningGoals: [''] as string[],
     mentorName: '',
@@ -118,11 +119,17 @@ export default function PostJobModal({
         locationType: formData.locationType,
         description: formData.description || undefined,
         requirements: formData.requirements
-          ? formData.requirements.split(',').map((r) => r.trim()).filter(Boolean)
+          ? formData.requirements
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
           : [],
         company: companyName,
         skills: formData.skills
-          ? formData.skills.split(',').map((s) => s.trim()).filter(Boolean)
+          ? formData.skills
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
       };
 
@@ -137,18 +144,20 @@ export default function PostJobModal({
         payload.currency = formData.currency;
         if (formData.applicationDeadline)
           payload.applicationDeadline = new Date(formData.applicationDeadline).toISOString();
-        if (formData.startDate)
-          payload.startDate = new Date(formData.startDate).toISOString();
-        if (formData.endDate)
-          payload.endDate = new Date(formData.endDate).toISOString();
-        if (formData.durationWeeks)
-          payload.durationWeeks = parseInt(formData.durationWeeks);
+        if (formData.startDate) payload.startDate = new Date(formData.startDate).toISOString();
+        if (formData.endDate) payload.endDate = new Date(formData.endDate).toISOString();
+        if (formData.durationWeeks) payload.durationWeeks = parseInt(formData.durationWeeks);
         if (formData.hoursPerWeek) payload.hoursPerWeek = formData.hoursPerWeek;
         payload.learningGoals = formData.learningGoals.filter(Boolean);
         if (formData.mentorName) payload.mentorName = formData.mentorName;
         if (formData.mentorTitle) payload.mentorTitle = formData.mentorTitle;
         if (formData.eligibilityYear) payload.eligibilityYear = formData.eligibilityYear;
       }
+
+      // Always send currency & salary period
+      payload.currency = formData.currency;
+      payload.salaryPeriod = formData.salaryPeriod;
+      payload.compensationType = formData.compensationType;
 
       const { error } = await jobApi.createJob(payload);
 
@@ -204,17 +213,20 @@ export default function PostJobModal({
           <div className="space-y-6">
             {/* ── Job Type Selector ── */}
             <div>
-              <label className={labelClass}>Listing Type <span className="text-red-500">*</span></label>
+              <label className={labelClass}>
+                Listing Type <span className="text-red-500">*</span>
+              </label>
               <div className="grid grid-cols-4 gap-2">
                 {JOB_TYPE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, jobType: opt.value }))}
-                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.jobType === opt.value
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                      formData.jobType === opt.value
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-primary/50'
-                      }`}
+                    }`}
                   >
                     <span className="text-lg">{opt.icon}</span>
                     <span>{opt.label}</span>
@@ -233,7 +245,9 @@ export default function PostJobModal({
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder={isInternship ? 'e.g. Marketing Intern' : 'e.g. Senior Frontend Developer'}
+                placeholder={
+                  isInternship ? 'e.g. Marketing Intern' : 'e.g. Senior Frontend Developer'
+                }
                 className={inputClass}
               />
             </div>
@@ -242,11 +256,25 @@ export default function PostJobModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Department</label>
-                <input type="text" name="department" value={formData.department} onChange={handleChange} placeholder="e.g. Engineering" className={inputClass} />
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  placeholder="e.g. Engineering"
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={labelClass}>Location</label>
-                <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. San Francisco, CA" className={inputClass} />
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g. San Francisco, CA"
+                  className={inputClass}
+                />
               </div>
             </div>
 
@@ -259,12 +287,17 @@ export default function PostJobModal({
                     key={type}
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, locationType: type }))}
-                    className={`flex-1 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${formData.locationType === type
+                    className={`flex-1 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${
+                      formData.locationType === type
                         ? 'bg-primary text-white border-primary'
                         : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
-                      }`}
+                    }`}
                   >
-                    {type === 'ONSITE' ? '🏢 Onsite' : type === 'HYBRID' ? '🔄 Hybrid' : '🏠 Remote'}
+                    {type === 'ONSITE'
+                      ? '🏢 Onsite'
+                      : type === 'HYBRID'
+                        ? '🔄 Hybrid'
+                        : '🏠 Remote'}
                   </button>
                 ))}
               </div>
@@ -287,14 +320,26 @@ export default function PostJobModal({
                       <CalendarIcon className="w-4 h-4 inline mr-1 text-red-500" />
                       Application Deadline <span className="text-red-500">*</span>
                     </label>
-                    <input type="date" name="applicationDeadline" value={formData.applicationDeadline} onChange={handleChange} className={inputClass} />
+                    <input
+                      type="date"
+                      name="applicationDeadline"
+                      value={formData.applicationDeadline}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
                   </div>
                   <div>
                     <label className={labelClass}>
                       <CalendarIcon className="w-4 h-4 inline mr-1 text-green-500" />
                       Start Date
                     </label>
-                    <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className={inputClass} />
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
                   </div>
                 </div>
 
@@ -305,14 +350,28 @@ export default function PostJobModal({
                       <ClockIcon className="w-4 h-4 inline mr-1" />
                       Duration (weeks)
                     </label>
-                    <input type="number" name="durationWeeks" value={formData.durationWeeks} onChange={handleChange} placeholder="e.g. 12" className={inputClass} />
+                    <input
+                      type="number"
+                      name="durationWeeks"
+                      value={formData.durationWeeks}
+                      onChange={handleChange}
+                      placeholder="e.g. 12"
+                      className={inputClass}
+                    />
                   </div>
                   <div>
                     <label className={labelClass}>Hours / week</label>
-                    <select name="hoursPerWeek" value={formData.hoursPerWeek} onChange={handleChange} className={inputClass}>
+                    <select
+                      name="hoursPerWeek"
+                      value={formData.hoursPerWeek}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
                       <option value="">Select</option>
                       {HOURS_OPTIONS.map((h) => (
-                        <option key={h} value={h}>{h} hrs/week</option>
+                        <option key={h} value={h}>
+                          {h} hrs/week
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -330,24 +389,67 @@ export default function PostJobModal({
                         key={ct}
                         type="button"
                         onClick={() => setFormData((prev) => ({ ...prev, compensationType: ct }))}
-                        className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all ${formData.compensationType === ct
+                        className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                          formData.compensationType === ct
                             ? 'bg-green-500 text-white border-green-500'
                             : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                          }`}
+                        }`}
                       >
                         {ct === 'PAID' ? '💰 Paid' : ct === 'UNPAID' ? '🆓 Unpaid' : '🎁 Stipend'}
                       </button>
                     ))}
                   </div>
                   {formData.compensationType !== 'UNPAID' && (
-                    <div className="grid grid-cols-3 gap-3">
-                      <input type="number" name="salaryMin" value={formData.salaryMin} onChange={handleChange} placeholder="Min" className={inputClass} />
-                      <input type="number" name="salaryMax" value={formData.salaryMax} onChange={handleChange} placeholder="Max" className={inputClass} />
-                      <select name="salaryPeriod" value={formData.salaryPeriod} onChange={handleChange} className={inputClass}>
-                        <option value="HOURLY">/ hour</option>
-                        <option value="MONTHLY">/ month</option>
-                        <option value="YEARLY">/ year</option>
-                      </select>
+                    <div className="space-y-3">
+                      {/* Currency selector */}
+                      <div>
+                        <label className={labelClass}>Currency</label>
+                        <select
+                          name="currency"
+                          value={formData.currency}
+                          onChange={handleChange}
+                          className={inputClass}
+                        >
+                          {CURRENCY_OPTIONS.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <input
+                          type="number"
+                          name="salaryMin"
+                          value={formData.salaryMin}
+                          onChange={handleChange}
+                          placeholder={formData.currency === 'UZS' ? 'e.g. 3000000' : 'Min'}
+                          className={inputClass}
+                        />
+                        <input
+                          type="number"
+                          name="salaryMax"
+                          value={formData.salaryMax}
+                          onChange={handleChange}
+                          placeholder={formData.currency === 'UZS' ? 'e.g. 5000000' : 'Max'}
+                          className={inputClass}
+                        />
+                        <select
+                          name="salaryPeriod"
+                          value={formData.salaryPeriod}
+                          onChange={handleChange}
+                          className={inputClass}
+                        >
+                          <option value="HOURLY">/ hour</option>
+                          <option value="MONTHLY">/ month</option>
+                          <option value="YEARLY">/ year</option>
+                        </select>
+                      </div>
+                      {formData.currency === 'UZS' && (
+                        <p className="text-xs text-indigo-500 font-medium">
+                          O'zbek so'mida kiriting
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -366,13 +468,21 @@ export default function PostJobModal({
                           className={inputClass}
                         />
                         {formData.learningGoals.length > 1 && (
-                          <button type="button" onClick={() => removeLearningGoal(i)} className="p-2 text-red-400 hover:text-red-600 transition-colors">
+                          <button
+                            type="button"
+                            onClick={() => removeLearningGoal(i)}
+                            className="p-2 text-red-400 hover:text-red-600 transition-colors"
+                          >
                             <TrashIcon className="w-4 h-4" />
                           </button>
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={addLearningGoal} className="flex items-center gap-1 text-sm text-primary font-medium hover:underline">
+                    <button
+                      type="button"
+                      onClick={addLearningGoal}
+                      className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
+                    >
                       <PlusIcon className="w-4 h-4" /> Add goal
                     </button>
                   </div>
@@ -382,18 +492,39 @@ export default function PostJobModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Mentor Name</label>
-                    <input type="text" name="mentorName" value={formData.mentorName} onChange={handleChange} placeholder="e.g. Jane Smith" className={inputClass} />
+                    <input
+                      type="text"
+                      name="mentorName"
+                      value={formData.mentorName}
+                      onChange={handleChange}
+                      placeholder="e.g. Jane Smith"
+                      className={inputClass}
+                    />
                   </div>
                   <div>
                     <label className={labelClass}>Mentor Title</label>
-                    <input type="text" name="mentorTitle" value={formData.mentorTitle} onChange={handleChange} placeholder="e.g. Senior Engineer" className={inputClass} />
+                    <input
+                      type="text"
+                      name="mentorTitle"
+                      value={formData.mentorTitle}
+                      onChange={handleChange}
+                      placeholder="e.g. Senior Engineer"
+                      className={inputClass}
+                    />
                   </div>
                 </div>
 
                 {/* Eligibility */}
                 <div>
                   <label className={labelClass}>Eligibility Year</label>
-                  <input type="text" name="eligibilityYear" value={formData.eligibilityYear} onChange={handleChange} placeholder="e.g. 2nd year+" className={inputClass} />
+                  <input
+                    type="text"
+                    name="eligibilityYear"
+                    value={formData.eligibilityYear}
+                    onChange={handleChange}
+                    placeholder="e.g. 2nd year+"
+                    className={inputClass}
+                  />
                 </div>
               </div>
             )}
@@ -403,33 +534,106 @@ export default function PostJobModal({
             {/* Skills */}
             <div>
               <label className={labelClass}>Required Skills</label>
-              <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="React, Python, Data Analysis (comma-separated)" className={inputClass} />
+              <input
+                type="text"
+                name="skills"
+                value={formData.skills}
+                onChange={handleChange}
+                placeholder="React, Python, Data Analysis (comma-separated)"
+                className={inputClass}
+              />
               <p className="mt-1 text-xs text-slate-500">Separate each skill with a comma</p>
             </div>
 
             {/* Description */}
             <div>
               <label className={labelClass}>Description</label>
-              <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe what makes this opportunity exciting..." rows={4} className={`${inputClass} resize-none`} />
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Describe what makes this opportunity exciting..."
+                rows={4}
+                className={`${inputClass} resize-none`}
+              />
             </div>
 
             {/* Requirements */}
             <div>
               <label className={labelClass}>Requirements</label>
-              <textarea name="requirements" value={formData.requirements} onChange={handleChange} placeholder="2+ years React, Strong English, Portfolio required (comma-separated)" rows={3} className={`${inputClass} resize-none`} />
+              <textarea
+                name="requirements"
+                value={formData.requirements}
+                onChange={handleChange}
+                placeholder="2+ years React, Strong English, Portfolio required (comma-separated)"
+                rows={3}
+                className={`${inputClass} resize-none`}
+              />
             </div>
 
             {/* Non-internship salary */}
             {!isInternship && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
+                  Compensation
+                </h3>
+                {/* Currency selector */}
                 <div>
-                  <label className={labelClass}>Minimum Salary ($/year)</label>
-                  <input type="number" name="salaryMin" value={formData.salaryMin} onChange={handleChange} placeholder="e.g. 50000" className={inputClass} />
+                  <label className={labelClass}>Currency</label>
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    className={inputClass}
+                  >
+                    {CURRENCY_OPTIONS.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div>
-                  <label className={labelClass}>Maximum Salary ($/year)</label>
-                  <input type="number" name="salaryMax" value={formData.salaryMax} onChange={handleChange} placeholder="e.g. 80000" className={inputClass} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelClass}>Minimum Salary</label>
+                    <input
+                      type="number"
+                      name="salaryMin"
+                      value={formData.salaryMin}
+                      onChange={handleChange}
+                      placeholder={formData.currency === 'UZS' ? 'e.g. 5000000' : 'e.g. 50000'}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Maximum Salary</label>
+                    <input
+                      type="number"
+                      name="salaryMax"
+                      value={formData.salaryMax}
+                      onChange={handleChange}
+                      placeholder={formData.currency === 'UZS' ? 'e.g. 10000000' : 'e.g. 80000'}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Period</label>
+                    <select
+                      name="salaryPeriod"
+                      value={formData.salaryPeriod}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="HOURLY">/ hour</option>
+                      <option value="MONTHLY">/ month</option>
+                      <option value="YEARLY">/ year</option>
+                    </select>
+                  </div>
                 </div>
+                {formData.currency === 'UZS' && (
+                  <p className="text-xs text-indigo-500 font-medium">O'zbek so'mida kiriting</p>
+                )}
               </div>
             )}
           </div>

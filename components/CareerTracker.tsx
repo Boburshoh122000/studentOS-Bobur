@@ -4,7 +4,9 @@ import { NavigationProps } from '../types';
 import { jobApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import ApplyJobModal from './ApplyJobModal';
+import JobDetailModal from './JobDetailModal';
 import { toast } from 'react-hot-toast';
+import { formatSalary } from '../src/utils/formatSalary';
 import { GlobalLoader } from './ui/GlobalLoader';
 import {
   BriefcaseIcon,
@@ -29,7 +31,12 @@ interface Job {
   jobType?: string;
   salaryMin?: number;
   salaryMax?: number;
+  salaryType?: string;
   description?: string;
+  requirements?: string[];
+  responsibilities?: string[];
+  benefits?: string[];
+  department?: string;
   postedAt: string;
   isSaved?: boolean;
   hasApplied?: boolean;
@@ -37,8 +44,9 @@ interface Job {
     companyName: string;
     logoUrl?: string;
     verificationStatus?: string;
+    description?: string;
   };
-  // New internship-specific fields
+  // Internship-specific fields
   applicationDeadline?: string;
   startDate?: string;
   endDate?: string;
@@ -68,6 +76,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   const [jobs, setJobs] = useState<Job[]>([]);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailJob, setDetailJob] = useState<Job | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({
     search: '',
@@ -164,6 +175,36 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     setShowApplyModal(true);
   };
 
+  const handleCardClick = async (job: Job) => {
+    setDetailLoading(true);
+    setShowDetailModal(true);
+    try {
+      const res = await jobApi.get(job.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const full = res.data as any;
+      setDetailJob({
+        ...job,
+        ...full,
+        isSaved: full.isSaved ?? job.isSaved,
+        hasApplied: !!full.application || job.hasApplied,
+      });
+    } catch {
+      setDetailJob(job);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleDetailApply = (job: Job) => {
+    setShowDetailModal(false);
+    handleApplyClick(job);
+  };
+
+  const handleDetailSave = async (job: Job) => {
+    await handleToggleSave(job);
+    setDetailJob((prev) => (prev ? { ...prev, isSaved: !prev.isSaved } : prev));
+  };
+
   const handleApplySuccess = (jobId: string) => {
     setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, hasApplied: true } : j)));
   };
@@ -193,19 +234,12 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   // Helpers
   const formatCompensation = (job: Job) => {
     if (job.compensationType === 'UNPAID') return 'Unpaid';
-    if (!job.salaryMin && !job.salaryMax) return 'Competitive';
-    const period =
-      job.salaryPeriod === 'HOURLY' ? '/hr' : job.salaryPeriod === 'MONTHLY' ? '/mo' : '/yr';
-    const currency = job.currency || '$';
-    const symbol = currency === 'USD' ? '$' : currency;
-    if (job.salaryMin && job.salaryMax) {
-      if (job.salaryPeriod === 'YEARLY')
-        return `${symbol}${(job.salaryMin / 1000).toFixed(0)}k - ${symbol}${(job.salaryMax / 1000).toFixed(0)}k${period}`;
-      return `${symbol}${job.salaryMin} - ${symbol}${job.salaryMax}${period}`;
-    }
-    if (job.salaryMin)
-      return `${symbol}${job.salaryPeriod === 'YEARLY' ? (job.salaryMin / 1000).toFixed(0) + 'k' : job.salaryMin}+${period}`;
-    return `Up to ${symbol}${job.salaryPeriod === 'YEARLY' ? (job.salaryMax! / 1000).toFixed(0) + 'k' : job.salaryMax}${period}`;
+    return formatSalary(
+      job.salaryMin,
+      job.salaryMax,
+      job.currency,
+      job.salaryPeriod || job.salaryType || 'YEARLY'
+    );
   };
 
   const formatDuration = (job: Job) => {
@@ -526,7 +560,8 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                   return (
                     <div
                       key={job.id}
-                      className="bg-card-light dark:bg-card-dark rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:border-primary/30 transition-all group relative"
+                      onClick={() => handleCardClick(job)}
+                      className="bg-card-light dark:bg-card-dark rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:border-primary/30 transition-all group relative cursor-pointer"
                     >
                       {/* Top Row: Logo + Save */}
                       <div className="flex justify-between items-start mb-3">
@@ -560,7 +595,10 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                           </div>
                         </div>
                         <button
-                          onClick={() => handleToggleSave(job)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleSave(job);
+                          }}
                           className={`p-1.5 rounded-lg transition-colors ${job.isSaved ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-primary hover:bg-primary/5'}`}
                         >
                           <BookmarkIcon className="w-5 h-5" />
@@ -672,7 +710,10 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                           </span>
                         ) : (
                           <button
-                            onClick={() => handleApplyClick(job)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleApplyClick(job);
+                            }}
                             className="text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                           >
                             Apply Now →
@@ -704,6 +745,23 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           }}
         />
       )}
+
+      {showDetailModal &&
+        (detailLoading ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <JobDetailModal
+            job={detailJob}
+            onClose={() => {
+              setShowDetailModal(false);
+              setDetailJob(null);
+            }}
+            onApply={handleDetailApply}
+            onToggleSave={handleDetailSave}
+          />
+        ))}
     </div>
   );
 }
