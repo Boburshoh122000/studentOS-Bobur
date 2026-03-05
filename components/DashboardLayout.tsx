@@ -3,7 +3,8 @@ import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';
 import { GlobalLoader } from './ui/GlobalLoader';
-import { AcademicCapIcon, Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/solid';
+import Logo from './ui/Logo';
+import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 interface DashboardLayoutProps extends NavigationProps {
   currentScreen: Screen;
@@ -88,11 +89,8 @@ export default function DashboardLayout({
               <span>{backTarget.label}</span>
             </button>
           )}
-          <div className="ml-auto flex items-center gap-2">
-            <div className="size-7 rounded-lg bg-primary flex items-center justify-center">
-              <AcademicCapIcon className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-bold tracking-tight">StudentOS</span>
+          <div className="ml-auto">
+            <Logo iconSize="w-7 h-7" textSize="text-sm" />
           </div>
         </div>
 
@@ -122,14 +120,7 @@ export default function DashboardLayout({
           >
             <Bars3Icon className="w-5 h-5 text-gray-700 dark:text-white" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-              <AcademicCapIcon className="w-[18px] h-[18px] text-white" />
-            </div>
-            <span className="text-base font-bold text-text-main dark:text-white tracking-tight">
-              StudentOS
-            </span>
-          </div>
+          <Logo iconSize="w-8 h-8" textSize="text-base" />
           <div className="w-10" />
         </div>
 

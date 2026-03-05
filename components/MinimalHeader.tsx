@@ -17,6 +17,7 @@ import {
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
+import Logo from './ui/Logo';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
@@ -165,8 +166,8 @@ export default function MinimalHeader() {
         className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-6 py-3 flex items-center justify-between w-[95%] max-w-5xl"
       >
         {/* ─── Logo ─── */}
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-[#0A0A0A] mr-4">StudentOS</span>
+        <Link to="/" className="flex items-center">
+          <Logo iconSize="w-7 h-7" textSize="text-lg" textColor="text-[#0A0A0A]" className="mr-4" />
         </Link>
 
         {/* ─── Center Navigation ─── */}

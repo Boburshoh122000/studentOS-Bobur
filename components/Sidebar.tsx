@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '../types';
 import { STUDENT_NAV_ITEMS } from '../src/config/navigation';
 import { useAuth } from '../src/contexts/AuthContext';
+import Logo from './ui/Logo';
 
 import {
-  AcademicCapIcon,
   Cog8ToothIcon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
@@ -113,19 +113,15 @@ export default function Sidebar({
       >
         {/* Logo */}
         <div
-          className={`flex items-center gap-3 w-full ${expanded ? 'justify-start' : 'justify-center'}`}
+          className={`flex items-center w-full ${expanded ? 'justify-start' : 'justify-center'} cursor-pointer`}
           onClick={() => handleNavClick(Screen.LANDING)}
         >
-          <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer group hover:scale-105 transition-transform flex-shrink-0">
-            <AcademicCapIcon className="w-6 h-6 text-white" />
-          </div>
-          <div
-            className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
-          >
-            <h1 className="text-lg font-bold leading-none tracking-tight whitespace-nowrap">
-              StudentOS
-            </h1>
-          </div>
+          <Logo
+            iconSize="size-10"
+            textSize="text-lg"
+            iconOnly={!expanded}
+            className={`transition-all duration-300 ${expanded ? '' : ''}`}
+          />
         </div>
 
         {/* Navigation */}

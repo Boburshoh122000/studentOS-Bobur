@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { Instagram, Linkedin, Twitter } from 'lucide-react';
+import Logo from './ui/Logo';
 
 /* ─── Footer Link Data ──────────────────────────────────── */
 const linkColumns = [
@@ -154,7 +155,7 @@ export default function MinimalFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
           {/* Column 1: Brand */}
           <motion.div variants={fadeUp} className="col-span-2 md:col-span-1">
-            <span className="text-2xl font-bold tracking-tight text-white">StudentOS</span>
+            <Logo iconSize="w-9 h-9" textSize="text-2xl" textColor="text-white" />
             <p className="text-gray-500 mt-3 text-sm leading-relaxed max-w-[220px]">
               The operating system for your academic future. Build, track, and succeed.
             </p>
