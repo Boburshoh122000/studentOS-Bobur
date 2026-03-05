@@ -97,6 +97,7 @@ export default function MinimalHeader() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [activeLang, setActiveLang] = useState('EN');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -400,7 +401,7 @@ export default function MinimalHeader() {
         </div>
       </motion.nav>
 
-      {/* ─── Mobile Menu Overlay (drops down from top) ─── */}
+      {/* ─── Mobile Menu Overlay (ultra-minimalist) ─── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -410,82 +411,84 @@ export default function MinimalHeader() {
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
             className="pointer-events-auto fixed top-20 left-0 w-full z-40 px-4 md:hidden"
           >
-            <div className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-5 flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-6 flex flex-col max-h-[75vh] overflow-y-auto">
               {/* Nav links */}
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
                   to={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    pathname === link.href
-                      ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  className={`py-4 border-b border-gray-50 text-lg font-medium transition-colors ${
+                    pathname === link.href ? 'text-indigo-600' : 'text-gray-900'
                   }`}
                 >
                   {link.label}
-                  {pathname === link.href && (
-                    <span className="ml-auto w-1.5 h-1.5 bg-indigo-600 rounded-full" />
-                  )}
                 </Link>
               ))}
 
-              {/* Tools section */}
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              {/* Tools Accordion */}
+              <div className="border-b border-gray-50">
+                <button
+                  onClick={() => setMobileToolsOpen(!mobileToolsOpen)}
+                  className="flex justify-between items-center w-full py-4 text-left text-lg font-medium text-gray-900"
+                >
                   Tools
-                </p>
-                {toolItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors"
+                  <motion.span
+                    animate={{ rotate: mobileToolsOpen ? 180 : 0 }}
+                    transition={{ duration: 0.25 }}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-4 h-4 text-indigo-600" />
-                    </div>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Language switcher for mobile */}
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Language
-                </p>
-                <div className="flex gap-2 px-4">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => setActiveLang(lang.code)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        activeLang === lang.code
-                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                          : 'text-gray-500 hover:bg-gray-50'
+                    <ChevronDownIcon
+                      className={`w-5 h-5 transition-colors ${
+                        mobileToolsOpen ? 'text-indigo-600' : 'text-gray-400'
                       }`}
+                    />
+                  </motion.span>
+                </button>
+
+                <AnimatePresence>
+                  {mobileToolsOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
                     >
-                      {lang.code}
-                    </button>
-                  ))}
-                </div>
+                      <div className="flex flex-col gap-1 pb-4 pl-1">
+                        {toolItems.map((item) => (
+                          <Link
+                            key={item.label}
+                            to={item.href}
+                            onClick={() => {
+                              setMobileOpen(false);
+                              setMobileToolsOpen(false);
+                            }}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/50 transition-colors"
+                          >
+                            <item.icon className="w-4 h-4" />
+                            <span className="text-[15px] font-medium">{item.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Auth buttons */}
               {!isAuthenticated && (
-                <div className="border-t border-gray-100 mt-2 pt-3 flex flex-col gap-2">
+                <div className="mt-6 flex flex-col gap-3">
                   <Link
                     to="/signin"
                     onClick={() => setMobileOpen(false)}
-                    className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="w-full text-center py-3 rounded-xl text-[15px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/signup/step-1"
                     onClick={() => setMobileOpen(false)}
-                    className="w-full text-center px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
+                    className="w-full text-center py-3.5 rounded-xl bg-indigo-600 text-white text-[15px] font-semibold shadow-sm hover:bg-indigo-700 transition-colors"
                   >
                     Get Started
                   </Link>
