@@ -25,7 +25,7 @@ interface AdminSidebarProps {
 const NAV_ITEMS = [
   { screen: Screen.ADMIN_DASHBOARD, label: 'Dashboard', Icon: Squares2X2Icon },
   { screen: Screen.ADMIN_EMPLOYERS, label: 'Employers', Icon: BriefcaseIcon },
-  { screen: Screen.ADMIN_PRICING, label: 'Pricing', Icon: CreditCardIcon },
+  { screen: Screen.ADMIN_TOOLS, label: 'Tools', Icon: CreditCardIcon },
   { screen: Screen.ADMIN_USERS, label: 'Users', Icon: UsersIcon },
   { screen: Screen.ADMIN_SCHOLARSHIPS, label: 'Scholarships', Icon: AcademicCapIcon },
   { screen: Screen.ADMIN_BLOG, label: 'Blog Management', Icon: DocumentTextIcon },

@@ -37,7 +37,7 @@ import CVBuilderPage from './components/CVBuilderPage';
 const ADMIN_SCREENS = new Set([
   Screen.ADMIN_DASHBOARD,
   Screen.ADMIN_EMPLOYERS,
-  Screen.ADMIN_PRICING,
+  Screen.ADMIN_TOOLS,
   Screen.ADMIN_USERS,
   Screen.ADMIN_SCHOLARSHIPS,
   Screen.ADMIN_ROLES,
@@ -96,7 +96,7 @@ export default function App() {
           <div className="flex flex-1 overflow-hidden">
             {currentScreen === Screen.ADMIN_DASHBOARD && <AdminDashboard navigateTo={navigateTo} />}
             {currentScreen === Screen.ADMIN_EMPLOYERS && <AdminEmployers navigateTo={navigateTo} />}
-            {currentScreen === Screen.ADMIN_PRICING && <AdminPricing navigateTo={navigateTo} />}
+            {currentScreen === Screen.ADMIN_TOOLS && <AdminPricing navigateTo={navigateTo} />}
             {currentScreen === Screen.ADMIN_USERS && <AdminUsers navigateTo={navigateTo} />}
             {currentScreen === Screen.ADMIN_SCHOLARSHIPS && (
               <AdminScholarships navigateTo={navigateTo} />

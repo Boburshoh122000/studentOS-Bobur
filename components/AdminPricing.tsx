@@ -4,11 +4,15 @@ import { adminApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { GlobalLoader } from './ui/GlobalLoader';
 import {
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ClockIcon,
   GiftIcon,
   MagnifyingGlassIcon,
   PencilIcon,
   PlusIcon,
+  TrashIcon,
   WalletIcon,
 } from '@heroicons/react/24/solid';
 
@@ -40,10 +44,10 @@ const AVAILABLE_TOOLS = [
   { name: 'Plagiarism Checker', slug: 'plagiarism-checker', category: 'Productivity' },
 ];
 
-export default function AdminPricing({ navigateTo }: NavigationProps) {
+export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProps) {
   // Data states
   const [tools, setTools] = useState<Tool[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({});
+  const [_settings, setSettings] = useState<AppSettings>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +61,17 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
   const [showAddToolModal, setShowAddToolModal] = useState(false);
   const [showEditToolModal, setShowEditToolModal] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
+
+  // Delete states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  // Usage stats states
+  const [usagePeriod, setUsagePeriod] = useState('30d');
+  const [usageStats, setUsageStats] = useState<any>(null);
+  const [usageLoading, setUsageLoading] = useState(true);
 
   // New tool form
   const [newTool, setNewTool] = useState({
@@ -96,13 +111,31 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
         setReferralBonus(settingsRes.data.data.referral_bonus || '100');
         setEarlyBirdActive(settingsRes.data.data.early_bird_active === 'true');
       }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
+    } catch {
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
   };
+
+  // Fetch usage stats
+  const fetchUsageStats = async (period: string) => {
+    setUsageLoading(true);
+    try {
+      const res = await adminApi.getToolUsageStats(period);
+      if (res.data) {
+        setUsageStats(res.data);
+      }
+    } catch {
+      console.error('Failed to fetch usage stats');
+    } finally {
+      setUsageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsageStats(usagePeriod);
+  }, [usagePeriod]);
 
   // Filter tools by search and plan type
   const filteredTools = useMemo(() => {
@@ -133,7 +166,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
       } else {
         toast.success('Settings saved successfully!');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to save settings');
     } finally {
       setSaving(false);
@@ -152,7 +185,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
         );
         toast.success('Tool status updated');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to toggle tool');
     }
   };
@@ -190,7 +223,7 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
         });
         fetchData();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to create tool');
     }
   };
@@ -222,8 +255,31 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
         setEditingTool(null);
         fetchData();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update tool');
+    }
+  };
+
+  // Delete tool
+  const handleDeleteTool = async () => {
+    if (!deletingTool || deleteConfirmName !== deletingTool.name) return;
+    setDeleting(true);
+    try {
+      const result = await adminApi.deleteTool(deletingTool.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`"${deletingTool.name}" deleted successfully`);
+        setShowDeleteModal(false);
+        setDeletingTool(null);
+        setDeleteConfirmName('');
+        fetchData();
+        fetchUsageStats(usagePeriod);
+      }
+    } catch {
+      toast.error('Failed to delete tool');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -253,10 +309,10 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
         <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              Tool Pricing Management
+              Tools Management
             </h2>
             <p className="text-base text-slate-500 dark:text-slate-400">
-              Configure credit costs and manage platform tools
+              Manage platform tools, monitor usage, and configure pricing
             </p>
           </div>
           <div className="flex gap-3">
@@ -278,6 +334,193 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
             </button>
           </div>
         </header>
+
+        {/* ─── Tool Usage Statistics ─── */}
+        <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <ChartBarIcon className="w-5 h-5 text-primary" />
+              Tool Usage Statistics
+            </h3>
+            <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+              {(['7d', '30d', '90d'] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setUsagePeriod(p)}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors ${
+                    usagePeriod === p
+                      ? 'bg-primary text-white'
+                      : 'bg-white dark:bg-[#1e2330] text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {usageLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <GlobalLoader fullScreen={false} />
+            </div>
+          ) : !usageStats || usageStats.total_usages === 0 ? (
+            <div className="py-12 text-center">
+              <ChartBarIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-slate-400 font-medium">
+                No usage data recorded yet
+              </p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                Statistics will appear as users start using tools.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                    Total Uses
+                  </p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">
+                    {usageStats.total_usages.toLocaleString()}
+                  </p>
+                  <span
+                    className={`text-xs font-bold ${usageStats.total_trend_direction === 'up' ? 'text-emerald-600' : 'text-red-500'}`}
+                  >
+                    {usageStats.total_trend_direction === 'up' ? '↑' : '↓'} {usageStats.total_trend}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                    Active Users
+                  </p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">
+                    {usageStats.total_active_users.toLocaleString()}
+                  </p>
+                  <span
+                    className={`text-xs font-bold ${usageStats.users_trend_direction === 'up' ? 'text-emerald-600' : 'text-red-500'}`}
+                  >
+                    {usageStats.users_trend_direction === 'up' ? '↑' : '↓'} {usageStats.users_trend}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                    Most Used
+                  </p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                    {usageStats.stats[0]?.tool_name || '—'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {usageStats.stats[0]?.total_uses || 0} uses
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                    Least Used
+                  </p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                    {usageStats.stats[usageStats.stats.length - 1]?.tool_name || '—'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {usageStats.stats[usageStats.stats.length - 1]?.total_uses || 0} uses
+                  </p>
+                </div>
+              </div>
+
+              {/* Horizontal Bar Chart */}
+              <div className="mb-6 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-white/5 p-4">
+                <div className="space-y-3">
+                  {usageStats.stats.map((s: any) => {
+                    const barColors: Record<string, string> = {
+                      Career: 'bg-indigo-500',
+                      Education: 'bg-blue-500',
+                      Academic: 'bg-purple-500',
+                      Productivity: 'bg-orange-500',
+                    };
+                    return (
+                      <div key={s.tool_id} className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 w-40 truncate">
+                          {s.tool_name}
+                        </span>
+                        <div className="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-6 overflow-hidden relative">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${barColors[s.category] || 'bg-gray-500'}`}
+                            style={{ width: `${Math.max(s.percentage, 3)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-24 text-right">
+                          {s.total_uses} ({s.percentage}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Detailed Table */}
+              <div className="overflow-hidden rounded-lg border border-slate-100 dark:border-slate-700">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
+                        Tool
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 text-right">
+                        Uses
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 text-right">
+                        Unique Users
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 text-right">
+                        % Share
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 text-right">
+                        Trend
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                    {usageStats.stats.map((s: any) => (
+                      <tr
+                        key={s.tool_id}
+                        className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {s.tool_name}
+                          </p>
+                          <p className="text-xs text-slate-400">{s.category}</p>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">
+                          {s.total_uses.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-right">
+                          {s.unique_users.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-right">
+                          {s.percentage}%
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span
+                            className={`inline-flex items-center gap-1 text-xs font-bold ${s.trend_direction === 'up' ? 'text-emerald-600' : 'text-red-500'}`}
+                          >
+                            {s.trend_direction === 'up' ? (
+                              <ArrowTrendingUpIcon className="w-3.5 h-3.5" />
+                            ) : (
+                              <ArrowTrendingDownIcon className="w-3.5 h-3.5" />
+                            )}
+                            {s.trend}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
 
         {/* Manual Credit Allocation */}
         <section className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e2330] p-6 shadow-sm">
@@ -604,6 +847,19 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                               >
                                 <PencilIcon className="w-5 h-5" />
                               </button>
+                              <button
+                                onClick={() => {
+                                  setDeletingTool(tool);
+                                  setDeleteConfirmName('');
+                                  setShowDeleteModal(true);
+                                }}
+                                type="button"
+                                aria-label={`Delete ${tool.name}`}
+                                className="rounded-lg p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                title="Delete Tool"
+                              >
+                                <TrashIcon className="w-5 h-5" />
+                              </button>
                               <div className="flex items-center">
                                 <label className="relative inline-flex cursor-pointer items-center">
                                   <input
@@ -806,6 +1062,68 @@ export default function AdminPricing({ navigateTo }: NavigationProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deletingTool && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1e2330] rounded-xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">
+                <TrashIcon className="w-5 h-5" />
+                Delete Tool
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">
+                This action cannot be undone. All usage history for this tool will also be deleted.
+              </p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  You are about to delete <strong>"{deletingTool.name}"</strong>. Type the tool name
+                  below to confirm.
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="delete-confirm"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  Type <strong className="text-red-600">"{deletingTool.name}"</strong> to confirm
+                </label>
+                <input
+                  id="delete-confirm"
+                  type="text"
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  placeholder={deletingTool.name}
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-800"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeletingTool(null);
+                    setDeleteConfirmName('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteTool}
+                  disabled={deleteConfirmName !== deletingTool.name || deleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

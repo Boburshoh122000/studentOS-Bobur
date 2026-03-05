@@ -413,7 +413,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/console-admin/pricing',
+            path: '/console-admin/tools',
             element: (
               <Wrap>
                 <AdminPricing />

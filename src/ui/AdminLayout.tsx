@@ -6,7 +6,7 @@ import { screenToPath } from './withNavigate';
 const pathToScreen: Record<string, Screen> = {
   '/console-admin': Screen.ADMIN_DASHBOARD,
   '/console-admin/employers': Screen.ADMIN_EMPLOYERS,
-  '/console-admin/pricing': Screen.ADMIN_PRICING,
+  '/console-admin/tools': Screen.ADMIN_TOOLS,
   '/console-admin/users': Screen.ADMIN_USERS,
   '/console-admin/scholarships': Screen.ADMIN_SCHOLARSHIPS,
   '/console-admin/roles': Screen.ADMIN_ROLES,

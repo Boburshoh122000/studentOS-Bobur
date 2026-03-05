@@ -577,6 +577,27 @@ export const adminApi = {
   toggleTool: (id: string) =>
     api.patch<{ success: boolean; data: any }>(`/admin/tools/${id}/toggle`, {}),
   deleteTool: (id: string) => api.delete<{ success: boolean }>(`/admin/tools/${id}`),
+  getToolUsageStats: (period: string = '30d') =>
+    api.get<{
+      success: boolean;
+      period: string;
+      total_usages: number;
+      total_active_users: number;
+      total_trend: string;
+      total_trend_direction: 'up' | 'down';
+      users_trend: string;
+      users_trend_direction: 'up' | 'down';
+      stats: Array<{
+        tool_id: string;
+        tool_name: string;
+        category: string;
+        total_uses: number;
+        unique_users: number;
+        percentage: number;
+        trend: string;
+        trend_direction: 'up' | 'down';
+      }>;
+    }>(`/admin/tools/usage-stats?period=${period}`),
 
   // App Settings API
   getSettings: () => api.get<{ success: boolean; data: Record<string, string> }>('/admin/settings'),

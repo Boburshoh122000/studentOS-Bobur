@@ -28,7 +28,7 @@ export const screenToPath: Record<Screen, string> = {
 
   [Screen.ADMIN_DASHBOARD]: '/console-admin',
   [Screen.ADMIN_EMPLOYERS]: '/console-admin/employers',
-  [Screen.ADMIN_PRICING]: '/console-admin/pricing',
+  [Screen.ADMIN_TOOLS]: '/console-admin/tools',
   [Screen.ADMIN_USERS]: '/console-admin/users',
   [Screen.ADMIN_SCHOLARSHIPS]: '/console-admin/scholarships',
   [Screen.ADMIN_ROLES]: '/console-admin/roles',

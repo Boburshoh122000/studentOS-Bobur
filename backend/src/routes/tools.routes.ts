@@ -136,6 +136,129 @@ router.delete('/tools/:id', async (req, res) => {
   }
 });
 
+// GET /admin/tools/usage-stats - Tool usage statistics
+router.get('/tools/usage-stats', async (req, res) => {
+  try {
+    const period = (req.query.period as string) || '30d';
+    const days = period === '7d' ? 7 : period === '90d' ? 90 : 30;
+
+    const now = new Date();
+    const periodStart = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const prevPeriodStart = new Date(periodStart.getTime() - days * 24 * 60 * 60 * 1000);
+
+    // Current period stats per tool
+    const currentStats = await prisma.toolUsage.groupBy({
+      by: ['toolId'],
+      where: { usedAt: { gte: periodStart } },
+      _count: { id: true },
+    });
+
+    // Unique users per tool in current period
+    const uniqueUsersCurrent = await prisma.toolUsage.groupBy({
+      by: ['toolId'],
+      where: { usedAt: { gte: periodStart } },
+      _count: { userId: true },
+    });
+
+    // Distinct users per tool (Prisma groupBy doesn't support distinct, use raw)
+    const uniqueUsersRaw: Array<{ toolId: string; unique_users: bigint }> = await prisma.$queryRaw`
+      SELECT "toolId", COUNT(DISTINCT "userId") as unique_users
+      FROM "ToolUsage"
+      WHERE "usedAt" >= ${periodStart}
+      GROUP BY "toolId"
+    `;
+
+    // Previous period stats per tool (for trend calculation)
+    const prevStats = await prisma.toolUsage.groupBy({
+      by: ['toolId'],
+      where: { usedAt: { gte: prevPeriodStart, lt: periodStart } },
+      _count: { id: true },
+    });
+
+    // Total unique users in current period
+    const totalUniqueUsersRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
+      SELECT COUNT(DISTINCT "userId") as count
+      FROM "ToolUsage"
+      WHERE "usedAt" >= ${periodStart}
+    `;
+
+    // Previous period total unique users (for trend)
+    const prevTotalUniqueUsersRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
+      SELECT COUNT(DISTINCT "userId") as count
+      FROM "ToolUsage"
+      WHERE "usedAt" >= ${prevPeriodStart} AND "usedAt" < ${periodStart}
+    `;
+
+    // Get tool details
+    const tools = await prisma.tool.findMany({
+      select: { id: true, name: true, slug: true, category: true },
+    });
+    const toolMap = new Map(tools.map((t) => [t.id, t]));
+
+    // Build stats
+    const totalUsages = currentStats.reduce((sum, s) => sum + s._count.id, 0);
+    const prevTotalUsages = prevStats.reduce((sum, s) => sum + s._count.id, 0);
+    const prevStatsMap = new Map(prevStats.map((s) => [s.toolId, s._count.id]));
+    const uniqueUsersMap = new Map(uniqueUsersRaw.map((r) => [r.toolId, Number(r.unique_users)]));
+
+    const stats = currentStats
+      .map((s) => {
+        const tool = toolMap.get(s.toolId);
+        if (!tool) return null;
+        const prevCount = prevStatsMap.get(s.toolId) || 0;
+        const trendPct =
+          prevCount > 0
+            ? Math.round(((s._count.id - prevCount) / prevCount) * 100)
+            : s._count.id > 0
+              ? 100
+              : 0;
+
+        return {
+          tool_id: tool.slug,
+          tool_name: tool.name,
+          category: tool.category,
+          total_uses: s._count.id,
+          unique_users: uniqueUsersMap.get(s.toolId) || 0,
+          percentage: totalUsages > 0 ? Math.round((s._count.id / totalUsages) * 1000) / 10 : 0,
+          trend: `${trendPct >= 0 ? '+' : ''}${trendPct}%`,
+          trend_direction: trendPct >= 0 ? 'up' : ('down' as 'up' | 'down'),
+        };
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => b.total_uses - a.total_uses);
+
+    const totalActiveUsers = Number(totalUniqueUsersRaw[0]?.count || 0);
+    const prevTotalActiveUsers = Number(prevTotalUniqueUsersRaw[0]?.count || 0);
+    const totalTrendPct =
+      prevTotalUsages > 0
+        ? Math.round(((totalUsages - prevTotalUsages) / prevTotalUsages) * 100)
+        : totalUsages > 0
+          ? 100
+          : 0;
+    const usersTrendPct =
+      prevTotalActiveUsers > 0
+        ? Math.round(((totalActiveUsers - prevTotalActiveUsers) / prevTotalActiveUsers) * 100)
+        : totalActiveUsers > 0
+          ? 100
+          : 0;
+
+    res.json({
+      success: true,
+      period,
+      total_usages: totalUsages,
+      total_active_users: totalActiveUsers,
+      total_trend: `${totalTrendPct >= 0 ? '+' : ''}${totalTrendPct}%`,
+      total_trend_direction: totalTrendPct >= 0 ? 'up' : 'down',
+      users_trend: `${usersTrendPct >= 0 ? '+' : ''}${usersTrendPct}%`,
+      users_trend_direction: usersTrendPct >= 0 ? 'up' : 'down',
+      stats,
+    });
+  } catch (error) {
+    console.error('Error fetching usage stats:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch usage stats' });
+  }
+});
+
 // =============================================================================
 // APP SETTINGS ENDPOINTS
 // =============================================================================
