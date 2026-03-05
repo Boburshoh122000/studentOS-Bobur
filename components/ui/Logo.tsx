@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { memo } from 'react';
+
+/** Brand name constant — change once, reflected everywhere */
+const BRAND_NAME = 'StudentOS' as const;
 
 interface LogoProps {
   /** Size classes for the icon box, e.g. "w-8 h-8" */
   iconSize?: string;
   /** Text size class, e.g. "text-xl" */
   textSize?: string;
-  /** Override text color (defaults to text-gray-900) */
+  /** Override text color (defaults to text-gray-900 in light / text-white in dark) */
   textColor?: string;
   /** Hide the text, show icon only */
   iconOnly?: boolean;
@@ -13,7 +16,18 @@ interface LogoProps {
   className?: string;
 }
 
-export default function Logo({
+/**
+ * Application logo — optionally renders the brand name beside the icon.
+ *
+ * @example
+ * // Full logo
+ * <Logo />
+ *
+ * @example
+ * // Icon only (e.g. collapsed sidebar)
+ * <Logo iconOnly />
+ */
+const Logo = memo(function Logo({
   iconSize = 'w-8 h-8',
   textSize = 'text-xl',
   textColor = 'text-gray-900',
@@ -25,13 +39,25 @@ export default function Logo({
       {/* Logo Image */}
       <img
         src="/logo.png"
-        alt="StudentOS Logo"
+        alt={`${BRAND_NAME} Logo`}
         className={`object-contain flex-shrink-0 ${iconSize}`}
+        loading="lazy"
+        decoding="async"
       />
-      {/* Text */}
+
+      {/* Brand name — hidden when iconOnly is true */}
       {!iconOnly && (
-        <span className={`font-extrabold tracking-tight ${textColor} ${textSize}`}>StudentOS</span>
+        <span
+          className={`font-bold tracking-tight select-none ${textColor} ${textSize}`}
+          aria-label={BRAND_NAME}
+        >
+          {BRAND_NAME}
+        </span>
       )}
     </div>
   );
-}
+});
+
+Logo.displayName = 'Logo';
+
+export default Logo;

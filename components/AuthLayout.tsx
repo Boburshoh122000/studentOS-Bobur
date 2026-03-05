@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ToolCard from './ToolCard';
+import Logo from './ui/Logo';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -25,13 +26,12 @@ export default function AuthLayout({
       <div className="w-full lg:w-[45%] min-h-screen lg:h-screen lg:overflow-y-auto flex flex-col justify-between relative z-20 bg-white border-r border-slate-100">
         {/* Top Section - Logo */}
         <div className="p-8">
-          <Link to="/" className="flex items-center gap-2.5 group w-fit">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
-              StudentOS
-            </span>
+          <Link to="/" className="w-fit block group">
+            <Logo
+              iconSize="w-10 h-10"
+              textSize="text-xl"
+              textColor="text-slate-900 group-hover:text-blue-600 transition-colors"
+            />
           </Link>
         </div>
 
