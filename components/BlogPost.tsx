@@ -170,10 +170,12 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 )}
 
                 {/* Content */}
-                <div
-                  className="prose prose-lg dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+                <div className="w-full max-w-3xl mx-auto">
+                  <div
+                    className="text-lg text-slate-800 dark:text-slate-200 leading-relaxed space-y-6 [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-8 [&>ul>li]:mb-2 [&>ul>li]:pl-1 [&>ol]:list-decimal [&>ol]:pl-8 [&>ol>li]:mb-2 [&>ol>li]:pl-1 [&>h1]:text-3xl [&>h1]:font-bold [&>h1]:mb-6 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-8 [&>h3]:mb-3 [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>img]:rounded-xl [&>img]:w-full"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  />
+                </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -188,23 +190,16 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 </div>
 
                 {/* Share & Actions */}
-                <div className="flex items-center justify-between py-6 border-t border-slate-200 dark:border-slate-700">
-                  <button
-                    onClick={() => navigate('/blog')}
-                    className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
-                  >
-                    <ArrowLeftIcon className="w-[18px] h-[18px]" />
-                    Back to Blog
-                  </button>
+                <div className="flex items-center justify-end py-6 border-t border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
                         navigator.share?.({ title: post.title, url: window.location.href })
                       }
-                      className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors"
+                      className="flex items-center gap-2 p-2 text-sm font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+                      title="Share article"
                     >
-                      <ShareIcon className="w-[18px] h-[18px]" />
-                      Share
+                      <ShareIcon className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
