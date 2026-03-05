@@ -10,10 +10,8 @@ import {
   CpuChipIcon,
   DocumentTextIcon,
   GlobeAltIcon,
-  HomeIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
-  UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
@@ -390,18 +388,31 @@ export default function MinimalHeader() {
               </div>
             </>
           )}
+
+          {/* Mobile Hamburger - top right */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex md:hidden items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100/60 transition-colors"
+            title="Menu"
+          >
+            {mobileOpen ? (
+              <XMarkIcon className="w-5 h-5 text-gray-700" />
+            ) : (
+              <Bars3Icon className="w-5 h-5 text-gray-700" />
+            )}
+          </button>
         </div>
       </motion.nav>
 
-      {/* ─── Mobile Menu Overlay (slides up from bottom) ─── */}
+      {/* ─── Mobile Menu Overlay (drops down from top) ─── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-            className="pointer-events-auto fixed bottom-16 left-0 w-full z-40 px-4 pb-2 md:hidden"
+            className="pointer-events-auto fixed top-20 left-0 w-full z-40 px-4 md:hidden"
           >
             <div className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-5 flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto">
               {/* Nav links */}
@@ -488,50 +499,6 @@ export default function MinimalHeader() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ─── Mobile Bottom Navigation Bar ─── */}
-      <nav className="md:hidden pointer-events-auto fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-200/50 z-50 flex justify-around items-center px-2 pt-2 pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <Link
-          to="/"
-          onClick={() => setMobileOpen(false)}
-          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
-            pathname === '/' ? 'text-indigo-600' : 'text-gray-400'
-          }`}
-        >
-          <HomeIcon className="w-6 h-6" />
-          <span className="text-[10px] font-semibold">Home</span>
-        </Link>
-        <Link
-          to="/blog"
-          onClick={() => setMobileOpen(false)}
-          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
-            pathname.startsWith('/blog') ? 'text-indigo-600' : 'text-gray-400'
-          }`}
-        >
-          <DocumentTextIcon className="w-6 h-6" />
-          <span className="text-[10px] font-semibold">Blog</span>
-        </Link>
-        <Link
-          to="/community"
-          onClick={() => setMobileOpen(false)}
-          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
-            pathname === '/community' ? 'text-indigo-600' : 'text-gray-400'
-          }`}
-        >
-          <UserGroupIcon className="w-6 h-6" />
-          <span className="text-[10px] font-semibold">Community</span>
-        </Link>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
-            mobileOpen ? 'text-indigo-600' : 'text-gray-400'
-          }`}
-          title="Menu"
-        >
-          {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
-          <span className="text-[10px] font-semibold">Menu</span>
-        </button>
-      </nav>
     </div>
   );
 }
