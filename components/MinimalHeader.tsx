@@ -169,7 +169,7 @@ export default function MinimalHeader() {
         <Link to="/" className="flex items-center">
           <Logo
             iconSize="w-9 h-9 md:w-10 md:h-10"
-            textSize="text-xl md:text-2xl"
+            textSize="text-lg md:text-xl"
             textColor="text-[#0A0A0A]"
             className="mr-3 md:mr-4"
           />
