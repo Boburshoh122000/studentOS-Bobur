@@ -10,8 +10,10 @@ import {
   CpuChipIcon,
   DocumentTextIcon,
   GlobeAltIcon,
+  HomeIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
+  UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
@@ -246,25 +248,12 @@ export default function MinimalHeader() {
 
         {/* ─── Right Side Actions ─── */}
         <div className="flex items-center gap-3">
-          {/* Mobile Hamburger */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex md:hidden items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100/60 transition-colors"
-            title="Menu"
+          {/* Language Switcher - desktop only */}
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={openLang}
+            onMouseLeave={closeLang}
           >
-            <motion.div
-              animate={{ rotate: mobileOpen ? 90 : 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              {mobileOpen ? (
-                <XMarkIcon className="w-5 h-5 text-gray-700" />
-              ) : (
-                <Bars3Icon className="w-5 h-5 text-gray-700" />
-              )}
-            </motion.div>
-          </button>
-          {/* Language Switcher */}
-          <div className="relative" onMouseEnter={openLang} onMouseLeave={closeLang}>
             <button
               onClick={() => setLangOpen(!langOpen)}
               className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors px-2 py-1.5 rounded-full hover:bg-gray-100/60"
@@ -381,38 +370,40 @@ export default function MinimalHeader() {
               </AnimatePresence>
             </div>
           ) : (
-            /* ── Logged Out: Sign In + Get Started ── */
+            /* ── Logged Out: Sign In + Get Started (desktop only) ── */
             <>
               <Link
                 to="/signin"
-                className="hidden sm:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+                className="hidden md:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
               >
                 Sign In
               </Link>
-              <MagneticButton>
-                <Link
-                  to="/signup/step-1"
-                  className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
-                >
-                  Get Started
-                </Link>
-              </MagneticButton>
+              <div className="hidden md:block">
+                <MagneticButton>
+                  <Link
+                    to="/signup/step-1"
+                    className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
+                  >
+                    Get Started
+                  </Link>
+                </MagneticButton>
+              </div>
             </>
           )}
         </div>
       </motion.nav>
 
-      {/* ─── Mobile Menu Overlay ─── */}
+      {/* ─── Mobile Menu Overlay (slides up from bottom) ─── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-            className="pointer-events-auto fixed top-24 left-0 w-full z-40 px-4 md:hidden"
+            className="pointer-events-auto fixed bottom-16 left-0 w-full z-40 px-4 pb-2 md:hidden"
           >
-            <div className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-2xl p-5 flex flex-col gap-1.5">
+            <div className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-5 flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto">
               {/* Nav links */}
               {navLinks.map((link) => (
                 <Link
@@ -452,6 +443,28 @@ export default function MinimalHeader() {
                 ))}
               </div>
 
+              {/* Language switcher for mobile */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Language
+                </p>
+                <div className="flex gap-2 px-4">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setActiveLang(lang.code)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeLang === lang.code
+                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                          : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {lang.code}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Auth buttons */}
               {!isAuthenticated && (
                 <div className="border-t border-gray-100 mt-2 pt-3 flex flex-col gap-2">
@@ -475,6 +488,50 @@ export default function MinimalHeader() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ─── Mobile Bottom Navigation Bar ─── */}
+      <nav className="md:hidden pointer-events-auto fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-200/50 z-50 flex justify-around items-center px-2 pt-2 pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <Link
+          to="/"
+          onClick={() => setMobileOpen(false)}
+          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
+            pathname === '/' ? 'text-indigo-600' : 'text-gray-400'
+          }`}
+        >
+          <HomeIcon className="w-6 h-6" />
+          <span className="text-[10px] font-semibold">Home</span>
+        </Link>
+        <Link
+          to="/blog"
+          onClick={() => setMobileOpen(false)}
+          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
+            pathname.startsWith('/blog') ? 'text-indigo-600' : 'text-gray-400'
+          }`}
+        >
+          <DocumentTextIcon className="w-6 h-6" />
+          <span className="text-[10px] font-semibold">Blog</span>
+        </Link>
+        <Link
+          to="/community"
+          onClick={() => setMobileOpen(false)}
+          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
+            pathname === '/community' ? 'text-indigo-600' : 'text-gray-400'
+          }`}
+        >
+          <UserGroupIcon className="w-6 h-6" />
+          <span className="text-[10px] font-semibold">Community</span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className={`flex flex-col items-center gap-0.5 min-w-[56px] transition-colors ${
+            mobileOpen ? 'text-indigo-600' : 'text-gray-400'
+          }`}
+          title="Menu"
+        >
+          {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+          <span className="text-[10px] font-semibold">Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }
