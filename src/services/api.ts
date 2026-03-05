@@ -676,6 +676,9 @@ export const employerApi = {
       totalApplicants: number;
       newApplications: number;
       shortlisted: number;
+      newThisWeek: number;
+      closedJobs: number;
+      interviewsScheduled: number;
     }>('/employer/stats'),
   getApplications: (params?: {
     page?: number;

@@ -44,6 +44,9 @@ interface EmployerStats {
   totalApplicants: number;
   newApplications: number;
   shortlisted: number;
+  newThisWeek: number;
+  closedJobs: number;
+  interviewsScheduled: number;
 }
 
 export default function EmployerDashboard({ navigateTo }: NavigationProps) {
@@ -76,9 +79,20 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // My Jobs tab state
+  const [jobStats, setJobStats] = useState<EmployerStats | null>(null);
+  const [jobsTab, setJobsTab] = useState<'active' | 'closed'>('active');
+  const [jobSearch, setJobSearch] = useState('');
+  const [editingJob, setEditingJob] = useState<any>(null);
+  const [actionMenuJobId, setActionMenuJobId] = useState<string | null>(null);
+  const [jobsLoading, setJobsLoading] = useState(false);
+
   useEffect(() => {
     if (activeTab === 'dashboard') fetchDashboardData();
-    if (activeTab === 'jobs') fetchJobs();
+    if (activeTab === 'jobs') {
+      fetchJobs();
+      fetchJobStats();
+    }
     if (activeTab === 'students') {
       fetchApplications();
       if (jobs.length === 0) fetchJobs(); // for dropdown
@@ -86,7 +100,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
     if (activeTab === 'company') fetchCompanyProfile();
   }, [activeTab, statusFilter, jobFilter, appPage]);
 
-  // Debounced search
+  // Debounced search for students tab
   useEffect(() => {
     if (activeTab !== 'students') return;
     const timer = setTimeout(() => fetchApplications(), 400);
@@ -112,10 +126,19 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
   };
 
   const fetchJobs = async () => {
-    setIsLoading(true);
+    setJobsLoading(true);
     const { data } = await jobApi.getEmployerJobs();
     if (data) setJobs(data);
-    setIsLoading(false);
+    setJobsLoading(false);
+  };
+
+  const fetchJobStats = async () => {
+    try {
+      const { data } = await employerApi.getStats();
+      if (data) setJobStats(data as EmployerStats);
+    } catch (e) {
+      console.error('Failed to fetch job stats', e);
+    }
   };
 
   const fetchApplications = async () => {
@@ -782,252 +805,379 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
             </>
           )}
 
-          {activeTab === 'jobs' && (
-            <div className="flex flex-col gap-6">
-              <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    Job Vacancies
-                  </h2>
-                  <p className="text-slate-500 dark:text-slate-400 mt-1">
-                    Manage your active listings and candidate applications
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setActiveTab('company')}
-                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                  >
-                    <EyeIcon className="w-[18px] h-[18px]" />
-                    View Profile
-                  </button>
-                  <button
-                    onClick={() => setShowPostJobModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
-                  >
-                    <PlusIcon className="w-[18px] h-[18px]" />
-                    Post New Job
-                  </button>
-                </div>
-              </header>
+          {activeTab === 'jobs' &&
+            (() => {
+              // Filter + search
+              const filteredJobs = jobs.filter((job: any) => {
+                const matchesTab =
+                  jobsTab === 'active'
+                    ? job.status === 'ACTIVE' || job.status === 'PAUSED'
+                    : job.status === 'CLOSED';
+                const matchesSearch =
+                  !jobSearch ||
+                  job.title?.toLowerCase().includes(jobSearch.toLowerCase()) ||
+                  job.location?.toLowerCase().includes(jobSearch.toLowerCase());
+                return matchesTab && matchesSearch;
+              });
+              const JOBS_PER_PAGE = 10;
+              const totalFiltered = filteredJobs.length;
+              const totalPages = Math.ceil(totalFiltered / JOBS_PER_PAGE) || 1;
+              const currentJobPage = 1; // simplified — all shown for now
+              const showFrom = totalFiltered > 0 ? 1 : 0;
+              const showTo = Math.min(JOBS_PER_PAGE, totalFiltered);
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                      Active Listings
-                    </h3>
-                    <ClipboardDocumentListIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-slate-900 dark:text-white">12</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-2 text-sm">
-                    <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-500 font-medium">2 New</span>
-                    <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
-                      this week
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                      Total Applicants
-                    </h3>
-                    <UsersIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-slate-900 dark:text-white">1,208</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-2 text-sm">
-                    <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-500 font-medium">+45</span>
-                    <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
-                      since last login
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-orange-500"></div>
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                      In Review
-                    </h3>
-                    <ClockIcon className="w-5 h-5 text-orange-500" />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-slate-900 dark:text-white">3</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-2 text-sm">
-                    <ClockIcon className="w-3.5 h-3.5 text-orange-500" />
-                    <span className="text-orange-500 font-medium">Pending Approval</span>
-                  </div>
-                </div>
-                <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                      Interviews
-                    </h3>
-                    <VideoCameraIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-slate-900 dark:text-white">8</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-2 text-sm">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs">
-                      Scheduled this week
-                    </span>
-                  </div>
-                </div>
-              </div>
+              return (
+                <div className="flex flex-col gap-6">
+                  <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                        Job Vacancies
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 mt-1">
+                        Manage your active listings and candidate applications
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setActiveTab('company')}
+                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                      >
+                        <EyeIcon className="w-[18px] h-[18px]" />
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingJob(null);
+                          setShowPostJobModal(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
+                      >
+                        <PlusIcon className="w-[18px] h-[18px]" />
+                        Post New Job
+                      </button>
+                    </div>
+                  </header>
 
-              <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800">
-                <button className="pb-3 border-b-2 border-primary text-primary font-bold text-sm">
-                  Active Jobs (12)
-                </button>
-                <button className="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium text-sm transition-colors">
-                  Pending Review (3)
-                </button>
-                <button className="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium text-sm transition-colors">
-                  Closed (45)
-                </button>
-              </div>
+                  {/* ── Stat Cards — Real Data ── */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                          Active Listings
+                        </h3>
+                        <ClipboardDocumentListIcon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                          {jobStats?.activeJobs ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 mt-2 text-sm">
+                        {(jobStats?.newThisWeek ?? 0) > 0 && (
+                          <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-emerald-500" />
+                        )}
+                        <span className="text-emerald-500 font-medium">
+                          {jobStats?.newThisWeek ?? 0} New
+                        </span>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
+                          this week
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                          Total Applicants
+                        </h3>
+                        <UsersIcon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                          {jobStats?.totalApplicants ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 mt-2 text-sm">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                          Across all postings
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-orange-500"></div>
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                          New Applications
+                        </h3>
+                        <ClockIcon className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                          {jobStats?.newApplications ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 mt-2 text-sm">
+                        <ClockIcon className="w-3.5 h-3.5 text-orange-500" />
+                        <span className="text-orange-500 font-medium">Requires review</span>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                          Interviews
+                        </h3>
+                        <VideoCameraIcon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                          {jobStats?.interviewsScheduled ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 mt-2 text-sm">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                          Scheduled this week
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                <div className="relative w-full sm:w-96">
-                  <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
-                  <input
-                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white transition-all shadow-sm"
-                    placeholder="Search job titles or locations..."
-                    type="text"
-                  />
-                </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <FunnelIcon className="w-[18px] h-[18px]" />
-                    Filter
-                  </button>
-                  <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
-                    <ArrowsUpDownIcon className="w-[18px] h-[18px]" />
-                    Sort
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 dark:bg-white/5 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
-                        <th className="px-6 py-4">Job Title</th>
-                        <th className="px-6 py-4">Department</th>
-                        <th className="px-6 py-4">Posted Date</th>
-                        <th className="px-6 py-4">Applicants</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {jobs.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="text-center p-8 text-slate-500">
-                            No jobs posted yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        jobs.map((job) => (
-                          <tr
-                            key={job.id}
-                            className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
-                          >
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-4">
-                                <div
-                                  className={`w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0`}
-                                >
-                                  <BriefcaseIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                  <div className="font-bold text-slate-900 dark:text-white text-sm">
-                                    {job.title}
-                                  </div>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-                                    {job.locationType} • {job.type}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                              {job.department}
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                              {new Date(job.postedAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <div className="flex -space-x-2">
-                                  {[1, 2, 3]
-                                    .slice(0, Math.min(3, job.applicantCount || 0))
-                                    .map((_, i) => (
-                                      <div
-                                        key={i}
-                                        className={`w-6 h-6 rounded-full border-2 border-white dark:border-card-dark bg-slate-200 flex items-center justify-center text-[10px]`}
-                                      >
-                                        {i + 1}
-                                      </div>
-                                    ))}
-                                </div>
-                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">
-                                  {job.applicantCount || 0}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span
-                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${getStatusColor(job.status)}`}
-                              >
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full mr-1.5 ${job.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-slate-500'}`}
-                                ></span>
-                                {job.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button
-                                aria-label="Job options"
-                                className="text-slate-400 hover:text-primary transition-colors"
-                              >
-                                <EllipsisVerticalIcon className="w-5 h-5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Showing <span className="font-bold text-slate-900 dark:text-white">1-4</span> of{' '}
-                    <span className="font-bold text-slate-900 dark:text-white">12</span> active
-                    listings
-                  </p>
-                  <div className="flex items-center gap-2">
+                  {/* ── Tabs — Real Counts ── */}
+                  <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800">
                     <button
-                      className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      disabled
+                      onClick={() => setJobsTab('active')}
+                      className={`pb-3 border-b-2 text-sm font-bold transition-colors ${jobsTab === 'active' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                     >
-                      Previous
+                      Active Jobs ({jobStats?.activeJobs ?? 0})
                     </button>
-                    <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                      Next
+                    <button
+                      onClick={() => setJobsTab('closed')}
+                      className={`pb-3 border-b-2 text-sm font-bold transition-colors ${jobsTab === 'closed' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                    >
+                      Closed ({jobStats?.closedJobs ?? 0})
                     </button>
                   </div>
+
+                  {/* ── Search + Filters ── */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <div className="relative w-full sm:w-96">
+                      <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white transition-all shadow-sm"
+                        placeholder="Search job titles or locations..."
+                        type="text"
+                        value={jobSearch}
+                        onChange={(e) => setJobSearch(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
+                        <FunnelIcon className="w-[18px] h-[18px]" />
+                        Filter
+                      </button>
+                      <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
+                        <ArrowsUpDownIcon className="w-[18px] h-[18px]" />
+                        Sort
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── Table ── */}
+                  <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 dark:bg-white/5 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
+                            <th className="px-6 py-4">Job Title</th>
+                            <th className="px-6 py-4">Department</th>
+                            <th className="px-6 py-4">Posted Date</th>
+                            <th className="px-6 py-4">Applicants</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                          {jobsLoading ? (
+                            // Skeleton rows
+                            [1, 2, 3].map((i) => (
+                              <tr key={i}>
+                                <td colSpan={6} className="px-6 py-5">
+                                  <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-full"></div>
+                                </td>
+                              </tr>
+                            ))
+                          ) : filteredJobs.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center py-16">
+                                <BriefcaseIcon className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
+                                <p className="text-slate-500 dark:text-slate-400 font-medium">
+                                  {jobSearch ? 'No jobs match your search.' : 'No jobs posted yet.'}
+                                </p>
+                                {!jobSearch && (
+                                  <button
+                                    onClick={() => {
+                                      setEditingJob(null);
+                                      setShowPostJobModal(true);
+                                    }}
+                                    className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark"
+                                  >
+                                    + Post Your First Job
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredJobs.map((job: any) => (
+                              <tr
+                                key={job.id}
+                                className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                      <BriefcaseIcon className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <div className="font-bold text-slate-900 dark:text-white text-sm">
+                                        {job.title}
+                                      </div>
+                                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                                        {job.locationType} •{' '}
+                                        {job.jobType?.replace('_', '-') || job.type}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
+                                  {job.department || '—'}
+                                </td>
+                                <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                                  {new Date(job.postedAt).toLocaleDateString()}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                    {job.applicantCount || 0}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${getStatusColor(job.status)}`}
+                                  >
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full mr-1.5 ${job.status === 'ACTIVE' ? 'bg-emerald-500' : job.status === 'PAUSED' ? 'bg-amber-500' : 'bg-slate-500'}`}
+                                    ></span>
+                                    {job.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-right relative">
+                                  <button
+                                    onClick={() =>
+                                      setActionMenuJobId(actionMenuJobId === job.id ? null : job.id)
+                                    }
+                                    aria-label="Job actions"
+                                    className="text-slate-400 hover:text-primary transition-colors"
+                                  >
+                                    <EllipsisVerticalIcon className="w-5 h-5" />
+                                  </button>
+                                  {/* Actions Dropdown */}
+                                  {actionMenuJobId === job.id && (
+                                    <div className="absolute right-6 top-12 z-30 w-48 bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl py-1">
+                                      <button
+                                        onClick={() => {
+                                          setActionMenuJobId(null);
+                                          setEditingJob(job);
+                                          setShowPostJobModal(true);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2"
+                                      >
+                                        ✏️ Edit Job
+                                      </button>
+                                      <button
+                                        onClick={async () => {
+                                          setActionMenuJobId(null);
+                                          const newStatus =
+                                            job.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+                                          try {
+                                            await jobApi.updateJob(job.id, { status: newStatus });
+                                            toast.success(
+                                              newStatus === 'PAUSED'
+                                                ? 'Job paused'
+                                                : 'Job activated'
+                                            );
+                                            fetchJobs();
+                                            fetchJobStats();
+                                          } catch {
+                                            toast.error('Failed to update status');
+                                          }
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2"
+                                      >
+                                        {job.status === 'ACTIVE'
+                                          ? '⏸️ Pause Listing'
+                                          : '▶️ Activate'}
+                                      </button>
+                                      <div className="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+                                      <button
+                                        onClick={async () => {
+                                          setActionMenuJobId(null);
+                                          if (
+                                            !confirm(
+                                              `Delete "${job.title}"? This cannot be undone.`
+                                            )
+                                          )
+                                            return;
+                                          try {
+                                            await jobApi.deleteJob(job.id);
+                                            toast.success('Job deleted');
+                                            fetchJobs();
+                                            fetchJobStats();
+                                          } catch {
+                                            toast.error('Failed to delete');
+                                          }
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
+                                      >
+                                        🗑️ Delete Job
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Pagination */}
+                    <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Showing{' '}
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {showFrom}-{showTo}
+                        </span>{' '}
+                        of{' '}
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {totalFiltered}
+                        </span>{' '}
+                        {jobsTab === 'active' ? 'active' : 'closed'} listings
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          disabled={currentJobPage <= 1}
+                        >
+                          Previous
+                        </button>
+                        <button
+                          className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          disabled={currentJobPage >= totalPages}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              );
+            })()}
 
           {activeTab === 'students' && (
             <div className="flex flex-col gap-8">
@@ -1770,12 +1920,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
       {/* Modals */}
       <PostJobModal
         isOpen={showPostJobModal}
-        onClose={() => setShowPostJobModal(false)}
+        onClose={() => {
+          setShowPostJobModal(false);
+          setEditingJob(null);
+        }}
         onSuccess={() => {
           fetchDashboardData();
           fetchJobs();
+          fetchJobStats();
         }}
         companyName={company.companyName}
+        editJob={editingJob}
       />
 
       <ViewApplicantModal

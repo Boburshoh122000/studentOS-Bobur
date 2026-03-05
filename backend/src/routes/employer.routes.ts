@@ -68,11 +68,25 @@ router.get('/stats', async (req: AuthenticatedRequest, res, next) => {
         totalApplicants: 0,
         newApplications: 0,
         shortlisted: 0,
+        newThisWeek: 0,
+        closedJobs: 0,
+        interviewsScheduled: 0,
       });
       return;
     }
 
-    const [activeJobs, totalApplicants, newApplications, shortlisted] = await Promise.all([
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const [
+      activeJobs,
+      totalApplicants,
+      newApplications,
+      shortlisted,
+      newThisWeek,
+      closedJobs,
+      interviewsScheduled,
+    ] = await Promise.all([
       // Active Jobs
       prisma.job.count({
         where: { employerId: employerProfile.id, status: 'ACTIVE' },
@@ -92,6 +106,18 @@ router.get('/stats', async (req: AuthenticatedRequest, res, next) => {
           status: { in: ['SCREENING', 'INTERVIEW'] },
         },
       }),
+      // New jobs posted this week
+      prisma.job.count({
+        where: { employerId: employerProfile.id, postedAt: { gte: weekAgo } },
+      }),
+      // Closed jobs
+      prisma.job.count({
+        where: { employerId: employerProfile.id, status: 'CLOSED' },
+      }),
+      // Interviews scheduled
+      prisma.jobApplication.count({
+        where: { job: { employerId: employerProfile.id }, status: 'INTERVIEW' },
+      }),
     ]);
 
     res.json({
@@ -99,6 +125,9 @@ router.get('/stats', async (req: AuthenticatedRequest, res, next) => {
       totalApplicants,
       newApplications,
       shortlisted,
+      newThisWeek,
+      closedJobs,
+      interviewsScheduled,
     });
   } catch (error) {
     next(error);

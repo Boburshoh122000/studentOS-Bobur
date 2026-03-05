@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { jobApi } from '../src/services/api';
 import { CURRENCY_OPTIONS } from '../src/utils/formatSalary';
 import { toast } from 'react-hot-toast';
@@ -19,6 +19,7 @@ interface PostJobModalProps {
   onClose: () => void;
   onSuccess: () => void;
   companyName?: string;
+  editJob?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 type JobType = 'INTERNSHIP' | 'GRADUATE' | 'PART_TIME' | 'FULL_TIME';
@@ -40,7 +41,9 @@ export default function PostJobModal({
   onClose,
   onSuccess,
   companyName,
+  editJob,
 }: PostJobModalProps) {
+  const isEditing = !!editJob;
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -67,6 +70,39 @@ export default function PostJobModal({
     mentorTitle: '',
     eligibilityYear: '',
   });
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editJob) {
+      const dateToInput = (d?: string) => (d ? new Date(d).toISOString().split('T')[0] : '');
+      setFormData({
+        title: editJob.title || '',
+        jobType: editJob.jobType || 'INTERNSHIP',
+        department: editJob.department || '',
+        location: editJob.location || '',
+        locationType: editJob.locationType || 'ONSITE',
+        description: editJob.description || '',
+        requirements: Array.isArray(editJob.requirements)
+          ? editJob.requirements.join(', ')
+          : editJob.requirements || '',
+        applicationDeadline: dateToInput(editJob.applicationDeadline),
+        startDate: dateToInput(editJob.startDate),
+        endDate: dateToInput(editJob.endDate),
+        durationWeeks: editJob.durationWeeks ? String(editJob.durationWeeks) : '',
+        hoursPerWeek: editJob.hoursPerWeek || '',
+        compensationType: editJob.compensationType || 'PAID',
+        salaryMin: editJob.salaryMin ? String(editJob.salaryMin) : '',
+        salaryMax: editJob.salaryMax ? String(editJob.salaryMax) : '',
+        salaryPeriod: editJob.salaryPeriod || 'MONTHLY',
+        currency: editJob.currency || 'UZS',
+        skills: Array.isArray(editJob.skills) ? editJob.skills.join(', ') : editJob.skills || '',
+        learningGoals: editJob.learningGoals?.length ? editJob.learningGoals : [''],
+        mentorName: editJob.mentorName || '',
+        mentorTitle: editJob.mentorTitle || '',
+        eligibilityYear: editJob.eligibilityYear || '',
+      });
+    }
+  }, [editJob]);
 
   const isInternship = formData.jobType === 'INTERNSHIP' || formData.jobType === 'GRADUATE';
 
@@ -159,14 +195,19 @@ export default function PostJobModal({
       payload.salaryPeriod = formData.salaryPeriod;
       payload.compensationType = formData.compensationType;
 
-      const { error } = await jobApi.createJob(payload);
+      let result;
+      if (isEditing) {
+        result = await jobApi.updateJob(editJob.id, payload);
+      } else {
+        result = await jobApi.createJob(payload);
+      }
 
-      if (error) {
-        toast.error(error);
+      if (result.error) {
+        toast.error(result.error);
         return;
       }
 
-      toast.success('Job posted successfully!');
+      toast.success(isEditing ? 'Job updated successfully!' : 'Job posted successfully!');
       onSuccess();
       onClose();
     } catch {
@@ -194,7 +235,9 @@ export default function PostJobModal({
               <BriefcaseIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Post New Listing</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {isEditing ? 'Edit Job' : 'Post New Listing'}
+              </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 {companyName || 'Your company'}
               </p>
@@ -655,12 +698,14 @@ export default function PostJobModal({
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Posting...
+                  {isEditing ? 'Saving...' : 'Posting...'}
                 </>
               ) : (
                 <>
                   <ArrowUpTrayIcon className="w-[18px] h-[18px]" />
-                  Post {formData.jobType === 'INTERNSHIP' ? 'Internship' : 'Job'}
+                  {isEditing
+                    ? 'Save Changes'
+                    : `Post ${formData.jobType === 'INTERNSHIP' ? 'Internship' : 'Job'}`}
                 </>
               )}
             </button>
