@@ -55,11 +55,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await authApi.me();
       if (data && !error) {
         setUser(data as User);
-      } else {
-        // Clear invalid tokens
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
       }
+      // Do NOT clear tokens here on error.
+      // The API client already handles 401 (invalid/expired token) via the refresh token
+      // flow, which clears tokens when refresh also fails. For network errors (e.g., backend
+      // cold-starting after a deployment), clearing tokens would log the user out incorrectly
+      // and cause admin/employer guards to show a permanent 404.
       setIsLoading(false);
     };
 

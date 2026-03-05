@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import RootLayout from './ui/RootLayout';
 import AdminLayout from './ui/AdminLayout';
 import { withNavigate } from './ui/withNavigate';
@@ -31,11 +31,22 @@ function NotFound() {
 }
 
 // Admin guard: shows 404 for unauthenticated users AND non-admins.
-// Never redirects to login — this prevents the console URL from being discoverable.
+// Security: never redirects to login for users with no token (prevents URL discovery).
+// Recovery: if a token exists but auth failed (e.g. backend cold-start), redirects to
+// signin so the user can re-authenticate and return here.
 function AdminGuard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <Loader />;
-  if (!isAuthenticated || !user || user.role !== 'ADMIN') return <NotFound />;
+  if (!isAuthenticated) {
+    // Token present = user was previously logged in (knows URL); recover via signin.
+    // No token = unknown visitor probing URLs; show 404 to obscure the route.
+    return localStorage.getItem('accessToken') ? (
+      <Navigate to="/signin?redirect=%2Fconsole-admin" replace />
+    ) : (
+      <NotFound />
+    );
+  }
+  if (!user || user.role !== 'ADMIN') return <NotFound />;
   return <AdminLayout />;
 }
 
@@ -43,7 +54,14 @@ function AdminGuard() {
 function EmployerGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <Loader />;
-  if (!isAuthenticated || !user || user.role !== 'EMPLOYER') return <NotFound />;
+  if (!isAuthenticated) {
+    return localStorage.getItem('accessToken') ? (
+      <Navigate to="/signin?redirect=%2Fconsole-employer" replace />
+    ) : (
+      <NotFound />
+    );
+  }
+  if (!user || user.role !== 'EMPLOYER') return <NotFound />;
   return <>{children}</>;
 }
 
