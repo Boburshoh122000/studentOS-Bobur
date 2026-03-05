@@ -697,6 +697,7 @@ export const employerApi = {
   },
   updateApplicationStatus: (id: string, data: { status?: string; notes?: string }) =>
     api.patch(`/employer/applications/${id}`, data),
+  getApplicantPortfolio: (userId: string) => api.get(`/employer/applicants/${userId}/portfolio`),
 };
 
 // Universities API

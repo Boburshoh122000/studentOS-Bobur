@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../src/contexts/AuthContext';
 import PostJobModal from './PostJobModal';
 import ViewApplicantModal from './ViewApplicantModal';
+import CandidatePortfolioModal from './CandidatePortfolioModal';
 import {
   AcademicCapIcon,
   ArrowDownTrayIcon,
@@ -86,6 +87,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
   const [editingJob, setEditingJob] = useState<any>(null);
   const [actionMenuJobId, setActionMenuJobId] = useState<string | null>(null);
   const [jobsLoading, setJobsLoading] = useState(false);
+
+  // Portfolio modal state
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [portfolioUserId, setPortfolioUserId] = useState<string | null>(null);
+  const [portfolioCandidateName, setPortfolioCandidateName] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     if (activeTab === 'dashboard') fetchDashboardData();
@@ -1212,13 +1220,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               </div>
 
               {/* Filters */}
-              <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-4">
-                <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-                  <div className="w-full lg:w-64">
+              <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 space-y-4">
+                {/* Row 1: Job dropdown + Status tabs */}
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                  <div className="w-full sm:w-56 shrink-0">
                     <div className="relative">
-                      <BriefcaseIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                      <BriefcaseIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <select
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary cursor-pointer"
+                        className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary cursor-pointer appearance-none"
                         aria-label="Select job position"
                         value={jobFilter || ''}
                         onChange={(e) => {
@@ -1235,7 +1244,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </select>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto pb-2 lg:pb-0 gap-1 no-scrollbar w-full lg:w-auto border-b lg:border-none border-slate-200 dark:border-slate-800">
+                  <div className="flex overflow-x-auto gap-1 no-scrollbar w-full sm:w-auto border-b sm:border-none border-slate-200 dark:border-slate-800">
                     {[
                       { label: 'All Applicants', value: undefined },
                       { label: 'New', value: 'NEW' },
@@ -1249,38 +1258,38 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           setStatusFilter(filter.value);
                           setAppPage(1);
                         }}
-                        className={`whitespace-nowrap px-4 py-2 font-medium text-sm transition-colors ${
+                        className={`whitespace-nowrap px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                           statusFilter === filter.value
-                            ? 'text-primary border-b-2 border-primary font-bold'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            ? 'bg-primary/10 text-primary font-bold'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
                         }`}
                       >
                         {filter.label}
                       </button>
                     ))}
                   </div>
-
-                  <div className="flex gap-2 w-full lg:w-auto">
-                    <div className="relative flex-1 lg:w-64">
-                      <input
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-slate-500 dark:placeholder-slate-400 font-medium"
-                        placeholder="Search by name, university..."
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setAppPage(1);
-                        }}
-                      />
-                      <MagnifyingGlassIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                    </div>
-                    <button
-                      aria-label="Filter applications"
-                      className="px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-transparent dark:border-slate-700"
-                    >
-                      <FunnelIcon className="w-5 h-5" />
-                    </button>
+                </div>
+                {/* Row 2: Search + Filter */}
+                <div className="flex gap-3">
+                  <div className="relative flex-1">
+                    <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent placeholder-slate-400 dark:placeholder-slate-500 font-medium"
+                      placeholder="Search by name, university..."
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setAppPage(1);
+                      }}
+                    />
                   </div>
+                  <button
+                    aria-label="Filter applications"
+                    className="flex items-center justify-center w-10 h-10 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 transition-colors border border-slate-200 dark:border-slate-700 shrink-0"
+                  >
+                    <FunnelIcon className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -1362,6 +1371,18 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               className="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-primary text-white hover:bg-primary-dark shadow-sm"
                             >
                               Review Application
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPortfolioUserId(app.userId || app.user?.id || null);
+                                setPortfolioCandidateName(
+                                  app.user?.studentProfile?.fullName || undefined
+                                );
+                                setShowPortfolioModal(true);
+                              }}
+                              className="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 shadow-sm"
+                            >
+                              👤 View Portfolio
                             </button>
                           </div>
                         </div>
@@ -1944,6 +1965,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
           fetchDashboardData();
           fetchApplications();
         }}
+      />
+
+      <CandidatePortfolioModal
+        isOpen={showPortfolioModal}
+        onClose={() => {
+          setShowPortfolioModal(false);
+          setPortfolioUserId(null);
+          setPortfolioCandidateName(undefined);
+        }}
+        userId={portfolioUserId}
+        candidateName={portfolioCandidateName}
       />
     </div>
   );

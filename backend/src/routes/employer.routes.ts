@@ -296,4 +296,80 @@ router.patch('/applications/:id', async (req: AuthenticatedRequest, res, next) =
   }
 });
 
+// Get candidate portfolio (full student profile for employers)
+router.get('/applicants/:userId/portfolio', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // Get employer profile
+    const employerProfile = await prisma.employerProfile.findUnique({
+      where: { userId: req.user!.id },
+    });
+
+    if (!employerProfile) {
+      res.status(403).json({ error: 'Employer profile not found' });
+      return;
+    }
+
+    // Verify this candidate has applied to at least one of this employer's jobs
+    const applicationExists = await prisma.jobApplication.findFirst({
+      where: {
+        userId: userId as string,
+        job: { employerId: employerProfile.id },
+      },
+    });
+
+    if (!applicationExists) {
+      res
+        .status(403)
+        .json({
+          error: 'You can only view portfolios of candidates who have applied to your jobs',
+        });
+      return;
+    }
+
+    // Fetch full student profile
+    const user = await prisma.user.findUnique({
+      where: { id: userId as string },
+      select: {
+        id: true,
+        email: true,
+        studentProfile: {
+          select: {
+            fullName: true,
+            avatarUrl: true,
+            bio: true,
+            headline: true,
+            educationLevel: true,
+            university: true,
+            graduationYear: true,
+            major: true,
+            country: true,
+            skills: true,
+            cvUrl: true,
+            atsScore: true,
+            educationHistory: true,
+            workExperience: true,
+            certificates: true,
+            goals: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.studentProfile) {
+      res.status(404).json({ error: 'Student profile not found' });
+      return;
+    }
+
+    res.json({
+      ...user.studentProfile,
+      email: user.email,
+      userId: user.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
