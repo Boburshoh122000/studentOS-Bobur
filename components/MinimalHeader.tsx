@@ -246,12 +246,8 @@ export default function MinimalHeader() {
 
         {/* ─── Right Side Actions ─── */}
         <div className="flex items-center gap-3">
-          {/* Language Switcher - desktop only */}
-          <div
-            className="relative hidden md:block"
-            onMouseEnter={openLang}
-            onMouseLeave={closeLang}
-          >
+          {/* Language Switcher */}
+          <div className="relative" onMouseEnter={openLang} onMouseLeave={closeLang}>
             <button
               onClick={() => setLangOpen(!langOpen)}
               className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors px-2 py-1.5 rounded-full hover:bg-gray-100/60"
