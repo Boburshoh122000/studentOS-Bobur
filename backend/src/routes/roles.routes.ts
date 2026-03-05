@@ -105,6 +105,100 @@ router.get('/permissions', async (req: AuthenticatedRequest, res, next) => {
 // ROLES
 // =============================================================================
 
+// GET /api/admin/roles/users - Get all admin users with their roles + permissions
+router.get('/roles/users', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const { search, page = '1', limit = '20' } = req.query as any;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+
+    // Always include ADMIN users + super admin by email
+    const baseWhere: any = {
+      OR: [{ role: 'ADMIN' }, { email: SUPER_ADMIN_EMAIL }],
+    };
+
+    if (search) {
+      baseWhere.AND = [
+        {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' } },
+            { studentProfile: { fullName: { contains: search, mode: 'insensitive' } } },
+          ],
+        },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where: baseWhere,
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          isActive: true,
+          lastLoginAt: true,
+          createdAt: true,
+          studentProfile: {
+            select: { fullName: true, avatarUrl: true },
+          },
+          adminRoles: {
+            include: {
+              role: {
+                include: {
+                  permissions: {
+                    include: { permission: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+      }),
+      prisma.user.count({ where: baseWhere }),
+    ]);
+
+    // Deduplicate permissions across all roles
+    const transformedUsers = users.map((user) => {
+      const permMap = new Map<string, any>();
+      for (const ar of user.adminRoles) {
+        for (const rp of ar.role.permissions) {
+          permMap.set(rp.permission.id, rp.permission);
+        }
+      }
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.studentProfile?.fullName || null,
+        avatarUrl: user.studentProfile?.avatarUrl,
+        isActive: user.isActive,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt,
+        roles: user.adminRoles.map((ar) => ({
+          id: ar.role.id,
+          name: ar.role.name,
+        })),
+        permissions: Array.from(permMap.values()),
+      };
+    });
+
+    res.json({
+      users: transformedUsers,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/admin/roles - List all roles with permissions
 router.get('/roles', async (req: AuthenticatedRequest, res, next) => {
   try {
@@ -335,104 +429,6 @@ router.delete('/roles/:id', async (req: AuthenticatedRequest, res, next) => {
 // =============================================================================
 // ADMIN USERS
 // =============================================================================
-
-// GET /api/admin/roles/users - Get all admin users with their roles + permissions
-router.get('/roles/users', async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { search, page = '1', limit = '20' } = req.query as any;
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
-
-    // Always include ADMIN users + super admin by email
-    const baseWhere: any = {
-      OR: [{ role: 'ADMIN' }, { email: SUPER_ADMIN_EMAIL }],
-    };
-
-    if (search) {
-      baseWhere.AND = [
-        {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' } },
-            { studentProfile: { fullName: { contains: search, mode: 'insensitive' } } },
-          ],
-        },
-      ];
-    }
-
-    const userSelect = {
-      id: true,
-      email: true,
-      role: true,
-      isActive: true,
-      lastLoginAt: true,
-      createdAt: true,
-      studentProfile: {
-        select: { fullName: true, avatarUrl: true },
-      },
-      adminRoles: {
-        include: {
-          role: {
-            select: {
-              id: true,
-              name: true,
-              permissions: {
-                include: { permission: true },
-              },
-            },
-          },
-        },
-      },
-    } as const;
-
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where: baseWhere,
-        select: userSelect,
-        orderBy: { createdAt: 'desc' },
-        skip: (pageNum - 1) * limitNum,
-        take: limitNum,
-      }),
-      prisma.user.count({ where: baseWhere }),
-    ]);
-
-    // Deduplicate permissions across all roles
-    const transformedUsers = users.map((user) => {
-      const permMap = new Map<string, any>();
-      for (const ar of user.adminRoles) {
-        for (const rp of ar.role.permissions) {
-          permMap.set(rp.permission.id, rp.permission);
-        }
-      }
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        fullName: user.studentProfile?.fullName || null,
-        avatarUrl: user.studentProfile?.avatarUrl,
-        isActive: user.isActive,
-        lastLoginAt: user.lastLoginAt,
-        createdAt: user.createdAt,
-        roles: user.adminRoles.map((ar) => ({
-          id: ar.role.id,
-          name: ar.role.name,
-        })),
-        permissions: Array.from(permMap.values()),
-      };
-    });
-
-    res.json({
-      users: transformedUsers,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-});
 
 // GET /api/admin/users/search - Search non-admin users (superAdminOnly)
 router.get('/users/search', superAdminOnly, async (req: AuthenticatedRequest, res, next) => {
