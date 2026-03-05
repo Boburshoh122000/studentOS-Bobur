@@ -167,7 +167,12 @@ export default function MinimalHeader() {
       >
         {/* ─── Logo ─── */}
         <Link to="/" className="flex items-center">
-          <Logo iconSize="w-7 h-7" textSize="text-lg" textColor="text-[#0A0A0A]" className="mr-4" />
+          <Logo
+            iconSize="w-9 h-9 md:w-10 md:h-10"
+            textSize="text-xl md:text-2xl"
+            textColor="text-[#0A0A0A]"
+            className="mr-3 md:mr-4"
+          />
         </Link>
 
         {/* ─── Center Navigation ─── */}

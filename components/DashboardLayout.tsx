@@ -90,7 +90,7 @@ export default function DashboardLayout({
             </button>
           )}
           <div className="ml-auto">
-            <Logo iconSize="w-7 h-7" textSize="text-sm" />
+            <Logo iconSize="w-8 h-8" textSize="text-lg" />
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export default function DashboardLayout({
           >
             <Bars3Icon className="w-5 h-5 text-gray-700 dark:text-white" />
           </button>
-          <Logo iconSize="w-8 h-8" textSize="text-base" />
+          <Logo iconSize="w-9 h-9" textSize="text-xl" />
           <div className="w-10" />
         </div>
 
