@@ -17,6 +17,9 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockMinutes, setBlockMinutes] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
 
   const hasRedirected = useRef(false);
 
@@ -32,9 +35,9 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const getDefaultRouteForRole = (role: string): string => {
     switch (role) {
       case 'ADMIN':
-        return '/admin';
+        return '/console-admin';
       case 'EMPLOYER':
-        return '/employer';
+        return '/console-employer';
       case 'STUDENT':
       default:
         return '/app';
@@ -64,13 +67,24 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setRemainingAttempts(null);
     setIsSubmitting(true);
 
     const result = await login(email, password);
 
     if (!result.success) {
       console.error('[SignIn] Login failed:', result);
-      setError(result.error || 'Invalid email or password');
+
+      if (result.blocked) {
+        setIsBlocked(true);
+        setBlockMinutes(result.retryAfterMinutes ?? 30);
+        setError('');
+      } else {
+        const remaining = result.remaining_attempts;
+        setRemainingAttempts(remaining ?? null);
+        setError(result.error || 'Invalid email or password');
+      }
+
       setIsSubmitting(false);
     }
   };
@@ -82,10 +96,33 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
       footerLinkText="Sign up"
       footerLinkTo="/signup/step-1"
     >
+      {/* Blocked Banner */}
+      {isBlocked && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+          <span className="text-xl shrink-0">🔒</span>
+          <div>
+            <p className="text-sm font-semibold text-red-700">Account temporarily locked</p>
+            <p className="text-sm text-red-600 mt-0.5">
+              Too many failed attempts. Please try again in{' '}
+              <span className="font-bold">
+                {blockMinutes} minute{blockMinutes !== 1 ? 's' : ''}
+              </span>
+              .
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Error Message */}
-      {error && (
+      {!isBlocked && error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
           <p className="text-sm text-red-600">{error}</p>
+          {remainingAttempts !== null && remainingAttempts > 0 && (
+            <p className="text-xs text-red-500 mt-1 font-medium">
+              {remainingAttempts} attempt{remainingAttempts !== 1 ? 's' : ''} remaining before
+              temporary lock
+            </p>
+          )}
         </div>
       )}
 
@@ -93,7 +130,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled={isGoogleLoading || isSubmitting}
+        disabled={isGoogleLoading || isSubmitting || isBlocked}
         className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-full transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
       >
         {isGoogleLoading ? (
@@ -167,7 +204,8 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@studentos.com"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-900 placeholder:text-slate-400"
+            disabled={isBlocked}
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-900 placeholder:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed"
             required
           />
         </div>
@@ -184,7 +222,8 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-900 placeholder:text-slate-400 pr-12"
+              disabled={isBlocked}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-900 placeholder:text-slate-400 pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
             <button
@@ -235,7 +274,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting || !email || !password}
+          disabled={isSubmitting || !email || !password || isBlocked}
           className="w-full py-3.5 px-6 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-[0.98]"
         >
           {isSubmitting ? (
@@ -258,6 +297,8 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
               </svg>
               Signing in...
             </span>
+          ) : isBlocked ? (
+            `Locked for ${blockMinutes} min`
           ) : (
             'Sign In'
           )}

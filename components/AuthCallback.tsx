@@ -73,9 +73,9 @@ export default function AuthCallback() {
           } else {
             const role = response.data.user.role;
             if (role === 'ADMIN') {
-              navigate('/admin', { replace: true });
+              navigate('/console-admin', { replace: true });
             } else if (role === 'EMPLOYER') {
-              navigate('/employer', { replace: true });
+              navigate('/console-employer', { replace: true });
             } else {
               navigate('/app', { replace: true });
             }

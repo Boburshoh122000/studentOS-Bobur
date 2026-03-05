@@ -4,6 +4,7 @@ import RootLayout from './ui/RootLayout';
 import AdminLayout from './ui/AdminLayout';
 import { withNavigate } from './ui/withNavigate';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { useAuth } from './contexts/AuthContext';
 
 import { GlobalLoader } from '../components/ui/GlobalLoader';
 
@@ -27,6 +28,23 @@ function NotFound() {
       </div>
     </div>
   );
+}
+
+// Admin guard: shows 404 for unauthenticated users AND non-admins.
+// Never redirects to login — this prevents the console URL from being discoverable.
+function AdminGuard() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <Loader />;
+  if (!isAuthenticated || !user || user.role !== 'ADMIN') return <NotFound />;
+  return <AdminLayout />;
+}
+
+// Employer guard: shows 404 for unauthenticated users AND non-employers.
+function EmployerGuard({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <Loader />;
+  if (!isAuthenticated || !user || user.role !== 'EMPLOYER') return <NotFound />;
+  return <>{children}</>;
 }
 
 // Helper to retry lazy imports on chunk load errors (e.g., after deployment)
@@ -107,18 +125,10 @@ const AdminDemographicsPage = withNavigate(
 // Employer
 const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/EmployerDashboard')));
 
-// Helper component to wrap protected routes
+// Helper component to wrap protected student routes
 function StudentRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute allowedRoles={['STUDENT', 'EDUCATOR', 'ADMIN']}>
-      <Wrap>{children}</Wrap>
-    </ProtectedRoute>
-  );
-}
-
-function EmployerRoute({ children }: { children: React.ReactNode }) {
-  return (
-    <ProtectedRoute allowedRoles={['EMPLOYER', 'ADMIN']}>
       <Wrap>{children}</Wrap>
     </ProtectedRoute>
   );
@@ -279,7 +289,6 @@ export const router = createBrowserRouter([
           </StudentRoute>
         ),
       },
-
       {
         path: '/app/cv-builder',
         element: (
@@ -362,17 +371,15 @@ export const router = createBrowserRouter([
       },
 
       // ========================================
-      // PROTECTED ROUTES - ADMIN (shared layout keeps sidebar mounted)
+      // SECURE ROUTES - ADMIN (/console-admin/*)
+      // Shows 404 for unauthenticated users AND wrong-role users.
+      // AdminGuard renders AdminLayout (with Outlet) so sidebar stays mounted.
       // ========================================
       {
-        element: (
-          <ProtectedRoute allowedRoles={['ADMIN']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        ),
+        element: <AdminGuard />,
         children: [
           {
-            path: '/admin',
+            path: '/console-admin',
             element: (
               <Wrap>
                 <AdminDashboard />
@@ -380,7 +387,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/employers',
+            path: '/console-admin/employers',
             element: (
               <Wrap>
                 <AdminEmployers />
@@ -388,7 +395,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/pricing',
+            path: '/console-admin/pricing',
             element: (
               <Wrap>
                 <AdminPricing />
@@ -396,7 +403,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/users',
+            path: '/console-admin/users',
             element: (
               <Wrap>
                 <AdminUsers />
@@ -404,7 +411,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/scholarships',
+            path: '/console-admin/scholarships',
             element: (
               <Wrap>
                 <AdminScholarships />
@@ -412,7 +419,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/roles',
+            path: '/console-admin/roles',
             element: (
               <Wrap>
                 <AdminRoles />
@@ -420,7 +427,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/blog',
+            path: '/console-admin/blog',
             element: (
               <Wrap>
                 <AdminBlog />
@@ -428,7 +435,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/team',
+            path: '/console-admin/team',
             element: (
               <Wrap>
                 <AdminTeam />
@@ -436,7 +443,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/settings',
+            path: '/console-admin/settings',
             element: (
               <Wrap>
                 <AdminProfile />
@@ -444,7 +451,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/notifications',
+            path: '/console-admin/notifications',
             element: (
               <Wrap>
                 <AdminNotifications />
@@ -452,7 +459,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: '/admin/demographics',
+            path: '/console-admin/demographics',
             element: (
               <Wrap>
                 <AdminDemographicsPage />
@@ -462,17 +469,28 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // Old /admin/* paths → 404 (NOT a redirect — that would reveal the new URL)
+      { path: '/admin', element: <NotFound /> },
+      { path: '/admin/*', element: <NotFound /> },
+
       // ========================================
-      // PROTECTED ROUTES - EMPLOYER
+      // SECURE ROUTES - EMPLOYER (/console-employer/*)
+      // Shows 404 for unauthenticated users AND wrong-role users.
       // ========================================
       {
-        path: '/employer',
+        path: '/console-employer',
         element: (
-          <EmployerRoute>
-            <EmployerDashboard />
-          </EmployerRoute>
+          <EmployerGuard>
+            <Wrap>
+              <EmployerDashboard />
+            </Wrap>
+          </EmployerGuard>
         ),
       },
+
+      // Old /employer/* paths → 404
+      { path: '/employer', element: <NotFound /> },
+      { path: '/employer/*', element: <NotFound /> },
 
       { path: '*', element: <NotFound /> },
     ],

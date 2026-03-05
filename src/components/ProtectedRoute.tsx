@@ -16,9 +16,9 @@ function Loader() {
 function getRoleDefaultRoute(role: string): string {
   switch (role) {
     case 'ADMIN':
-      return '/admin';
+      return '/console-admin';
     case 'EMPLOYER':
-      return '/employer';
+      return '/console-employer';
     case 'STUDENT':
     default:
       return '/app';
@@ -57,7 +57,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   if (isOnOnboarding && location.pathname === '/signup/step-2') {
     const profile = user.profile;
     const hasCompletedOnboarding =
-      (user.role !== 'STUDENT' && user.role !== 'EDUCATOR') || (profile && (profile.university || profile.major));
+      (user.role !== 'STUDENT' && user.role !== 'EDUCATOR') ||
+      (profile && (profile.university || profile.major));
     if (hasCompletedOnboarding) {
       return <Navigate to={getRoleDefaultRoute(user.role)} replace />;
     }

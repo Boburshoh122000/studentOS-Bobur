@@ -17,7 +17,16 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    remaining_attempts?: number;
+    blocked?: boolean;
+    retryAfterMinutes?: number;
+  }>;
   register: (
     email: string,
     password: string,
@@ -61,7 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authApi.login({ email, password });
 
     if (error) {
-      return { success: false, error };
+      const extra = data as any;
+      return {
+        success: false,
+        error,
+        remaining_attempts: extra?.remaining_attempts as number | undefined,
+        blocked: extra?.blocked as boolean | undefined,
+        retryAfterMinutes: extra?.retryAfterMinutes as number | undefined,
+      };
     }
 
     if (data) {

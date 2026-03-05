@@ -13,7 +13,11 @@ import {
   revokeAllUserTokens,
 } from '../services/auth.service.js';
 import { AppError } from '../middleware/error.middleware.js';
-import { loginRateLimiter, resetLoginAttempts } from '../services/rate-limiter.js';
+import {
+  loginRateLimiter,
+  recordFailedAttempt,
+  resetLoginAttempts,
+} from '../services/rate-limiter.js';
 
 const router = Router();
 
@@ -141,10 +145,18 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
   }
 });
 
+// Helper to extract client IP from request
+function getClientIP(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
+  return req.ip || req.socket.remoteAddress || 'unknown';
+}
+
 // Login - with brute force protection
 router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const ip = getClientIP(req);
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -155,8 +167,22 @@ router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, 
       },
     });
 
+    // Credentials invalid (user not found or no password)
     if (!user || !user.passwordHash) {
-      throw new AppError(401, 'Invalid credentials');
+      const remaining = await recordFailedAttempt(ip, email);
+      if (remaining <= 0) {
+        res.status(429).json({
+          error: 'Too many failed login attempts. Please try again in 30 minutes.',
+          blocked: true,
+          retryAfterMinutes: 30,
+        });
+      } else {
+        res.status(401).json({
+          error: 'Invalid credentials',
+          remaining_attempts: remaining,
+        });
+      }
+      return;
     }
 
     // Check if user is active
@@ -164,16 +190,27 @@ router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, 
       throw new AppError(403, 'Your account has been deactivated. Please contact support.');
     }
 
-    // Check email verification (optional enforcement - uncomment to enforce)
-    // if (!user.emailVerified) {
-    //   throw new AppError(401, 'Please verify your email before logging in.');
-    // }
-
     // Verify password
     const isValid = await comparePasswords(password, user.passwordHash);
     if (!isValid) {
-      throw new AppError(401, 'Invalid credentials');
+      const remaining = await recordFailedAttempt(ip, email);
+      if (remaining <= 0) {
+        res.status(429).json({
+          error: 'Too many failed login attempts. Please try again in 30 minutes.',
+          blocked: true,
+          retryAfterMinutes: 30,
+        });
+      } else {
+        res.status(401).json({
+          error: 'Invalid credentials',
+          remaining_attempts: remaining,
+        });
+      }
+      return;
     }
+
+    // Success — reset failed attempts counter
+    await resetLoginAttempts(ip, email);
 
     // Update last login
     await prisma.user.update({
