@@ -336,62 +336,89 @@ router.delete('/roles/:id', async (req: AuthenticatedRequest, res, next) => {
 // ADMIN USERS
 // =============================================================================
 
-// GET /api/admin/roles/users - Get all admin users with their roles
+// GET /api/admin/roles/users - Get all admin users with their roles + permissions
 router.get('/roles/users', async (req: AuthenticatedRequest, res, next) => {
   try {
     const { search, page = '1', limit = '20' } = req.query as any;
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
-    const where: any = {
-      role: 'ADMIN', // Only fetch admin users
+    // Always include ADMIN users + super admin by email
+    const baseWhere: any = {
+      OR: [{ role: 'ADMIN' }, { email: SUPER_ADMIN_EMAIL }],
     };
 
     if (search) {
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { studentProfile: { fullName: { contains: search, mode: 'insensitive' } } },
+      baseWhere.AND = [
+        {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' } },
+            { studentProfile: { fullName: { contains: search, mode: 'insensitive' } } },
+          ],
+        },
       ];
     }
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        select: {
-          id: true,
-          email: true,
-          isActive: true,
-          lastLoginAt: true,
-          createdAt: true,
-          studentProfile: {
-            select: { fullName: true, avatarUrl: true },
-          },
-          adminRoles: {
-            include: {
-              role: {
-                select: { id: true, name: true },
+    const userSelect = {
+      id: true,
+      email: true,
+      role: true,
+      isActive: true,
+      lastLoginAt: true,
+      createdAt: true,
+      studentProfile: {
+        select: { fullName: true, avatarUrl: true },
+      },
+      adminRoles: {
+        include: {
+          role: {
+            select: {
+              id: true,
+              name: true,
+              permissions: {
+                include: { permission: true },
               },
             },
           },
         },
+      },
+    } as const;
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where: baseWhere,
+        select: userSelect,
         orderBy: { createdAt: 'desc' },
         skip: (pageNum - 1) * limitNum,
         take: limitNum,
       }),
-      prisma.user.count({ where }),
+      prisma.user.count({ where: baseWhere }),
     ]);
 
-    // Transform data
-    const transformedUsers = users.map((user) => ({
-      id: user.id,
-      email: user.email,
-      fullName: user.studentProfile?.fullName || 'Unknown',
-      avatarUrl: user.studentProfile?.avatarUrl,
-      isActive: user.isActive,
-      lastLoginAt: user.lastLoginAt,
-      createdAt: user.createdAt,
-      roles: user.adminRoles.map((ar) => ar.role),
-    }));
+    // Deduplicate permissions across all roles
+    const transformedUsers = users.map((user) => {
+      const permMap = new Map<string, any>();
+      for (const ar of user.adminRoles) {
+        for (const rp of ar.role.permissions) {
+          permMap.set(rp.permission.id, rp.permission);
+        }
+      }
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.studentProfile?.fullName || null,
+        avatarUrl: user.studentProfile?.avatarUrl,
+        isActive: user.isActive,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt,
+        roles: user.adminRoles.map((ar) => ({
+          id: ar.role.id,
+          name: ar.role.name,
+        })),
+        permissions: Array.from(permMap.values()),
+      };
+    });
 
     res.json({
       users: transformedUsers,
@@ -454,6 +481,7 @@ router.post(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const userId = req.params.userId as string;
+      const { permissionIds = [] }: { permissionIds?: string[] } = req.body;
 
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
@@ -463,11 +491,102 @@ router.post(
         throw new AppError(400, 'User is already an admin');
       }
 
+      // Promote to ADMIN
       await prisma.user.update({ where: { id: userId }, data: { role: 'ADMIN' } });
 
-      await logAdminAction(req, 'ASSIGN_ADMIN', 'USER', userId, { email: user.email });
+      // Create custom role and assign permissions if provided
+      if (permissionIds.length > 0) {
+        const customRoleName = `custom_${userId}`;
+        const customRole = await prisma.adminRole.upsert({
+          where: { name: customRoleName },
+          create: {
+            name: customRoleName,
+            description: 'Custom admin permissions',
+            isSystem: false,
+          },
+          update: {},
+        });
+
+        await prisma.$transaction([
+          prisma.rolePermission.deleteMany({ where: { roleId: customRole.id } }),
+          ...permissionIds.map((permId: string) =>
+            prisma.rolePermission.create({
+              data: { roleId: customRole.id, permissionId: permId },
+            })
+          ),
+        ]);
+
+        await prisma.userAdminRole.upsert({
+          where: { userId_roleId: { userId, roleId: customRole.id } },
+          create: { userId, roleId: customRole.id },
+          update: {},
+        });
+      }
+
+      await logAdminAction(req, 'ASSIGN_ADMIN', 'USER', userId, {
+        email: user.email,
+        permissionCount: permissionIds.length,
+      });
 
       res.json({ message: 'User promoted to admin successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PUT /api/admin/users/:userId/permissions - Update admin's permissions (superAdminOnly)
+router.put(
+  '/users/:userId/permissions',
+  superAdminOnly,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.params.userId as string;
+      const { permissionIds = [] }: { permissionIds?: string[] } = req.body;
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new AppError(404, 'User not found');
+      }
+      if (user.email === SUPER_ADMIN_EMAIL) {
+        throw new AppError(400, 'Cannot modify super admin permissions');
+      }
+      if (user.role !== 'ADMIN') {
+        throw new AppError(400, 'User is not an admin');
+      }
+
+      const customRoleName = `custom_${userId}`;
+      const customRole = await prisma.adminRole.upsert({
+        where: { name: customRoleName },
+        create: {
+          name: customRoleName,
+          description: 'Custom admin permissions',
+          isSystem: false,
+        },
+        update: {},
+      });
+
+      await prisma.$transaction([
+        prisma.rolePermission.deleteMany({ where: { roleId: customRole.id } }),
+        ...permissionIds.map((permId: string) =>
+          prisma.rolePermission.create({
+            data: { roleId: customRole.id, permissionId: permId },
+          })
+        ),
+      ]);
+
+      await prisma.userAdminRole.upsert({
+        where: { userId_roleId: { userId, roleId: customRole.id } },
+        create: { userId, roleId: customRole.id },
+        update: {},
+      });
+
+      await logAdminAction(req, 'UPDATE_ADMIN_PERMISSIONS', 'USER', userId, {
+        email: user.email,
+        permissionCount: permissionIds.length,
+      });
+
+      res.json({ message: 'Admin permissions updated successfully' });
     } catch (error) {
       next(error);
     }

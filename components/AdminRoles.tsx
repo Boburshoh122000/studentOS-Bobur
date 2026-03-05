@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { NavigationProps } from '../types';
 import { adminApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -7,7 +7,8 @@ import { GlobalLoader } from './ui/GlobalLoader';
 
 const SUPER_ADMIN_EMAIL = 'javohirturayev01@gmail.com';
 
-// Types
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Permission {
   id: string;
   slug: string;
@@ -16,23 +17,16 @@ interface Permission {
   description?: string;
 }
 
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  isSystem: boolean;
-  userCount: number;
-  permissions: Permission[];
-}
-
 interface AdminUser {
   id: string;
   email: string;
-  fullName: string;
+  role: string;
+  fullName: string | null;
   avatarUrl?: string;
   isActive: boolean;
   lastLoginAt?: string;
   roles: { id: string; name: string }[];
+  permissions: Permission[];
 }
 
 interface SearchUser {
@@ -43,21 +37,9 @@ interface SearchUser {
   avatarUrl?: string;
 }
 
-// Role badge colors
-const getRoleBadgeStyle = (roleName: string) => {
-  const styles: Record<string, string> = {
-    'Super Admin': 'bg-purple-100 text-purple-700',
-    'Employer Admin': 'bg-blue-100 text-blue-700',
-    'Content Editor': 'bg-green-100 text-green-700',
-    'Support Lead': 'bg-orange-100 text-orange-700',
-    Support: 'bg-orange-100 text-orange-700',
-    Viewer: 'bg-gray-100 text-gray-600',
-  };
-  return styles[roleName] || 'bg-gray-100 text-gray-600';
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Avatar colors
-const getAvatarColor = (name: string) => {
+const getAvatarColor = (seed: string) => {
   const colors = [
     'bg-blue-500',
     'bg-purple-500',
@@ -66,263 +48,306 @@ const getAvatarColor = (name: string) => {
     'bg-pink-500',
     'bg-indigo-500',
   ];
-  const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
+  return colors[seed.charCodeAt(0) % colors.length];
 };
+
+const formatTimeAgo = (date?: string) => {
+  if (!date) return 'Never';
+  const diff = Date.now() - new Date(date).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'Yesterday';
+  if (d < 30) return `${d}d ago`;
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+// ─── Permission Checkboxes Panel ─────────────────────────────────────────────
+
+interface PermPanelProps {
+  groupedPermissions: Record<string, Permission[]>;
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  allPermissionIds: string[];
+}
+
+function PermissionsPanel({
+  groupedPermissions,
+  selectedIds,
+  onToggle,
+  onSelectAll,
+  onDeselectAll,
+  allPermissionIds,
+}: PermPanelProps) {
+  const allSelected =
+    allPermissionIds.length > 0 && allPermissionIds.every((id) => selectedIds.has(id));
+
+  return (
+    <div>
+      {/* Quick actions */}
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          type="button"
+          onClick={allSelected ? onDeselectAll : onSelectAll}
+          className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          {allSelected ? 'Deselect All' : 'Select All'}
+        </button>
+        <span className="text-gray-300">·</span>
+        <span className="text-xs text-gray-400 font-medium">
+          {selectedIds.size} / {allPermissionIds.length} selected
+        </span>
+      </div>
+
+      <div className="space-y-5">
+        {Object.entries(groupedPermissions).map(([category, perms]) => (
+          <div key={category}>
+            <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2.5">
+              {category}
+            </h4>
+            <div className="space-y-2.5">
+              {perms.map((perm) => (
+                <label key={perm.id} className="flex items-start gap-2.5 cursor-pointer group">
+                  <div
+                    onClick={() => onToggle(perm.id)}
+                    className={`mt-0.5 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all duration-150 shrink-0 ${
+                      selectedIds.has(perm.id)
+                        ? 'bg-[#4361EE] border-[#4361EE]'
+                        : 'border-gray-300 bg-white group-hover:border-blue-400'
+                    }`}
+                  >
+                    {selectedIds.has(perm.id) && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M4 12l4 4L20 6"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-gray-800 leading-none mb-0.5">
+                      {perm.name}
+                    </p>
+                    {perm.description && (
+                      <p className="text-[11px] text-gray-400">{perm.description}</p>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
   const { user } = useAuth();
   const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
 
-  // Data states
-  const [roles, setRoles] = useState<Role[]>([]);
+  // ── Data
   const [groupedPermissions, setGroupedPermissions] = useState<Record<string, Permission[]>>({});
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 0, limit: 5 });
-
-  // UI states
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<string>>(new Set());
+
+  // ── Right panel — admin permission editor
+  const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
+  const [adminPermIds, setAdminPermIds] = useState<Set<string>>(new Set());
+  const [isSavingPerms, setIsSavingPerms] = useState(false);
+
+  // ── Search / pagination
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
 
-  // Modals
-  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
-  const [showEditUserModal, setShowEditUserModal] = useState(false);
-  const [showEditRoleNameModal, setShowEditRoleNameModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-
-  // Add Admin modal states
-  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
-  const [addAdminStep, setAddAdminStep] = useState<'search' | 'confirm'>('search');
-  const [addAdminQuery, setAddAdminQuery] = useState('');
-  const [addAdminResults, setAddAdminResults] = useState<SearchUser[]>([]);
-  const [selectedAddUser, setSelectedAddUser] = useState<SearchUser | null>(null);
+  // ── Add Admin modal
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addStep, setAddStep] = useState<'search' | 'permissions'>('search');
+  const [addQuery, setAddQuery] = useState('');
+  const [addResults, setAddResults] = useState<SearchUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [pendingUser, setPendingUser] = useState<SearchUser | null>(null);
+  const [addPermIds, setAddPermIds] = useState<Set<string>>(new Set());
   const [isAssigning, setIsAssigning] = useState(false);
 
-  // Remove Admin modal states
-  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
-  const [removingUser, setRemovingUser] = useState<AdminUser | null>(null);
+  // ── Remove Admin modal
+  const [removingAdmin, setRemovingAdmin] = useState<AdminUser | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Form states
-  const [newRoleName, setNewRoleName] = useState('');
-  const [newRoleDescription, setNewRoleDescription] = useState('');
-  const [editRoleName, setEditRoleName] = useState('');
-  const [editRoleDescription, setEditRoleDescription] = useState('');
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Get selected role
-  const selectedRole = useMemo(
-    () => roles.find((r) => r.id === selectedRoleId),
-    [roles, selectedRoleId]
+  // ── All permission IDs (flat)
+  const allPermissionIds = useMemo(
+    () => Object.values(groupedPermissions).flatMap((perms) => perms.map((p) => p.id)),
+    [groupedPermissions]
   );
 
-  // Filter users by search
+  // ── Filtered + paginated users
   const filteredUsers = useMemo(() => {
-    if (!searchQuery) return adminUsers;
+    if (!searchQuery.trim()) return adminUsers;
     const q = searchQuery.toLowerCase();
     return adminUsers.filter(
-      (u) => u.email.toLowerCase().includes(q) || u.fullName.toLowerCase().includes(q)
+      (u) => u.email.toLowerCase().includes(q) || (u.fullName || '').toLowerCase().includes(q)
     );
   }, [adminUsers, searchQuery]);
 
-  // Fetch initial data
-  useEffect(() => {
-    fetchData();
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+  const paginatedUsers = useMemo(
+    () => filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredUsers, page]
+  );
+
+  // ── Fetch data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [permsRes, usersRes] = await Promise.all([
+        adminApi.getPermissions(),
+        adminApi.getAdminUsers({ limit: 100 }),
+      ]);
+      if (permsRes.data) setGroupedPermissions(permsRes.data.grouped);
+      if (usersRes.data) setAdminUsers(usersRes.data.users ?? []);
+    } catch {
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Update selected permissions when role changes
   useEffect(() => {
-    if (selectedRole) {
-      setSelectedPermissionIds(new Set(selectedRole.permissions.map((p) => p.id)));
-      setEditRoleName(selectedRole.name);
-      setEditRoleDescription(selectedRole.description || '');
+    fetchData();
+  }, [fetchData]);
+
+  // ── Sync right-panel permissions when admin is selected
+  useEffect(() => {
+    if (selectedAdmin) {
+      setAdminPermIds(new Set(selectedAdmin.permissions.map((p) => p.id)));
     }
-  }, [selectedRole]);
+  }, [selectedAdmin]);
 
-  // Debounced search for Add Admin modal
+  // ── Debounced search in Add Admin modal
   useEffect(() => {
-    if (!showAddAdminModal || addAdminStep !== 'search') return;
+    if (!showAddModal || addStep !== 'search') return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
 
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-
-    if (addAdminQuery.trim().length < 2) {
-      setAddAdminResults([]);
+    if (addQuery.trim().length < 2) {
+      setAddResults([]);
       setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
-    searchTimerRef.current = setTimeout(async () => {
+    searchTimer.current = setTimeout(async () => {
       try {
-        const res = await adminApi.searchNonAdminUsers(addAdminQuery.trim());
-        setAddAdminResults(res.data?.users ?? []);
+        const res = await adminApi.searchNonAdminUsers(addQuery.trim());
+        setAddResults(res.data?.users ?? []);
       } catch {
-        setAddAdminResults([]);
+        setAddResults([]);
       } finally {
         setIsSearching(false);
       }
     }, 300);
 
     return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      if (searchTimer.current) clearTimeout(searchTimer.current);
     };
-  }, [addAdminQuery, showAddAdminModal, addAdminStep]);
+  }, [addQuery, showAddModal, addStep]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [rolesRes, permsRes, usersRes] = await Promise.all([
-        adminApi.getRoles(),
-        adminApi.getPermissions(),
-        adminApi.getAdminUsers({ limit: 100 }),
-      ]);
+  // ── Handlers
 
-      if (rolesRes.data) {
-        setRoles(rolesRes.data);
-        if (rolesRes.data.length > 0 && !selectedRoleId) {
-          setSelectedRoleId(rolesRes.data[0].id);
-        }
-      }
-      if (permsRes.data) {
-        setGroupedPermissions(permsRes.data.grouped);
-      }
-      if (usersRes.data) {
-        setAdminUsers(usersRes.data.users ?? []);
-        setPagination((prev) => ({ ...prev, total: usersRes.data.pagination?.total ?? 0 }));
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      toast.error('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
+  const handleSelectAdmin = (admin: AdminUser) => {
+    setSelectedAdmin(admin);
+    setAdminPermIds(new Set(admin.permissions.map((p) => p.id)));
   };
 
-  const handleTogglePermission = (permissionId: string) => {
-    setSelectedPermissionIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(permissionId)) {
-        next.delete(permissionId);
-      } else {
-        next.add(permissionId);
-      }
-      return next;
-    });
-  };
-
-  const handleSavePermissions = async () => {
-    if (!selectedRoleId) return;
-    setSaving(true);
+  const handleSaveAdminPerms = async () => {
+    if (!selectedAdmin) return;
+    setIsSavingPerms(true);
     try {
-      const result = await adminApi.updateRolePermissions(
-        selectedRoleId,
-        Array.from(selectedPermissionIds)
-      );
-      if (result.error) {
-        toast.error(result.error);
+      const res = await adminApi.updateAdminPermissions(selectedAdmin.id, Array.from(adminPermIds));
+      if (res.error) {
+        toast.error(res.error);
       } else {
-        toast.success('Permissions updated successfully');
+        toast.success('Permissions updated');
         await fetchData();
+        // re-sync right panel with fresh data
+        const fresh = adminUsers.find((a) => a.id === selectedAdmin.id);
+        if (fresh)
+          setSelectedAdmin({
+            ...fresh,
+            permissions: Array.from(adminPermIds).map((id) => ({
+              id,
+              slug: '',
+              name: '',
+              category: '',
+            })),
+          });
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to save permissions');
     } finally {
-      setSaving(false);
+      setIsSavingPerms(false);
     }
   };
 
-  const handleResetPermissions = () => {
-    if (selectedRole) {
-      setSelectedPermissionIds(new Set(selectedRole.permissions.map((p) => p.id)));
-    }
+  const handleResetAdminPerms = () => {
+    if (selectedAdmin) setAdminPermIds(new Set(selectedAdmin.permissions.map((p) => p.id)));
   };
 
-  const handleCreateRole = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRoleName.trim()) {
-      toast.error('Role name is required');
-      return;
-    }
-    try {
-      const result = await adminApi.createRole({
-        name: newRoleName.trim(),
-        description: newRoleDescription.trim() || undefined,
-      });
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success('Role created successfully');
-        setNewRoleName('');
-        setNewRoleDescription('');
-        setShowCreateRoleModal(false);
-        await fetchData();
-        if (result.data?.id) {
-          setSelectedRoleId(result.data.id);
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to create role');
-    }
+  const openAddModal = () => {
+    setShowAddModal(true);
+    setAddStep('search');
+    setAddQuery('');
+    setAddResults([]);
+    setPendingUser(null);
+    setAddPermIds(new Set(allPermissionIds)); // default: all selected
+    setIsAssigning(false);
   };
 
-  const handleUpdateRoleName = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRoleId || !editRoleName.trim()) return;
-    try {
-      const result = await adminApi.updateRole(selectedRoleId, {
-        name: editRoleName.trim(),
-        description: editRoleDescription.trim() || undefined,
-      });
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success('Role updated successfully');
-        setShowEditRoleNameModal(false);
-        await fetchData();
-      }
-    } catch (error) {
-      toast.error('Failed to update role');
-    }
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setAddStep('search');
+    setAddQuery('');
+    setAddResults([]);
+    setPendingUser(null);
+    setAddPermIds(new Set());
   };
 
-  const handleAssignRole = async (userId: string, roleId: string) => {
-    try {
-      const result = await adminApi.assignUserRole(userId, roleId);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success('Role assigned successfully');
-        setShowEditUserModal(false);
-        setEditingUser(null);
-        await fetchData();
-      }
-    } catch (error) {
-      toast.error('Failed to assign role');
-    }
+  const handleSelectPendingUser = (u: SearchUser) => {
+    setPendingUser(u);
+    setAddStep('permissions');
+    setAddPermIds(new Set(allPermissionIds)); // default: all checked
   };
 
   const handleAssignAdmin = async () => {
-    if (!selectedAddUser) return;
+    if (!pendingUser) return;
     setIsAssigning(true);
     try {
-      const result = await adminApi.assignAdmin(selectedAddUser.id);
-      if (result.error) {
-        toast.error(result.error);
+      const res = await adminApi.assignAdmin(pendingUser.id, Array.from(addPermIds));
+      if (res.error) {
+        toast.error(res.error);
       } else {
-        toast.success(`${selectedAddUser.fullName} is now an admin`);
-        setShowAddAdminModal(false);
-        setAddAdminStep('search');
-        setAddAdminQuery('');
-        setAddAdminResults([]);
-        setSelectedAddUser(null);
+        toast.success(`${pendingUser.fullName || pendingUser.email} is now an admin`);
+        closeAddModal();
         await fetchData();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to assign admin role');
     } finally {
       setIsAssigning(false);
@@ -330,48 +355,26 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
   };
 
   const handleRemoveAdmin = async () => {
-    if (!removingUser) return;
+    if (!removingAdmin) return;
     setIsRemoving(true);
     try {
-      const result = await adminApi.removeAdmin(removingUser.id);
-      if (result.error) {
-        toast.error(result.error);
+      const res = await adminApi.removeAdmin(removingAdmin.id);
+      if (res.error) {
+        toast.error(res.error);
       } else {
-        toast.success(`Admin access removed from ${removingUser.fullName}`);
-        setShowRemoveConfirmModal(false);
-        setRemovingUser(null);
+        toast.success('Admin access removed');
+        setRemovingAdmin(null);
+        if (selectedAdmin?.id === removingAdmin.id) setSelectedAdmin(null);
         await fetchData();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove admin access');
     } finally {
       setIsRemoving(false);
     }
   };
 
-  const formatTimeAgo = (date?: string) => {
-    if (!date) return 'Never';
-    const d = new Date(date);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes} min ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hours ago`;
-    const days = Math.floor(hours / 24);
-    if (days === 1) return 'Yesterday';
-    if (days < 30) return `${days} days ago`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  // Paginated users
-  const paginatedUsers = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.limit;
-    return filteredUsers.slice(start, start + pagination.limit);
-  }, [filteredUsers, pagination.page, pagination.limit]);
-
-  const totalPages = Math.ceil(filteredUsers.length / pagination.limit);
+  // ─────────────────────────────────────────────────────────────────────────────
 
   return (
     <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421] p-8">
@@ -383,40 +386,25 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
             Manage team access and Role-Based Access Control (RBAC)
           </p>
         </div>
-
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => toast('Audit Log feature coming soon!', { icon: '📋' })}
+            onClick={() => toast('Audit Log coming soon!', { icon: '📋' })}
             className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
           >
-            <span className="text-lg">📋</span>
+            <span>📋</span>
             <span>Audit Log</span>
           </button>
           {isSuperAdmin && (
             <button
               type="button"
-              onClick={() => {
-                setShowAddAdminModal(true);
-                setAddAdminStep('search');
-                setAddAdminQuery('');
-                setAddAdminResults([]);
-                setSelectedAddUser(null);
-              }}
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all flex items-center gap-2 text-sm font-medium shadow-sm"
+              onClick={openAddModal}
+              className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 text-sm font-semibold shadow-sm"
             >
-              <span className="text-lg">👤</span>
+              <span className="text-base font-bold leading-none">+</span>
               <span>Add Admin</span>
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setShowCreateRoleModal(true)}
-            className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 text-sm font-medium shadow-sm"
-          >
-            <span className="text-lg">+</span>
-            <span>Create New Role</span>
-          </button>
         </div>
       </div>
 
@@ -425,12 +413,15 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
           <GlobalLoader fullScreen={false} />
         </div>
       ) : (
-        <div className="flex gap-6">
-          {/* Left Panel: Admin Users */}
+        <div className="flex gap-6 items-start">
+          {/* ── Left: Admin Users Table ── */}
           <div className="flex-1 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-900">Admin Users</h2>
-              <div className="relative w-64">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Admin Users</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{filteredUsers.length} total</p>
+              </div>
+              <div className="relative w-60">
                 <svg
                   className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   fill="none"
@@ -448,7 +439,11 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                   type="text"
                   placeholder="Search admins..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  aria-label="Search admins"
                   className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400 text-sm focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all"
                 />
               </div>
@@ -462,7 +457,7 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                       User
                     </th>
                     <th className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      Role
+                      Permissions
                     </th>
                     <th className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                       Last Login
@@ -475,89 +470,101 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                 <tbody className="divide-y divide-gray-50">
                   {paginatedUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-5 py-8 text-center">
+                      <td colSpan={4} className="px-5 py-12 text-center">
                         <p className="text-gray-500 text-sm">No admin users found</p>
+                        {isSuperAdmin && (
+                          <button
+                            type="button"
+                            onClick={openAddModal}
+                            className="mt-3 text-xs text-blue-600 hover:underline font-medium"
+                          >
+                            Add your first admin →
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ) : (
-                    paginatedUsers.map((adminUser) => {
-                      const isSuperAdminUser = adminUser.email === SUPER_ADMIN_EMAIL;
+                    paginatedUsers.map((admin) => {
+                      const isSA = admin.email === SUPER_ADMIN_EMAIL;
+                      const isSelected = selectedAdmin?.id === admin.id;
                       return (
-                        <tr key={adminUser.id} className="hover:bg-gray-50/50 transition-colors">
+                        <tr
+                          key={admin.id}
+                          onClick={() => handleSelectAdmin(admin)}
+                          className={`cursor-pointer transition-colors ${
+                            isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50/60'
+                          }`}
+                        >
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold ${getAvatarColor(adminUser.fullName || adminUser.email)}`}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold ${getAvatarColor(admin.fullName || admin.email)}`}
                               >
-                                {adminUser.fullName
-                                  ? adminUser.fullName.charAt(0).toUpperCase()
-                                  : adminUser.email.charAt(0).toUpperCase()}
+                                {(admin.fullName || admin.email).charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="flex items-center gap-2 mb-0.5">
                                   <p className="text-sm font-bold text-gray-900 leading-none">
-                                    {adminUser.fullName || 'Unknown'}
+                                    {admin.fullName || 'Unknown'}
                                   </p>
-                                  {isSuperAdminUser && (
-                                    <span className="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 leading-none">
+                                  {isSA && (
+                                    <span className="inline-flex px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">
                                       Super Admin
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[11px] text-gray-400 leading-none">
-                                  {adminUser.email}
-                                </p>
+                                <p className="text-[11px] text-gray-400">{admin.email}</p>
                               </div>
                             </div>
                           </td>
                           <td className="px-5 py-4">
-                            {adminUser.roles.length > 0 ? (
-                              <span
-                                className={`inline-flex px-3 py-1 text-[11px] font-semibold rounded-full ${getRoleBadgeStyle(adminUser.roles[0].name)}`}
-                              >
-                                {adminUser.roles[0].name}
+                            {isSA ? (
+                              <span className="text-xs font-semibold text-amber-600">
+                                All Access
+                              </span>
+                            ) : admin.permissions.length > 0 ? (
+                              <span className="text-xs font-medium text-gray-600">
+                                {admin.permissions.length} permission
+                                {admin.permissions.length !== 1 ? 's' : ''}
                               </span>
                             ) : (
-                              <span className="inline-flex px-3 py-1 text-[11px] font-medium rounded-full bg-gray-100 text-gray-500">
-                                No role
-                              </span>
+                              <span className="text-xs text-gray-400">None assigned</span>
                             )}
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-500 font-medium">
-                            {formatTimeAgo(adminUser.lastLoginAt)}
+                            {formatTimeAgo(admin.lastLoginAt)}
                           </td>
-                          <td className="px-5 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingUser(adminUser);
-                                  setShowEditUserModal(true);
-                                }}
-                                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Change role"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                  />
-                                </svg>
-                              </button>
-                              {isSuperAdmin && !isSuperAdminUser && (
+                          <td className="px-5 py-4">
+                            <div
+                              className="flex items-center justify-center gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {!isSA && (
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setRemovingUser(adminUser);
-                                    setShowRemoveConfirmModal(true);
-                                  }}
+                                  onClick={() => handleSelectAdmin(admin)}
+                                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Edit permissions"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                              {isSuperAdmin && !isSA && (
+                                <button
+                                  type="button"
+                                  onClick={() => setRemovingAdmin(admin)}
                                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                   title="Remove admin access"
                                 >
@@ -575,6 +582,11 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                                     />
                                   </svg>
                                 </button>
+                              )}
+                              {isSA && (
+                                <span className="text-xs text-gray-300 font-medium px-2">
+                                  Protected
+                                </span>
                               )}
                             </div>
                           </td>
@@ -594,16 +606,16 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
-                  disabled={pagination.page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600"
                 >
                   Previous
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                  disabled={pagination.page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= totalPages}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600"
                 >
                   Next
@@ -612,315 +624,27 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
             </div>
           </div>
 
-          {/* Right Panel: Role Configuration */}
-          <div className="w-[340px] bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col h-[calc(100vh-140px)] sticky top-8">
-            <div className="p-5 border-b border-gray-100">
-              <h2 className="text-base font-bold text-gray-900 mb-4">Role Configuration</h2>
-
-              {/* Role Selector */}
-              <div className="relative">
-                <select
-                  aria-label="Select role"
-                  value={selectedRoleId || ''}
-                  onChange={(e) => setSelectedRoleId(e.target.value)}
-                  className="w-full appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-800 text-sm font-medium focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] cursor-pointer outline-none transition-shadow"
-                >
-                  {roles.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-                <svg
-                  className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            {selectedRole && (
-              <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                {/* Role Summary Box */}
-                <div className="px-5 py-6 border-b border-gray-50">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                      <span className="text-lg">💼</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-bold text-gray-900 text-sm truncate pr-2">
-                          {selectedRole.name}
-                        </h3>
-                        {!selectedRole.isSystem && (
-                          <button
-                            type="button"
-                            onClick={() => setShowEditRoleNameModal(true)}
-                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap"
-                          >
-                            Edit Name
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        {selectedRole.description || 'No description available.'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Permissions List */}
-                <div className="p-5 flex-1">
-                  <div className="space-y-6">
-                    {Object.entries(groupedPermissions).map(([category, perms]) => (
-                      <div key={category}>
-                        <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">
-                          {category}
-                        </h4>
-                        <div className="space-y-3">
-                          {perms.map((perm) => (
-                            <label
-                              key={perm.id}
-                              className="flex items-start gap-2.5 cursor-pointer group"
-                            >
-                              <div
-                                className={`mt-0.5 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all duration-200 shrink-0 ${
-                                  selectedPermissionIds.has(perm.id)
-                                    ? 'bg-[#4361EE] border-[#4361EE]'
-                                    : 'border-gray-300 bg-white group-hover:border-blue-400'
-                                }`}
-                              >
-                                {selectedPermissionIds.has(perm.id) && (
-                                  <svg
-                                    className="w-3 h-3 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={3}
-                                      d="M4 12l4 4L20 6"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
-                              <input
-                                type="checkbox"
-                                className="hidden"
-                                checked={selectedPermissionIds.has(perm.id)}
-                                onChange={() => handleTogglePermission(perm.id)}
-                              />
-                              <div className="flex-1">
-                                <p className="text-xs font-bold text-gray-800 mb-0.5">
-                                  {perm.name}
-                                </p>
-                                {perm.description && (
-                                  <p className="text-[11px] text-gray-400 group-hover:text-gray-500 transition-colors">
-                                    {perm.description}
-                                  </p>
-                                )}
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Actions Footer */}
-            <div className="p-5 border-t border-gray-100 flex items-center justify-end gap-3 bg-white rounded-b-xl">
-              <button
-                type="button"
-                onClick={handleResetPermissions}
-                className="px-4 py-2 text-gray-500 hover:text-gray-900 text-xs font-semibold transition-colors"
-              >
-                Reset
-              </button>
-              <button
-                type="button"
-                onClick={handleSavePermissions}
-                disabled={saving}
-                className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-sm transition-all"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================== */}
-      {/* MODALS */}
-      {/* ============================== */}
-
-      {/* Create Role Modal */}
-      {showCreateRoleModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md transform transition-all scale-100 p-0 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="text-base font-bold text-gray-900">Create New Role</h3>
-            </div>
-            <form onSubmit={handleCreateRole} className="p-6 space-y-4">
-              <div>
-                <label
-                  htmlFor="new-role-name"
-                  className="block text-xs font-bold text-gray-700 mb-1.5"
-                >
-                  Role Name
-                </label>
-                <input
-                  id="new-role-name"
-                  type="text"
-                  value={newRoleName}
-                  onChange={(e) => setNewRoleName(e.target.value)}
-                  placeholder="e.g., Content Manager"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all placeholder-gray-400 text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="new-role-description"
-                  className="block text-xs font-bold text-gray-700 mb-1.5"
-                >
-                  Description <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
-                <textarea
-                  id="new-role-description"
-                  value={newRoleDescription}
-                  onChange={(e) => setNewRoleDescription(e.target.value)}
-                  placeholder="What can this role do?"
-                  rows={3}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all placeholder-gray-400 text-sm resize-none"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateRoleModal(false)}
-                  className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-bold shadow-sm"
-                >
-                  Create Role
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Role Modal */}
-      {showEditRoleNameModal && selectedRole && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-0 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="text-base font-bold text-gray-900">Edit Role</h3>
-            </div>
-            <form onSubmit={handleUpdateRoleName} className="p-6 space-y-4">
-              <div>
-                <label
-                  htmlFor="edit-role-name"
-                  className="block text-xs font-bold text-gray-700 mb-1.5"
-                >
-                  Role Name
-                </label>
-                <input
-                  id="edit-role-name"
-                  type="text"
-                  value={editRoleName}
-                  onChange={(e) => setEditRoleName(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="edit-role-description"
-                  className="block text-xs font-bold text-gray-700 mb-1.5"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="edit-role-description"
-                  value={editRoleDescription}
-                  onChange={(e) => setEditRoleDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all text-sm resize-none"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditRoleNameModal(false)}
-                  className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-bold shadow-sm"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit User Modal */}
-      {showEditUserModal && editingUser && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-0 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="text-base font-bold text-gray-900">Change User Role</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{editingUser.fullName}</p>
-            </div>
-            <div className="p-6">
-              <p className="text-xs font-bold text-gray-700 mb-3">Select a new role:</p>
-              <div className="space-y-2">
-                {roles.map((role) => (
-                  <button
-                    type="button"
-                    key={role.id}
-                    onClick={() => handleAssignRole(editingUser.id, role.id)}
-                    className={`w-full p-3 text-left rounded-lg border transition-all duration-200 group flex items-center justify-between ${
-                      editingUser.roles[0]?.id === role.id
-                        ? 'border-[#4361EE] bg-blue-50/50'
-                        : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div>
-                      <span
-                        className={`text-sm font-bold ${editingUser.roles[0]?.id === role.id ? 'text-[#4361EE]' : 'text-gray-900'}`}
-                      >
-                        {role.name}
+          {/* ── Right: Permission Editor Panel ── */}
+          <div className="w-[340px] bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col h-[calc(100vh-160px)] sticky top-8">
+            {selectedAdmin ? (
+              <>
+                {/* Header */}
+                <div className="p-5 border-b border-gray-100">
+                  <div className="flex items-center justify-between mb-1">
+                    <h2 className="text-sm font-bold text-gray-900 truncate pr-2">
+                      Permissions:{' '}
+                      <span className="text-[#4361EE]">
+                        {selectedAdmin.fullName || selectedAdmin.email}
                       </span>
-                      <p className="text-[10px] text-gray-400 mt-0.5">
-                        {role.description || 'No description'}
-                      </p>
-                    </div>
-                    {editingUser.roles[0]?.id === role.id && (
+                    </h2>
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={() => setSelectedAdmin(null)}
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded transition-colors shrink-0"
+                    >
                       <svg
-                        className="w-4 h-4 text-[#4361EE]"
+                        className="w-3.5 h-3.5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -929,53 +653,115 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M5 13l4 4L19 7"
+                          d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                    )}
-                  </button>
-                ))}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-gray-400">{selectedAdmin.email}</p>
+                </div>
+
+                {/* Permissions list */}
+                <div className="flex-1 overflow-y-auto p-5">
+                  {selectedAdmin.email === SUPER_ADMIN_EMAIL ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                      <span className="text-3xl mb-3">👑</span>
+                      <p className="text-sm font-bold text-gray-700">Super Admin</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Has unrestricted access to all features
+                      </p>
+                    </div>
+                  ) : (
+                    <PermissionsPanel
+                      groupedPermissions={groupedPermissions}
+                      selectedIds={adminPermIds}
+                      onToggle={(id) =>
+                        setAdminPermIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(id)) {
+                            next.delete(id);
+                          } else {
+                            next.add(id);
+                          }
+                          return next;
+                        })
+                      }
+                      onSelectAll={() => setAdminPermIds(new Set(allPermissionIds))}
+                      onDeselectAll={() => setAdminPermIds(new Set())}
+                      allPermissionIds={allPermissionIds}
+                    />
+                  )}
+                </div>
+
+                {/* Footer */}
+                {selectedAdmin.email !== SUPER_ADMIN_EMAIL && (
+                  <div className="p-5 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={handleResetAdminPerms}
+                      className="px-4 py-2 text-gray-500 hover:text-gray-900 text-xs font-semibold transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveAdminPerms}
+                      disabled={isSavingPerms}
+                      className="px-4 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-xs font-semibold shadow-sm transition-all"
+                    >
+                      {isSavingPerms ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
+                  <svg
+                    className="w-6 h-6 text-[#4361EE]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-gray-700">Select an Admin</p>
+                <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                  Click on any admin in the list to view and edit their permissions
+                </p>
               </div>
-              <div className="flex justify-end gap-3 pt-4 mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditUserModal(false);
-                    setEditingUser(null);
-                  }}
-                  className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Add Admin Modal */}
-      {showAddAdminModal && (
+      {/* ══════════════════════════════════════════════ */}
+      {/* ADD ADMIN MODAL                               */}
+      {/* ══════════════════════════════════════════════ */}
+
+      {showAddModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-0 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal header */}
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h3 className="text-base font-bold text-gray-900">Add Admin</h3>
+                <h3 className="text-base font-bold text-gray-900">Add New Admin</h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {addAdminStep === 'search'
-                    ? 'Search for a registered user to grant admin access'
-                    : 'Confirm admin role assignment'}
+                  {addStep === 'search'
+                    ? 'Search for a registered user'
+                    : `Setting permissions for ${pendingUser?.fullName || pendingUser?.email}`}
                 </p>
               </div>
               <button
                 type="button"
                 aria-label="Close"
-                onClick={() => {
-                  setShowAddAdminModal(false);
-                  setAddAdminStep('search');
-                  setAddAdminQuery('');
-                  setAddAdminResults([]);
-                  setSelectedAddUser(null);
-                }}
+                onClick={closeAddModal}
                 className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -989,175 +775,225 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
               </button>
             </div>
 
-            {addAdminStep === 'search' ? (
-              <div className="p-6">
-                {/* Search input */}
-                <div className="relative mb-4">
-                  <svg
-                    className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    autoFocus
-                    placeholder="Search by name or email..."
-                    value={addAdminQuery}
-                    onChange={(e) => setAddAdminQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400 text-sm focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all"
-                  />
+            {/* Step indicator */}
+            <div className="px-6 pt-4 flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    addStep === 'search' ? 'bg-[#4361EE] text-white' : 'bg-green-500 text-white'
+                  }`}
+                >
+                  {addStep === 'search' ? '1' : '✓'}
                 </div>
+                <span
+                  className={`text-xs font-semibold ${addStep === 'search' ? 'text-gray-900' : 'text-green-600'}`}
+                >
+                  Select User
+                </span>
+              </div>
+              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    addStep === 'permissions'
+                      ? 'bg-[#4361EE] text-white'
+                      : 'bg-gray-200 text-gray-400'
+                  }`}
+                >
+                  2
+                </div>
+                <span
+                  className={`text-xs font-semibold ${addStep === 'permissions' ? 'text-gray-900' : 'text-gray-400'}`}
+                >
+                  Set Permissions
+                </span>
+              </div>
+            </div>
 
-                {/* Results */}
-                <div className="min-h-[120px]">
-                  {isSearching ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="w-5 h-5 border-2 border-[#4361EE] border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : addAdminQuery.trim().length < 2 ? (
-                    <p className="text-center text-gray-400 text-sm py-8">
-                      Type at least 2 characters to search
-                    </p>
-                  ) : addAdminResults.length === 0 ? (
-                    <p className="text-center text-gray-400 text-sm py-8">No users found</p>
-                  ) : (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {addAdminResults.map((u) => (
-                        <button
-                          type="button"
-                          key={u.id}
-                          onClick={() => {
-                            setSelectedAddUser(u);
-                            setAddAdminStep('confirm');
-                          }}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all text-left"
-                        >
-                          <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(u.fullName || u.email)}`}
+            {/* Step content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {addStep === 'search' ? (
+                <div>
+                  <div className="relative mb-4">
+                    <svg
+                      className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <input
+                      type="text"
+                      autoFocus
+                      aria-label="Search users"
+                      placeholder="Search by name or email..."
+                      value={addQuery}
+                      onChange={(e) => setAddQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400 text-sm focus:ring-1 focus:ring-[#4361EE] focus:border-[#4361EE] outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="min-h-[160px]">
+                    {isSearching ? (
+                      <div className="flex items-center justify-center py-10">
+                        <div className="w-5 h-5 border-2 border-[#4361EE] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : addQuery.trim().length < 2 ? (
+                      <p className="text-center text-gray-400 text-sm py-10">
+                        Type at least 2 characters to search
+                      </p>
+                    ) : addResults.length === 0 ? (
+                      <p className="text-center text-gray-400 text-sm py-10">No users found</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {addResults.map((u) => (
+                          <button
+                            type="button"
+                            key={u.id}
+                            onClick={() => handleSelectPendingUser(u)}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all text-left"
                           >
-                            {(u.fullName || u.email).charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-900 truncate">{u.fullName}</p>
-                            <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
-                          </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium shrink-0">
-                            {u.role}
-                          </span>
-                        </button>
-                      ))}
+                            <div
+                              className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(u.fullName || u.email)}`}
+                            >
+                              {(u.fullName || u.email).charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 truncate">
+                                {u.fullName}
+                              </p>
+                              <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
+                            </div>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium shrink-0">
+                              {u.role}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Selected user preview */}
+                  {pendingUser && (
+                    <div className="flex items-center gap-3 p-3 bg-blue-50/60 border border-blue-100 rounded-xl mb-5">
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(pendingUser.fullName || pendingUser.email)}`}
+                      >
+                        {(pendingUser.fullName || pendingUser.email).charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {pendingUser.fullName}
+                        </p>
+                        <p className="text-[11px] text-gray-400 truncate">{pendingUser.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAddStep('search')}
+                        className="text-xs text-blue-600 hover:text-blue-700 font-semibold shrink-0"
+                      >
+                        Change
+                      </button>
                     </div>
                   )}
-                </div>
 
-                <div className="flex justify-end pt-4 mt-2 border-t border-gray-100">
+                  <PermissionsPanel
+                    groupedPermissions={groupedPermissions}
+                    selectedIds={addPermIds}
+                    onToggle={(id) =>
+                      setAddPermIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(id)) {
+                          next.delete(id);
+                        } else {
+                          next.add(id);
+                        }
+                        return next;
+                      })
+                    }
+                    onSelectAll={() => setAddPermIds(new Set(allPermissionIds))}
+                    onDeselectAll={() => setAddPermIds(new Set())}
+                    allPermissionIds={allPermissionIds}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between shrink-0">
+              {addStep === 'permissions' ? (
+                <>
                   <button
                     type="button"
-                    onClick={() => setShowAddAdminModal(false)}
+                    onClick={() => setAddStep('search')}
                     className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
                   >
-                    Cancel
+                    ← Back
                   </button>
-                </div>
-              </div>
-            ) : (
-              <div className="p-6">
-                {selectedAddUser && (
-                  <>
-                    {/* User preview */}
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-5">
-                      <div
-                        className={`w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${getAvatarColor(selectedAddUser.fullName || selectedAddUser.email)}`}
-                      >
-                        {(selectedAddUser.fullName || selectedAddUser.email)
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">
-                          {selectedAddUser.fullName}
-                        </p>
-                        <p className="text-xs text-gray-500">{selectedAddUser.email}</p>
-                      </div>
-                    </div>
-
-                    {/* Warning */}
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-5">
-                      <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                        This user will be granted full admin access to the StudentOS admin panel.
-                        This action is logged and can be reversed.
-                      </p>
-                    </div>
-
-                    <div className="flex justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setAddAdminStep('search')}
-                        className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
-                      >
-                        Back
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleAssignAdmin}
-                        disabled={isAssigning}
-                        className="px-5 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold shadow-sm transition-all"
-                      >
-                        {isAssigning ? 'Assigning...' : 'Assign Admin Role'}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={handleAssignAdmin}
+                    disabled={isAssigning}
+                    className="px-5 py-2 bg-[#4361EE] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-xs font-bold shadow-sm transition-all"
+                  >
+                    {isAssigning ? 'Adding...' : `+ Add Admin (${addPermIds.size} perms)`}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={closeAddModal}
+                  className="ml-auto px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Remove Admin Confirmation Modal */}
-      {showRemoveConfirmModal && removingUser && (
+      {/* ══════════════════════════════════════════════ */}
+      {/* REMOVE ADMIN MODAL                            */}
+      {/* ══════════════════════════════════════════════ */}
+
+      {removingAdmin && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-0 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-red-50/50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-red-50 bg-red-50/50">
               <h3 className="text-base font-bold text-gray-900">Remove Admin Access</h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                This action will demote the user to Student
-              </p>
+              <p className="text-xs text-gray-500 mt-0.5">This will demote the user to Student</p>
             </div>
             <div className="p-6">
-              {/* User preview */}
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-5">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-5">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(removingUser.fullName || removingUser.email)}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(removingAdmin.fullName || removingAdmin.email)}`}
                 >
-                  {(removingUser.fullName || removingUser.email).charAt(0).toUpperCase()}
+                  {(removingAdmin.fullName || removingAdmin.email).charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{removingUser.fullName}</p>
-                  <p className="text-xs text-gray-500">{removingUser.email}</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {removingAdmin.fullName || 'Unknown'}
+                  </p>
+                  <p className="text-xs text-gray-500">{removingAdmin.email}</p>
                 </div>
               </div>
-
               <p className="text-xs text-red-600 font-medium mb-5 leading-relaxed">
                 Removing admin access will immediately revoke their ability to access the admin
                 panel. Their admin roles will also be cleared.
               </p>
-
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowRemoveConfirmModal(false);
-                    setRemovingUser(null);
-                  }}
+                  onClick={() => setRemovingAdmin(null)}
                   className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors text-xs font-bold"
                 >
                   Cancel
@@ -1166,7 +1002,7 @@ function AdminRoles({ navigateTo: _navigateTo }: NavigationProps) {
                   type="button"
                   onClick={handleRemoveAdmin}
                   disabled={isRemoving}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold shadow-sm transition-all"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 text-xs font-bold shadow-sm transition-all"
                 >
                   {isRemoving ? 'Removing...' : 'Remove Admin Access'}
                 </button>
