@@ -51,7 +51,7 @@ interface EmployerStats {
 }
 
 export default function EmployerDashboard({ navigateTo }: NavigationProps) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'jobs' | 'students' | 'company' | 'profile'
   >('dashboard');
@@ -375,16 +375,16 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div
                 className={`h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm border-2 ${activeTab === 'profile' ? 'border-primary' : 'border-white dark:border-slate-700'} shadow-sm`}
               >
-                {getInitials(company.companyName || 'HR')}
+                {getInitials(user?.profile?.fullName || company.companyName || 'E')}
               </div>
               <div className="flex flex-col overflow-hidden text-left">
                 <p
                   className={`text-sm font-bold truncate ${activeTab === 'profile' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
                 >
-                  {company.companyName || 'TechFlow HR'}
+                  {company.companyName || 'Your Company'}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  Hiring Manager
+                  {user?.profile?.fullName || 'Employer'}
                 </p>
               </div>
               <ChevronRightIcon className="w-4 h-4 text-slate-400" />
@@ -495,16 +495,16 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div
                     className={`h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm border-2 ${activeTab === 'profile' ? 'border-primary' : 'border-white dark:border-slate-700'} shadow-sm`}
                   >
-                    {getInitials(company.companyName || 'HR')}
+                    {getInitials(user?.profile?.fullName || company.companyName || 'E')}
                   </div>
                   <div className="flex flex-col overflow-hidden text-left">
                     <p
                       className={`text-sm font-bold truncate ${activeTab === 'profile' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
                     >
-                      {company.companyName || 'TechFlow HR'}
+                      {company.companyName || 'Your Company'}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      Hiring Manager
+                      {user?.profile?.fullName || 'Employer'}
                     </p>
                   </div>
                 </button>
@@ -1258,11 +1258,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           setStatusFilter(filter.value);
                           setAppPage(1);
                         }}
-                        className={`whitespace-nowrap px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
-                          statusFilter === filter.value
+                        className={`whitespace-nowrap px-3 py-2 rounded-lg font-medium text-sm transition-colors ${statusFilter === filter.value
                             ? 'bg-primary/10 text-primary font-bold'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
-                        }`}
+                          }`}
                       >
                         {filter.label}
                       </button>
@@ -1794,7 +1793,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         <input
                           type="text"
                           placeholder="Your full name"
-                          defaultValue="John Smith"
+                          defaultValue={user?.profile?.fullName || ''}
                           className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
@@ -1817,7 +1816,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         <input
                           type="text"
                           placeholder="e.g. Hiring Manager, HR Director"
-                          defaultValue="Hiring Manager"
+                          defaultValue=""
                           className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
