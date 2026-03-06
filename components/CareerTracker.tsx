@@ -123,18 +123,6 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       if (filters.remoteOnly) params.remoteOnly = 'true';
       if (filters.sort) params.sort = filters.sort;
 
-      if (filters.salaryRange === '0-30000') {
-        params.maxSalary = '30000';
-      } else if (filters.salaryRange === '30000-60000') {
-        params.minSalary = '30000';
-        params.maxSalary = '60000';
-      } else if (filters.salaryRange === '60000-100000') {
-        params.minSalary = '60000';
-        params.maxSalary = '100000';
-      } else if (filters.salaryRange === '100000+') {
-        params.minSalary = '100000';
-      }
-
       const response = await jobApi.list(params);
       const jobsList =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -240,12 +228,6 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       job.currency,
       job.salaryPeriod || job.salaryType || 'YEARLY'
     );
-  };
-
-  const formatDuration = (job: Job) => {
-    if (!job.durationWeeks) return null;
-    const months = Math.round(job.durationWeeks / 4);
-    return months <= 1 ? '1 month' : `${months} months`;
   };
 
   const formatDeadline = (dateStr?: string) => {
@@ -449,11 +431,11 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display">
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-card-light dark:bg-card-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-[1280px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-2">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-1.5 text-sm text-text-sub hover:text-text-main dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="flex items-center gap-1.5 text-sm text-text-sub hover:text-text-main dark:hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <ArrowLeftIcon className="w-4 h-4" />
               Back
@@ -477,22 +459,22 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               )}
             </div>
           </div>
-          <div className="text-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-main dark:text-white flex items-center justify-center gap-3">
-              <BriefcaseIcon className="w-7 h-7 text-primary" />
+          <div className="text-center pb-1">
+            <h1 className="text-2xl font-bold text-text-main dark:text-white flex items-center justify-center gap-2">
+              <BriefcaseIcon className="w-6 h-6 text-primary" />
               Career Tracker
             </h1>
-            <p className="text-sm text-text-sub mt-1">
+            <p className="text-sm text-text-sub mt-0.5">
               Explore internships, graduate roles, and full-time opportunities
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1280px] mx-auto px-6 py-6">
         <div className="flex gap-6">
           {/* Desktop Filter Sidebar */}
-          <aside className="w-72 bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl flex-shrink-0 hidden lg:block h-fit sticky top-6">
+          <aside className="w-[280px] bg-card-light dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl flex-shrink-0 hidden lg:block h-fit sticky top-6">
             {filterContent}
           </aside>
 
@@ -522,20 +504,23 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Toolbar */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <h2 className="font-bold text-text-main dark:text-white">Latest Opportunities</h2>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                <h2 className="font-bold text-text-main dark:text-white whitespace-nowrap">
+                  Latest Opportunities
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold whitespace-nowrap">
                   {jobs.length} {jobs.length === 1 ? 'Job' : 'Jobs'}
                 </span>
               </div>
               {/* Sort */}
-              <div className="flex items-center gap-2">
+              <div className="relative flex items-center gap-2 flex-shrink-0">
                 <ArrowsUpDownIcon className="w-4 h-4 text-gray-400" />
                 <select
                   value={filters.sort}
                   onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value }))}
-                  className="text-sm border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary/20"
+                  title="Sort jobs"
+                  className="text-sm border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary/20 appearance-none min-w-[160px] cursor-pointer"
                 >
                   <option value="newest">Newest</option>
                   <option value="stipend">Highest Stipend</option>
@@ -560,11 +545,10 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {jobs.map((job) => {
                   const isInternship = job.jobType === 'INTERNSHIP' || job.jobType === 'GRADUATE';
                   const deadline = formatDeadline(job.applicationDeadline);
-                  const duration = formatDuration(job);
                   const isDeadlineSoon =
                     deadline && (deadline.includes('d left') || deadline === 'Today');
 
@@ -572,12 +556,12 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                     <div
                       key={job.id}
                       onClick={() => handleCardClick(job)}
-                      className="bg-card-light dark:bg-card-dark rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:border-primary/30 transition-all group relative cursor-pointer"
+                      className="bg-card-light dark:bg-card-dark rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group cursor-pointer flex flex-col overflow-hidden"
                     >
                       {/* Top Row: Logo + Save */}
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="size-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-base font-bold text-gray-700 dark:text-gray-300 flex-shrink-0">
+                      <div className="flex justify-between items-start gap-2 mb-3 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="size-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300 flex-shrink-0">
                             {job.employer?.logoUrl ? (
                               <img
                                 src={job.employer.logoUrl}
@@ -588,9 +572,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                               job.company?.[0]?.toUpperCase() || 'C'
                             )}
                           </div>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <h4
-                              className="font-bold text-text-main dark:text-white group-hover:text-primary transition-colors truncate text-[15px]"
+                              className="font-semibold text-text-main dark:text-white group-hover:text-primary transition-colors truncate text-[15px] leading-tight"
                               title={job.title}
                             >
                               {job.title}
@@ -598,7 +582,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                             <p className="text-xs text-text-sub truncate flex items-center gap-1">
                               {job.company}
                               {job.employer?.verificationStatus === 'verified' && (
-                                <span className="text-blue-500" title="Verified">
+                                <span className="text-blue-500 flex-shrink-0" title="Verified">
                                   ✓
                                 </span>
                               )}
@@ -610,38 +594,39 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                             e.stopPropagation();
                             handleToggleSave(job);
                           }}
-                          className={`p-1.5 rounded-lg transition-colors ${job.isSaved ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-primary hover:bg-primary/5'}`}
+                          className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${job.isSaved ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-primary hover:bg-primary/5'}`}
+                          title="Save job"
                         >
-                          <BookmarkIcon className="w-5 h-5" />
+                          <BookmarkIcon className="w-4 h-4" />
                         </button>
                       </div>
 
-                      {/* ── 5 Decision Factors Grid ── */}
-                      <div className="space-y-2 mb-4">
+                      {/* Decision Factors */}
+                      <div className="space-y-1.5 mb-3">
                         {/* Compensation */}
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-xs min-w-0">
                           <CurrencyDollarIcon
                             className={`w-4 h-4 flex-shrink-0 ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-500'}`}
                           />
                           <span
-                            className={`font-semibold ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-600 dark:text-green-400'}`}
+                            className={`font-semibold truncate ${job.compensationType === 'UNPAID' ? 'text-gray-400' : 'text-green-600 dark:text-green-400'}`}
                           >
                             {formatCompensation(job)}
                           </span>
                           {isInternship &&
                             job.compensationType &&
                             job.compensationType !== 'UNPAID' && (
-                              <span className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase">
+                              <span className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase flex-shrink-0">
                                 {job.compensationType}
                               </span>
                             )}
                         </div>
 
                         {/* Location */}
-                        <div className="flex items-center gap-2 text-xs text-text-sub">
+                        <div className="flex items-center gap-2 text-xs text-text-sub min-w-0">
                           <MapPinIcon className="w-4 h-4 flex-shrink-0 text-blue-400" />
-                          <span>{job.location || 'Remote'}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] font-bold uppercase text-text-sub">
+                          <span className="truncate">{job.location || 'Remote'}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] font-bold uppercase text-text-sub flex-shrink-0">
                             {job.locationType}
                           </span>
                         </div>
@@ -658,9 +643,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                       </div>
 
                       {/* Tags */}
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         <span
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase whitespace-nowrap ${
                             job.jobType === 'INTERNSHIP'
                               ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
                               : job.jobType === 'GRADUATE'
@@ -672,8 +657,8 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                         </span>
                       </div>
 
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+                      {/* Footer — pinned to bottom */}
+                      <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-200 dark:border-gray-700">
                         {job.hasApplied ? (
                           <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
                             <CheckCircleIcon className="w-4 h-4" />
