@@ -6,9 +6,9 @@
 export function getDashboardPath(role?: string): string {
     switch (role) {
         case 'ADMIN':
-            return '/console-admin/dashboard';
+            return '/console-admin';
         case 'EMPLOYER':
-            return '/console-employer/dashboard';
+            return '/console-employer';
         default:
             return '/app';
     }
