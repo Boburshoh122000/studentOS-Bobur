@@ -1,10 +1,22 @@
 import { Router } from 'express';
+import multer from 'multer';
 import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireEmployer } from '../middleware/role.middleware.js';
 import { sendTelegramMessage } from '../services/telegram.service.js';
+import { getSupabaseAdmin } from '../config/supabase.js';
 
 const router = Router();
+
+// Multer config for logo uploads (memory storage, images only, 2MB)
+const logoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'));
+  },
+});
 
 // Middleware: All routes require authentication and EMPLOYER role
 router.use(authenticate, requireEmployer);
@@ -50,6 +62,63 @@ router.patch('/me', async (req: AuthenticatedRequest, res, next) => {
     });
 
     res.json(profile);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Upload company logo
+router.post('/logo', logoUpload.single('logo'), async (req: AuthenticatedRequest, res, next) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      res.status(503).json({ error: 'Storage service not configured' });
+      return;
+    }
+
+    const fileExt = req.file.originalname.split('.').pop() || 'png';
+    const fileName = `company-logos/${req.user!.id}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('team-avatars')
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('Logo upload error:', uploadError);
+      res.status(500).json({ error: 'Failed to upload logo' });
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(fileName);
+
+    await prisma.employerProfile.update({
+      where: { userId: req.user!.id },
+      data: { logoUrl: urlData.publicUrl },
+    });
+
+    res.json({ logoUrl: urlData.publicUrl });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete company logo
+router.delete('/logo', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    await prisma.employerProfile.update({
+      where: { userId: req.user!.id },
+      data: { logoUrl: null },
+    });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }
@@ -320,11 +389,9 @@ router.get('/applicants/:userId/portfolio', async (req: AuthenticatedRequest, re
     });
 
     if (!applicationExists) {
-      res
-        .status(403)
-        .json({
-          error: 'You can only view portfolios of candidates who have applied to your jobs',
-        });
+      res.status(403).json({
+        error: 'You can only view portfolios of candidates who have applied to your jobs',
+      });
       return;
     }
 

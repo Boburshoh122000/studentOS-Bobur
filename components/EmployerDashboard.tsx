@@ -33,6 +33,7 @@ import {
   MapPinIcon,
   PlusIcon,
   StarIcon,
+  TrashIcon,
   UserIcon,
   UserPlusIcon,
   UsersIcon,
@@ -68,7 +69,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
     website: '',
     location: '',
     tagline: '',
+    linkedIn: '',
+    address: '',
+    state: '',
+    country: '',
+    logoUrl: '',
+    socialLinks: [] as { platform: string; url: string; label?: string }[],
   });
+  const [logoUploading, setLogoUploading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [jobFilter, setJobFilter] = useState<string | undefined>(undefined);
@@ -209,6 +217,68 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload a JPG, PNG, SVG, or WebP image');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File must be less than 2MB');
+      return;
+    }
+    setLogoUploading(true);
+    try {
+      const { data, error } = await employerApi.uploadLogo(file);
+      if (error) throw new Error(error);
+      if (data) {
+        setCompany((prev: any) => ({ ...prev, logoUrl: (data as any).logoUrl }));
+        toast.success('Logo uploaded successfully');
+      }
+    } catch {
+      toast.error('Failed to upload logo');
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleDeleteLogo = async () => {
+    try {
+      await employerApi.deleteLogo();
+      setCompany((prev: any) => ({ ...prev, logoUrl: '' }));
+      toast.success('Logo removed');
+    } catch {
+      toast.error('Failed to remove logo');
+    }
+  };
+
+  const addSocialLink = (platform: string) => {
+    setCompany((prev: any) => ({
+      ...prev,
+      socialLinks: [
+        ...(prev.socialLinks || []),
+        { platform, url: '', label: platform === 'custom' ? '' : undefined },
+      ],
+    }));
+  };
+
+  const updateSocialLink = (index: number, field: string, value: string) => {
+    setCompany((prev: any) => {
+      const links = [...(prev.socialLinks || [])];
+      links[index] = { ...links[index], [field]: value };
+      return { ...prev, socialLinks: links };
+    });
+  };
+
+  const removeSocialLink = (index: number) => {
+    setCompany((prev: any) => ({
+      ...prev,
+      socialLinks: (prev.socialLinks || []).filter((_: any, i: number) => i !== index),
+    }));
   };
 
   const handleCompanyChange = (
@@ -1258,10 +1328,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           setStatusFilter(filter.value);
                           setAppPage(1);
                         }}
-                        className={`whitespace-nowrap px-3 py-2 rounded-lg font-medium text-sm transition-colors ${statusFilter === filter.value
+                        className={`whitespace-nowrap px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
+                          statusFilter === filter.value
                             ? 'bg-primary/10 text-primary font-bold'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
-                          }`}
+                        }`}
                       >
                         {filter.label}
                       </button>
@@ -1471,14 +1542,48 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                             Company Logo
                           </label>
-                          <div className="group relative w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary cursor-pointer bg-slate-50 dark:bg-slate-800/50 transition-colors flex flex-col items-center justify-center">
-                            <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-2 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                              <CloudArrowUpIcon className="w-6 h-6 text-slate-500 dark:text-slate-400 group-hover:text-primary" />
-                            </div>
-                            <span className="text-xs text-center text-slate-500 dark:text-slate-400 px-2 group-hover:text-primary">
-                              Click to upload
-                            </span>
+                          <div
+                            className="group relative w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary cursor-pointer bg-slate-50 dark:bg-slate-800/50 transition-colors flex flex-col items-center justify-center overflow-hidden"
+                            onClick={() => document.getElementById('logo-upload-input')?.click()}
+                          >
+                            {logoUploading ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                <span className="text-xs text-slate-500">Uploading...</span>
+                              </div>
+                            ) : company.logoUrl ? (
+                              <img
+                                src={company.logoUrl}
+                                alt="Company logo"
+                                className="w-full h-full object-contain p-2"
+                              />
+                            ) : (
+                              <>
+                                <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-2 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                  <CloudArrowUpIcon className="w-6 h-6 text-slate-500 dark:text-slate-400 group-hover:text-primary" />
+                                </div>
+                                <span className="text-xs text-center text-slate-500 dark:text-slate-400 px-2 group-hover:text-primary">
+                                  Click to upload
+                                </span>
+                              </>
+                            )}
+                            <input
+                              id="logo-upload-input"
+                              type="file"
+                              accept="image/jpeg,image/png,image/svg+xml,image/webp"
+                              className="hidden"
+                              onChange={handleLogoUpload}
+                            />
                           </div>
+                          {company.logoUrl && (
+                            <button
+                              onClick={handleDeleteLogo}
+                              className="flex items-center gap-1 mt-2 text-xs text-red-500 hover:text-red-700 transition-colors"
+                              title="Remove logo"
+                            >
+                              <TrashIcon className="w-3 h-3" /> Remove
+                            </button>
+                          )}
                         </div>
                         <div className="flex-grow space-y-4">
                           <div>
@@ -1604,6 +1709,8 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           id="address"
                           placeholder="123 Innovation Dr"
                           type="text"
+                          value={company.address || ''}
+                          onChange={handleCompanyChange}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -1635,6 +1742,8 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             id="state"
                             placeholder="CA"
                             type="text"
+                            value={company.state || ''}
+                            onChange={handleCompanyChange}
                           />
                         </div>
                       </div>
@@ -1645,15 +1754,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         >
                           Country
                         </label>
-                        <select
+                        <input
                           className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
                           id="country"
-                        >
-                          <option>United States</option>
-                          <option>Canada</option>
-                          <option>United Kingdom</option>
-                          <option>Germany</option>
-                        </select>
+                          placeholder="Uzbekistan"
+                          type="text"
+                          value={company.country || ''}
+                          onChange={handleCompanyChange}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1688,7 +1796,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <div>
                         <label
                           className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
-                          htmlFor="linkedin"
+                          htmlFor="linkedIn"
                         >
                           LinkedIn Profile
                         </label>
@@ -1703,35 +1811,81 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           </div>
                           <input
                             className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
-                            id="linkedin"
-                            placeholder="https://linkedin.com/company/..."
+                            id="linkedIn"
+                            value={company.linkedIn || ''}
+                            onChange={handleCompanyChange}
                             type="text"
+                            placeholder="https://linkedin.com/company/..."
                           />
                         </div>
                       </div>
-                      <div>
-                        <label
-                          className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
-                          htmlFor="twitter"
-                        >
-                          Twitter / X
-                        </label>
-                        <div className="relative rounded-md shadow-sm">
-                          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <svg
-                              className="h-4 w-4 text-slate-400 fill-current"
-                              viewBox="0 0 24 24"
+
+                      {/* Dynamic social links */}
+                      {(company.socialLinks || []).map(
+                        (link: { platform: string; url: string; label?: string }, idx: number) => (
+                          <div key={idx} className="flex items-end gap-3">
+                            <div className="flex-1">
+                              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                {link.platform === 'custom'
+                                  ? link.label || 'Custom'
+                                  : link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
+                              </label>
+                              <input
+                                className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
+                                value={link.url}
+                                onChange={(e) => updateSocialLink(idx, 'url', e.target.value)}
+                                type="text"
+                                placeholder={`https://${link.platform === 'custom' ? 'example.com' : link.platform + '.com/...'}`}
+                              />
+                            </div>
+                            {link.platform === 'custom' && (
+                              <div className="w-32">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                  Label
+                                </label>
+                                <input
+                                  className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
+                                  value={link.label || ''}
+                                  onChange={(e) => updateSocialLink(idx, 'label', e.target.value)}
+                                  placeholder="Platform"
+                                />
+                              </div>
+                            )}
+                            <button
+                              onClick={() => removeSocialLink(idx)}
+                              className="mb-0.5 p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="Remove link"
                             >
-                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                            </svg>
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
                           </div>
-                          <input
-                            className="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
-                            id="twitter"
-                            placeholder="@companyhandle"
-                            type="text"
-                          />
-                        </div>
+                        )
+                      )}
+
+                      {/* Add social link picker */}
+                      <div className="pt-2">
+                        <select
+                          className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm p-2.5"
+                          value=""
+                          title="Add a social link"
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              addSocialLink(e.target.value);
+                              e.target.value = '';
+                            }
+                          }}
+                        >
+                          <option value="">+ Add Social Link...</option>
+                          <option value="twitter">Twitter / X</option>
+                          <option value="facebook">Facebook</option>
+                          <option value="instagram">Instagram</option>
+                          <option value="telegram">Telegram</option>
+                          <option value="youtube">YouTube</option>
+                          <option value="tiktok">TikTok</option>
+                          <option value="github">GitHub</option>
+                          <option value="dribbble">Dribbble</option>
+                          <option value="custom">Other (custom)</option>
+                        </select>
                       </div>
                     </div>
                   </div>

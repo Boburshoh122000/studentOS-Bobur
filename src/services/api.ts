@@ -698,6 +698,12 @@ export const employerApi = {
   updateApplicationStatus: (id: string, data: { status?: string; notes?: string }) =>
     api.patch(`/employer/applications/${id}`, data),
   getApplicantPortfolio: (userId: string) => api.get(`/employer/applicants/${userId}/portfolio`),
+  uploadLogo: (file: File) => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return api.postFormData<{ logoUrl: string }>('/employer/logo', formData);
+  },
+  deleteLogo: () => api.delete('/employer/logo'),
 };
 
 // Universities API

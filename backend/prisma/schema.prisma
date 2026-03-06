@@ -237,6 +237,7 @@ model EmployerProfile {
   logoUrl            String?
   website            String?
   linkedIn           String?
+  socialLinks        Json?   @default("[]")
   address            String?
   city               String?
   state              String?
