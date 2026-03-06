@@ -77,28 +77,35 @@ router.post('/logo', logoUpload.single('logo'), async (req: AuthenticatedRequest
 
     const supabase = getSupabaseAdmin();
     if (!supabase) {
-      res.status(503).json({ error: 'Storage service not configured' });
+      res
+        .status(503)
+        .json({
+          error:
+            'Storage service not configured. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+        });
       return;
     }
 
     const fileExt = req.file.originalname.split('.').pop() || 'png';
     const fileName = `company-logos/${req.user!.id}-${Date.now()}.${fileExt}`;
 
+    // Try uploading to the bucket (use upsert: true to allow re-uploads)
+    const bucketName = 'team-avatars';
     const { error: uploadError } = await supabase.storage
-      .from('team-avatars')
+      .from(bucketName)
       .upload(fileName, req.file.buffer, {
         contentType: req.file.mimetype,
         cacheControl: '3600',
-        upsert: false,
+        upsert: true,
       });
 
     if (uploadError) {
-      console.error('Logo upload error:', uploadError);
-      res.status(500).json({ error: 'Failed to upload logo' });
+      console.error('Logo upload error:', uploadError.message, uploadError);
+      res.status(500).json({ error: `Upload failed: ${uploadError.message}` });
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
 
     await prisma.employerProfile.update({
       where: { userId: req.user!.id },
@@ -107,6 +114,7 @@ router.post('/logo', logoUpload.single('logo'), async (req: AuthenticatedRequest
 
     res.json({ logoUrl: urlData.publicUrl });
   } catch (error) {
+    console.error('Logo upload exception:', error);
     next(error);
   }
 });

@@ -239,8 +239,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
         setCompany((prev: any) => ({ ...prev, logoUrl: (data as any).logoUrl }));
         toast.success('Logo uploaded successfully');
       }
-    } catch {
-      toast.error('Failed to upload logo');
+    } catch (err: any) {
+      console.error('Logo upload error:', err);
+      toast.error(err?.message || 'Failed to upload logo');
     } finally {
       setLogoUploading(false);
     }
