@@ -4,7 +4,8 @@ import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireEmployer } from '../middleware/role.middleware.js';
 import { sendTelegramMessage } from '../services/telegram.service.js';
-import { getSupabaseAdmin } from '../config/supabase.js';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { getR2Client, R2_BUCKET, R2_PUBLIC_URL } from '../config/r2.js';
 
 const router = Router();
 
@@ -75,44 +76,35 @@ router.post('/logo', logoUpload.single('logo'), async (req: AuthenticatedRequest
       return;
     }
 
-    const supabase = getSupabaseAdmin();
-    if (!supabase) {
-      res
-        .status(503)
-        .json({
-          error:
-            'Storage service not configured. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
-        });
+    const r2 = getR2Client();
+    if (!r2) {
+      res.status(503).json({
+        error:
+          'Storage service not configured. Check R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.',
+      });
       return;
     }
 
     const fileExt = req.file.originalname.split('.').pop() || 'png';
     const fileName = `company-logos/${req.user!.id}-${Date.now()}.${fileExt}`;
 
-    // Try uploading to the bucket (use upsert: true to allow re-uploads)
-    const bucketName = 'team-avatars';
-    const { error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
-        cacheControl: '3600',
-        upsert: true,
-      });
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: fileName,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+      })
+    );
 
-    if (uploadError) {
-      console.error('Logo upload error:', uploadError.message, uploadError);
-      res.status(500).json({ error: `Upload failed: ${uploadError.message}` });
-      return;
-    }
-
-    const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+    const logoUrl = `${R2_PUBLIC_URL}/${fileName}`;
 
     await prisma.employerProfile.update({
       where: { userId: req.user!.id },
-      data: { logoUrl: urlData.publicUrl },
+      data: { logoUrl },
     });
 
-    res.json({ logoUrl: urlData.publicUrl });
+    res.json({ logoUrl });
   } catch (error) {
     console.error('Logo upload exception:', error);
     next(error);

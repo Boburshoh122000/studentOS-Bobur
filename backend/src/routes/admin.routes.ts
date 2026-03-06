@@ -7,7 +7,8 @@ import { requireAdmin } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { hashPassword } from '../services/auth.service.js';
 import { AppError } from '../middleware/error.middleware.js';
-import { getSupabaseAdmin } from '../config/supabase.js';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { getR2Client, R2_BUCKET, R2_PUBLIC_URL } from '../config/r2.js';
 
 const router = Router();
 
@@ -859,7 +860,7 @@ const avatarUpload = multer({
   },
 });
 
-// POST /api/admin/team/upload-avatar — Upload avatar image to Supabase Storage
+// POST /api/admin/team/upload-avatar — Upload avatar image to Cloudflare R2
 router.post(
   '/team/upload-avatar',
   avatarUpload.single('avatar'),
@@ -869,34 +870,27 @@ router.post(
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const supabase = getSupabaseAdmin();
-      if (!supabase) {
+      const r2 = getR2Client();
+      if (!r2) {
         return res.status(503).json({
-          error: 'Storage service not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+          error:
+            'Storage service not configured. Check R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.',
         });
       }
 
       const fileExt = req.file.originalname.split('.').pop() || 'jpg';
       const fileName = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('team-avatars')
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype,
-          cacheControl: '3600',
-          upsert: false,
-        });
+      await r2.send(
+        new PutObjectCommand({
+          Bucket: R2_BUCKET,
+          Key: fileName,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        })
+      );
 
-      if (uploadError) {
-        console.error('Supabase upload error:', uploadError);
-        return res
-          .status(500)
-          .json({ error: 'Failed to upload image', details: uploadError.message });
-      }
-
-      const { data: urlData } = supabase.storage.from('team-avatars').getPublicUrl(fileName);
-
-      res.json({ url: urlData.publicUrl });
+      res.json({ url: `${R2_PUBLIC_URL}/${fileName}` });
     } catch (error) {
       next(error);
     }
