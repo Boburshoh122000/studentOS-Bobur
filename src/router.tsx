@@ -116,7 +116,7 @@ const ScholarshipDetail = withNavigate(lazyRetry(() => import('../components/Sch
 const CareerTracker = withNavigate(lazyRetry(() => import('../components/CareerTracker')));
 const CVChecker = withNavigate(lazyRetry(() => import('../components/CVChecker')));
 const CVBuilderPage = withNavigate(lazyRetry(() => import('../components/CVBuilderPage')));
-const PresentationMaker = withNavigate(lazyRetry(() => import('../components/PresentationMaker')));
+
 const LearningPlan = withNavigate(lazyRetry(() => import('../components/LearningPlan')));
 const PlagiarismChecker = withNavigate(lazyRetry(() => import('../components/PlagiarismChecker')));
 const HabitTracker = withNavigate(lazyRetry(() => import('../components/HabitTracker')));
@@ -327,14 +327,7 @@ export const router = createBrowserRouter([
           </StudentRoute>
         ),
       },
-      {
-        path: '/app/presentation',
-        element: (
-          <StudentRoute>
-            <PresentationMaker />
-          </StudentRoute>
-        ),
-      },
+
       {
         path: '/app/learning-plan',
         element: (
