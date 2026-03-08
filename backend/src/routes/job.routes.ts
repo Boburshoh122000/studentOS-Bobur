@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireEmployer } from '../middleware/role.middleware.js';
 import { mediumCache } from '../middleware/cache.middleware.js';
+import { sendEmail } from '../services/email.service.js';
 
 const router = Router();
 
@@ -201,10 +202,34 @@ router.post('/:id/apply', authenticate, async (req: AuthenticatedRequest, res, n
       },
       include: {
         job: {
-          select: { title: true, company: true },
+          select: {
+            title: true,
+            company: true,
+            employerProfile: {
+              select: { user: { select: { email: true } } },
+            },
+          },
         },
       },
     });
+
+    // Notify employer via email (fire-and-forget)
+    const employerEmail = (application.job as any)?.employerProfile?.user?.email;
+    if (employerEmail) {
+      const jobTitle = (application.job as any)?.title || 'a position';
+      const company = (application.job as any)?.company || '';
+      sendEmail({
+        to: employerEmail,
+        subject: `New Application: ${jobTitle}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2D4DE0;">New Application Received 📩</h1>
+            <p>A candidate has applied for <strong>${jobTitle}</strong>${company ? ` at ${company}` : ''}.</p>
+            <a href="${process.env.FRONTEND_URL || 'https://studentos.uz'}/console-employer/applicants" style="display: inline-block; background: #2D4DE0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">View Application</a>
+          </div>
+        `,
+      }).catch((err) => console.error('Failed to send application notification:', err));
+    }
 
     res.status(201).json(application);
   } catch (error: any) {

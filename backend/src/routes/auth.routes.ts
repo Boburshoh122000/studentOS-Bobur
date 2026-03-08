@@ -18,6 +18,7 @@ import {
   recordFailedAttempt,
   resetLoginAttempts,
 } from '../services/rate-limiter.js';
+import { sendEmail, emailTemplates } from '../services/email.service.js';
 
 const router = Router();
 
@@ -129,6 +130,12 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
       role: user.role,
     });
     const refreshToken = await generateRefreshToken(user.id);
+
+    // Send welcome email (fire-and-forget, don't block the response)
+    const welcomeTemplate = emailTemplates.welcomeEmail(fullName);
+    sendEmail({ to: email, ...welcomeTemplate }).catch((err) =>
+      console.error('Failed to send welcome email:', err)
+    );
 
     res.status(201).json({
       user: {
@@ -609,6 +616,12 @@ router.post('/google-callback', validate(googleCallbackSchema), async (req, res,
           employerProfile: true,
         },
       });
+
+      // Send welcome email for new OAuth users (fire-and-forget)
+      const welcomeTemplate = emailTemplates.welcomeEmail(fullName || email.split('@')[0]);
+      sendEmail({ to: email, ...welcomeTemplate }).catch((err) =>
+        console.error('Failed to send welcome email:', err)
+      );
     } else {
       // Update existing user's last login and potentially avatar
       await prisma.user.update({
