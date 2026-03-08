@@ -156,6 +156,97 @@ router.get('/career-activity', async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// GET /academic-activity - Unified academic tools activity feed
+router.get('/academic-activity', async (req: AuthenticatedRequest, res) => {
+  try {
+    // Fetch plagiarism documents
+    const plagiarismDocs = await prisma.plagiarismDocument.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        wordCount: true,
+        status: true,
+        createdAt: true,
+        report: {
+          select: {
+            originalityScore: true,
+            isOriginal: true,
+          },
+        },
+      },
+    });
+
+    // Fetch learning plans
+    const learningPlans = await prisma.learningPlan.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        topic: true,
+        durationWeeks: true,
+        createdAt: true,
+        phases: {
+          select: { isCompleted: true },
+        },
+      },
+    });
+
+    // Build unified activity list
+    const activities: any[] = [];
+
+    for (const doc of plagiarismDocs) {
+      activities.push({
+        id: `plagiarism_${doc.id}`,
+        type: 'plagiarism_check',
+        title: doc.name || 'Untitled Document',
+        score: doc.report?.originalityScore ?? null,
+        isOriginal: doc.report?.isOriginal ?? null,
+        timestamp: doc.createdAt,
+      });
+    }
+
+    for (const plan of learningPlans) {
+      const totalPhases = plan.phases.length;
+      const completedPhases = plan.phases.filter((p) => p.isCompleted).length;
+      activities.push({
+        id: `plan_${plan.id}`,
+        type: 'learning_plan',
+        title: plan.topic,
+        durationWeeks: plan.durationWeeks,
+        progress: totalPhases > 0 ? Math.round((completedPhases / totalPhases) * 100) : 0,
+        timestamp: plan.createdAt,
+      });
+    }
+
+    // Sort by timestamp descending
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    // Calculate average originality score for "Academic Score" widget
+    const scores = plagiarismDocs
+      .map((d) => d.report?.originalityScore)
+      .filter((s): s is number => typeof s === 'number');
+    const avgOriginalityScore =
+      scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+
+    res.json({
+      success: true,
+      activities: activities.slice(0, 10),
+      stats: {
+        totalChecks: plagiarismDocs.length,
+        totalPlans: learningPlans.length,
+        avgOriginalityScore,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch academic activity:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch activity' });
+  }
+});
+
 // GET /ats-history - Get recent ATS scan history
 router.get('/ats-history', async (req: AuthenticatedRequest, res) => {
   try {
