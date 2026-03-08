@@ -861,55 +861,6 @@ export const checkPlagiarism = async (
   }
 };
 
-export const generatePresentationContent = async (
-  topic: string,
-  slideCount: number = 5,
-  style: string = 'professional'
-): Promise<{
-  title: string;
-  author: string;
-  slides: { slideNumber: number; title: string; bulletPoints: string[]; notes?: string }[];
-  theme: { primaryColor: string; accentColor: string };
-}> => {
-  try {
-    const prompt = `Create a presentation outline for this topic:
-
-Topic: ${topic}
-Number of slides: ${slideCount}
-Style: ${style}
-
-Provide a JSON response with:
-1. "title": Presentation title
-2. "author": Leave as ""
-3. "slides": Array of slides, each with:
-   - "slideNumber": number
-   - "title": slide title
-   - "bulletPoints": array of 3-5 key points
-   - "notes": speaker notes (optional)
-4. "theme": Object with "primaryColor" (hex) and "accentColor" (hex) appropriate for the style
-
-Make the content engaging, informative, and well-structured for ${style} presentation.
-
-Respond ONLY with valid JSON, no markdown.`;
-
-    const response = await callAI(prompt, { temperature: 0.5, maxTokens: 4096, jsonMode: true });
-
-    try {
-      return JSON.parse(cleanJSON(response));
-    } catch {
-      console.error('Failed to parse presentation response:', response.slice(0, 200));
-      return {
-        title: topic,
-        author: '',
-        slides: [{ slideNumber: 1, title: topic, bulletPoints: ['Unable to generate content'] }],
-        theme: { primaryColor: '#4F46E5', accentColor: '#7C3AED' },
-      };
-    }
-  } catch (error) {
-    return handleAIError(error);
-  }
-};
-
 /**
  * Extract text from a file buffer (PDF or DOCX).
  * Returns the raw text string.

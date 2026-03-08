@@ -1,7 +1,7 @@
 {
   "name": "studentos-telegram-bot",
-  "version": "1.0.0",
-  "description": "StudentOS Telegram Bot — AI Presentation Maker & Habit Tracker",
+  "version": "1.1.0",
+  "description": "StudentOS Telegram Bot — Habit Tracker",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
@@ -10,7 +10,6 @@
   "dependencies": {
     "telegraf": "^4.16.3",
     "openai": "^4.73.0",
-    "pptxgenjs": "^3.12.0",
     "dotenv": "^16.4.5"
   }
 }

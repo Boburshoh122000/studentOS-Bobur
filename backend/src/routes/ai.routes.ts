@@ -11,7 +11,6 @@ import {
   checkPlagiarism,
   runPlagiarismPipeline,
   calculatePlagiarismCreditCost,
-  generatePresentationContent,
   extractTextFromFile,
 } from '../services/ai.service.js';
 import { CheckModule } from '@prisma/client';
@@ -646,36 +645,6 @@ router.post(
         analysis,
         remainingCredits: (req as any).remainingBalance ?? null,
       });
-    } catch (error: any) {
-      handleAIError(error, res, next);
-    }
-  }
-);
-
-// Presentation Content Generation
-router.post(
-  '/generate-presentation',
-  requireCredits('presentation-maker'),
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const { topic, slideCount = 5, style = 'professional' } = req.body;
-
-      if (!topic) {
-        res.status(400).json({ error: 'Presentation topic is required' });
-        return;
-      }
-
-      // Get user's name for author field
-      const profile = await prisma.studentProfile.findUnique({
-        where: { userId: req.user!.id },
-      });
-
-      const presentation = await generatePresentationContent(topic, slideCount, style);
-
-      // Set author name if available
-      presentation.author = profile?.fullName || '';
-
-      res.json({ ...presentation, remainingCredits: (req as any).remainingBalance ?? null });
     } catch (error: any) {
       handleAIError(error, res, next);
     }

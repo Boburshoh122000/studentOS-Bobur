@@ -7,7 +7,6 @@ import {
   generateCoverLetter,
   generateLearningPlan,
   checkPlagiarism,
-  generatePresentationContent,
 } from '../services/ai.service.js';
 
 const router = Router();
@@ -20,8 +19,7 @@ type AIActionType =
   | 'ats_check' // CV & ATS Checker
   | 'cover_letter' // Cover Letter Generator
   | 'learning_plan' // Learning Plan Generator
-  | 'plagiarism_check' // Plagiarism Checker
-  | 'presentation'; // Presentation Generator
+  | 'plagiarism_check'; // Plagiarism Checker
 
 interface AIGeneratorRequest {
   type: AIActionType;
@@ -36,10 +34,6 @@ interface AIGeneratorRequest {
   timeframe?: string;
   // Plagiarism Check inputs
   text?: string;
-  // Presentation inputs
-  topic?: string;
-  slideCount?: number;
-  style?: string;
 }
 
 /**
@@ -51,7 +45,6 @@ interface AIGeneratorRequest {
  * - cover_letter: Cover letter generation
  * - learning_plan: Personalized learning plan
  * - plagiarism_check: Text plagiarism analysis
- * - presentation: Presentation content generation
  */
 router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -61,13 +54,7 @@ router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunc
     if (!type) {
       res.status(400).json({
         error: 'Missing required field: type',
-        validTypes: [
-          'ats_check',
-          'cover_letter',
-          'learning_plan',
-          'plagiarism_check',
-          'presentation',
-        ],
+        validTypes: ['ats_check', 'cover_letter', 'learning_plan', 'plagiarism_check'],
       });
       return;
     }
@@ -170,37 +157,10 @@ router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunc
         return;
       }
 
-      case 'presentation': {
-        const { topic, slideCount = 5, style = 'professional' } = body;
-
-        if (!topic) {
-          res.status(400).json({ error: 'Presentation topic is required' });
-          return;
-        }
-
-        const presentation = await generatePresentationContent(topic, slideCount, style);
-
-        // Set author name if available
-        presentation.author = profile?.fullName || '';
-
-        res.json({
-          success: true,
-          type: 'presentation',
-          data: presentation,
-        });
-        return;
-      }
-
       default: {
         res.status(400).json({
           error: `Unknown action type: ${type}`,
-          validTypes: [
-            'ats_check',
-            'cover_letter',
-            'learning_plan',
-            'plagiarism_check',
-            'presentation',
-          ],
+          validTypes: ['ats_check', 'cover_letter', 'learning_plan', 'plagiarism_check'],
         });
         return;
       }
