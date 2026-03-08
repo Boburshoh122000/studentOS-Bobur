@@ -202,11 +202,9 @@ router.post('/:id/apply', authenticate, async (req: AuthenticatedRequest, res, n
       },
       include: {
         job: {
-          select: {
-            title: true,
-            company: true,
-            employerProfile: {
-              select: { user: { select: { email: true } } },
+          include: {
+            employer: {
+              include: { user: { select: { email: true } } },
             },
           },
         },
@@ -214,10 +212,10 @@ router.post('/:id/apply', authenticate, async (req: AuthenticatedRequest, res, n
     });
 
     // Notify employer via email (fire-and-forget)
-    const employerEmail = (application.job as any)?.employerProfile?.user?.email;
+    const employerEmail = (application.job as any)?.employer?.user?.email;
     if (employerEmail) {
-      const jobTitle = (application.job as any)?.title || 'a position';
-      const company = (application.job as any)?.company || '';
+      const jobTitle = application.job?.title || 'a position';
+      const company = application.job?.company || '';
       sendEmail({
         to: employerEmail,
         subject: `New Application: ${jobTitle}`,
