@@ -214,6 +214,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         email,
         passwordHash,
         role: 'STUDENT',
+        emailVerified: !!otpCode, // Verified if OTP was provided and passed
         creditBalance: 10, // Welcome bonus
         studentProfile: {
           create: {
@@ -321,6 +322,34 @@ router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, 
 
     // Success — reset failed attempts counter
     await resetLoginAttempts(ip, email);
+
+    // Block unverified users — resend a fresh OTP automatically
+    if (!user.emailVerified) {
+      const code = generateOTP();
+      otpStore.set(email, { code, expiresAt: Date.now() + OTP_EXPIRY_MS });
+      sendEmail({
+        to: email,
+        subject: `${code} — Your StudentOS Verification Code`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; text-align: center;">
+            <h1 style="color: #2D4DE0; font-size: 24px;">Verify your email</h1>
+            <p style="color: #555; font-size: 16px;">Enter this code to complete your sign-up:</p>
+            <div style="background: #f5f5f5; border-radius: 12px; padding: 24px; margin: 24px 0;">
+              <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1e293b;">${code}</span>
+            </div>
+            <p style="color: #999; font-size: 13px;">This code expires in 10 minutes.</p>
+          </div>
+        `,
+        text: `Your StudentOS verification code is: ${code}`,
+      }).catch((err) => console.error('Failed to resend verification email:', err));
+
+      res.status(403).json({
+        error: 'email_not_verified',
+        message: 'Email not verified. A new code has been sent to your email.',
+        email: user.email,
+      });
+      return;
+    }
 
     // Update last login
     await prisma.user.update({
@@ -504,9 +533,9 @@ router.post(
           },
         });
       } else {
-        // Organization -> create employer profile
+        // Organization -> create employer profile (pending verification)
         userRole = 'EMPLOYER';
-        redirectTo = '/app';
+        redirectTo = '/verification-pending';
 
         if (!companyName) {
           res.status(400).json({ error: 'Company name is required for organizations' });

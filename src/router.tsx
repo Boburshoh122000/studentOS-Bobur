@@ -62,6 +62,10 @@ function EmployerGuard({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user || user.role !== 'EMPLOYER') return <NotFound />;
+  // Block access until admin verifies the employer account
+  if (user.profile?.verificationStatus !== 'verified') {
+    return <Navigate to="/verification-pending" replace />;
+  }
   return <>{children}</>;
 }
 

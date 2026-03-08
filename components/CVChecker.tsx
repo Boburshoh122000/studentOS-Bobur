@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
@@ -63,6 +64,7 @@ type ResultTab = 'overview' | 'requirements' | 'gaps' | 'fix_plan' | 'formatting
 /* ─── Component ─────────────────────────────────────────────────────────── */
 
 export default function CVChecker({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const { refreshBalance } = useCredits();
   const [inputMode, setInputMode] = useState<'upload' | 'text'>('upload');
   const [cvText, setCvText] = useState('');
@@ -123,7 +125,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
   const handleDeleteScan = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this scan from history?')) return;
+    if (!confirm(t('ATS.confirm_delete'))) return;
     try {
       await aiApi.deleteAtsScan(id);
       setScanHistory((prev) => prev.filter((s) => s.id !== id));
@@ -147,13 +149,13 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('ATS.just_now');
+    if (mins < 60) return t('ATS.mins_ago', { count: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    if (hrs < 24) return t('ATS.hrs_ago', { count: hrs });
     const days = Math.floor(hrs / 24);
-    if (days < 30) return `${days}d ago`;
-    return `${Math.floor(days / 30)}mo ago`;
+    if (days < 30) return t('ATS.days_ago', { count: days });
+    return t('ATS.months_ago', { count: Math.floor(days / 30) });
   };
 
   const getScoreColor = (score: number) => {
@@ -169,9 +171,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
   };
 
   const getScoreMessage = (score: number) => {
-    if (score >= 80) return 'Excellent! Your CV is well-optimized.';
-    if (score >= 60) return 'Good progress! A few improvements needed.';
-    return 'Needs work. Follow the suggestions below.';
+    if (score >= 80) return t('ATS.score_excellent');
+    if (score >= 60) return t('ATS.score_good');
+    return t('ATS.score_needs_work');
   };
 
   const getVerdictStyles = (verdict: string) => {
@@ -199,7 +201,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
   const handleAnalyzeCV = async () => {
     if (!cvText.trim()) {
-      setError('Please enter your CV text');
+      setError(t('ATS.cv_text_required'));
       return;
     }
     setIsAnalyzing(true);
@@ -249,7 +251,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       refreshBalance();
     } catch (err: unknown) {
       console.error('Failed to analyze CV:', err);
-      setError(err instanceof Error ? err.message : 'Failed to analyze CV. Please try again.');
+      setError(err instanceof Error ? err.message : t('ATS.analyze_failed_generic'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -259,7 +261,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setError('File is too large. Maximum size is 5MB.');
+      setError(t('ATS.file_too_large'));
       return;
     }
     setSelectedFile(file);
@@ -278,11 +280,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       setCvText(response.data!.extractedText);
     } catch (err: unknown) {
       console.error('Failed to extract text from file:', err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to extract text from file. Please try pasting the text directly.'
-      );
+      setError(err instanceof Error ? err.message : t('ATS.extract_failed'));
     } finally {
       setIsExtracting(false);
     }
@@ -299,13 +297,21 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
   /* ─── Tab definitions ─────────────────────────────────────────────────── */
 
-  const tabs: { key: ResultTab; label: string; icon: string }[] = [
-    { key: 'overview', label: 'Overview', icon: 'assessment' },
-    { key: 'requirements', label: 'Requirements', icon: 'checklist' },
-    { key: 'gaps', label: 'Gaps', icon: 'error_outline' },
-    { key: 'fix_plan', label: 'Fix Plan', icon: 'build' },
-    { key: 'formatting', label: 'Formatting', icon: 'format_list_bulleted' },
+  const tabs: { key: ResultTab; icon: string }[] = [
+    { key: 'overview', icon: 'assessment' },
+    { key: 'requirements', icon: 'checklist' },
+    { key: 'gaps', icon: 'error_outline' },
+    { key: 'fix_plan', icon: 'build' },
+    { key: 'formatting', icon: 'format_list_bulleted' },
   ];
+
+  const tabLabel: Record<ResultTab, string> = {
+    overview: t('ATS.tab_overview'),
+    requirements: t('ATS.tab_requirements'),
+    gaps: t('ATS.tab_gaps'),
+    fix_plan: t('ATS.tab_fix_plan'),
+    formatting: t('ATS.tab_formatting'),
+  };
 
   /* ─── Header ──────────────────────────────────────────────────────────── */
 
@@ -321,10 +327,11 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       <div className="flex items-center gap-3">
         {analysisResult && (
           <button
+            type="button"
             onClick={resetAnalysis}
             className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-3 py-2 text-sm font-medium transition-colors"
           >
-            New Analysis
+            {t('ATS.new_analysis')}
           </button>
         )}
       </div>
@@ -338,11 +345,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       <div className="size-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
         <DocumentTextIcon className="w-9 h-9 text-slate-400" />
       </div>
-      <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">No CV Analyzed Yet</h3>
-      <p className="text-sm text-slate-500 max-w-md">
-        Upload your CV or paste your resume text to get an instant ATS compatibility score with
-        actionable improvement suggestions.
-      </p>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+        {t('ATS.no_cv_analyzed')}
+      </h3>
+      <p className="text-sm text-slate-500 max-w-md">{t('ATS.empty_state_desc')}</p>
     </div>
   );
 
@@ -356,18 +362,19 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
       <div className="flex flex-col gap-4 overflow-y-auto hide-scrollbar pb-10">
         {/* Tab Bar */}
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto">
-          {tabs.map((t) => (
+          {tabs.map((tab) => (
             <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === t.key
+                activeTab === tab.key
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
-              {t.label}
+              <span className="material-symbols-outlined text-[16px]">{tab.icon}</span>
+              {tabLabel[tab.key]}
             </button>
           ))}
         </div>
@@ -403,7 +410,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       <span className="text-xl text-slate-400">%</span>
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                      ATS Score
+                      {t('ATS.score')}
                     </span>
                   </div>
                 </div>
@@ -420,7 +427,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <span
                       className={`px-3 py-1.5 rounded-full text-xs font-bold border ${getVerdictStyles(r.pass_ats)}`}
                     >
-                      Pass ATS: {r.pass_ats}
+                      {t('ATS.pass_ats_label')}: {r.pass_ats}
                     </span>
                     {r.pass_ats_reason && (
                       <span className="text-xs text-slate-500 italic">{r.pass_ats_reason}</span>
@@ -434,32 +441,36 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 {
-                  label: 'Requirements Met',
+                  key: 'req',
+                  label: t('ATS.stats_requirements_met'),
                   value: `${r.requirements.filter((x) => x.score >= 2).length}/${r.requirements.length}`,
                   color: 'text-blue-600',
                   bg: 'bg-blue-50 dark:bg-blue-900/20',
                 },
                 {
-                  label: 'Critical Gaps',
+                  key: 'gaps',
+                  label: t('ATS.stats_critical_gaps'),
                   value: r.gaps.length,
                   color: 'text-red-600',
                   bg: 'bg-red-50 dark:bg-red-900/20',
                 },
                 {
-                  label: 'Parsing Risks',
+                  key: 'parsing',
+                  label: t('ATS.stats_parsing_risks'),
                   value: r.parsing_risks.filter((x) => x.severity === 'High').length,
                   color: 'text-amber-600',
                   bg: 'bg-amber-50 dark:bg-amber-900/20',
                 },
                 {
-                  label: 'Missing Keywords',
+                  key: 'keywords',
+                  label: t('ATS.stats_missing_keywords'),
                   value: r.missing_keywords.length,
                   color: 'text-purple-600',
                   bg: 'bg-purple-50 dark:bg-purple-900/20',
                 },
               ].map((stat) => (
                 <div
-                  key={stat.label}
+                  key={stat.key}
                   className={`${stat.bg} rounded-xl p-4 border border-slate-100 dark:border-slate-800`}
                 >
                   <div className={`text-2xl font-extrabold ${stat.color}`}>{stat.value}</div>
@@ -475,7 +486,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
                     <KeyIcon className="w-5 h-5" />
                   </div>
-                  <h3 className="font-bold text-slate-800 dark:text-white">Missing Keywords</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white">
+                    {t('ATS.section_missing_keywords')}
+                  </h3>
                 </div>
                 {r.missing_keywords.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -489,7 +502,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-500">No missing keywords detected!</p>
+                  <p className="text-sm text-slate-500">{t('ATS.no_missing_keywords')}</p>
                 )}
               </div>
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
@@ -497,7 +510,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
                     <ExclamationTriangleIcon className="w-5 h-5" />
                   </div>
-                  <h3 className="font-bold text-slate-800 dark:text-white">Weaknesses</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white">
+                    {t('ATS.section_weaknesses')}
+                  </h3>
                 </div>
                 {r.weaknesses.length > 0 ? (
                   <ul className="space-y-2">
@@ -512,7 +527,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-slate-500">No major weaknesses found!</p>
+                  <p className="text-sm text-slate-500">{t('ATS.no_weaknesses')}</p>
                 )}
               </div>
             </div>
@@ -524,10 +539,8 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <SparklesIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold">AI-Powered Suggestions</h3>
-                  <p className="text-xs text-slate-400">
-                    Personalized improvements for your resume
-                  </p>
+                  <h3 className="font-bold">{t('ATS.ai_suggestions_title')}</h3>
+                  <p className="text-xs text-slate-400">{t('ATS.ai_suggestions_subtitle')}</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -544,9 +557,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-400">
-                    Your CV looks great! No specific fixes needed.
-                  </p>
+                  <p className="text-sm text-slate-400">{t('ATS.cv_looks_great')}</p>
                 )}
               </div>
             </div>
@@ -562,12 +573,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-primary text-[20px]">
                     checklist
                   </span>
-                  Semantic Match Scoring
+                  {t('ATS.semantic_match_title')}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Each requirement scored 0–3: 0=missing, 1=weak, 2=present with evidence, 3=strong
-                  with impact
-                </p>
+                <p className="text-xs text-slate-500 mt-1">{t('ATS.scoring_scale_desc')}</p>
               </div>
               {r.requirements.length > 0 ? (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -601,7 +609,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 </div>
               ) : (
                 <div className="p-8 text-center text-sm text-slate-500">
-                  No requirements to display.
+                  {t('ATS.no_requirements')}
                 </div>
               )}
             </div>
@@ -619,9 +627,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-white">
-                    Top Gaps (Likely Rejection Causes)
+                    {t('ATS.top_gaps_title')}
                   </h3>
-                  <p className="text-xs text-slate-500">Must-have failures prioritized</p>
+                  <p className="text-xs text-slate-500">{t('ATS.top_gaps_subtitle')}</p>
                 </div>
               </div>
               {r.gaps.length > 0 ? (
@@ -637,7 +645,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-slate-500">No critical gaps found!</p>
+                <p className="text-sm text-slate-500">{t('ATS.no_critical_gaps')}</p>
               )}
             </div>
 
@@ -649,10 +657,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <ExclamationTriangleIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white">Hidden Gaps</h3>
-                    <p className="text-xs text-slate-500">
-                      Implied by the role but not proven in the resume
-                    </p>
+                    <h3 className="font-bold text-slate-800 dark:text-white">
+                      {t('ATS.hidden_gaps_title')}
+                    </h3>
+                    <p className="text-xs text-slate-500">{t('ATS.hidden_gaps_desc')}</p>
                   </div>
                 </div>
                 <ul className="space-y-2">
@@ -677,10 +685,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                     <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white">Fluff Claims</h3>
-                    <p className="text-xs text-slate-500">
-                      Unverifiable, buzzword-only, or responsibility-without-impact
-                    </p>
+                    <h3 className="font-bold text-slate-800 dark:text-white">
+                      {t('ATS.fluff_claims_title')}
+                    </h3>
+                    <p className="text-xs text-slate-500">{t('ATS.fluff_claims_desc')}</p>
                   </div>
                 </div>
                 <ul className="space-y-2">
@@ -707,7 +715,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                 <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">title</span>
-                  Suggested Headlines
+                  {t('ATS.suggested_headlines')}
                 </h3>
                 <div className="space-y-3">
                   {r.fix_plan.headlines.map((h, i) => (
@@ -715,7 +723,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       key={i}
                       className="p-4 rounded-xl bg-primary/5 border border-primary/15 text-sm font-medium text-slate-800 dark:text-white"
                     >
-                      <span className="text-xs text-primary font-bold mr-2">Option {i + 1}:</span>
+                      <span className="text-xs text-primary font-bold mr-2">
+                        {t('ATS.option_prefix', { count: i + 1 })}
+                      </span>
                       {h}
                     </div>
                   ))}
@@ -730,7 +740,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-primary text-[20px]">
                     description
                   </span>
-                  Suggested Summaries
+                  {t('ATS.suggested_summaries')}
                 </h3>
                 <div className="space-y-3">
                   {r.fix_plan.summaries.map((s, i) => (
@@ -738,7 +748,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       key={i}
                       className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
                     >
-                      <span className="text-xs text-primary font-bold mr-2">Option {i + 1}:</span>
+                      <span className="text-xs text-primary font-bold mr-2">
+                        {t('ATS.option_prefix', { count: i + 1 })}
+                      </span>
                       {s}
                     </div>
                   ))}
@@ -753,9 +765,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-primary text-[20px]">
                     psychology
                   </span>
-                  Skills to Add
+                  {t('ATS.skills_to_add_title')}
                 </h3>
-                <p className="text-xs text-slate-500 mb-4">Add only if truthful</p>
+                <p className="text-xs text-slate-500 mb-4">{t('ATS.skills_truthful_warning')}</p>
                 <div className="flex flex-wrap gap-2">
                   {r.fix_plan.skills_to_add.map((skill, i) => (
                     <span
@@ -774,7 +786,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                 <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">edit</span>
-                  Improved Bullet Points
+                  {t('ATS.improved_bullets_title')}
                 </h3>
                 <div className="space-y-4">
                   {r.fix_plan.improved_bullets.map((b, i) => (
@@ -809,7 +821,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <span className="material-symbols-outlined text-amber-500 text-[20px]">
                     warning
                   </span>
-                  ATS Parsing Risks
+                  {t('ATS.parsing_risks_title')}
                 </h3>
                 <div className="space-y-3">
                   {r.parsing_risks.map((pr, i) => (
@@ -839,7 +851,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                 <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                   <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                  Formatting Fixes Checklist
+                  {t('ATS.formatting_fixes_title')}
                 </h3>
                 <ul className="space-y-2">
                   {r.formatting_fixes.map((fix, i) => (
@@ -861,11 +873,9 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-12 shadow-sm text-center">
                 <CheckCircleIcon className="w-12 h-12 text-green-500 mx-auto mb-3" />
                 <h3 className="font-bold text-slate-800 dark:text-white mb-1">
-                  Formatting Looks Good!
+                  {t('ATS.formatting_good')}
                 </h3>
-                <p className="text-sm text-slate-500">
-                  No major parsing risks or formatting issues detected.
-                </p>
+                <p className="text-sm text-slate-500">{t('ATS.formatting_good_desc')}</p>
               </div>
             )}
           </div>
@@ -895,18 +905,20 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                 {/* Mode Switcher */}
                 <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl mb-6 w-full max-w-sm mx-auto">
                   <button
+                    type="button"
                     onClick={() => setInputMode('upload')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'upload' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                   >
                     <CloudArrowUpIcon className="w-5 h-5" />
-                    Upload
+                    {t('ATS.upload')}
                   </button>
                   <button
+                    type="button"
                     onClick={() => setInputMode('text')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium text-center transition-all flex items-center justify-center gap-1.5 ${inputMode === 'text' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                   >
                     <PencilSquareIcon className="w-5 h-5" />
-                    Paste Text
+                    {t('ATS.paste_text')}
                   </button>
                 </div>
 
@@ -930,10 +942,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                          Extracting text from file...
+                          {t('ATS.extracting_text')}
                         </h3>
                         <p className="text-sm text-slate-500">
-                          {selectedFile?.name || 'Processing...'}
+                          {selectedFile?.name || t('ATS.processing')}
                         </p>
                       </div>
                     ) : isAnalyzing ? (
@@ -942,10 +954,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           <ArrowPathIcon className="w-5 h-5 text-primary animate-spin" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                          Analyzing CV...
+                          {t('ATS.analyzing_cv')}
                         </h3>
                         <p className="text-sm text-slate-500">
-                          {selectedFile?.name || 'Processing...'}
+                          {selectedFile?.name || t('ATS.processing')}
                         </p>
                       </div>
                     ) : selectedFile ? (
@@ -966,7 +978,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                           {(selectedFile.size / 1024).toFixed(1)} KB
                         </p>
                         <p className="text-sm text-primary cursor-pointer hover:underline">
-                          Click to upload a different file
+                          {t('ATS.click_upload_different')}
                         </p>
                       </div>
                     ) : (
@@ -976,14 +988,16 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                            Upload your CV
+                            {t('ATS.upload_cv')}
                           </h3>
                           <p className="text-sm text-slate-500 mt-1">
-                            Drag & drop or{' '}
-                            <span className="text-primary font-medium hover:underline">browse</span>
+                            {t('ATS.drag_drop')}{' '}
+                            <span className="text-primary font-medium hover:underline">
+                              {t('ATS.browse')}
+                            </span>
                           </p>
                         </div>
-                        <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 5MB</p>
+                        <p className="text-xs text-slate-400">{t('ATS.file_types')}</p>
                       </>
                     )}
                   </div>
@@ -994,13 +1008,13 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         htmlFor="cv-text-input"
                         className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
                       >
-                        Your CV / Resume Text
+                        {t('ATS.cv_text_label')}
                       </label>
                       <textarea
                         id="cv-text-input"
                         value={cvText}
                         onChange={(e) => setCvText(e.target.value)}
-                        placeholder="Paste your CV or resume text here..."
+                        placeholder={t('ATS.cv_placeholder')}
                         className="w-full h-32 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
                       />
                     </div>
@@ -1009,17 +1023,18 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         htmlFor="job-desc-input"
                         className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
                       >
-                        Job Description (Optional)
+                        {t('ATS.job_desc_label')}
                       </label>
                       <textarea
                         id="job-desc-input"
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
-                        placeholder="Paste the job description for targeted analysis..."
+                        placeholder={t('ATS.job_desc_placeholder')}
                         className="w-full h-24 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
                       />
                     </div>
                     <button
+                      type="button"
                       onClick={handleAnalyzeCV}
                       disabled={isAnalyzing || !cvText.trim()}
                       className="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
@@ -1027,12 +1042,12 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       {isAnalyzing ? (
                         <>
                           <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
-                          Analyzing...
+                          {t('ATS.analyzing')}
                         </>
                       ) : (
                         <>
                           <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
-                          Analyze CV
+                          {t('ATS.analyze_cv_btn')}
                         </>
                       )}
                     </button>
@@ -1046,7 +1061,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                       <div>
                         <h4 className="font-medium text-red-700 dark:text-red-400">
-                          Analysis Failed
+                          {t('ATS.analysis_failed')}
                         </h4>
                         <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
                       </div>
@@ -1062,17 +1077,18 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                         htmlFor="job-desc-upload"
                         className="text-xs font-semibold text-slate-500 uppercase mb-2 block"
                       >
-                        Target Job Description (Optional)
+                        {t('ATS.target_job')}
                       </label>
                       <textarea
                         id="job-desc-upload"
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
-                        placeholder="Paste a job description for targeted keyword analysis..."
+                        placeholder={t('ATS.paste_job_desc')}
                         className="w-full h-24 p-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm resize-none focus:bg-white dark:focus:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition"
                       />
                     </div>
                     <button
+                      type="button"
                       onClick={handleAnalyzeCV}
                       disabled={isExtracting || isAnalyzing || !cvText.trim()}
                       className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
@@ -1080,17 +1096,17 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                       {isExtracting ? (
                         <>
                           <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
-                          Extracting text...
+                          {t('ATS.extracting_text_short')}
                         </>
                       ) : isAnalyzing ? (
                         <>
                           <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
-                          Analyzing...
+                          {t('ATS.analyzing')}
                         </>
                       ) : (
                         <>
                           <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
-                          Analyze CV
+                          {t('ATS.analyze_cv_btn')}
                         </>
                       )}
                     </button>
@@ -1113,7 +1129,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   <div className="flex items-center gap-2 mb-4">
                     <ClockIcon className="w-[18px] h-[18px] text-indigo-500" />
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                      Recent Scans
+                      {t('ATS.recent_scans')}
                     </h3>
                   </div>
 
@@ -1124,21 +1140,21 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                   ) : historyError ? (
                     <div className="text-center py-6">
                       <ExclamationCircleIcon className="w-6 h-6 mx-auto text-red-300 mb-2" />
-                      <p className="text-sm text-gray-400 mb-2">Failed to load history</p>
+                      <p className="text-sm text-gray-400 mb-2">{t('ATS.history_load_failed')}</p>
                       <button
                         type="button"
                         onClick={fetchHistory}
                         className="text-xs text-indigo-500 hover:text-indigo-600 font-medium"
                       >
-                        Retry
+                        {t('ATS.retry')}
                       </button>
                     </div>
                   ) : scanHistory.length === 0 ? (
                     <div className="text-center py-6">
                       <DocumentTextIcon className="w-6 h-6 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                      <p className="text-sm text-gray-400">No scans yet</p>
+                      <p className="text-sm text-gray-400">{t('ATS.no_scans_title')}</p>
                       <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
-                        Upload your CV to get started!
+                        {t('ATS.upload_to_start')}
                       </p>
                     </div>
                   ) : (
@@ -1158,9 +1174,11 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                             <div className="min-w-0">
                               <p
                                 className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[130px]"
-                                title={scan.fileName || scan.jobRole || 'CV Analysis'}
+                                title={
+                                  scan.fileName || scan.jobRole || t('ATS.cv_analysis_default')
+                                }
                               >
-                                {scan.fileName || scan.jobRole || 'CV Analysis'}
+                                {scan.fileName || scan.jobRole || t('ATS.cv_analysis_default')}
                               </p>
                               <p className="text-xs text-gray-400 flex items-center gap-1">
                                 <ClockIcon className="w-3 h-3" />
@@ -1173,7 +1191,7 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
                               type="button"
                               onClick={(e) => handleDeleteScan(scan.id, e)}
                               className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 transition-all rounded"
-                              title="Delete scan"
+                              title={t('ATS.delete_scan_tooltip')}
                             >
                               <TrashIcon className="w-3.5 h-3.5" />
                             </button>
@@ -1197,11 +1215,10 @@ export default function CVChecker({ navigateTo }: NavigationProps) {
 
                 <div className="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-xl p-5">
                   <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-1">
-                    💡 Pro Tip
+                    💡 {t('ATS.pro_tip')}
                   </h4>
                   <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-                    Paste the target job description for a semantic match analysis — not just
-                    keyword matching.
+                    {t('ATS.pro_tip_text')}
                   </p>
                 </div>
               </div>

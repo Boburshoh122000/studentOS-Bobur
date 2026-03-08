@@ -26,6 +26,7 @@ interface AuthContextType {
     remaining_attempts?: number;
     blocked?: boolean;
     retryAfterMinutes?: number;
+    email?: string;
   }>;
   register: (
     email: string,
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         remaining_attempts: extra?.remaining_attempts as number | undefined,
         blocked: extra?.blocked as boolean | undefined,
         retryAfterMinutes: extra?.retryAfterMinutes as number | undefined,
+        email: extra?.email as string | undefined,
       };
     }
 

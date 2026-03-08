@@ -77,7 +77,13 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
     if (!result.success) {
       console.error('[SignIn] Login failed:', result);
 
-      if (result.blocked) {
+      if (result.error === 'email_not_verified') {
+        toast(t('Auth.email_not_verified_toast'), { icon: '⚠️' });
+        navigate(`/signup/step-1?email=${encodeURIComponent(result.email ?? email)}&verify=true`, {
+          replace: false,
+        });
+        return;
+      } else if (result.blocked) {
         setIsBlocked(true);
         setBlockMinutes(result.retryAfterMinutes ?? 30);
         setError('');

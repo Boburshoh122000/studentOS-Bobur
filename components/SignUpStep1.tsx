@@ -34,6 +34,17 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Auto-switch to verify step when redirected from sign-in (email_not_verified flow)
+  useEffect(() => {
+    const paramEmail = searchParams.get('email');
+    const paramVerify = searchParams.get('verify');
+    if (paramVerify === 'true' && paramEmail) {
+      setEmail(paramEmail);
+      setStep('verify');
+      setResendCooldown(60); // A fresh code was just sent by the login endpoint
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Resend cooldown timer
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -75,27 +86,27 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
     // Validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('Auth.passwords_dont_match'));
       return;
     }
 
     if (password.length < 10) {
-      setError('Password must be at least 10 characters');
+      setError(t('Auth.password_min_length'));
       return;
     }
 
     if (!/[A-Z]/.test(password)) {
-      setError('Password must contain at least one uppercase letter');
+      setError(t('Auth.password_need_uppercase'));
       return;
     }
 
     if (!/[0-9]/.test(password)) {
-      setError('Password must contain at least one number');
+      setError(t('Auth.password_need_number'));
       return;
     }
 
     if (!/[^A-Za-z0-9]/.test(password)) {
-      setError('Password must contain at least one special character');
+      setError(t('Auth.password_need_special'));
       return;
     }
 
@@ -109,11 +120,11 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         return;
       }
 
-      toast.success('Verification code sent to your email');
+      toast.success(t('Auth.code_sent_toast'));
       setResendCooldown(60);
       setStep('verify');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send verification code';
+      const message = err instanceof Error ? err.message : t('Auth.failed_send_code');
       setError(message);
     } finally {
       setIsLoading(false);
@@ -127,7 +138,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
     const otpCode = otpDigits.join('');
     if (otpCode.length !== OTP_LENGTH) {
-      setError('Please enter the full verification code');
+      setError(t('Auth.enter_full_code'));
       return;
     }
 
@@ -151,7 +162,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
 
-        toast.success('Account created successfully!');
+        toast.success(t('Auth.account_created'));
 
         const redirectTo = searchParams.get('redirect');
         if (redirectTo) {
@@ -161,7 +172,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Verification failed. Please try again.';
+      const message = err instanceof Error ? err.message : t('Auth.verification_failed');
       setError(message);
     } finally {
       setIsVerifying(false);
@@ -179,12 +190,12 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         setError(otpError);
         return;
       }
-      toast.success('New code sent!');
+      toast.success(t('Auth.new_code_sent'));
       setResendCooldown(60);
       setOtpDigits(Array(OTP_LENGTH).fill(''));
       inputRefs.current[0]?.focus();
     } catch {
-      setError('Failed to resend code');
+      setError(t('Auth.failed_resend'));
     }
   };
 
@@ -245,9 +256,9 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
   return (
     <AuthLayout
-      title={step === 'register' ? t('Auth.sign_up') : 'Verify your email'}
+      title={step === 'register' ? t('Auth.sign_up') : t('Auth.verify_email')}
       subtitle={
-        step === 'register' ? t('Auth.get_started_free') : `We sent a 6-digit code to ${email}`
+        step === 'register' ? t('Auth.get_started_free') : t('Auth.code_sent_to', { email })
       }
       footerText={step === 'register' ? t('Auth.already_have_account') : undefined}
       footerLinkText={step === 'register' ? t('Auth.sign_in') : undefined}
@@ -526,7 +537,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Sending code...
+                  {t('Auth.sending_code')}
                 </span>
               ) : (
                 t('Auth.create_account')
@@ -600,10 +611,10 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Verifying...
+                {t('Auth.verifying')}
               </span>
             ) : (
-              'Verify & Create Account'
+              t('Auth.verify_create_account')
             )}
           </button>
 
@@ -614,7 +625,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
               onClick={handleBackToRegister}
               className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
             >
-              ← Back to Sign Up
+              {t('Auth.back_to_signup')}
             </button>
             <button
               type="button"
@@ -622,7 +633,9 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
               disabled={resendCooldown > 0}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
             >
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code'}
+              {resendCooldown > 0
+                ? t('Auth.resend_in', { count: resendCooldown })
+                : t('Auth.resend_code')}
             </button>
           </div>
         </form>
