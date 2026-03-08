@@ -163,7 +163,17 @@ export const api = new ApiClient(API_URL);
 
 // Auth API
 export const authApi = {
-  register: async (data: { email: string; password: string; fullName: string }) => {
+  sendOtp: (data: { email: string }) => api.post<{ message: string }>('/auth/send-otp', data),
+
+  verifyOtp: (data: { email: string; code: string }) =>
+    api.post<{ verified: boolean }>('/auth/verify-otp', data),
+
+  register: async (data: {
+    email: string;
+    password: string;
+    fullName: string;
+    otpCode?: string;
+  }) => {
     console.log('[Auth] Attempting registration for:', data.email);
     const result = await api.post<{ user: any; accessToken: string; refreshToken: string }>(
       '/auth/register',

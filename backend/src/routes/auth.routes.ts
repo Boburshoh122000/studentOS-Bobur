@@ -60,6 +60,7 @@ const registerSchema = z.object({
       .regex(/[0-9]/, 'Password must contain at least one number')
       .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
     fullName: z.string().min(2, 'Name must be at least 2 characters'),
+    otpCode: z.string().length(6).optional(),
   }),
 });
 
@@ -88,10 +89,112 @@ const onboardingSchema = z.object({
   }),
 });
 
-// Register
+// ─── OTP In-Memory Store ───────────────────────────────────────
+// key: email → { code, expiresAt }
+const otpStore = new Map<string, { code: string; expiresAt: number }>();
+const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+const OTP_LENGTH = 6;
+
+function generateOTP(): string {
+  return Array.from({ length: OTP_LENGTH }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+// Send OTP
+const sendOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email'),
+  }),
+});
+
+router.post('/send-otp', validate(sendOtpSchema), async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      res.status(409).json({ error: 'An account with this email already exists' });
+      return;
+    }
+
+    // Rate-limit: if an OTP was sent < 60s ago, reject
+    const existing = otpStore.get(email);
+    if (existing && existing.expiresAt - OTP_EXPIRY_MS + 60_000 > Date.now()) {
+      res.status(429).json({ error: 'Please wait before requesting another code' });
+      return;
+    }
+
+    const code = generateOTP();
+    otpStore.set(email, { code, expiresAt: Date.now() + OTP_EXPIRY_MS });
+
+    // Send via email
+    await sendEmail({
+      to: email,
+      subject: `${code} — Your StudentOS Verification Code`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; text-align: center;">
+          <h1 style="color: #2D4DE0; font-size: 24px;">Verify your email</h1>
+          <p style="color: #555; font-size: 16px;">Enter this code to complete your sign-up:</p>
+          <div style="background: #f5f5f5; border-radius: 12px; padding: 24px; margin: 24px 0;">
+            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1e293b;">${code}</span>
+          </div>
+          <p style="color: #999; font-size: 13px;">This code expires in 10 minutes.</p>
+        </div>
+      `,
+      text: `Your StudentOS verification code is: ${code}`,
+    });
+
+    res.json({ message: 'Verification code sent' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Verify OTP (standalone check — no account creation)
+const verifyOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    code: z.string().length(OTP_LENGTH),
+  }),
+});
+
+router.post('/verify-otp', validate(verifyOtpSchema), async (req, res, next) => {
+  try {
+    const { email, code } = req.body;
+    const entry = otpStore.get(email);
+
+    if (!entry || entry.code !== code) {
+      res.status(400).json({ error: 'Invalid verification code' });
+      return;
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      otpStore.delete(email);
+      res.status(400).json({ error: 'Code has expired. Please request a new one.' });
+      return;
+    }
+
+    // Don't delete yet — register route will also verify and delete
+    res.json({ verified: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Register (now requires OTP)
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, fullName } = req.body;
+    const { email, password, fullName, otpCode } = req.body;
+
+    // Verify OTP if provided
+    if (otpCode) {
+      const entry = otpStore.get(email);
+      if (!entry || entry.code !== otpCode || Date.now() > entry.expiresAt) {
+        res.status(400).json({ error: 'Invalid or expired verification code' });
+        return;
+      }
+      otpStore.delete(email); // OTP used — clean up
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
