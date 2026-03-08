@@ -182,7 +182,7 @@ export default function Sidebar({
             className={`flex flex-col overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}
           >
             <span className="text-sm font-bold text-text-main dark:text-white truncate">
-              My Portfolio
+              {t('Header.my_portfolio')}
             </span>
           </div>
         </div>

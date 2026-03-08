@@ -52,13 +52,49 @@ router.get('/me', async (req: AuthenticatedRequest, res, next) => {
 // Update employer profile
 router.patch('/me', async (req: AuthenticatedRequest, res, next) => {
   try {
+    // Whitelist only known EmployerProfile fields to prevent Prisma unknown-field errors
+    const {
+      companyName,
+      tagline,
+      description,
+      industry,
+      companySize,
+      logoUrl,
+      website,
+      linkedIn,
+      socialLinks,
+      address,
+      city,
+      state,
+      country,
+    } = req.body;
+
+    const data: Record<string, any> = {};
+    for (const [k, v] of Object.entries({
+      companyName,
+      tagline,
+      description,
+      industry,
+      companySize,
+      logoUrl,
+      website,
+      linkedIn,
+      socialLinks,
+      address,
+      city,
+      state,
+      country,
+    })) {
+      if (v !== undefined) data[k] = v;
+    }
+
     const profile = await prisma.employerProfile.upsert({
       where: { userId: req.user!.id },
-      update: req.body,
+      update: data,
       create: {
         userId: req.user!.id,
-        ...req.body,
-        companyName: req.body.companyName || 'My Company', // Fallback
+        ...data,
+        companyName: (data.companyName as string) || 'My Company',
       },
     });
 

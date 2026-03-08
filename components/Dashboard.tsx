@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { userApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -18,40 +19,41 @@ import {
   UserIcon,
 } from '@heroicons/react/24/solid';
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+const STATUS_CONFIG: Record<string, { labelKey: string; bg: string; text: string }> = {
   NEW: {
-    label: 'Applied',
+    labelKey: 'Dashboard.status_applied',
     bg: 'bg-blue-100 dark:bg-blue-900/30',
     text: 'text-blue-700 dark:text-blue-300',
   },
   SCREENING: {
-    label: 'Screening',
+    labelKey: 'Dashboard.status_screening',
     bg: 'bg-yellow-100 dark:bg-yellow-900/30',
     text: 'text-yellow-700 dark:text-yellow-300',
   },
   INTERVIEW: {
-    label: 'Interview',
+    labelKey: 'Dashboard.status_interview',
     bg: 'bg-purple-100 dark:bg-purple-900/30',
     text: 'text-purple-700 dark:text-purple-300',
   },
   OFFER: {
-    label: 'Offer',
+    labelKey: 'Dashboard.status_offer',
     bg: 'bg-green-100 dark:bg-green-900/30',
     text: 'text-green-700 dark:text-green-300',
   },
   REJECTED: {
-    label: 'Rejected',
+    labelKey: 'Dashboard.status_rejected',
     bg: 'bg-red-100 dark:bg-red-900/30',
     text: 'text-red-700 dark:text-red-300',
   },
   WITHDRAWN: {
-    label: 'Withdrawn',
+    labelKey: 'Dashboard.status_withdrawn',
     bg: 'bg-gray-100 dark:bg-gray-800',
     text: 'text-gray-600 dark:text-gray-400',
   },
 };
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   // Data State
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -92,9 +94,9 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10 gap-3">
       <div className="flex flex-col justify-center">
         <h2 className="text-2xl font-bold text-text-main dark:text-white">
-          Welcome back, {firstName}!
+          {t('Dashboard.welcome_back', { name: firstName })}
         </h2>
-        <p className="text-sm text-text-sub">Here is your daily briefing.</p>
+        <p className="text-sm text-text-sub">{t('Dashboard.daily_briefing')}</p>
       </div>
       <div className="flex items-center gap-3">
         {/* Search Input — icon properly inside */}
@@ -102,7 +104,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             className="pl-10 pr-4 py-2 w-64 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-all shadow-sm dark:text-white"
-            placeholder="Search tools, jobs..."
+            placeholder={t('Dashboard.search_placeholder')}
             type="text"
           />
         </div>
@@ -132,7 +134,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
-        <div className="flex h-full items-center justify-center">Loading dashboard...</div>
+        <div className="flex h-full items-center justify-center">{t('Dashboard.loading')}</div>
       </DashboardLayout>
     );
   }
@@ -155,17 +157,17 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                        Active Job Applications
+                        {t('Dashboard.active_applications')}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Your current pipeline status
+                        {t('Dashboard.pipeline_status')}
                       </p>
                     </div>
                     <button
                       className="text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1"
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     >
-                      View Board <ArrowRightIcon className="w-4 h-4" />
+                      {t('Dashboard.view_board')} <ArrowRightIcon className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -174,7 +176,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                           <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                            Applied
+                            {t('Dashboard.status_applied')}
                           </span>
                         </div>
                         <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">
@@ -188,14 +190,16 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           <span className="text-sm font-medium text-green-900 dark:text-green-200">
-                            Completed Habits
+                            {t('Dashboard.completed_habits')}
                           </span>
                         </div>
                         <span className="text-3xl font-bold text-green-700 dark:text-green-300">
                           {stats.habitsCompletedToday}
                         </span>
                       </div>
-                      <p className="text-xs text-green-600 dark:text-green-400 z-10">Today</p>
+                      <p className="text-xs text-green-600 dark:text-green-400 z-10">
+                        {t('Dashboard.today')}
+                      </p>
                       <CheckCircleIcon className="w-20 h-20 text-green-200 dark:text-green-800 transition-transform" />
                     </div>
                   </div>
@@ -205,9 +209,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 <div className="md:col-span-1 bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-between relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4 z-10">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                      Last ATS
-                      <br />
-                      Evaluation
+                      {t('Dashboard.last_ats_evaluation')}
                     </h3>
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
                       <ClipboardDocumentCheckIcon className="w-5 h-5" />
@@ -244,7 +246,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                     onClick={() => navigateTo(Screen.ATS_CHECKER)}
                     className="mt-4 w-full py-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
                   >
-                    View Details
+                    {t('Dashboard.view_details')}
                   </button>
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
                 </div>
@@ -254,13 +256,13 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Recent Applications
+                    {t('Dashboard.recent_applications')}
                   </h3>
                   <button
                     onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                     className="text-sm font-medium text-gray-500 hover:text-primary transition-colors"
                   >
-                    View All
+                    {t('Dashboard.view_all')}
                   </button>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -291,14 +293,14 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                           <span
                             className={`text-xs font-semibold whitespace-nowrap px-2.5 py-1 rounded-full ${badge.bg} ${badge.text}`}
                           >
-                            {badge.label}
+                            {t(badge.labelKey)}
                           </span>
                         </div>
                       );
                     })
                   ) : (
                     <div className="text-center py-6 text-gray-500 text-sm">
-                      No applications yet. Go apply!
+                      {t('Dashboard.no_applications')}
                     </div>
                   )}
                 </div>
@@ -311,10 +313,10 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                      Career Progress
+                      {t('Dashboard.career_progress')}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Your journey to success
+                      {t('Dashboard.your_journey')}
                     </p>
                   </div>
                   <button
@@ -332,7 +334,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-purple-900 dark:text-purple-200">
-                        Profile Strength
+                        {t('Dashboard.profile_strength')}
                       </span>
                       <span className="text-sm font-bold text-purple-600 dark:text-purple-300">
                         {stats.profileCompletion}%
@@ -350,7 +352,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-xl border border-green-100 dark:border-green-800/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-green-900 dark:text-green-200">
-                        CV ATS Score
+                        {t('Dashboard.cv_ats_score')}
                       </span>
                       <span className="text-sm font-bold text-green-600 dark:text-green-300">
                         {stats.atsScore}%
@@ -367,7 +369,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   {/* Quick Actions */}
                   <div className="pt-4 space-y-2">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-                      Quick Actions
+                      {t('Dashboard.quick_actions')}
                     </p>
                     <button
                       onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
@@ -376,9 +378,11 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       <TrophyIcon className="w-5 h-5 text-amber-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          Find Scholarships
+                          {t('Dashboard.find_scholarships')}
                         </p>
-                        <p className="text-xs text-gray-500">Browse opportunities</p>
+                        <p className="text-xs text-gray-500">
+                          {t('Dashboard.browse_opportunities')}
+                        </p>
                       </div>
                     </button>
                     <button
@@ -388,9 +392,9 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       <DocumentTextIcon className="w-5 h-5 text-blue-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          Improve Your CV
+                          {t('Dashboard.improve_cv')}
                         </p>
-                        <p className="text-xs text-gray-500">Boost ATS score</p>
+                        <p className="text-xs text-gray-500">{t('Dashboard.boost_ats_score')}</p>
                       </div>
                     </button>
 
@@ -400,10 +404,10 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         <CheckCircleIcon className="w-5 h-5 text-green-500" />
                         <div>
                           <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                            Telegram Connected
+                            {t('Dashboard.telegram_connected')}
                           </p>
                           <p className="text-xs text-green-600 dark:text-green-400">
-                            Receiving notifications
+                            {t('Dashboard.receiving_notifications')}
                           </p>
                         </div>
                       </div>
@@ -422,8 +426,12 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                           <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                         </svg>
                         <div>
-                          <p className="text-sm font-medium text-[#229ED9]">Connect Telegram</p>
-                          <p className="text-xs text-[#229ED9]/70">Get alerts & track habits</p>
+                          <p className="text-sm font-medium text-[#229ED9]">
+                            {t('Dashboard.connect_telegram')}
+                          </p>
+                          <p className="text-xs text-[#229ED9]/70">
+                            {t('Dashboard.telegram_alerts')}
+                          </p>
                         </div>
                       </a>
                     )}
@@ -436,17 +444,16 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
           {/* Profile Completion Banner */}
           <div className="bg-gray-900 dark:bg-black text-white rounded-xl p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
             <div className="relative z-10 max-w-lg">
-              <h3 className="text-xl font-bold mb-2">Complete your Profile</h3>
+              <h3 className="text-xl font-bold mb-2">{t('Dashboard.complete_profile_banner')}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Your profile is {stats.profileCompletion}% complete. Add more details to increase
-                visibility.
+                {t('Dashboard.profile_x_complete', { percent: stats.profileCompletion })}
               </p>
             </div>
             <button
               className="relative z-10 px-6 py-2.5 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors whitespace-nowrap"
               onClick={() => navigateTo(Screen.PROFILE)}
             >
-              Update Profile
+              {t('Dashboard.update_profile')}
             </button>
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           </div>

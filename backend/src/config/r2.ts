@@ -1,27 +1,22 @@
-import { S3Client } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 let r2Client: S3Client | null = null;
 
+export const R2_BUCKET = process.env.R2_BUCKET_NAME || 'studentos';
+export const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+
 /**
- * Get Cloudflare R2 client (S3-compatible).
+ * Get or create the R2 S3-compatible client.
  * Returns null if R2 env vars are not configured.
- *
- * Required env vars:
- *   R2_ACCOUNT_ID       — Cloudflare account ID
- *   R2_ACCESS_KEY_ID    — R2 API token access key ID
- *   R2_SECRET_ACCESS_KEY — R2 API token secret
- *   R2_BUCKET_NAME      — bucket name
- *   R2_PUBLIC_URL       — public base URL for serving files
- *                         (e.g. https://pub-xxx.r2.dev or custom domain)
  */
-export const getR2Client = (): S3Client | null => {
+export function getR2Client(): S3Client | null {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
   if (!accountId || !accessKeyId || !secretAccessKey) {
     console.warn(
-      '[R2] R2_ACCOUNT_ID, R2_ACCESS_KEY_ID or R2_SECRET_ACCESS_KEY not set — storage uploads disabled'
+      '[R2] R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, or R2_SECRET_ACCESS_KEY not set — storage uploads disabled'
     );
     return null;
   }
@@ -30,15 +25,64 @@ export const getR2Client = (): S3Client | null => {
     r2Client = new S3Client({
       region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      credentials: { accessKeyId, secretAccessKey },
     });
   }
 
   return r2Client;
-};
+}
 
-export const R2_BUCKET = process.env.R2_BUCKET_NAME || 'studentos';
-export const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+/**
+ * Upload a file to Cloudflare R2.
+ * @returns The public URL of the uploaded file, or null on failure.
+ */
+export async function uploadToR2(
+  key: string,
+  body: Buffer,
+  contentType: string
+): Promise<string | null> {
+  const client = getR2Client();
+  if (!client) return null;
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      })
+    );
+
+    if (!R2_PUBLIC_URL) {
+      console.warn('[R2] R2_PUBLIC_URL not set — cannot build public URL');
+      return null;
+    }
+
+    return `${R2_PUBLIC_URL}/${key}`;
+  } catch (error) {
+    console.error('[R2] Upload failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Delete a file from Cloudflare R2.
+ */
+export async function deleteFromR2(key: string): Promise<boolean> {
+  const client = getR2Client();
+  if (!client) return false;
+
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: key,
+      })
+    );
+    return true;
+  } catch (error) {
+    console.error('[R2] Delete failed:', error);
+    return false;
+  }
+}

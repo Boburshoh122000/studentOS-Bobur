@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { signInWithGoogle, isSupabaseConfigured } from '../src/lib/supabase';
@@ -8,6 +9,7 @@ import AuthLayout from './AuthLayout';
 
 export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { login, isAuthenticated, user } = useAuth();
 
@@ -91,9 +93,9 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
 
   return (
     <AuthLayout
-      title="Sign in"
-      footerText="Don't have an account?"
-      footerLinkText="Sign up"
+      title={t('Auth.sign_in')}
+      footerText={t('Auth.dont_have_account')}
+      footerLinkText={t('Auth.sign_up')}
       footerLinkTo="/signup/step-1"
     >
       {/* Blocked Banner */}
@@ -101,13 +103,9 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
           <span className="text-xl shrink-0">🔒</span>
           <div>
-            <p className="text-sm font-semibold text-red-700">Account temporarily locked</p>
+            <p className="text-sm font-semibold text-red-700">{t('Auth.account_locked')}</p>
             <p className="text-sm text-red-600 mt-0.5">
-              Too many failed attempts. Please try again in{' '}
-              <span className="font-bold">
-                {blockMinutes} minute{blockMinutes !== 1 ? 's' : ''}
-              </span>
-              .
+              {t('Auth.too_many_failed', { minutes: blockMinutes })}
             </p>
           </div>
         </div>
@@ -119,8 +117,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
           <p className="text-sm text-red-600">{error}</p>
           {remainingAttempts !== null && remainingAttempts > 0 && (
             <p className="text-xs text-red-500 mt-1 font-medium">
-              {remainingAttempts} attempt{remainingAttempts !== 1 ? 's' : ''} remaining before
-              temporary lock
+              {t('Auth.attempts_left_before_lock', { count: remainingAttempts })}
             </p>
           )}
         </div>
@@ -151,7 +148,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span>Connecting...</span>
+            <span>{t('Auth.connecting')}</span>
           </>
         ) : (
           <>
@@ -176,7 +173,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
                 fillOpacity="0.9"
               />
             </svg>
-            <span>Continue with Google</span>
+            <span>{t('Auth.google')}</span>
           </>
         )}
       </button>
@@ -187,7 +184,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
           <div className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-slate-400">or</span>
+          <span className="px-4 bg-white text-slate-400">{t('Auth.or')}</span>
         </div>
       </div>
 
@@ -196,7 +193,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-            Email
+            {t('Auth.email')}
           </label>
           <input
             id="email"
@@ -213,7 +210,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
         {/* Password */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-            Password
+            {t('Auth.password')}
           </label>
           <div className="relative">
             <input
@@ -267,7 +264,7 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
             to="/forgot-password"
             className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
           >
-            Forgot password?
+            {t('Auth.forgot_password')}
           </Link>
         </div>
 
@@ -295,12 +292,12 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Signing in...
+              {t('Auth.signing_in')}
             </span>
           ) : isBlocked ? (
-            `Locked for ${blockMinutes} min`
+            t('Auth.locked_for', { minutes: blockMinutes })
           ) : (
-            'Sign In'
+            t('Auth.sign_in')
           )}
         </button>
       </form>

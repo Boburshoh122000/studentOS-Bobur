@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -23,20 +24,21 @@ interface AdminSidebarProps {
 }
 
 const NAV_ITEMS = [
-  { screen: Screen.ADMIN_DASHBOARD, label: 'Dashboard', Icon: Squares2X2Icon },
-  { screen: Screen.ADMIN_EMPLOYERS, label: 'Employers', Icon: BriefcaseIcon },
-  { screen: Screen.ADMIN_TOOLS, label: 'Tools', Icon: CreditCardIcon },
-  { screen: Screen.ADMIN_USERS, label: 'Users', Icon: UsersIcon },
-  { screen: Screen.ADMIN_SCHOLARSHIPS, label: 'Scholarships', Icon: AcademicCapIcon },
-  { screen: Screen.ADMIN_BLOG, label: 'Blog Management', Icon: DocumentTextIcon },
-  { screen: Screen.ADMIN_ROLES, label: 'Roles & Permissions', Icon: ShieldCheckIcon },
-  { screen: Screen.ADMIN_NOTIFICATIONS, label: 'Notifications', Icon: BellIcon },
-  { screen: Screen.ADMIN_TEAM, label: 'Team Management', Icon: UsersIcon },
-  { screen: Screen.ADMIN_DEMOGRAPHICS, label: 'Demographics', Icon: ChartPieIcon },
+  { screen: Screen.ADMIN_DASHBOARD, labelKey: 'Admin.dashboard', Icon: Squares2X2Icon },
+  { screen: Screen.ADMIN_EMPLOYERS, labelKey: 'Admin.employers', Icon: BriefcaseIcon },
+  { screen: Screen.ADMIN_TOOLS, labelKey: 'Admin.tools', Icon: CreditCardIcon },
+  { screen: Screen.ADMIN_USERS, labelKey: 'Admin.users', Icon: UsersIcon },
+  { screen: Screen.ADMIN_SCHOLARSHIPS, labelKey: 'Admin.scholarships', Icon: AcademicCapIcon },
+  { screen: Screen.ADMIN_BLOG, labelKey: 'Admin.blog_management', Icon: DocumentTextIcon },
+  { screen: Screen.ADMIN_ROLES, labelKey: 'Admin.roles_permissions', Icon: ShieldCheckIcon },
+  { screen: Screen.ADMIN_NOTIFICATIONS, labelKey: 'Admin.notifications', Icon: BellIcon },
+  { screen: Screen.ADMIN_TEAM, labelKey: 'Admin.team_management', Icon: UsersIcon },
+  { screen: Screen.ADMIN_DEMOGRAPHICS, labelKey: 'Admin.demographics', Icon: ChartPieIcon },
 ];
 
 export default function AdminSidebar({ currentScreen, navigateTo }: AdminSidebarProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { logout } = useAuth();
   const [isSidebarLocked, setIsSidebarLocked] = useState(() => {
     try {
@@ -123,15 +125,16 @@ export default function AdminSidebar({ currentScreen, navigateTo }: AdminSidebar
                 StudentOS
               </h1>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                Admin Console
+                {t('Admin.console')}
               </p>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map(({ screen, label, Icon }) => {
+            {NAV_ITEMS.map(({ screen, labelKey, Icon }) => {
               const isActive = currentScreen === screen;
+              const label = t(labelKey);
               return (
                 <button
                   key={screen}
@@ -177,7 +180,7 @@ export default function AdminSidebar({ currentScreen, navigateTo }: AdminSidebar
                 Admin
               </p>
               <p className="text-xs text-primary dark:text-primary-light whitespace-nowrap">
-                Profile Settings
+                {t('Admin.profile_settings')}
               </p>
             </div>
           </button>
@@ -187,12 +190,20 @@ export default function AdminSidebar({ currentScreen, navigateTo }: AdminSidebar
             onClick={handleLogout}
             disabled={isLoggingOut}
             className={`flex w-full items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 p-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors justify-center ${isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={!isSidebarExpanded ? (isLoggingOut ? 'Logging out...' : 'Logout') : ''}
+            title={
+              !isSidebarExpanded
+                ? isLoggingOut
+                  ? t('Sidebar.logging_out')
+                  : t('Sidebar.log_out')
+                : ''
+            }
           >
             <span className="material-symbols-outlined text-lg">
               {isLoggingOut ? 'hourglass_empty' : 'logout'}
             </span>
-            {isSidebarExpanded && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
+            {isSidebarExpanded && (
+              <span>{isLoggingOut ? t('Sidebar.logging_out') : t('Sidebar.log_out')}</span>
+            )}
           </button>
         </div>
       </div>

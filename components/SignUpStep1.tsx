@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import { signInWithGoogle, isSupabaseConfigured } from '../src/lib/supabase';
@@ -8,6 +9,7 @@ import AuthLayout from './AuthLayout';
 
 export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -118,10 +120,10 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
   return (
     <AuthLayout
-      title="Sign up"
-      subtitle="Get started for free. No credit card required."
-      footerText="Already have an account?"
-      footerLinkText="Sign in"
+      title={t('Auth.sign_up')}
+      subtitle={t('Auth.get_started_free')}
+      footerText={t('Auth.already_have_account')}
+      footerLinkText={t('Auth.sign_in')}
       footerLinkTo="/signin"
     >
       {/* Error Message */}
@@ -156,7 +158,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span>Connecting...</span>
+            <span>{t('Auth.connecting')}</span>
           </>
         ) : (
           <>
@@ -181,7 +183,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                 fillOpacity="0.9"
               />
             </svg>
-            <span>Continue with Google</span>
+            <span>{t('Auth.google')}</span>
           </>
         )}
       </button>
@@ -192,7 +194,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
           <div className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-slate-400">or</span>
+          <span className="px-4 bg-white text-slate-400">{t('Auth.or')}</span>
         </div>
       </div>
 
@@ -201,7 +203,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         {/* Full Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 mb-2">
-            Full Name
+            {t('Auth.full_name')}
           </label>
           <input
             id="fullName"
@@ -217,7 +219,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-            Email
+            {t('Auth.email')}
           </label>
           <input
             id="email"
@@ -233,7 +235,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         {/* Password */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-            Password
+            {t('Auth.password')}
           </label>
           <div className="relative">
             <input
@@ -298,10 +300,10 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                 ))}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                {passwordStrength < 2 && 'Weak password'}
-                {passwordStrength === 2 && 'Fair password'}
-                {passwordStrength === 3 && 'Good password'}
-                {passwordStrength === 4 && 'Strong password'}
+                {passwordStrength < 2 && t('Auth.password_weak')}
+                {passwordStrength === 2 && t('Auth.password_fair')}
+                {passwordStrength === 3 && t('Auth.password_good')}
+                {passwordStrength === 4 && t('Auth.password_strong')}
               </p>
             </div>
           )}
@@ -313,7 +315,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
             htmlFor="confirmPassword"
             className="block text-sm font-medium text-slate-700 mb-2"
           >
-            Confirm Password
+            {t('Auth.confirm_password')}
           </label>
           <div className="relative">
             <input
@@ -365,7 +367,7 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
             </button>
           </div>
           {confirmPassword && password !== confirmPassword && (
-            <p className="text-xs text-red-500 mt-1">Passwords don't match</p>
+            <p className="text-xs text-red-500 mt-1">{t('Auth.passwords_dont_match')}</p>
           )}
         </div>
 
@@ -393,10 +395,10 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Creating account...
+              {t('Auth.creating_account')}
             </span>
           ) : (
-            'Create Account'
+            t('Auth.create_account')
           )}
         </button>
       </form>

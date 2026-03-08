@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -193,11 +193,11 @@ ISO_MAP['korea'] = 'kr';
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 const STUDY_LEVELS = [
-  { value: '', label: 'All Levels' },
-  { value: 'UNDERGRADUATE', label: "Bachelor's" },
-  { value: 'POSTGRADUATE', label: "Master's" },
-  { value: 'PHD', label: 'PhD' },
-  { value: 'POSTDOCTORAL', label: 'Postdoctoral' },
+  { value: '', labelKey: 'Scholarship.all_levels' },
+  { value: 'UNDERGRADUATE', labelKey: 'Scholarship.undergraduate' },
+  { value: 'POSTGRADUATE', labelKey: 'Scholarship.postgraduate' },
+  { value: 'PHD', labelKey: 'Scholarship.phd' },
+  { value: 'POSTDOCTORAL', labelKey: 'Scholarship.postgraduate' },
 ];
 
 const FIELDS = [
@@ -217,11 +217,11 @@ const FIELDS = [
 
 const SCHOLARSHIP_TYPES = ['Government', 'University', 'Private/Foundation', 'Research Grant'];
 
-const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'amount', label: 'Amount' },
-  { value: 'recent', label: 'Recent' },
+const SORT_OPTIONS: { value: SortOption; labelKey: string }[] = [
+  { value: 'relevance', labelKey: 'Scholarship.relevance' },
+  { value: 'deadline', labelKey: 'Scholarship.deadline_label' },
+  { value: 'amount', labelKey: 'Scholarship.sort_amount' },
+  { value: 'recent', labelKey: 'Scholarship.sort_recent' },
 ];
 
 const DEFAULT_FILTERS: Filters = {
@@ -335,6 +335,7 @@ function CountrySelect({
   selected: string[];
   onChange: (c: string[]) => void;
 }) {
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
 
   const list = useMemo(
@@ -355,7 +356,7 @@ function CountrySelect({
           type="text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search countries..."
+          placeholder={t('Scholarship.search_countries')}
           aria-label="Search countries"
           className="w-full pl-3 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/[0.04] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
         />
@@ -394,7 +395,9 @@ function CountrySelect({
 
       <div className="max-h-48 overflow-y-auto space-y-0.5">
         {list.length === 0 && (
-          <p className="text-[11px] text-gray-400 py-4 text-center">No results</p>
+          <p className="text-[11px] text-gray-400 py-4 text-center">
+            {t('Scholarship.no_country_results')}
+          </p>
         )}
         {list.map((c) => (
           <label
@@ -421,6 +424,7 @@ function CountrySelect({
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [all, setAll] = useState<Scholarship[]>([]);
   const [search, setSearch] = useState('');
@@ -563,7 +567,10 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
   /* ── Filter sidebar content (shared desktop + mobile) ── */
   const filterUI = (
     <>
-      <FilterSection title="Country" icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}>
+      <FilterSection
+        title={t('Scholarship.country')}
+        icon={<GlobeAltIcon className="w-4 h-4 text-gray-400" />}
+      >
         <CountrySelect
           selected={filters.countries}
           onChange={(c) => setFilters((p) => ({ ...p, countries: c }))}
@@ -571,7 +578,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       </FilterSection>
 
       <FilterSection
-        title="Study Level"
+        title={t('Scholarship.study_level')}
         icon={<AcademicCapIcon className="w-4 h-4 text-gray-400" />}
       >
         <select
@@ -582,14 +589,14 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
         >
           {STUDY_LEVELS.map((l) => (
             <option key={l.value} value={l.value}>
-              {l.label}
+              {t(l.labelKey)}
             </option>
           ))}
         </select>
       </FilterSection>
 
       <FilterSection
-        title="Field of Study"
+        title={t('Scholarship.field_of_study')}
         icon={<BookmarkIcon className="w-4 h-4 text-gray-400" />}
       >
         <div className="max-h-40 overflow-y-auto space-y-0.5">
@@ -608,7 +615,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
       </FilterSection>
 
       <FilterSection
-        title="Scholarship Type"
+        title={t('Scholarship.scholarship_type')}
         icon={<BuildingLibraryIcon className="w-4 h-4 text-gray-400" />}
       >
         <div className="space-y-0.5">
@@ -643,7 +650,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
           <TrophyIcon className="w-3.5 h-3.5 text-white dark:text-gray-900" />
         </div>
         <span className="font-semibold text-[15px] text-gray-900 dark:text-white">
-          Scholarship Finder
+          {t('Scholarship.title')}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -666,7 +673,9 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             <div className="absolute inset-0 bg-black/30" onClick={() => setMobileFilters(false)} />
             <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-white dark:bg-[#141722] flex flex-col z-50">
               <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">Filters</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {t('Scholarship.filters')}
+                </span>
                 <button
                   type="button"
                   onClick={() => setMobileFilters(false)}
@@ -684,7 +693,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                     onClick={resetFilters}
                     className="flex-1 py-2.5 rounded-lg text-[13px] font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
-                    Reset
+                    {t('Scholarship.reset')}
                   </button>
                 )}
                 <button
@@ -692,7 +701,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   onClick={applyFilters}
                   className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 rounded-lg text-[13px] transition-colors"
                 >
-                  Apply
+                  {t('Scholarship.apply_button')}
                 </button>
               </div>
             </aside>
@@ -706,7 +715,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <span className="flex items-center gap-2 text-[13px] font-semibold text-gray-900 dark:text-white">
                 <FunnelIcon className="w-3.5 h-3.5 text-gray-500" />
-                Filters
+                {t('Scholarship.filters')}
               </span>
               {hasFilters && (
                 <button
@@ -714,7 +723,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   onClick={resetFilters}
                   className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium transition-colors"
                 >
-                  Reset all
+                  {t('Scholarship.reset_all')}
                 </button>
               )}
             </div>
@@ -729,7 +738,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 onClick={applyFilters}
                 className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-[13px] font-semibold rounded-lg transition-colors"
               >
-                Apply Filters
+                {t('Scholarship.apply_filters')}
               </button>
             </div>
           </aside>
@@ -745,7 +754,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                 onClick={() => setMobileFilters(true)}
                 className="lg:hidden flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-white dark:hover:bg-white/5 transition-colors bg-white dark:bg-transparent"
               >
-                <FunnelIcon className="w-3.5 h-3.5" /> Filters
+                <FunnelIcon className="w-3.5 h-3.5" /> {t('Scholarship.filters')}
                 {hasFilters && (
                   <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center ml-1">
                     {filters.countries.length +
@@ -759,7 +768,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <div className="relative flex-1 max-w-lg w-full">
                 <input
                   className="w-full h-9 pl-4 pr-9 text-[13px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141722] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all"
-                  placeholder="Search by name, university, country..."
+                  placeholder={t('Scholarship.search')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -782,7 +791,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   className="flex items-center gap-2 px-3 h-9 text-[13px] font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141722] border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 transition-colors"
                 >
                   <ArrowsUpDownIcon className="w-3.5 h-3.5" />
-                  {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+                  {t(SORT_OPTIONS.find((o) => o.value === sortBy)?.labelKey ?? '')}
                   <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                 </button>
                 {showSort && (
@@ -801,7 +810,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                             : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                         }`}
                       >
-                        {o.label}
+                        {t(o.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -831,10 +840,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
               <>
                 <div className="flex items-center justify-between mb-5">
                   <p className="text-[13px] text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {display.length}
-                    </span>{' '}
-                    scholarships found
+                    {t('Scholarship.scholarships_found', { count: display.length })}
                   </p>
                   {applied && (
                     <button
@@ -842,7 +848,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                       onClick={resetFilters}
                       className="text-[12px] text-gray-400 hover:text-gray-700 dark:hover:text-white font-medium flex items-center gap-1 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" /> Clear filters
+                      <XMarkIcon className="w-3 h-3" /> {t('Scholarship.clear_filters')}
                     </button>
                   )}
                 </div>
@@ -850,15 +856,17 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <div className="text-center py-20">
                     <TrophyIcon className="w-9 h-9 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
                     <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
-                      No matches
+                      {t('Scholarship.no_matches')}
                     </p>
-                    <p className="text-[13px] text-gray-400 mb-5">Try widening your filters.</p>
+                    <p className="text-[13px] text-gray-400 mb-5">
+                      {t('Scholarship.widen_filters')}
+                    </p>
                     <button
                       type="button"
                       onClick={resetFilters}
                       className="text-[13px] text-gray-900 dark:text-white font-medium hover:underline"
                     >
-                      Reset filters
+                      {t('Scholarship.reset_filters')}
                     </button>
                   </div>
                 ) : (
@@ -881,7 +889,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <section>
                     <SectionHead
                       icon={<FireIcon className="w-4 h-4 text-orange-400" />}
-                      title="Trending Scholarships"
+                      title={t('Scholarship.trending_scholarships')}
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {trending.map((s) => (
@@ -900,7 +908,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <section>
                     <SectionHead
                       icon={<ClockIcon className="w-4 h-4 text-red-400" />}
-                      title="Upcoming Deadlines"
+                      title={t('Scholarship.upcoming_deadlines')}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {upcoming.map((s) => (
@@ -920,7 +928,7 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <section>
                     <SectionHead
                       icon={<AcademicCapIcon className="w-4 h-4 text-gray-400" />}
-                      title="All Scholarships"
+                      title={t('Scholarship.all_scholarships')}
                       count={active.length}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -940,10 +948,10 @@ export default function ScholarshipFinder({ navigateTo }: NavigationProps) {
                   <div className="text-center py-20">
                     <TrophyIcon className="w-9 h-9 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
                     <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">
-                      No scholarships yet
+                      {t('Scholarship.no_scholarships_yet')}
                     </p>
                     <p className="text-[13px] text-gray-400">
-                      They'll appear once added by an admin.
+                      {t('Scholarship.scholarships_coming_soon')}
                     </p>
                   </div>
                 )}
@@ -1003,6 +1011,7 @@ function Card({
   onSelect: () => void;
   showDeadline?: boolean;
 }) {
+  const { t } = useTranslation();
   const days = daysUntil(s.deadline);
 
   return (
@@ -1021,7 +1030,7 @@ function Card({
         <div className="flex items-center gap-2">
           {s.isTrending && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-500/20 rounded-md text-[10px] font-semibold">
-              <FireIcon className="w-3 h-3" /> Trending
+              <FireIcon className="w-3 h-3" /> {t('Scholarship.trending_badge')}
             </span>
           )}
           <button
@@ -1052,7 +1061,9 @@ function Card({
 
       {/* Description */}
       <p className="text-[12px] text-gray-400 leading-relaxed mb-4 line-clamp-2 min-h-[2.5em]">
-        {s.description && s.description.length > 3 ? s.description : 'No description available.'}
+        {s.description && s.description.length > 3
+          ? s.description
+          : t('Scholarship.no_description')}
       </p>
 
       {/* Tags */}
@@ -1094,10 +1105,12 @@ function Card({
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-white hover:border-transparent transition-all duration-200"
           >
-            Apply <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            {t('Scholarship.apply_link')} <ArrowTopRightOnSquareIcon className="w-3 h-3" />
           </a>
         ) : (
-          <span className="text-[11px] text-gray-300 dark:text-gray-600">No link</span>
+          <span className="text-[11px] text-gray-300 dark:text-gray-600">
+            {t('Scholarship.no_link')}
+          </span>
         )}
       </div>
     </div>
@@ -1115,6 +1128,7 @@ function ScholarshipModal({
   scholarship: Scholarship;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const days = daysUntil(s.deadline);
 
   return (
@@ -1157,7 +1171,7 @@ function ScholarshipModal({
             {s.description && (
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <BookmarkIcon className="w-4 h-4 text-primary" /> Description
+                  <BookmarkIcon className="w-4 h-4 text-primary" /> {t('Scholarship.description')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                   {s.description}
@@ -1169,7 +1183,8 @@ function ScholarshipModal({
             {s.eligibility && (
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <AcademicCapIcon className="w-4 h-4 text-indigo-500" /> Eligibility Criteria
+                  <AcademicCapIcon className="w-4 h-4 text-indigo-500" />{' '}
+                  {t('Scholarship.eligibility_criteria')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                   {s.eligibility}
@@ -1181,7 +1196,7 @@ function ScholarshipModal({
             {s.benefits && (
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <FireIcon className="w-4 h-4 text-amber-500" /> Benefits
+                  <FireIcon className="w-4 h-4 text-amber-500" /> {t('Scholarship.benefits')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                   {s.benefits}
@@ -1191,9 +1206,7 @@ function ScholarshipModal({
 
             {/* Fallback if no content */}
             {!s.description && !s.eligibility && !s.benefits && (
-              <p className="text-sm text-gray-400 italic">
-                No details available for this scholarship.
-              </p>
+              <p className="text-sm text-gray-400 italic">{t('Scholarship.no_details')}</p>
             )}
           </div>
 
@@ -1204,7 +1217,7 @@ function ScholarshipModal({
               {s.awardAmount && (
                 <div>
                   <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
-                    Award
+                    {t('Scholarship.award_label')}
                   </p>
                   <p className="text-lg font-bold text-primary">{s.awardAmount}</p>
                 </div>
@@ -1214,7 +1227,7 @@ function ScholarshipModal({
               {s.deadline && (
                 <div>
                   <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
-                    Deadline
+                    {t('Scholarship.deadline_label')}
                   </p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     {fmtDate(s.deadline)}
@@ -1228,7 +1241,7 @@ function ScholarshipModal({
                               : 'text-gray-400'
                         }`}
                       >
-                        ({days} days left)
+                        {t('Scholarship.days_left_modal', { count: days })}
                       </span>
                     )}
                   </p>
@@ -1238,7 +1251,7 @@ function ScholarshipModal({
               {/* Study Level */}
               <div>
                 <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
-                  Study Level
+                  {t('Scholarship.study_level_label')}
                 </p>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                   {s.studyLevel?.toLowerCase().replace('_', ' ')}
@@ -1248,7 +1261,7 @@ function ScholarshipModal({
               {/* Award Type */}
               <div>
                 <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-1">
-                  Award Type
+                  {t('Scholarship.award_type')}
                 </p>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {s.awardType}
@@ -1259,7 +1272,7 @@ function ScholarshipModal({
               {s.isTrending && (
                 <div className="flex items-center gap-1.5 text-amber-600">
                   <FireIcon className="w-4 h-4" />
-                  <span className="text-xs font-bold">Trending Scholarship</span>
+                  <span className="text-xs font-bold">{t('Scholarship.trending_scholarship')}</span>
                 </div>
               )}
 
@@ -1271,11 +1284,11 @@ function ScholarshipModal({
                   rel="noopener noreferrer"
                   className="block w-full text-center py-3.5 bg-primary hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-md shadow-primary/20 mt-4"
                 >
-                  Apply Now →
+                  {t('Scholarship.apply_now')}
                 </a>
               ) : (
                 <p className="text-xs text-gray-400 text-center mt-4">
-                  No application link available
+                  {t('Scholarship.no_apply_link')}
                 </p>
               )}
             </div>

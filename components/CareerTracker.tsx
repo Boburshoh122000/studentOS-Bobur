@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { NavigationProps } from '../types';
 import { jobApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -73,6 +74,7 @@ interface Filters {
 
 export default function CareerTracker({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -221,7 +223,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
 
   // Helpers
   const formatCompensation = (job: Job) => {
-    if (job.compensationType === 'UNPAID') return 'Unpaid';
+    if (job.compensationType === 'UNPAID') return t('CareerTracker.unpaid');
     return formatSalary(
       job.salaryMin,
       job.salaryMax,
@@ -235,24 +237,31 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     const d = new Date(dateStr);
     const now = new Date();
     const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 3600 * 24));
-    if (diffDays < 0) return 'Expired';
-    if (diffDays === 0) return 'Today';
-    if (diffDays <= 7) return `${diffDays}d left`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (diffDays < 0) return t('CareerTracker.expired');
+    if (diffDays === 0) return t('CareerTracker.today');
+    if (diffDays <= 7) return t('CareerTracker.days_left_count', { count: diffDays });
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   };
 
   const timeAgo = (dateStr: string) => {
     const days = Math.floor(
       (new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24)
     );
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    return `${days}d ago`;
+    if (days === 0) return t('CareerTracker.today');
+    if (days === 1) return t('Common.yesterday');
+    return t('CareerTracker.days_ago_count', { count: days });
+  };
+
+  const JOB_TYPE_KEYS: Record<string, string> = {
+    INTERNSHIP: 'CareerTracker.internship',
+    GRADUATE: 'CareerTracker.graduate',
+    PART_TIME: 'CareerTracker.part_time',
+    FULL_TIME: 'CareerTracker.full_time',
   };
 
   const formatJobType = (type?: string) => {
-    if (!type) return 'Full-time';
-    return type.replace('_', '-').replace(/\b\w/g, (l) => l.toUpperCase());
+    if (!type) return t('CareerTracker.full_time');
+    return t(JOB_TYPE_KEYS[type] || 'CareerTracker.full_time');
   };
 
   const hasActiveFilters =
@@ -267,26 +276,26 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       <div className="flex items-center justify-between mb-5">
         <h3 className="font-bold text-text-main dark:text-white flex items-center gap-2">
           <FunnelIcon className="w-5 h-5 text-primary" />
-          Filters
+          {t('CareerTracker.filters')}
         </h3>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
             className="text-xs font-medium text-primary hover:text-primary-dark transition-colors"
           >
-            Clear All
+            {t('CareerTracker.clear_all')}
           </button>
         )}
       </div>
 
       {/* Search */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-text-sub mb-2">Search</label>
+        <label className="block text-sm font-medium text-text-sub mb-2">{t('Common.search')}</label>
         <div className="relative">
           <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Job title or company..."
+            placeholder={t('CareerTracker.search')}
             value={filters.search}
             onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -298,7 +307,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       <div className="mb-6 space-y-3">
         <label className="flex items-center justify-between cursor-pointer group">
           <span className="text-sm font-medium text-text-main dark:text-white flex items-center gap-2">
-            <CurrencyDollarIcon className="w-4 h-4 text-green-500" /> Paid only
+            <CurrencyDollarIcon className="w-4 h-4 text-green-500" /> {t('CareerTracker.paid_only')}
           </span>
           <button
             onClick={() => setFilters((prev) => ({ ...prev, paidOnly: !prev.paidOnly }))}
@@ -312,7 +321,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
         </label>
         <label className="flex items-center justify-between cursor-pointer group">
           <span className="text-sm font-medium text-text-main dark:text-white flex items-center gap-2">
-            <HomeIcon className="w-4 h-4 text-blue-500" /> Remote only
+            <HomeIcon className="w-4 h-4 text-blue-500" /> {t('CareerTracker.remote_only')}
           </span>
           <button
             onClick={() => setFilters((prev) => ({ ...prev, remoteOnly: !prev.remoteOnly }))}
@@ -328,9 +337,17 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
 
       {/* Work Type */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-text-sub mb-3">Work Type</label>
+        <label className="block text-sm font-medium text-text-sub mb-3">
+          {t('CareerTracker.work_type')}
+        </label>
         <div className="space-y-2">
-          {['REMOTE', 'ONSITE', 'HYBRID'].map((type) => (
+          {(
+            [
+              ['REMOTE', 'CareerTracker.remote'],
+              ['ONSITE', 'CareerTracker.onsite'],
+              ['HYBRID', 'CareerTracker.hybrid'],
+            ] as const
+          ).map(([type, key]) => (
             <label key={type} className="flex items-center gap-3 cursor-pointer group">
               <input
                 type="checkbox"
@@ -338,8 +355,8 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 onChange={() => toggleFilter('locationTypes', type)}
                 className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
               />
-              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors capitalize">
-                {type.toLowerCase()}
+              <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors">
+                {t(key)}
               </span>
             </label>
           ))}
@@ -348,27 +365,29 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
 
       {/* Job Type */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-text-sub mb-3">Category</label>
+        <label className="block text-sm font-medium text-text-sub mb-3">
+          {t('CareerTracker.category')}
+        </label>
         <div className="space-y-2">
           {[
             {
               value: 'INTERNSHIP',
-              label: 'Internship',
+              labelKey: 'CareerTracker.internship',
               icon: <AcademicCapIcon className="w-4 h-4 text-purple-500" />,
             },
             {
               value: 'GRADUATE',
-              label: 'Graduate',
+              labelKey: 'CareerTracker.graduate',
               icon: <ArrowTrendingUpIcon className="w-4 h-4 text-indigo-500" />,
             },
             {
               value: 'PART_TIME',
-              label: 'Part-time',
+              labelKey: 'CareerTracker.part_time',
               icon: <ClockIcon className="w-4 h-4 text-orange-500" />,
             },
             {
               value: 'FULL_TIME',
-              label: 'Full-time',
+              labelKey: 'CareerTracker.full_time',
               icon: <BriefcaseIcon className="w-4 h-4 text-emerald-500" />,
             },
           ].map((type) => (
@@ -380,7 +399,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
               />
               <span className="text-sm text-text-main dark:text-white group-hover:text-primary transition-colors flex items-center gap-2">
-                {type.icon} {type.label}
+                {type.icon} {t(type.labelKey)}
               </span>
             </label>
           ))}
@@ -393,32 +412,34 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
         filters.paidOnly ||
         filters.remoteOnly) && (
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs font-medium text-text-sub mb-2">Active:</p>
+          <p className="text-xs font-medium text-text-sub mb-2">
+            {t('CareerTracker.active_filters')}
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {filters.paidOnly && (
               <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                Paid
+                {t('CareerTracker.paid_only')}
               </span>
             )}
             {filters.remoteOnly && (
               <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                Remote
+                {t('CareerTracker.remote')}
               </span>
             )}
-            {filters.locationTypes.map((t) => (
+            {filters.locationTypes.map((locType) => (
               <span
-                key={t}
+                key={locType}
                 className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
               >
-                {t.toLowerCase()}
+                {t(JOB_TYPE_KEYS[locType] || `CareerTracker.${locType.toLowerCase()}`)}
               </span>
             ))}
-            {filters.jobTypes.map((t) => (
+            {filters.jobTypes.map((jobType) => (
               <span
-                key={t}
+                key={jobType}
                 className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
               >
-                {formatJobType(t)}
+                {formatJobType(jobType)}
               </span>
             ))}
           </div>
@@ -438,7 +459,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               className="flex items-center gap-1.5 text-sm text-text-sub hover:text-text-main dark:hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <ArrowLeftIcon className="w-4 h-4" />
-              Back
+              {t('Common.back')}
             </button>
             <div className="flex items-center gap-3">
               <button
@@ -446,7 +467,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 className="lg:hidden px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
                 <FunnelIcon className="w-4 h-4" />
-                Filters
+                {t('CareerTracker.filters')}
                 {hasActiveFilters && <span className="size-2 rounded-full bg-primary" />}
               </button>
               {!isAuthenticated && (
@@ -454,7 +475,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                   onClick={() => navigate('/signin?redirect_to=/career-tracker')}
                   className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors shadow-sm"
                 >
-                  Sign in to Apply
+                  {t('Auth.sign_in_to_apply')}
                 </button>
               )}
             </div>
@@ -462,11 +483,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
           <div className="text-center pb-1">
             <h1 className="text-2xl font-bold text-text-main dark:text-white flex items-center justify-center gap-2">
               <BriefcaseIcon className="w-6 h-6 text-primary" />
-              Career Tracker
+              {t('CareerTracker.title')}
             </h1>
-            <p className="text-sm text-text-sub mt-0.5">
-              Explore internships, graduate roles, and full-time opportunities
-            </p>
+            <p className="text-sm text-text-sub mt-0.5">{t('CareerTracker.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -487,7 +506,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               />
               <div className="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-card-light dark:bg-card-dark shadow-2xl overflow-y-auto">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="font-bold">Filters</h3>
+                  <h3 className="font-bold">{t('CareerTracker.filters')}</h3>
                   <button
                     onClick={() => setShowMobileFilters(false)}
                     aria-label="Close filters"
@@ -507,10 +526,10 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-text-main dark:text-white whitespace-nowrap">
-                  Latest Opportunities
+                  {t('CareerTracker.latest_opportunities')}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold whitespace-nowrap">
-                  {jobs.length} {jobs.length === 1 ? 'Job' : 'Jobs'}
+                  {jobs.length} {t('CareerTracker.jobs')}
                 </span>
               </div>
               {/* Sort */}
@@ -522,9 +541,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                   title="Sort jobs"
                   className="text-sm border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary/20 appearance-none min-w-[160px] cursor-pointer"
                 >
-                  <option value="newest">Newest</option>
-                  <option value="stipend">Highest Stipend</option>
-                  <option value="deadline">Deadline Soon</option>
+                  <option value="newest">{t('CareerTracker.newest')}</option>
+                  <option value="stipend">{t('CareerTracker.highest_salary')}</option>
+                  <option value="deadline">{t('CareerTracker.deadline_soon')}</option>
                 </select>
               </div>
             </div>
@@ -535,13 +554,13 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               <div className="text-center py-20">
                 <BriefcaseIcon className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto" />
                 <p className="mt-4 text-gray-500 dark:text-gray-400">
-                  No jobs found matching your criteria
+                  {t('CareerTracker.no_jobs_found')}
                 </p>
                 <button
                   onClick={clearFilters}
                   className="mt-4 text-primary hover:text-primary-dark font-medium"
                 >
-                  Clear Filters
+                  {t('CareerTracker.clear_filters')}
                 </button>
               </div>
             ) : (
@@ -625,7 +644,9 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                         {/* Location */}
                         <div className="flex items-center gap-2 text-xs text-text-sub min-w-0">
                           <MapPinIcon className="w-4 h-4 flex-shrink-0 text-blue-400" />
-                          <span className="truncate">{job.location || 'Remote'}</span>
+                          <span className="truncate">
+                            {job.location || t('CareerTracker.remote_location')}
+                          </span>
                           <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] font-bold uppercase text-text-sub flex-shrink-0">
                             {job.locationType}
                           </span>
@@ -636,7 +657,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                           <div className="flex items-center gap-2 text-xs">
                             <CalendarIcon className="w-4 h-4 flex-shrink-0 text-red-500" />
                             <span className="text-red-600 dark:text-red-400 font-semibold">
-                              Deadline: {deadline}
+                              {t('CareerTracker.deadline_label', { deadline })}
                             </span>
                           </div>
                         )}
@@ -662,7 +683,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                         {job.hasApplied ? (
                           <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
                             <CheckCircleIcon className="w-4 h-4" />
-                            Applied
+                            {t('CareerTracker.applied')}
                           </span>
                         ) : (
                           <button
@@ -672,7 +693,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                             }}
                             className="text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                           >
-                            Apply Now →
+                            {t('CareerTracker.apply_now')}
                           </button>
                         )}
                         <span className="text-xs text-gray-400">

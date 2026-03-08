@@ -6,14 +6,19 @@ import en from '../messages/en.json';
 import ru from '../messages/ru.json';
 import uz from '../messages/uz.json';
 
-export const supportedLocales = ['en', 'ru', 'uz'] as const;
+export const supportedLocales = ['uz', 'en', 'ru'] as const;
 export type Locale = (typeof supportedLocales)[number];
 
 export const localeLabels: Record<Locale, { flag: string; label: string }> = {
+  uz: { flag: '🇺🇿', label: 'UZ' },
   en: { flag: '🇬🇧', label: 'EN' },
   ru: { flag: '🇷🇺', label: 'RU' },
-  uz: { flag: '🇺🇿', label: 'UZ' },
 };
+
+// Default to Uzbek for first-time visitors who have no saved preference
+if (typeof window !== 'undefined' && !localStorage.getItem('studentos-language')) {
+  localStorage.setItem('studentos-language', 'uz');
+}
 
 i18n
   .use(LanguageDetector)
@@ -25,7 +30,7 @@ i18n
       uz: { translation: uz },
     },
     fallbackLng: 'en',
-    supportedLngs: ['en', 'ru', 'uz'],
+    supportedLngs: ['uz', 'en', 'ru'],
     interpolation: {
       escapeValue: false, // React already handles XSS
     },
