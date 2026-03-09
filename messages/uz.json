@@ -200,7 +200,22 @@
     "password_need_special": "Parolda kamida bitta maxsus belgi bo'lishi kerak",
     "failed_send_code": "Tasdiqlash kodi yuborib bo'lmadi",
     "verification_failed": "Tasdiqlash muvaffaqiyatsiz. Qayta urinib ko'ring.",
-    "failed_resend": "Kodni qayta yuborishda xatolik"
+    "failed_resend": "Kodni qayta yuborishda xatolik",
+    "forgot_password_title": "Parolni unutdingizmi?",
+    "forgot_password_subtitle": "Emailingizni kiriting, biz sizga tiklash havolasini yuboramiz.",
+    "reset_password_subtitle": "Yangi parolingizni kiriting.",
+    "send_reset_link": "Tiklash havolasini yuborish",
+    "reset_link_sent": "{{email}} manziliga tiklash havolasi yuborildi. Kiruvchi xatlarni tekshiring.",
+    "check_spam": "Ko'rmayapsizmi? Spam yoki keraksiz xatlar papkasini tekshiring.",
+    "try_different_email": "Boshqa emailni sinab ko'ring",
+    "remembered_password": "Parolni esladingizmi?",
+    "sending": "Yuborilmoqda...",
+    "resetting": "Tiklanmoqda...",
+    "password_reset_success": "Parol muvaffaqiyatli tiklandi! Iltimos, tizimga kiring.",
+    "reset_failed": "Parolni tiklashda xatolik. Havola noto'g'ri yoki muddati o'tgan bo'lishi mumkin.",
+    "invalid_reset_link": "Bu tiklash havolasi noto'g'ri yoki muddati o'tgan.",
+    "request_new_link": "Yangi havola so'rash",
+    "forgot_error": "Xatolik yuz berdi. Qaytadan urinib ko'ring."
   },
   "Signup": {
     "welcome": "Xush kelibsiz! O'zingiz haqingizda gapirib bering.",

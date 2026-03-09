@@ -235,6 +235,11 @@ export const authApi = {
 
   deleteAccount: () => api.delete<{ message: string }>('/auth/account'),
 
+  forgotPassword: (data: { email: string }) =>
+    api.post<{ message: string }>('/auth/forgot-password', data),
+  resetPassword: (data: { token: string; password: string }) =>
+    api.post<{ message: string }>('/auth/reset-password', data),
+
   googleCallback: async (data: {
     supabaseAccessToken: string;
     email: string;

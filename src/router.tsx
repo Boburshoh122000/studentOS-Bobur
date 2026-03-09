@@ -101,6 +101,8 @@ const SignIn = withNavigate(lazyRetry(() => import('../components/SignIn')));
 const SignUpStep1 = withNavigate(lazyRetry(() => import('../components/SignUpStep1')));
 const SignUpStep2 = lazyRetry(() => import('../components/SignUpStep2'));
 const VerificationPending = lazyRetry(() => import('../components/VerificationPending'));
+const ForgotPassword = lazyRetry(() => import('../components/ForgotPassword'));
+const ResetPassword = lazyRetry(() => import('../components/ResetPassword'));
 const AboutUs = withNavigate(lazyRetry(() => import('../components/AboutUs')));
 const Blog = withNavigate(lazyRetry(() => import('../components/Blog')));
 const BlogPost = withNavigate(lazyRetry(() => import('../components/BlogPost')));
@@ -208,6 +210,22 @@ export const router = createBrowserRouter([
         element: (
           <Wrap>
             <VerificationPending />
+          </Wrap>
+        ),
+      },
+      {
+        path: '/forgot-password',
+        element: (
+          <Wrap>
+            <ForgotPassword />
+          </Wrap>
+        ),
+      },
+      {
+        path: '/reset-password',
+        element: (
+          <Wrap>
+            <ResetPassword />
           </Wrap>
         ),
       },

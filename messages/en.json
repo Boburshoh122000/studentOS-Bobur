@@ -200,7 +200,22 @@
     "password_need_special": "Password must contain at least one special character",
     "failed_send_code": "Failed to send verification code",
     "verification_failed": "Verification failed. Please try again.",
-    "failed_resend": "Failed to resend code"
+    "failed_resend": "Failed to resend code",
+    "forgot_password_title": "Forgot your password?",
+    "forgot_password_subtitle": "Enter your email and we'll send you a reset link.",
+    "reset_password_subtitle": "Enter your new password below.",
+    "send_reset_link": "Send reset link",
+    "reset_link_sent": "We sent a reset link to {{email}}. Check your inbox.",
+    "check_spam": "Don't see it? Check your spam or junk folder.",
+    "try_different_email": "Try a different email",
+    "remembered_password": "Remember your password?",
+    "sending": "Sending...",
+    "resetting": "Resetting...",
+    "password_reset_success": "Password reset successfully! Please sign in.",
+    "reset_failed": "Failed to reset password. The link may be invalid or expired.",
+    "invalid_reset_link": "This reset link is invalid or has expired.",
+    "request_new_link": "Request a new link",
+    "forgot_error": "Something went wrong. Please try again."
   },
   "Signup": {
     "welcome": "Welcome! Tell us about yourself.",

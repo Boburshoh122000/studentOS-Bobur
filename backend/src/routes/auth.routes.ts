@@ -1,5 +1,6 @@
 import { Router, Response, Request } from 'express';
 import { z } from 'zod';
+import jwt from 'jsonwebtoken';
 import prisma from '../config/database.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
@@ -19,6 +20,7 @@ import {
   resetLoginAttempts,
 } from '../services/rate-limiter.js';
 import { sendEmail, emailTemplates } from '../services/email.service.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 
@@ -828,5 +830,110 @@ router.delete('/account', authenticate, async (req: AuthenticatedRequest, res, n
     next(error);
   }
 });
+
+// ─── Forgot Password ───────────────────────────────────────────
+router.post('/forgot-password', async (req: Request, res: Response, next) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      res.status(400).json({ error: 'Email is required' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      select: { id: true, email: true, passwordHash: true },
+    });
+
+    // Always return same message to prevent email enumeration
+    const genericMsg = 'If this email is registered, you will receive a reset link shortly.';
+
+    if (!user || !user.passwordHash) {
+      res.json({ message: genericMsg });
+      return;
+    }
+
+    // Sign token with JWT_SECRET + current passwordHash — auto-invalidates after password change
+    const secret = env.JWT_SECRET + user.passwordHash;
+    const token = jwt.sign({ sub: user.id, email: user.email, purpose: 'password_reset' }, secret, {
+      expiresIn: '1h',
+    });
+
+    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+    sendEmail({ to: user.email, ...emailTemplates.passwordReset(resetLink) }).catch((err) =>
+      console.error('[forgot-password] Email send failed:', err)
+    );
+
+    res.json({ message: genericMsg });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Reset Password ─────────────────────────────────────────────
+const resetPasswordSchema = z.object({
+  body: z.object({
+    token: z.string().min(1),
+    password: z
+      .string()
+      .min(10, 'Password must be at least 10 characters')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+  }),
+});
+
+router.post(
+  '/reset-password',
+  validate(resetPasswordSchema),
+  async (req: Request, res: Response, next) => {
+    try {
+      const { token, password } = req.body;
+
+      // Decode without verification first to extract userId
+      let payload: any;
+      try {
+        payload = jwt.decode(token);
+      } catch {
+        res.status(400).json({ error: 'Invalid or expired reset link.' });
+        return;
+      }
+
+      if (!payload?.sub || payload.purpose !== 'password_reset') {
+        res.status(400).json({ error: 'Invalid or expired reset link.' });
+        return;
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { id: true, passwordHash: true },
+      });
+
+      if (!user || !user.passwordHash) {
+        res.status(400).json({ error: 'Invalid or expired reset link.' });
+        return;
+      }
+
+      // Verify with user-specific secret — fails if already used or expired
+      const secret = env.JWT_SECRET + user.passwordHash;
+      try {
+        jwt.verify(token, secret);
+      } catch {
+        res.status(400).json({ error: 'Invalid or expired reset link. Please request a new one.' });
+        return;
+      }
+
+      const newHash = await hashPassword(password);
+      await prisma.user.update({ where: { id: user.id }, data: { passwordHash: newHash } });
+
+      // Revoke all sessions so existing tokens are invalidated
+      await revokeAllUserTokens(user.id);
+
+      res.json({ message: 'Password reset successfully. Please sign in with your new password.' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 export default router;
