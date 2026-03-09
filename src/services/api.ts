@@ -463,6 +463,25 @@ export const aiApi = {
         scanId: string;
       }>;
     }>('/ai/career-activity'),
+  getAcademicActivity: () =>
+    api.get<{
+      success: boolean;
+      activities: Array<{
+        id: string;
+        type: 'plagiarism_check' | 'learning_plan';
+        title: string;
+        score?: number | null;
+        isOriginal?: boolean | null;
+        durationWeeks?: number;
+        progress?: number;
+        timestamp: string;
+      }>;
+      stats: {
+        totalChecks: number;
+        totalPlans: number;
+        avgOriginalityScore: number | null;
+      };
+    }>('/ai/academic-activity'),
 };
 
 // Learning Plan API

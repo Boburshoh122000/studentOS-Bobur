@@ -15,9 +15,9 @@ export const localeLabels: Record<Locale, { flag: string; label: string }> = {
   ru: { flag: '🇷🇺', label: 'RU' },
 };
 
-// Default to Uzbek for first-time visitors who have no saved preference
+// Default to English for first-time visitors who have no saved preference
 if (typeof window !== 'undefined' && !localStorage.getItem('studentos-language')) {
-  localStorage.setItem('studentos-language', 'uz');
+  localStorage.setItem('studentos-language', 'en');
 }
 
 i18n
@@ -29,10 +29,11 @@ i18n
       ru: { translation: ru },
       uz: { translation: uz },
     },
+    lng: localStorage.getItem('studentos-language') || 'en',
     fallbackLng: 'en',
     supportedLngs: ['uz', 'en', 'ru'],
     interpolation: {
-      escapeValue: false, // React already handles XSS
+      escapeValue: false,
     },
     detection: {
       order: ['localStorage', 'navigator'],

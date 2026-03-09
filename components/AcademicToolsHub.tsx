@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import DashboardLayout from './DashboardLayout';
 import { useTranslation } from 'react-i18next';
+import { aiApi } from '../src/services/api';
 import {
   AcademicCapIcon,
   ShieldCheckIcon,
@@ -11,8 +12,6 @@ import {
   SparklesIcon,
   ClockIcon,
 } from '@heroicons/react/24/solid';
-
-const API = import.meta.env.VITE_API_URL || '/api';
 
 interface Activity {
   id: string;
@@ -84,14 +83,10 @@ export default function AcademicToolsHub({ navigateTo }: NavigationProps) {
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const res = await fetch(`${API}/ai/academic-activity`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setActivities(data.activities || []);
-          setStats(data.stats || { totalChecks: 0, totalPlans: 0, avgOriginalityScore: null });
+        const { data, error } = await aiApi.getAcademicActivity();
+        if (!error && data) {
+          if (Array.isArray(data.activities)) setActivities(data.activities);
+          if (data.stats) setStats(data.stats);
         }
       } catch {
         // silently fail — show empty state
