@@ -152,7 +152,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   const [copied, setCopied] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState<string>('overview');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { balance } = useCredits();
+  const { balance, refreshBalance } = useCredits();
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
     required: number;
@@ -224,6 +224,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       if (response.error) throw new Error(response.error);
       setResult(response.data as PipelineResult);
       setActiveResultTab('overview');
+      refreshBalance();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to check content. Please try again.');
     } finally {

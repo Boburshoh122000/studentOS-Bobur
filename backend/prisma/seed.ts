@@ -852,7 +852,25 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
       description: 'Check your work for plagiarism',
       category: 'Academic',
       icon: 'fact_check',
-      creditCost: 15,
+      creditCost: 10,
+      isActive: true,
+    },
+    {
+      name: 'ATS Checker',
+      slug: 'ats-checker',
+      description: 'Analyze your CV against job descriptions',
+      category: 'Career Tools',
+      icon: 'analytics',
+      creditCost: 10,
+      isActive: true,
+    },
+    {
+      name: 'Learning Plan Generator',
+      slug: 'learning-plan',
+      description: 'Generate personalized learning plans with AI',
+      category: 'Academic',
+      icon: 'auto_stories',
+      creditCost: 6,
       isActive: true,
     },
     {
@@ -891,7 +909,7 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
       create: tool,
     });
   }
-  console.log('✅ Tools created (8 tools)');
+  console.log('✅ Tools created (10 tools)');
 
   // =============================================================================
   // SEED: APP SETTINGS
@@ -900,7 +918,7 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
   const settings = [
     { key: 'referral_bonus', value: '100' },
     { key: 'early_bird_active', value: 'true' },
-    { key: 'default_welcome_credits', value: '50' },
+    { key: 'default_welcome_credits', value: '10' },
   ];
 
   for (const setting of settings) {

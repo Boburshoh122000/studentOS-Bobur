@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
+import { useCredits } from '../src/contexts/CreditContext';
 import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
@@ -108,6 +109,8 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [recentPlans, setRecentPlans] = useState<string[]>([]);
 
+  const { refreshBalance } = useCredits();
+
   // Credit-gate modal state (402 from backend triggers this)
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [creditErrorData, setCreditErrorData] = useState<{
@@ -178,6 +181,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           return updated;
         });
         setTopic('');
+        refreshBalance();
       }
     } catch (err: any) {
       setError(err.message || 'Failed to generate plan. Please try again.');
