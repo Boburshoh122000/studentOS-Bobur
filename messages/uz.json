@@ -278,7 +278,17 @@
     "add_education": "Eng so'nggi ta'lim va ish tajribangizni qo'shing",
     "increase_visibility": "ish beruvchilarga ko'rinishingizni oshiring.",
     "quick_tip": "Tezkor maslahat",
-    "no_activity": "Hali faoliyat yo'q. Birinchi CV yarating yoki mavjudini skanerlang!"
+    "no_activity": "Hali faoliyat yo'q. Birinchi CV yarating yoki mavjudini skanerlang!",
+    "greeting_morning": "Xayrli tong",
+    "greeting_afternoon": "Xayrli kun",
+    "greeting_evening": "Xayrli kech",
+    "credits": "Kreditlar",
+    "profile_views": "Profilni ko'rganlar",
+    "coming_soon": "Tez orada",
+    "profile_views_coming_soon": "Ish beruvchilarning profil ko'rishlari tez orada ishga tushadi.",
+    "today_habits": "Bugungi odatlar",
+    "no_habits_yet": "Hali odat qo'shilmagan",
+    "start_habits": "Odatlarni kuzatishni boshlash"
   },
   "CareerTools": {
     "title": "Karyera vositalari",

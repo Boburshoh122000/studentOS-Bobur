@@ -278,7 +278,17 @@
     "add_education": "Add your latest education and work experience",
     "increase_visibility": "to increase your visibility to employers.",
     "quick_tip": "Quick Tip",
-    "no_activity": "No activity yet. Create or scan your first CV!"
+    "no_activity": "No activity yet. Create or scan your first CV!",
+    "greeting_morning": "Good morning",
+    "greeting_afternoon": "Good afternoon",
+    "greeting_evening": "Good evening",
+    "credits": "Credits",
+    "profile_views": "Profile Views",
+    "coming_soon": "Coming soon",
+    "profile_views_coming_soon": "Employer profile view tracking will be available soon.",
+    "today_habits": "Today's Habits",
+    "no_habits_yet": "No habits added yet",
+    "start_habits": "Start tracking habits"
   },
   "CareerTools": {
     "title": "Career Tools",
