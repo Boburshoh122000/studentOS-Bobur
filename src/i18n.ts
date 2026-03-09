@@ -15,9 +15,11 @@ export const localeLabels: Record<Locale, { flag: string; label: string }> = {
   ru: { flag: '🇷🇺', label: 'RU' },
 };
 
-// Default to English for first-time visitors who have no saved preference
-if (typeof window !== 'undefined' && !localStorage.getItem('studentos-language')) {
+// One-time migration: old code forced Uzbek on all first-time visitors.
+// Reset any browser that hasn't been migrated yet to English.
+if (typeof window !== 'undefined' && !localStorage.getItem('studentos-lang-v2')) {
   localStorage.setItem('studentos-language', 'en');
+  localStorage.setItem('studentos-lang-v2', '1');
 }
 
 i18n
@@ -29,7 +31,6 @@ i18n
       ru: { translation: ru },
       uz: { translation: uz },
     },
-    lng: localStorage.getItem('studentos-language') || 'en',
     fallbackLng: 'en',
     supportedLngs: ['uz', 'en', 'ru'],
     interpolation: {
