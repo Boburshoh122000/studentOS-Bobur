@@ -33,12 +33,12 @@ const MOCK_VIEWERS = [
   { company: 'CloudBase', role: 'CTO', time: '2d ago', color: '#10b981' },
 ];
 
-/* ──── Shared styles ──── */
+/* ──── Shared ──── */
 const CARD = 'bg-white dark:bg-[#14161f] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-none';
 const CARD_CLICK = `${CARD} cursor-pointer hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_4px_16px_rgba(0,0,0,0.3)] hover:-translate-y-px active:translate-y-0 transition-all duration-200`;
 const LABEL = 'text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 dark:text-gray-500';
 
-/* ════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════ */
 export default function Dashboard({ navigateTo }: NavigationProps) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
@@ -72,11 +72,9 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
 
   /* ──── Header ──── */
   const headerContent = (
-    <header className="h-16 px-5 md:px-8 flex items-center justify-between bg-white dark:bg-[#0c0e16] border-b border-gray-100 dark:border-white/[0.06] z-10">
+    <header className="h-16 px-5 md:px-6 flex items-center justify-between bg-white dark:bg-[#0c0e16] border-b border-gray-100 dark:border-white/[0.06] z-10">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
-          {greeting}, {firstName}
-        </h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{greeting}, {firstName}</h2>
         <p className="text-xs text-gray-400 dark:text-gray-500">{t('Dashboard.daily_briefing')}</p>
       </div>
       <div className="flex items-center gap-2">
@@ -108,13 +106,15 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
 
   return (
     <DashboardLayout currentScreen={Screen.DASHBOARD} navigateTo={navigateTo} headerContent={headerContent}>
-      <div className="p-4 md:p-6 bg-[#f8f9fb] dark:bg-[#0a0c14] min-h-full">
-        <div className="max-w-[1240px] mx-auto space-y-4">
+      {/* ─── FULL-WIDTH wrapper — NO max-width, fills all available space ─── */}
+      <div className="p-4 md:p-5 lg:p-6 bg-[#f8f9fb] dark:bg-[#0a0c14] min-h-full">
+        <div className="space-y-4">
 
           {/* ═══════════════════════════════════
-              ROW 1 — 4 compact KPI cards
+              ROW 1 — KPI cards: 2→3→4 columns
+              sm: 2 cols | lg: 3 cols | xl: 4 cols
           ═══════════════════════════════════ */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {/* Applications */}
             <div onClick={() => navigateTo(Screen.CAREER_TRACKER)} className={CARD_CLICK}>
               <div className="px-5 py-4">
@@ -141,18 +141,13 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               </div>
             </div>
 
-            {/* ATS Score — compact ring */}
+            {/* ATS Score */}
             <div onClick={() => navigateTo(Screen.ATS_CHECKER)} className={CARD_CLICK}>
               <div className="px-5 py-4 flex items-center gap-4">
                 <div className="relative w-16 h-16 flex-shrink-0">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r={R} fill="none" strokeWidth="7" className="stroke-gray-100 dark:stroke-white/[0.06]" />
-                    <defs>
-                      <linearGradient id="ats-g" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#34d399" />
-                      </linearGradient>
-                    </defs>
+                    <defs><linearGradient id="ats-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#10b981" /><stop offset="100%" stopColor="#34d399" /></linearGradient></defs>
                     <circle cx="50" cy="50" r={R} fill="none" strokeWidth="7" stroke="url(#ats-g)" strokeDasharray={C} strokeDashoffset={atsOff} strokeLinecap="round" style={{ filter: 'drop-shadow(0 0 4px rgba(16,185,129,0.3))', transition: 'stroke-dashoffset 1s ease-out' }} />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -171,9 +166,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               <div className="px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className={LABEL}>{t('Dashboard.profile_strength')}</span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
-                    {stats.profileCompletion}%
-                  </span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">{stats.profileCompletion}%</span>
                 </div>
                 <div className="w-full h-2 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${stats.profileCompletion}%`, background: 'linear-gradient(90deg,#6366f1,#a78bfa)', boxShadow: '0 0 8px rgba(99,102,241,0.35)', transition: 'width 0.8s ease-out' }} />
@@ -187,19 +180,16 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               <div className="px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className={LABEL}>{t('Dashboard.completed_habits')}</span>
-                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    {t('Dashboard.today')}
-                  </span>
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">{t('Dashboard.today')}</span>
                 </div>
-                <span className="text-[36px] font-extrabold text-gray-900 dark:text-white leading-none tabular-nums tracking-tight">
-                  {stats.habitsCompletedToday}
-                </span>
+                <span className="text-[36px] font-extrabold text-gray-900 dark:text-white leading-none tabular-nums tracking-tight">{stats.habitsCompletedToday}</span>
               </div>
             </div>
           </div>
 
           {/* ═══════════════════════════════════
-              ROW 2 — 3 columns: Apps / Profile Views / Quick Actions
+              ROW 2 — 12-col grid: Apps / Profile Views / Quick Actions
+              Responsive: stack on small, 3 panels on lg+
           ═══════════════════════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
@@ -213,10 +203,10 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               </div>
               <div>
                 {recentApps.length > 0 ? (
-                  recentApps.slice(0, 4).map((app: any, i: number) => {
+                  recentApps.slice(0, 5).map((app: any, i: number) => {
                     const b = STATUS_CFG[app.status] || STATUS_CFG.NEW;
                     return (
-                      <div key={app.id} className={`group flex items-center justify-between px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer ${i < Math.min(recentApps.length, 4) - 1 ? 'border-b border-gray-50 dark:border-white/[0.03]' : ''}`}>
+                      <div key={app.id} className={`group flex items-center justify-between px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer ${i < Math.min(recentApps.length, 5) - 1 ? 'border-b border-gray-50 dark:border-white/[0.03]' : ''}`}>
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/[0.05] flex items-center justify-center flex-shrink-0">
                             <BriefcaseIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary transition-colors" />
@@ -245,7 +235,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               </div>
             </div>
 
-            {/* ── Profile Views (4/12) — NEW WIDGET ── */}
+            {/* ── Profile Views (4/12) ── */}
             <div className={`lg:col-span-4 ${CARD} overflow-hidden`}>
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/[0.04]">
                 <div className="flex items-center gap-2">
@@ -256,8 +246,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   View all <ArrowRightIcon className="w-2.5 h-2.5" />
                 </button>
               </div>
-
-              {/* View counts */}
+              {/* Counts */}
               <div className="flex border-b border-gray-50 dark:border-white/[0.03]">
                 <div className="flex-1 px-5 py-3 border-r border-gray-50 dark:border-white/[0.03]">
                   <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400 dark:text-gray-500">Today</span>
@@ -268,7 +257,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5 tabular-nums">12</p>
                 </div>
               </div>
-
               {/* Viewer list */}
               <div>
                 {MOCK_VIEWERS.map((v, i) => (
@@ -292,7 +280,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 <h3 className="text-[13px] font-bold text-gray-900 dark:text-white">{t('Dashboard.quick_actions')}</h3>
               </div>
               <div className="flex flex-col gap-0.5 p-2 flex-1">
-                {/* Scholarships */}
                 <button onClick={() => navigateTo(Screen.SCHOLARSHIPS)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer group">
                   <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                     <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" /></svg>
@@ -303,7 +290,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </div>
                 </button>
 
-                {/* CV */}
                 <button onClick={() => navigateTo(Screen.ATS_CHECKER)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer group">
                   <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                     <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
@@ -314,7 +300,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </div>
                 </button>
 
-                {/* Career */}
                 <button onClick={() => navigateTo(Screen.CAREER_TRACKER)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer group">
                   <div className="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                     <BriefcaseIcon className="w-4 h-4 text-violet-500" />
@@ -325,7 +310,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </div>
                 </button>
 
-                {/* Telegram */}
                 {dashboardData?.telegramConnected ? (
                   <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10">
                     <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
@@ -352,7 +336,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
           </div>
 
           {/* ═══════════════════════════════════
-              ROW 3 — Profile completion banner (compact)
+              ROW 3 — Profile completion banner
           ═══════════════════════════════════ */}
           {stats.profileCompletion < 100 && (
             <div className="bg-gray-900 dark:bg-[#0d0f17] text-white rounded-2xl px-6 py-4 flex items-center justify-between gap-4">
