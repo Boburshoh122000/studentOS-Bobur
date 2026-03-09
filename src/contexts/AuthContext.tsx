@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
       setUser(data.user);
-      return { success: true };
+      return { success: true as const, user: data.user };
     }
 
     return { success: false, error: 'Login failed' };

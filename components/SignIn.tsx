@@ -25,11 +25,11 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
 
   const hasRedirected = useRef(false);
 
+  // Silent redirect for already-authenticated users who visit /signin
   useEffect(() => {
     if (isAuthenticated && user && !hasRedirected.current) {
       hasRedirected.current = true;
       const redirectTo = searchParams.get('redirect') || getDefaultRouteForRole(user.role);
-      toast.success(`Welcome back, ${user.profile?.fullName || user.email}!`);
       navigate(redirectTo, { replace: true });
     }
   }, [isAuthenticated, user, navigate, searchParams]);
@@ -73,6 +73,14 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
     setIsSubmitting(true);
 
     const result = await login(email, password);
+
+    if (result.success) {
+      // Show toast exactly once, right when login succeeds
+      const name = (result as any).user?.profile?.fullName || (result as any).user?.email || email;
+      toast.success(`Welcome back, ${name}!`);
+      // Navigation is handled by the useEffect above (isAuthenticated → redirect)
+      return;
+    }
 
     if (!result.success) {
       console.error('[SignIn] Login failed:', result);
