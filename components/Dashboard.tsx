@@ -11,50 +11,44 @@ import {
   ArrowRightIcon,
   BriefcaseIcon,
   CheckCircleIcon,
-  ClipboardDocumentCheckIcon,
-  DocumentTextIcon,
   MagnifyingGlassIcon,
-  PaperAirplaneIcon,
-  TrophyIcon,
-  UserIcon,
 } from '@heroicons/react/24/solid';
 
 const STATUS_CONFIG: Record<string, { labelKey: string; bg: string; text: string }> = {
   NEW: {
     labelKey: 'Dashboard.status_applied',
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-700 dark:text-blue-300',
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    text: 'text-blue-600 dark:text-blue-400',
   },
   SCREENING: {
     labelKey: 'Dashboard.status_screening',
-    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-    text: 'text-yellow-700 dark:text-yellow-300',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    text: 'text-amber-600 dark:text-amber-400',
   },
   INTERVIEW: {
     labelKey: 'Dashboard.status_interview',
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    text: 'text-purple-700 dark:text-purple-300',
+    bg: 'bg-violet-50 dark:bg-violet-900/20',
+    text: 'text-violet-600 dark:text-violet-400',
   },
   OFFER: {
     labelKey: 'Dashboard.status_offer',
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-700 dark:text-green-300',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    text: 'text-emerald-600 dark:text-emerald-400',
   },
   REJECTED: {
     labelKey: 'Dashboard.status_rejected',
-    bg: 'bg-red-100 dark:bg-red-900/30',
-    text: 'text-red-700 dark:text-red-300',
+    bg: 'bg-red-50 dark:bg-red-900/20',
+    text: 'text-red-600 dark:text-red-400',
   },
   WITHDRAWN: {
     labelKey: 'Dashboard.status_withdrawn',
     bg: 'bg-gray-100 dark:bg-gray-800',
-    text: 'text-gray-600 dark:text-gray-400',
+    text: 'text-gray-500 dark:text-gray-400',
   },
 };
 
 export default function Dashboard({ navigateTo }: NavigationProps) {
   const { t } = useTranslation();
-  // Data State
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [firstName, setFirstName] = useState('Student');
@@ -81,7 +75,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     }
   };
 
-  // Helpers
   const stats = dashboardData?.stats || {
     activeApplications: 0,
     atsScore: 0,
@@ -90,38 +83,41 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
   };
   const recentApps = dashboardData?.recentApplications || [];
 
+  // ── Get current date info ──
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
   const headerContent = (
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10 gap-3">
       <div className="flex flex-col justify-center">
         <h2 className="text-2xl font-bold text-text-main dark:text-white">
           {t('Dashboard.welcome_back', { name: firstName })}
         </h2>
-        <p className="text-sm text-text-sub">{t('Dashboard.daily_briefing')}</p>
+        <p className="text-sm text-text-sub">{dateStr}</p>
       </div>
       <div className="flex items-center gap-3">
-        {/* Search Input — icon properly inside */}
         <div className="relative hidden md:block">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
-            className="pl-10 pr-4 py-2 w-64 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-all shadow-sm dark:text-white"
+            className="pl-10 pr-4 py-2 w-64 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-all dark:text-white"
             placeholder={t('Dashboard.search_placeholder')}
             type="text"
           />
         </div>
-        {/* Credits Badge */}
         <button
           onClick={() => navigateTo(Screen.SETTINGS)}
           aria-label="Credits balance — go to settings"
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <span className="text-sm">💎</span>
-          <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{balance}</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white">{balance}</span>
         </button>
-        {/* Language Selector */}
         <LanguageSwitcher compact />
-        {/* Dark Mode */}
         <ThemeToggle />
-        {/* Notifications */}
         <NotificationDropdown />
       </div>
     </header>
@@ -134,10 +130,23 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
-        <div className="flex h-full items-center justify-center">{t('Dashboard.loading')}</div>
+        <div className="flex h-full items-center justify-center text-gray-400">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 border-t-primary rounded-full animate-spin" />
+            <span className="text-sm">{t('Dashboard.loading')}</span>
+          </div>
+        </div>
       </DashboardLayout>
     );
   }
+
+  // ── Compute ATS ring ──
+  const atsRadius = 44;
+  const atsCircumference = 2 * Math.PI * atsRadius;
+  const atsOffset = atsCircumference - (stats.atsScore / 100) * atsCircumference;
+
+  // ── Compute profile ring ──
+  const profileOffset = atsCircumference - (stats.profileCompletion / 100) * atsCircumference;
 
   return (
     <DashboardLayout
@@ -145,317 +154,384 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       navigateTo={navigateTo}
       headerContent={headerContent}
     >
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Left Column: Stats & Activity */}
-            <div className="xl:col-span-2 space-y-6">
-              {/* Active Job Applications & ATS Score */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Job Apps */}
-                <div className="md:col-span-2 bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-                  <div className="flex justify-between items-center mb-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                        {t('Dashboard.active_applications')}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {t('Dashboard.pipeline_status')}
-                      </p>
-                    </div>
-                    <button
-                      className="text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1"
-                      onClick={() => navigateTo(Screen.CAREER_TRACKER)}
-                    >
-                      {t('Dashboard.view_board')} <ArrowRightIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800/30 flex flex-col justify-between h-32 relative overflow-hidden group">
-                      <div className="z-10 relative">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                            {t('Dashboard.status_applied')}
-                          </span>
-                        </div>
-                        <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-                          {stats.activeApplications}
-                        </span>
-                      </div>
-                      <PaperAirplaneIcon className="w-20 h-20 text-blue-200 dark:text-blue-800 transition-transform" />
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800/30 flex flex-col justify-between h-32 relative overflow-hidden group">
-                      <div className="z-10 relative">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <span className="text-sm font-medium text-green-900 dark:text-green-200">
-                            {t('Dashboard.completed_habits')}
-                          </span>
-                        </div>
-                        <span className="text-3xl font-bold text-green-700 dark:text-green-300">
-                          {stats.habitsCompletedToday}
-                        </span>
-                      </div>
-                      <p className="text-xs text-green-600 dark:text-green-400 z-10">
-                        {t('Dashboard.today')}
-                      </p>
-                      <CheckCircleIcon className="w-20 h-20 text-green-200 dark:text-green-800 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* ATS Score Widget */}
-                <div className="md:col-span-1 bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-4 z-10">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                      {t('Dashboard.last_ats_evaluation')}
-                    </h3>
-                    <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                      <ClipboardDocumentCheckIcon className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center justify-center z-10 my-2">
-                    <div className="relative w-28 h-28">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                        <path
-                          className="text-gray-100 dark:text-gray-700"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        ></path>
-                        <path
-                          className="text-primary"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeDasharray={`${stats.atsScore}, 100`}
-                          strokeLinecap="round"
-                          strokeWidth="2.5"
-                        ></path>
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {stats.atsScore}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigateTo(Screen.ATS_CHECKER)}
-                    className="mt-4 w-full py-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
-                  >
-                    {t('Dashboard.view_details')}
-                  </button>
-                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="p-6 md:p-8 lg:p-10">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* ═══════════════════════════════════════════
+              ROW 1 — Four Metric Cards
+          ═══════════════════════════════════════════ */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Applications */}
+            <button
+              onClick={() => navigateTo(Screen.CAREER_TRACKER)}
+              className="text-left bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                  {t('Dashboard.active_applications')}
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                  <BriefcaseIcon className="w-4 h-4 text-blue-500" />
                 </div>
               </div>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {stats.activeApplications}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                {t('Dashboard.pipeline_status')}
+              </p>
+            </button>
 
-              {/* Recent Activity */}
-              <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {t('Dashboard.recent_applications')}
-                  </h3>
-                  <button
-                    onClick={() => navigateTo(Screen.CAREER_TRACKER)}
-                    className="text-sm font-medium text-gray-500 hover:text-primary transition-colors"
-                  >
-                    {t('Dashboard.view_all')}
-                  </button>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {recentApps.length > 0 ? (
-                    recentApps.map((app: any) => {
-                      const badge = STATUS_CONFIG[app.status] || STATUS_CONFIG.NEW;
-
-                      return (
-                        <div
-                          key={app.id}
-                          className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div
-                              className={`w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 flex-shrink-0`}
-                            >
-                              <BriefcaseIcon className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                                {app.job.title}
-                              </h4>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {app.job.company} • {app.job.location}
-                              </p>
-                            </div>
-                          </div>
-                          <span
-                            className={`text-xs font-semibold whitespace-nowrap px-2.5 py-1 rounded-full ${badge.bg} ${badge.text}`}
-                          >
-                            {t(badge.labelKey)}
-                          </span>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-6 text-gray-500 text-sm">
-                      {t('Dashboard.no_applications')}
-                    </div>
-                  )}
+            {/* ATS Score */}
+            <button
+              onClick={() => navigateTo(Screen.ATS_CHECKER)}
+              className="text-left bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                  {t('Dashboard.cv_ats_score')}
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
                 </div>
               </div>
-            </div>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {stats.atsScore}
+                <span className="text-lg text-gray-400 dark:text-gray-500">%</span>
+              </p>
+              <div className="mt-2 w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                  style={{ width: `${stats.atsScore}%` }}
+                />
+              </div>
+            </button>
 
-            {/* Right Column: Career Progress & Quick Actions */}
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 h-full flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                      {t('Dashboard.career_progress')}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {t('Dashboard.your_journey')}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => navigateTo(Screen.PROFILE)}
-                    aria-label="Go to profile"
-                    className="text-primary bg-primary/10 p-2 rounded-lg hover:bg-primary/20 transition-colors"
+            {/* Habits Today */}
+            <button
+              onClick={() => navigateTo(Screen.HABIT_TRACKER)}
+              className="text-left bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                  {t('Dashboard.completed_habits')}
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-violet-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <UserIcon className="w-5 h-5" />
-                  </button>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
                 </div>
+              </div>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {stats.habitsCompletedToday}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                {t('Dashboard.today')}
+              </p>
+            </button>
 
-                {/* Progress Items */}
-                <div className="flex-1 space-y-4">
-                  {/* Profile Completion */}
-                  <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-purple-900 dark:text-purple-200">
-                        {t('Dashboard.profile_strength')}
-                      </span>
-                      <span className="text-sm font-bold text-purple-600 dark:text-purple-300">
-                        {stats.profileCompletion}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-purple-200 dark:bg-purple-800/40 rounded-full h-2">
-                      <div
-                        className="bg-purple-600 h-2 rounded-full transition-all"
-                        style={{ width: `${stats.profileCompletion}%` }}
-                      ></div>
-                    </div>
-                  </div>
+            {/* Profile */}
+            <button
+              onClick={() => navigateTo(Screen.PROFILE)}
+              className="text-left bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                  {t('Dashboard.profile_strength')}
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {stats.profileCompletion}
+                <span className="text-lg text-gray-400 dark:text-gray-500">%</span>
+              </p>
+              <div className="mt-2 w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-amber-500 rounded-full transition-all duration-700"
+                  style={{ width: `${stats.profileCompletion}%` }}
+                />
+              </div>
+            </button>
+          </div>
 
-                  {/* ATS Score Progress */}
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-xl border border-green-100 dark:border-green-800/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-green-900 dark:text-green-200">
-                        {t('Dashboard.cv_ats_score')}
-                      </span>
-                      <span className="text-sm font-bold text-green-600 dark:text-green-300">
+          {/* ═══════════════════════════════════════════
+              ROW 2 — Two-column: Visual Rings + Quick Actions
+          ═══════════════════════════════════════════ */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* ATS + Profile Rings */}
+            <div className="lg:col-span-2 bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-6">
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-6">
+                {t('Dashboard.career_progress')}
+              </h3>
+              <div className="flex items-center justify-center gap-8">
+                {/* ATS Ring */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={atsRadius}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        className="text-gray-100 dark:text-gray-800"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={atsRadius}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        strokeDasharray={atsCircumference}
+                        strokeDashoffset={atsOffset}
+                        strokeLinecap="round"
+                        className="text-emerald-500 transition-all duration-700"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xl font-bold text-gray-900 dark:text-white">
                         {stats.atsScore}%
                       </span>
                     </div>
-                    <div className="w-full bg-green-200 dark:bg-green-800/40 rounded-full h-2">
-                      <div
-                        className="bg-green-600 h-2 rounded-full transition-all"
-                        style={{ width: `${stats.atsScore}%` }}
-                      ></div>
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    ATS Score
+                  </span>
+                </div>
+
+                {/* Profile Ring */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={atsRadius}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        className="text-gray-100 dark:text-gray-800"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={atsRadius}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        strokeDasharray={atsCircumference}
+                        strokeDashoffset={profileOffset}
+                        strokeLinecap="round"
+                        className="text-amber-500 transition-all duration-700"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xl font-bold text-gray-900 dark:text-white">
+                        {stats.profileCompletion}%
+                      </span>
                     </div>
                   </div>
-
-                  {/* Quick Actions */}
-                  <div className="pt-4 space-y-2">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-                      {t('Dashboard.quick_actions')}
-                    </p>
-                    <button
-                      onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
-                      className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
-                    >
-                      <TrophyIcon className="w-5 h-5 text-amber-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {t('Dashboard.find_scholarships')}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {t('Dashboard.browse_opportunities')}
-                        </p>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => navigateTo(Screen.ATS_CHECKER)}
-                      className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
-                    >
-                      <DocumentTextIcon className="w-5 h-5 text-blue-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {t('Dashboard.improve_cv')}
-                        </p>
-                        <p className="text-xs text-gray-500">{t('Dashboard.boost_ats_score')}</p>
-                      </div>
-                    </button>
-
-                    {/* Connect Telegram */}
-                    {dashboardData?.telegramConnected ? (
-                      <div className="w-full flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                        <div>
-                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                            {t('Dashboard.telegram_connected')}
-                          </p>
-                          <p className="text-xs text-green-600 dark:text-green-400">
-                            {t('Dashboard.receiving_notifications')}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <a
-                        href={`https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full flex items-center gap-3 p-3 bg-[#229ED9]/10 dark:bg-[#229ED9]/20 rounded-lg hover:bg-[#229ED9]/20 dark:hover:bg-[#229ED9]/30 transition-colors text-left border border-[#229ED9]/20 dark:border-[#229ED9]/30"
-                      >
-                        <svg
-                          className="w-5 h-5 text-[#229ED9] flex-shrink-0"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                        </svg>
-                        <div>
-                          <p className="text-sm font-medium text-[#229ED9]">
-                            {t('Dashboard.connect_telegram')}
-                          </p>
-                          <p className="text-xs text-[#229ED9]/70">
-                            {t('Dashboard.telegram_alerts')}
-                          </p>
-                        </div>
-                      </a>
-                    )}
-                  </div>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {t('Dashboard.profile_strength')}
+                  </span>
                 </div>
+              </div>
+
+              {/* Update Profile CTA */}
+              <button
+                onClick={() => navigateTo(Screen.PROFILE)}
+                className="mt-6 w-full py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/60 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {t('Dashboard.update_profile')}
+              </button>
+            </div>
+
+            {/* Quick Actions — clean list */}
+            <div className="lg:col-span-3 bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl p-6">
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-5">
+                {t('Dashboard.quick_actions')}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  {
+                    label: t('Dashboard.find_scholarships'),
+                    sub: t('Dashboard.browse_opportunities'),
+                    icon: (
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L1 12h3v9h6v-6h4v6h6v-9h3L12 2zm7 18h-2v-6H7v6H5v-7.81l7-6.36 7 6.36V20z" />
+                        <path d="M12 2L1 12h3v9h6v-6h4v6h6v-9h3L12 2z" />
+                      </svg>
+                    ),
+                    color: 'text-amber-500',
+                    bg: 'bg-amber-50 dark:bg-amber-900/20',
+                    action: () => navigateTo(Screen.SCHOLARSHIPS),
+                  },
+                  {
+                    label: t('Dashboard.improve_cv'),
+                    sub: t('Dashboard.boost_ats_score'),
+                    icon: (
+                      <svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    ),
+                    color: 'text-blue-500',
+                    bg: 'bg-blue-50 dark:bg-blue-900/20',
+                    action: () => navigateTo(Screen.ATS_CHECKER),
+                  },
+                  {
+                    label: t('Dashboard.view_board'),
+                    sub: t('Dashboard.pipeline_status'),
+                    icon: <BriefcaseIcon className="w-5 h-5" />,
+                    color: 'text-violet-500',
+                    bg: 'bg-violet-50 dark:bg-violet-900/20',
+                    action: () => navigateTo(Screen.CAREER_TRACKER),
+                  },
+                  ...(dashboardData?.telegramConnected
+                    ? [
+                        {
+                          label: t('Dashboard.telegram_connected'),
+                          sub: t('Dashboard.receiving_notifications'),
+                          icon: <CheckCircleIcon className="w-5 h-5" />,
+                          color: 'text-emerald-500',
+                          bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                          action: () => {},
+                          isConnected: true,
+                        },
+                      ]
+                    : [
+                        {
+                          label: t('Dashboard.connect_telegram'),
+                          sub: t('Dashboard.telegram_alerts'),
+                          icon: (
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                            </svg>
+                          ),
+                          color: 'text-[#229ED9]',
+                          bg: 'bg-[#229ED9]/10',
+                          action: () =>
+                            window.open(
+                              `https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`,
+                              '_blank'
+                            ),
+                        },
+                      ]),
+                ].map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={item.action}
+                    className="flex items-center gap-4 p-4 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all text-left group"
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center flex-shrink-0`}
+                    >
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {item.label}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                        {item.sub}
+                      </p>
+                    </div>
+                    <ArrowRightIcon className="w-4 h-4 text-gray-300 dark:text-gray-600 ml-auto flex-shrink-0 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Profile Completion Banner */}
-          <div className="bg-gray-900 dark:bg-black text-white rounded-xl p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="relative z-10 max-w-lg">
-              <h3 className="text-xl font-bold mb-2">{t('Dashboard.complete_profile_banner')}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                {t('Dashboard.profile_x_complete', { percent: stats.profileCompletion })}
-              </p>
+          {/* ═══════════════════════════════════════════
+              ROW 3 — Recent Applications
+          ═══════════════════════════════════════════ */}
+          <div className="bg-white dark:bg-[#1a1d2e] border border-gray-150 dark:border-gray-800 rounded-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                {t('Dashboard.recent_applications')}
+              </h3>
+              <button
+                onClick={() => navigateTo(Screen.CAREER_TRACKER)}
+                className="text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+              >
+                {t('Dashboard.view_all')} <ArrowRightIcon className="w-3 h-3" />
+              </button>
             </div>
-            <button
-              className="relative z-10 px-6 py-2.5 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors whitespace-nowrap"
-              onClick={() => navigateTo(Screen.PROFILE)}
-            >
-              {t('Dashboard.update_profile')}
-            </button>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+            <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
+              {recentApps.length > 0 ? (
+                recentApps.map((app: any) => {
+                  const badge = STATUS_CONFIG[app.status] || STATUS_CONFIG.NEW;
+                  return (
+                    <div
+                      key={app.id}
+                      className="flex items-center justify-between px-6 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                          <BriefcaseIcon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                            {app.job.title}
+                          </h4>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                            {app.job.company}
+                            {app.job.location ? ` · ${app.job.location}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${badge.bg} ${badge.text} flex-shrink-0`}
+                      >
+                        {t(badge.labelKey)}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="px-6 py-12 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                    <BriefcaseIcon className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                  </div>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    {t('Dashboard.no_applications')}
+                  </p>
+                  <button
+                    onClick={() => navigateTo(Screen.CAREER_TRACKER)}
+                    className="mt-3 text-sm font-medium text-primary hover:underline"
+                  >
+                    {t('Dashboard.view_board')}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
