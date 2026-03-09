@@ -670,6 +670,9 @@ export const adminApi = {
     socialLinkedin?: string;
     socialTwitter?: string;
     socialWebsite?: string;
+    socialInstagram?: string;
+    socialTelegram?: string;
+    socialGithub?: string;
     displayOrder?: number;
   }) => api.post<any>('/admin/team', data),
   updateTeamMember: (id: string, data: Record<string, unknown>) =>

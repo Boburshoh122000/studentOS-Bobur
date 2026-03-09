@@ -919,6 +919,9 @@ router.post('/team', async (req: AuthenticatedRequest, res, next) => {
       socialLinkedin,
       socialTwitter,
       socialWebsite,
+      socialInstagram,
+      socialTelegram,
+      socialGithub,
       displayOrder,
     } = req.body;
 
@@ -934,6 +937,9 @@ router.post('/team', async (req: AuthenticatedRequest, res, next) => {
         socialLinkedin: socialLinkedin || null,
         socialTwitter: socialTwitter || null,
         socialWebsite: socialWebsite || null,
+        socialInstagram: socialInstagram || null,
+        socialTelegram: socialTelegram || null,
+        socialGithub: socialGithub || null,
         displayOrder: displayOrder ?? 0,
       },
     });
@@ -957,6 +963,9 @@ router.patch('/team/:id', async (req: AuthenticatedRequest, res, next) => {
       socialLinkedin,
       socialTwitter,
       socialWebsite,
+      socialInstagram,
+      socialTelegram,
+      socialGithub,
       displayOrder,
     } = req.body;
 
@@ -969,6 +978,9 @@ router.patch('/team/:id', async (req: AuthenticatedRequest, res, next) => {
         ...(socialLinkedin !== undefined && { socialLinkedin: socialLinkedin || null }),
         ...(socialTwitter !== undefined && { socialTwitter: socialTwitter || null }),
         ...(socialWebsite !== undefined && { socialWebsite: socialWebsite || null }),
+        ...(socialInstagram !== undefined && { socialInstagram: socialInstagram || null }),
+        ...(socialTelegram !== undefined && { socialTelegram: socialTelegram || null }),
+        ...(socialGithub !== undefined && { socialGithub: socialGithub || null }),
         ...(displayOrder !== undefined && { displayOrder }),
       },
     });
