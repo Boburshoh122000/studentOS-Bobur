@@ -12,8 +12,10 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   PlusIcon,
+  TableCellsIcon,
   TrashIcon,
   WalletIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/solid';
 
 // Types
@@ -67,6 +69,54 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
   const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  // Plagiarism Pricing Modal
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [pricingTiers, setPricingTiers] = useState<
+    Array<{ minWords: number; maxWords: number; credits: number }>
+  >([]);
+  const [pricingExtra, setPricingExtra] = useState({
+    extraThreshold: 30000,
+    extraBase: 80,
+    extraPer10k: 25,
+  });
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
+
+  const loadPricingTiers = async () => {
+    setPricingLoading(true);
+    try {
+      const res = await adminApi.getPlagiarismPricing();
+      if (res.data?.data) {
+        setPricingTiers(res.data.data.tiers);
+        setPricingExtra({
+          extraThreshold: res.data.data.extraThreshold,
+          extraBase: res.data.data.extraBase,
+          extraPer10k: res.data.data.extraPer10k,
+        });
+      }
+    } catch {
+      toast.error('Failed to load pricing tiers');
+    } finally {
+      setPricingLoading(false);
+    }
+  };
+
+  const handleSavePricing = async () => {
+    setSavingPricing(true);
+    try {
+      await adminApi.updatePlagiarismPricing({
+        tiers: pricingTiers,
+        ...pricingExtra,
+      });
+      toast.success('Pricing tiers updated');
+      setShowPricingModal(false);
+    } catch {
+      toast.error('Failed to save pricing tiers');
+    } finally {
+      setSavingPricing(false);
+    }
+  };
 
   // Usage stats states
   const [usagePeriod, setUsagePeriod] = useState('30d');
@@ -838,6 +888,20 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {tool.slug === 'plagiarism-checker' && (
+                                <button
+                                  onClick={() => {
+                                    loadPricingTiers();
+                                    setShowPricingModal(true);
+                                  }}
+                                  type="button"
+                                  aria-label="Edit credit pricing tiers"
+                                  className="rounded-lg p-1.5 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                                  title="Edit Credit Tiers"
+                                >
+                                  <TableCellsIcon className="w-5 h-5" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleEditTool(tool)}
                                 type="button"
@@ -1123,6 +1187,249 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                   {deleting ? 'Deleting...' : 'Delete Permanently'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plagiarism Pricing Tiers Modal */}
+      {showPricingModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1e2330] rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Plagiarism Checker — Credit Tiers
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                  Configure word-count based pricing. Changes apply immediately.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close pricing tiers modal"
+                title="Close"
+                onClick={() => setShowPricingModal(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
+              {pricingLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <>
+                  {/* Tiers Table */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                      Word Count Tiers
+                    </h4>
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-50 dark:bg-slate-800">
+                          <tr>
+                            <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                              Min Words
+                            </th>
+                            <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                              Max Words
+                            </th>
+                            <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                              Credits
+                            </th>
+                            <th className="px-4 py-2.5" scope="col">
+                              <span className="sr-only">Actions</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                          {pricingTiers.map((tier, idx) => (
+                            <tr key={idx} className="bg-white dark:bg-transparent">
+                              <td className="px-4 py-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={tier.minWords}
+                                  aria-label={`Tier ${idx + 1} minimum words`}
+                                  title={`Tier ${idx + 1} minimum words`}
+                                  onChange={(e) => {
+                                    const updated = [...pricingTiers];
+                                    updated[idx] = { ...tier, minWords: Number(e.target.value) };
+                                    setPricingTiers(updated);
+                                  }}
+                                  className="w-24 px-2 py-1 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                />
+                              </td>
+                              <td className="px-4 py-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={tier.maxWords}
+                                  aria-label={`Tier ${idx + 1} maximum words`}
+                                  title={`Tier ${idx + 1} maximum words`}
+                                  onChange={(e) => {
+                                    const updated = [...pricingTiers];
+                                    updated[idx] = { ...tier, maxWords: Number(e.target.value) };
+                                    setPricingTiers(updated);
+                                  }}
+                                  className="w-24 px-2 py-1 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                />
+                              </td>
+                              <td className="px-4 py-2">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={tier.credits}
+                                  aria-label={`Tier ${idx + 1} credits`}
+                                  title={`Tier ${idx + 1} credits`}
+                                  onChange={(e) => {
+                                    const updated = [...pricingTiers];
+                                    updated[idx] = { ...tier, credits: Number(e.target.value) };
+                                    setPricingTiers(updated);
+                                  }}
+                                  className="w-20 px-2 py-1 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                />
+                              </td>
+                              <td className="px-4 py-2 text-right">
+                                <button
+                                  type="button"
+                                  aria-label={`Delete tier ${idx + 1}`}
+                                  title="Delete tier"
+                                  onClick={() =>
+                                    setPricingTiers(pricingTiers.filter((_, i) => i !== idx))
+                                  }
+                                  className="p-1 rounded text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPricingTiers([
+                          ...pricingTiers,
+                          {
+                            minWords: (pricingTiers[pricingTiers.length - 1]?.maxWords ?? 0) + 1,
+                            maxWords: (pricingTiers[pricingTiers.length - 1]?.maxWords ?? 0) + 1000,
+                            credits: 10,
+                          },
+                        ])
+                      }
+                      className="mt-2 flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      <PlusIcon className="w-3.5 h-3.5" />
+                      Add Tier
+                    </button>
+                  </div>
+
+                  {/* Extra Tier Config */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                      Over-Threshold Scaling (above max tier)
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label
+                          htmlFor="extra-threshold"
+                          className="block text-xs text-slate-500 dark:text-slate-400 mb-1"
+                        >
+                          Threshold (words)
+                        </label>
+                        <input
+                          id="extra-threshold"
+                          type="number"
+                          min={0}
+                          title="Word count threshold for extra-tier scaling"
+                          value={pricingExtra.extraThreshold}
+                          onChange={(e) =>
+                            setPricingExtra({
+                              ...pricingExtra,
+                              extraThreshold: Number(e.target.value),
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="extra-base"
+                          className="block text-xs text-slate-500 dark:text-slate-400 mb-1"
+                        >
+                          Base Credits at threshold
+                        </label>
+                        <input
+                          id="extra-base"
+                          type="number"
+                          min={1}
+                          title="Base credits charged at the threshold word count"
+                          value={pricingExtra.extraBase}
+                          onChange={(e) =>
+                            setPricingExtra({ ...pricingExtra, extraBase: Number(e.target.value) })
+                          }
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="extra-per-10k"
+                          className="block text-xs text-slate-500 dark:text-slate-400 mb-1"
+                        >
+                          +Credits per 10k words
+                        </label>
+                        <input
+                          id="extra-per-10k"
+                          type="number"
+                          min={1}
+                          title="Additional credits charged per 10,000 words above the threshold"
+                          value={pricingExtra.extraPer10k}
+                          onChange={(e) =>
+                            setPricingExtra({
+                              ...pricingExtra,
+                              extraPer10k: Number(e.target.value),
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                      Example: at {pricingExtra.extraThreshold.toLocaleString()} words, cost is{' '}
+                      {pricingExtra.extraBase} credits. Every additional 10,000 words adds{' '}
+                      {pricingExtra.extraPer10k} credits.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setShowPricingModal(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePricing}
+                disabled={savingPricing || pricingLoading}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {savingPricing ? 'Saving...' : 'Save Pricing'}
+              </button>
             </div>
           </div>
         </div>

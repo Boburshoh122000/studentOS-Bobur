@@ -316,4 +316,72 @@ router.patch('/settings', async (req, res) => {
   }
 });
 
+// =============================================================================
+// PLAGIARISM PRICING CONFIG (Admin)
+// =============================================================================
+
+const PRICING_KEYS = [
+  'plagiarism_pricing_tiers',
+  'plagiarism_extra_threshold',
+  'plagiarism_extra_base_credits',
+  'plagiarism_extra_per_10k',
+] as const;
+
+// GET /admin/tools/plagiarism-pricing
+router.get('/tools/plagiarism-pricing', async (_req, res) => {
+  try {
+    const rows = await prisma.appSettings.findMany({ where: { key: { in: [...PRICING_KEYS] } } });
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    res.json({
+      success: true,
+      data: {
+        tiers: map.plagiarism_pricing_tiers ? JSON.parse(map.plagiarism_pricing_tiers) : [],
+        extraThreshold: Number(map.plagiarism_extra_threshold ?? 30000),
+        extraBase: Number(map.plagiarism_extra_base_credits ?? 80),
+        extraPer10k: Number(map.plagiarism_extra_per_10k ?? 25),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching plagiarism pricing:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch plagiarism pricing' });
+  }
+});
+
+// PUT /admin/tools/plagiarism-pricing
+router.put('/tools/plagiarism-pricing', async (req, res) => {
+  try {
+    const { tiers, extraThreshold, extraBase, extraPer10k } = req.body;
+    if (!Array.isArray(tiers)) {
+      res.status(400).json({ success: false, error: 'tiers must be an array' });
+      return;
+    }
+    await prisma.$transaction([
+      prisma.appSettings.upsert({
+        where: { key: 'plagiarism_pricing_tiers' },
+        update: { value: JSON.stringify(tiers) },
+        create: { key: 'plagiarism_pricing_tiers', value: JSON.stringify(tiers) },
+      }),
+      prisma.appSettings.upsert({
+        where: { key: 'plagiarism_extra_threshold' },
+        update: { value: String(extraThreshold ?? 30000) },
+        create: { key: 'plagiarism_extra_threshold', value: String(extraThreshold ?? 30000) },
+      }),
+      prisma.appSettings.upsert({
+        where: { key: 'plagiarism_extra_base_credits' },
+        update: { value: String(extraBase ?? 80) },
+        create: { key: 'plagiarism_extra_base_credits', value: String(extraBase ?? 80) },
+      }),
+      prisma.appSettings.upsert({
+        where: { key: 'plagiarism_extra_per_10k' },
+        update: { value: String(extraPer10k ?? 25) },
+        create: { key: 'plagiarism_extra_per_10k', value: String(extraPer10k ?? 25) },
+      }),
+    ]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating plagiarism pricing:', error);
+    res.status(500).json({ success: false, error: 'Failed to update plagiarism pricing' });
+  }
+});
+
 export default router;

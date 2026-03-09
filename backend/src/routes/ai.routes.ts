@@ -11,6 +11,7 @@ import {
   checkPlagiarism,
   runPlagiarismPipeline,
   calculatePlagiarismCreditCost,
+  getPlagiarismPricingConfig,
   extractTextFromFile,
 } from '../services/ai.service.js';
 import { CheckModule } from '@prisma/client';
@@ -416,16 +417,48 @@ router.post(
   }
 );
 
-// Plagiarism Check — New Pipeline
+// Plagiarism Check — New Pipeline (dynamic word-count pricing)
 router.post(
   '/plagiarism-check',
-  requireCredits('plagiarism-checker'),
+  authenticate,
+  aiRateLimit,
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const { text, modules, documentName } = req.body;
 
       if (!text) {
         res.status(400).json({ error: 'Text is required' });
+        return;
+      }
+
+      // Calculate word count and dynamic credit cost from DB pricing config
+      const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+      const pricingConfig = await getPlagiarismPricingConfig();
+      const creditCost = calculatePlagiarismCreditCost(wordCount, pricingConfig);
+
+      // Check tool is active
+      const tool = await prisma.tool.findUnique({ where: { slug: 'plagiarism-checker' } });
+      if (tool && !tool.isActive) {
+        res.status(400).json({ error: 'This tool is currently disabled.' });
+        return;
+      }
+
+      // Pre-flight balance check
+      const user = await prisma.user.findUnique({
+        where: { id: req.user!.id },
+        select: { creditBalance: true },
+      });
+      if (!user || user.creditBalance < creditCost) {
+        res.status(402).json({
+          error: 'Not enough credits to run this plagiarism check.',
+          code: 'INSUFFICIENT_CREDITS',
+          data: {
+            required: creditCost,
+            available: user?.creditBalance ?? 0,
+            shortfall: creditCost - (user?.creditBalance ?? 0),
+            toolName: 'Plagiarism Checker',
+          },
+        });
         return;
       }
 
@@ -446,14 +479,45 @@ router.post(
         selectedModules.push(CheckModule.PLAGIARISM);
       }
 
+      // Run pipeline — pass pre-calculated cost so PlagiarismDocument stores the correct amount
       const result = await runPlagiarismPipeline(
         text,
         selectedModules,
         req.user!.id,
-        documentName || 'Untitled Document'
+        documentName || 'Untitled Document',
+        creditCost
       );
 
-      res.json({ ...result, remainingCredits: (req as any).remainingBalance ?? null });
+      // Atomically deduct credits AFTER successful pipeline (interactive transaction)
+      const remainingBalance = await prisma
+        .$transaction(async (tx) => {
+          const latest = await tx.user.findUnique({
+            where: { id: req.user!.id },
+            select: { creditBalance: true },
+          });
+          if (!latest || latest.creditBalance < creditCost) {
+            const err = new Error('BALANCE_CHANGED');
+            (err as any).code = 'BALANCE_CHANGED';
+            throw err;
+          }
+          const updated = await tx.user.update({
+            where: { id: req.user!.id },
+            data: { creditBalance: { decrement: creditCost } },
+            select: { creditBalance: true },
+          });
+          if (tool) {
+            await tx.toolUsage.create({
+              data: { userId: req.user!.id, toolId: tool.id, credits: creditCost },
+            });
+          }
+          return updated.creditBalance;
+        })
+        .catch((e) => {
+          if ((e as any).code === 'BALANCE_CHANGED') return null;
+          throw e;
+        });
+
+      res.json({ ...result, remainingCredits: remainingBalance });
     } catch (error: any) {
       handleAIError(error, res, next);
     }
@@ -527,7 +591,7 @@ router.delete('/plagiarism-document/:id', authenticate, async (req: Authenticate
   }
 });
 
-// Credit cost preview
+// Credit cost preview — reads tiered pricing from DB
 router.post('/plagiarism-cost', authenticate, async (req: AuthenticatedRequest, res) => {
   try {
     const { wordCount } = req.body;
@@ -535,8 +599,15 @@ router.post('/plagiarism-cost', authenticate, async (req: AuthenticatedRequest, 
       res.status(400).json({ error: 'wordCount is required' });
       return;
     }
-    const cost = calculatePlagiarismCreditCost(wordCount);
-    res.json({ wordCount, creditCost: cost });
+    const config = await getPlagiarismPricingConfig();
+    const creditCost = calculatePlagiarismCreditCost(Number(wordCount), config);
+    res.json({
+      wordCount,
+      creditCost,
+      tiers: config.tiers,
+      extraThreshold: config.extraThreshold,
+      extraPer10k: config.extraPer10k,
+    });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to calculate cost' });
   }

@@ -919,6 +919,21 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
     { key: 'referral_bonus', value: '100' },
     { key: 'early_bird_active', value: 'true' },
     { key: 'default_welcome_credits', value: '10' },
+    {
+      key: 'plagiarism_pricing_tiers',
+      value: JSON.stringify([
+        { minWords: 0, maxWords: 1000, credits: 5 },
+        { minWords: 1001, maxWords: 3000, credits: 12 },
+        { minWords: 3001, maxWords: 6000, credits: 20 },
+        { minWords: 6001, maxWords: 10000, credits: 30 },
+        { minWords: 10001, maxWords: 15000, credits: 45 },
+        { minWords: 15001, maxWords: 20000, credits: 60 },
+        { minWords: 20001, maxWords: 30000, credits: 80 },
+      ]),
+    },
+    { key: 'plagiarism_extra_threshold', value: '30000' },
+    { key: 'plagiarism_extra_base_credits', value: '80' },
+    { key: 'plagiarism_extra_per_10k', value: '25' },
   ];
 
   for (const setting of settings) {

@@ -504,13 +504,56 @@ Respond ONLY with valid JSON. No markdown, no code fences, no explanation outsid
 // PLAGIARISM PIPELINE — Multi-Module Analysis System
 // ══════════════════════════════════════════════════════════════════════════════
 
-const CREDIT_PER_100_WORDS = 1;
-const MIN_CREDIT_COST = 5;
+// ── Plagiarism Pricing ──────────────────────────────────────────────────────
 
-/** Calculate credit cost based on word count */
-export const calculatePlagiarismCreditCost = (wordCount: number): number => {
-  return Math.max(MIN_CREDIT_COST, Math.ceil(wordCount / 100) * CREDIT_PER_100_WORDS);
-};
+export interface PricingTier {
+  minWords: number;
+  maxWords: number;
+  credits: number;
+}
+
+const DEFAULT_PRICING_TIERS: PricingTier[] = [
+  { minWords: 0, maxWords: 1000, credits: 5 },
+  { minWords: 1001, maxWords: 3000, credits: 12 },
+  { minWords: 3001, maxWords: 6000, credits: 20 },
+  { minWords: 6001, maxWords: 10000, credits: 30 },
+  { minWords: 10001, maxWords: 15000, credits: 45 },
+  { minWords: 15001, maxWords: 20000, credits: 60 },
+  { minWords: 20001, maxWords: 30000, credits: 80 },
+];
+const DEFAULT_EXTRA_THRESHOLD = 30000;
+const DEFAULT_EXTRA_BASE = 80;
+const DEFAULT_EXTRA_PER_10K = 25;
+
+/** Loads plagiarism pricing config from AppSettings; falls back to hardcoded defaults. */
+export async function getPlagiarismPricingConfig() {
+  const [tiersRow, threshRow, baseRow, perRow] = await Promise.all([
+    prisma.appSettings.findUnique({ where: { key: 'plagiarism_pricing_tiers' } }),
+    prisma.appSettings.findUnique({ where: { key: 'plagiarism_extra_threshold' } }),
+    prisma.appSettings.findUnique({ where: { key: 'plagiarism_extra_base_credits' } }),
+    prisma.appSettings.findUnique({ where: { key: 'plagiarism_extra_per_10k' } }),
+  ]);
+  return {
+    tiers: tiersRow ? (JSON.parse(tiersRow.value) as PricingTier[]) : DEFAULT_PRICING_TIERS,
+    extraThreshold: threshRow ? Number(threshRow.value) : DEFAULT_EXTRA_THRESHOLD,
+    extraBase: baseRow ? Number(baseRow.value) : DEFAULT_EXTRA_BASE,
+    extraPer10k: perRow ? Number(perRow.value) : DEFAULT_EXTRA_PER_10K,
+  };
+}
+
+/** Calculate credit cost based on word count and admin-configured pricing tiers. */
+export function calculatePlagiarismCreditCost(
+  wordCount: number,
+  config: Awaited<ReturnType<typeof getPlagiarismPricingConfig>>
+): number {
+  if (wordCount > config.extraThreshold) {
+    return (
+      config.extraBase + Math.ceil((wordCount - config.extraThreshold) / 10000) * config.extraPer10k
+    );
+  }
+  const tier = config.tiers.find((t) => wordCount >= t.minWords && wordCount <= t.maxWords);
+  return tier ? tier.credits : (config.tiers[0]?.credits ?? 5);
+}
 
 /** Module A: Advanced AI Content Detection */
 const runAdvancedAIScan = async (text: string) => {
@@ -713,11 +756,15 @@ export const runPlagiarismPipeline = async (
   text: string,
   modules: CheckModule[],
   userId: string,
-  documentName: string = 'Untitled Document'
+  documentName: string = 'Untitled Document',
+  preCalculatedCreditCost?: number
 ) => {
   const startTime = Date.now();
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const creditCost = calculatePlagiarismCreditCost(wordCount);
+  const creditCost =
+    preCalculatedCreditCost !== undefined
+      ? preCalculatedCreditCost
+      : calculatePlagiarismCreditCost(wordCount, await getPlagiarismPricingConfig());
 
   // Create the document record
   const doc = await prisma.plagiarismDocument.create({

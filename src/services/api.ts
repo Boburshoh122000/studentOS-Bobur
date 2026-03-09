@@ -628,6 +628,24 @@ export const adminApi = {
       }>;
     }>(`/admin/tools/usage-stats?period=${period}`),
 
+  // Plagiarism Pricing Config API
+  getPlagiarismPricing: () =>
+    api.get<{
+      success: boolean;
+      data: {
+        tiers: Array<{ minWords: number; maxWords: number; credits: number }>;
+        extraThreshold: number;
+        extraBase: number;
+        extraPer10k: number;
+      };
+    }>('/admin/tools/plagiarism-pricing'),
+  updatePlagiarismPricing: (data: {
+    tiers: Array<{ minWords: number; maxWords: number; credits: number }>;
+    extraThreshold: number;
+    extraBase: number;
+    extraPer10k: number;
+  }) => api.put('/admin/tools/plagiarism-pricing', data),
+
   // App Settings API
   getSettings: () => api.get<{ success: boolean; data: Record<string, string> }>('/admin/settings'),
   updateSettings: (data: Record<string, string | number | boolean>) =>

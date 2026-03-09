@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -165,7 +165,26 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
     () => (textContent.trim() ? textContent.trim().split(/\s+/).filter(Boolean).length : 0),
     [textContent]
   );
-  const estimatedCost = useMemo(() => Math.max(5, Math.ceil(wordCount / 100)), [wordCount]);
+
+  const [actualCost, setActualCost] = useState<number | null>(null);
+  const [costLoading, setCostLoading] = useState(false);
+
+  // Fetch real tiered cost from backend with 600ms debounce
+  useEffect(() => {
+    if (wordCount < 20) {
+      setActualCost(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setCostLoading(true);
+      const res = await aiApi.getPlagiarismCost(wordCount);
+      if (res.data) setActualCost((res.data as any).creditCost ?? null);
+      setCostLoading(false);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [wordCount]);
+
+  const hasEnoughCredits = actualCost === null || balance >= actualCost;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -503,7 +522,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
             <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleCheck}
-                disabled={isChecking || !textContent.trim() || selectedOptions.length === 0}
+                disabled={
+                  isChecking ||
+                  !textContent.trim() ||
+                  selectedOptions.length === 0 ||
+                  !hasEnoughCredits
+                }
                 className="w-full flex items-center justify-between bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 px-6 py-4 rounded-2xl font-bold text-lg transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{isChecking ? 'Scanning...' : 'Scan Document'}</span>
@@ -517,7 +541,13 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Cost:{' '}
                   <span className="text-gray-900 dark:text-white font-bold">
-                    {wordCount > 0 ? estimatedCost : '—'} Credits
+                    {costLoading ? (
+                      <span className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin align-middle" />
+                    ) : actualCost !== null ? (
+                      `${actualCost} Credits`
+                    ) : (
+                      '—'
+                    )}
                   </span>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5 mt-1">
@@ -527,6 +557,11 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     credits remaining
                   </span>
                 </div>
+                {!hasEnoughCredits && actualCost !== null && (
+                  <p className="text-xs text-red-500 dark:text-red-400 font-medium mt-1">
+                    You need {actualCost - balance} more credits to run this check.
+                  </p>
+                )}
               </div>
             </div>
           </div>
