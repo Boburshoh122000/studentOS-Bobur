@@ -230,7 +230,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
       </div>
 
       {/* Search */}
-      <div className="hidden md:block relative mr-auto ml-4 lg:ml-8">
+      <div className="hidden md:block relative ml-auto mr-2 lg:mr-4">
         <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         <input
           type="text"
