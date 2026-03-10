@@ -15,11 +15,7 @@ import {
   MagnifyingGlassIcon,
   UserCircleIcon,
   SparklesIcon,
-  AcademicCapIcon,
-  DocumentCheckIcon,
-  TableCellsIcon,
   ClockIcon,
-  CalendarDaysIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
 
@@ -147,7 +143,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     profileCompletion: 0,
   };
   const recentApps = dashboardData?.recentApplications || [];
-  const habits = dashboardData?.habits || [];
   const latestApp = recentApps[0] || null;
 
   /* Greeting */
@@ -634,166 +629,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   {t('Dashboard.update_profile')}
                 </button>
               </div>
-            </div>
-          </div>
-
-          {/* ════ Row 3: Quick Actions + Today's Habits ════ */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Quick Actions */}
-            <div className={`${CARD_HOVER} flex flex-col overflow-hidden`}>
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-white/[0.04]">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  {t('Dashboard.quick_actions')}
-                </h3>
-              </div>
-              <div className="flex flex-col gap-0.5 p-3 flex-1">
-                <button
-                  type="button"
-                  onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <AcademicCapIcon className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t('Dashboard.find_scholarships')}
-                    </p>
-                    <p className="text-xs text-gray-400">{t('Dashboard.browse_opportunities')}</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigateTo(Screen.ATS_CHECKER)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <DocumentCheckIcon className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t('Dashboard.improve_cv')}
-                    </p>
-                    <p className="text-xs text-gray-400">{t('Dashboard.boost_ats_score')}</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigateTo(Screen.CAREER_TRACKER)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors text-left group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <TableCellsIcon className="w-5 h-5 text-violet-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t('Dashboard.view_board')}
-                    </p>
-                    <p className="text-xs text-gray-400">{t('Dashboard.pipeline_status')}</p>
-                  </div>
-                </button>
-
-                {dashboardData?.telegramConnected ? (
-                  <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                      <CheckCircleIcon className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                        {t('Dashboard.telegram_connected')}
-                      </p>
-                      <p className="text-xs text-emerald-500/70">
-                        {t('Dashboard.receiving_notifications')}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <a
-                    href={`https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[#229ED9]/5 transition-colors text-left group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-[#229ED9]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                      <svg
-                        className="w-5 h-5 text-[#229ED9]"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#229ED9]">
-                        {t('Dashboard.connect_telegram')}
-                      </p>
-                      <p className="text-xs text-[#229ED9]/50">{t('Dashboard.telegram_alerts')}</p>
-                    </div>
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Today's Habits */}
-            <div className={`${CARD_HOVER} flex flex-col overflow-hidden`}>
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/[0.04]">
-                <div className="flex items-center gap-2">
-                  <CalendarDaysIcon className="w-4 h-4 text-emerald-500" />
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                    {t('Dashboard.today_habits')}
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo(Screen.HABIT_TRACKER)}
-                  className={`${VIEW_LINK} cursor-pointer`}
-                >
-                  {t('Dashboard.view_all')} <ArrowRightIcon className="w-2.5 h-2.5" />
-                </button>
-              </div>
-              {habits.length > 0 ? (
-                habits.slice(0, 6).map((habit: any, i: number) => (
-                  <div
-                    key={habit.id}
-                    className={`flex items-center gap-3 px-6 py-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors ${
-                      i < Math.min(habits.length, 6) - 1
-                        ? 'border-b border-gray-50 dark:border-white/[0.03]'
-                        : ''
-                    }`}
-                  >
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm"
-                      style={{ background: (habit.color || '#6366f1') + '20' }}
-                    >
-                      {habit.icon || '📌'}
-                    </div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white flex-1 truncate">
-                      {habit.title}
-                    </p>
-                    {habit.completedToday ? (
-                      <CheckCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                    ) : (
-                      <ClockIcon className="w-5 h-5 text-gray-200 dark:text-gray-700 flex-shrink-0" />
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center py-14 text-center px-6">
-                  <CalendarDaysIcon className="w-8 h-8 text-gray-200 dark:text-gray-700 mb-3" />
-                  <p className="text-sm text-gray-400 dark:text-gray-500">
-                    {t('Dashboard.no_habits_yet')}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => navigateTo(Screen.HABIT_TRACKER)}
-                    className="mt-2 text-sm font-bold text-primary hover:underline"
-                  >
-                    {t('Dashboard.start_habits')} →
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
