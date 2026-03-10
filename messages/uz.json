@@ -288,7 +288,16 @@
     "profile_views_coming_soon": "Ish beruvchilarning profil ko'rishlari tez orada ishga tushadi.",
     "today_habits": "Bugungi odatlar",
     "no_habits_yet": "Hali odat qo'shilmagan",
-    "start_habits": "Odatlarni kuzatishni boshlash"
+    "start_habits": "Odatlarni kuzatishni boshlash",
+    "scan_again": "Qayta tekshirish",
+    "latest_application": "So'nggi ariza",
+    "no_views_this_week": "Bu hafta yangi ko'rishlar yo'q",
+    "views_cta_subtitle": "Recruiterlarga ko'zga ko'rinish uchun profilingizni yangilang yoki loyiha qo'shing.",
+    "ats_good": "Yaxshi",
+    "ats_fair": "O'rtacha",
+    "ats_poor": "Zaif",
+    "profile_almost_complete": "Deyarli to'liq",
+    "profile_in_progress": "Jarayonda"
   },
   "CareerTools": {
     "title": "Karyera vositalari",

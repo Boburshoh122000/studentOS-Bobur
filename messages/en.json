@@ -288,7 +288,16 @@
     "profile_views_coming_soon": "Employer profile view tracking will be available soon.",
     "today_habits": "Today's Habits",
     "no_habits_yet": "No habits added yet",
-    "start_habits": "Start tracking habits"
+    "start_habits": "Start tracking habits",
+    "scan_again": "Scan Again",
+    "latest_application": "Latest Application",
+    "no_views_this_week": "No new views this week",
+    "views_cta_subtitle": "Update your profile or add a new project to stand out to recruiters.",
+    "ats_good": "Good",
+    "ats_fair": "Fair",
+    "ats_poor": "Poor",
+    "profile_almost_complete": "Almost Complete",
+    "profile_in_progress": "In Progress"
   },
   "CareerTools": {
     "title": "Career Tools",

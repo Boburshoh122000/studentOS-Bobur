@@ -288,7 +288,16 @@
     "profile_views_coming_soon": "Отслеживание просмотров профиля работодателями появится скоро.",
     "today_habits": "Привычки на сегодня",
     "no_habits_yet": "Привычки ещё не добавлены",
-    "start_habits": "Начать отслеживание привычек"
+    "start_habits": "Начать отслеживание привычек",
+    "scan_again": "Проверить снова",
+    "latest_application": "Последний отклик",
+    "no_views_this_week": "Нет новых просмотров за неделю",
+    "views_cta_subtitle": "Обновите профиль или добавьте новый проект, чтобы выделиться.",
+    "ats_good": "Хорошо",
+    "ats_fair": "Средне",
+    "ats_poor": "Слабо",
+    "profile_almost_complete": "Почти готово",
+    "profile_in_progress": "В процессе"
   },
   "CareerTools": {
     "title": "Карьерные инструменты",
