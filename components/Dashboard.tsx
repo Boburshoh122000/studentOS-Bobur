@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gem } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { userApi } from '../src/services/api';
@@ -14,8 +13,6 @@ import {
   CheckCircleIcon,
   EyeIcon,
   MagnifyingGlassIcon,
-  UserCircleIcon,
-  SparklesIcon,
   ClockIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
@@ -23,6 +20,8 @@ import folderImg from '../public/icons/folder.png';
 import atsImg from '../public/icons/ATS.png';
 import plagiarismImg from '../public/icons/plagiarism checker.png';
 import telegramImg from '../public/icons/telegram 3d.png';
+import cvImg from '../public/icons/CV.png';
+import diamondImg from '../public/icons/diamond.png';
 
 /* ──── Status badge config ──── */
 const STATUS_CFG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
@@ -249,7 +248,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
           onClick={() => navigateTo(Screen.SETTINGS)}
           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.08] rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.07] transition-colors"
         >
-          <Gem className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
+          <img src={diamondImg} alt="Credits" className="w-4 h-4 object-contain flex-shrink-0" />
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
             {(balance || 0).toLocaleString()}
           </span>
@@ -668,14 +667,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 onClick: () => navigateTo(Screen.PLAGIARISM),
               },
               {
-                label: t('Dashboard.find_scholarships'),
-                icon: '/icons/qa-scholarship.png',
-                emoji: '🏅',
-                bg: 'bg-gradient-to-br from-[#f6a623] to-[#e08010]',
-                shadow: 'shadow-[0_4px_14px_rgba(230,144,16,0.35)]',
-                onClick: () => navigateTo(Screen.SCHOLARSHIPS),
-              },
-              {
                 label: t('Dashboard.view_board'),
                 icon: folderImg,
                 emoji: '🗂️',
@@ -693,7 +684,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               },
               {
                 label: t('Dashboard.improve_cv'),
-                icon: '/icons/qa-cv.png',
+                icon: cvImg,
                 emoji: '✨',
                 bg: 'bg-gradient-to-br from-[#ab7adb] to-[#7b3fbf]',
                 shadow: 'shadow-[0_4px_14px_rgba(123,63,191,0.35)]',
@@ -705,7 +696,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
                   {t('Dashboard.quick_actions')}
                 </h2>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                   {qaCards.map((card, idx) => (
                     <button
                       key={idx}

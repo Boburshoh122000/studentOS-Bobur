@@ -398,11 +398,10 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                   key={p}
                   type="button"
                   onClick={() => setUsagePeriod(p)}
-                  className={`px-3 py-1.5 text-xs font-bold transition-colors ${
-                    usagePeriod === p
-                      ? 'bg-primary text-white'
-                      : 'bg-white dark:bg-[#1e2330] text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors ${usagePeriod === p
+                    ? 'bg-primary text-white'
+                    : 'bg-white dark:bg-[#1e2330] text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
                 >
                   {p}
                 </button>
@@ -680,7 +679,7 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                 System Currency
               </label>
               <div className="flex items-center gap-2 rounded-lg border-slate-200 bg-[#f6f6f8] py-2.5 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-white/5 dark:text-white">
-                <span className="text-lg">💎</span>
+                <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5" />
                 <span>Credits</span>
               </div>
             </div>
@@ -702,7 +701,9 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                   onChange={(e) => setReferralBonus(e.target.value)}
                   min="0"
                 />
-                <span className="absolute right-3 top-2 text-lg">💎</span>
+                <div className="absolute right-3 top-2 flex h-full items-center -mt-2">
+                  <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5" />
+                </div>
               </div>
               <p className="text-xs text-slate-400">Credits given when a user invites a friend</p>
             </div>
@@ -879,8 +880,8 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1">
-                              {tool.creditCost} <span className="text-lg">💎</span>
+                            <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
+                              {tool.creditCost} <img src="/icons/diamond.png" alt="Credits" className="w-4 h-4" />
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
@@ -1035,7 +1036,9 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     className="w-full px-3 py-2 pr-10 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white"
                     min="0"
                   />
-                  <span className="absolute right-3 top-2 text-lg">💎</span>
+                  <div className="absolute right-3 top-2 flex h-full items-center -mt-2">
+                    <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5 pointer-events-none" />
+                  </div>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">Set to 0 for free tools</p>
               </div>
@@ -1104,7 +1107,9 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     className="w-full px-3 py-2 pr-10 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-white/5 text-slate-900 dark:text-white"
                     min="0"
                   />
-                  <span className="absolute right-3 top-2 text-lg">💎</span>
+                  <div className="absolute right-3 top-2 flex h-full items-center -mt-2">
+                    <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5 pointer-events-none" />
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-4">
