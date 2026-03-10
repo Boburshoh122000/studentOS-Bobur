@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Gem } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { userApi } from '../src/services/api';
@@ -114,9 +115,26 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [firstName, setFirstName] = useState('');
   const { balance } = useCredits();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    const onOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onOutside);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onOutside);
+    };
   }, []);
 
   const fetchDashboard = async () => {
@@ -210,19 +228,35 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         </p>
       </div>
 
-      {/* Centered search */}
-      <div className="hidden md:flex flex-1 justify-center px-4">
-        <div className="relative w-full max-w-sm">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={`${t('Dashboard.search_placeholder')}...`}
-            className="w-full pl-9 pr-14 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-          />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center px-1.5 py-0.5 text-[9px] font-semibold text-gray-400 bg-white dark:bg-white/[0.04] rounded border border-gray-200 dark:border-white/[0.1] leading-none select-none pointer-events-none">
-            ⌘K
-          </kbd>
-        </div>
+      {/* Collapsible search */}
+      <div className="flex-1 flex justify-center px-4" ref={searchRef}>
+        {searchOpen ? (
+          <div className="flex items-center gap-2 bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.1] rounded-xl px-3 py-2 w-full max-w-sm transition-all">
+            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder={`${t('Dashboard.search_placeholder')}...`}
+              autoFocus
+              className="flex-1 text-sm bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setSearchOpen(false)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm leading-none px-0.5"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-sm text-gray-400 hover:border-gray-300 dark:hover:border-white/[0.15] transition-all"
+          >
+            <MagnifyingGlassIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('Dashboard.search_placeholder')}...</span>
+          </button>
+        )}
       </div>
 
       {/* Controls */}
@@ -230,11 +264,11 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         <button
           type="button"
           onClick={() => navigateTo(Screen.SETTINGS)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/15 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.08] rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.07] transition-colors"
         >
-          <SparklesIcon className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
-          <span className="text-xs font-bold text-violet-600 dark:text-violet-300 tabular-nums">
-            {(balance || 0).toLocaleString()} Credits
+          <Gem className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
+            {(balance || 0).toLocaleString()}
           </span>
         </button>
         <LanguageSwitcher compact />
@@ -284,19 +318,13 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       strokeWidth="7"
                       className="stroke-gray-100 dark:stroke-white/[0.07]"
                     />
-                    <defs>
-                      <linearGradient id="prof-ring-g" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
-                      </linearGradient>
-                    </defs>
                     <circle
                       cx="52"
                       cy="52"
                       r={PR}
                       fill="none"
                       strokeWidth="7"
-                      stroke="url(#prof-ring-g)"
+                      stroke="#2D4DE0"
                       strokeLinecap="round"
                       strokeDasharray={PC}
                       strokeDashoffset={profOff}
@@ -305,7 +333,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     {stats.profileCompletion >= 100 ? (
-                      <CheckCircleIcon className="w-6 h-6 text-violet-500" />
+                      <CheckCircleIcon className="w-6 h-6 text-primary" />
                     ) : (
                       <span className="text-[17px] font-extrabold text-gray-900 dark:text-white tabular-nums leading-none">
                         {stats.profileCompletion}
@@ -323,7 +351,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   </p>
                   <div className="mt-2.5 w-full h-1.5 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full [transition:width_1s_ease-out]"
+                      className="h-full bg-primary rounded-full [transition:width_1s_ease-out]"
                       style={{ width: `${stats.profileCompletion}%` }}
                     />
                   </div>
