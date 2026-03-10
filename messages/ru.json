@@ -297,7 +297,8 @@
     "ats_fair": "Средне",
     "ats_poor": "Слабо",
     "profile_almost_complete": "Почти готово",
-    "profile_in_progress": "В процессе"
+    "profile_in_progress": "В процессе",
+    "plagiarism_checker": "Проверка плагиата"
   },
   "CareerTools": {
     "title": "Карьерные инструменты",

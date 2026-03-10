@@ -632,6 +632,95 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
             </div>
           </div>
 
+          {/* ════ Quick Actions ════ */}
+          <div>
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
+              {t('Dashboard.quick_actions')}
+            </h2>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {/* Telegram */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!dashboardData?.telegramConnected) {
+                    window.open(
+                      `https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`,
+                      '_blank'
+                    );
+                  }
+                }}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#29b6f6] to-[#0288d1] shadow-[0_4px_12px_rgba(2,136,209,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {dashboardData?.telegramConnected
+                    ? t('Dashboard.telegram_connected')
+                    : t('Dashboard.connect_telegram')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">✈️</span>
+              </button>
+
+              {/* ATS Checker */}
+              <button
+                type="button"
+                onClick={() => navigateTo(Screen.ATS_CHECKER)}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#7c6fcd] to-[#5c4fad] shadow-[0_4px_12px_rgba(92,79,173,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {t('Dashboard.cv_ats_score')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">🤖</span>
+              </button>
+
+              {/* Scholarships */}
+              <button
+                type="button"
+                onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#f6a623] to-[#e08010] shadow-[0_4px_12px_rgba(230,144,16,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {t('Dashboard.find_scholarships')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">🎓</span>
+              </button>
+
+              {/* Improve CV */}
+              <button
+                type="button"
+                onClick={() => navigateTo(Screen.CAREER_TOOLS)}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#4caf7d] to-[#2e8a5b] shadow-[0_4px_12px_rgba(46,138,91,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {t('Dashboard.improve_cv')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">📄</span>
+              </button>
+
+              {/* Career Tracker */}
+              <button
+                type="button"
+                onClick={() => navigateTo(Screen.CAREER_TRACKER)}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#f06292] to-[#c2185b] shadow-[0_4px_12px_rgba(194,24,91,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {t('Dashboard.view_board')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">🗂️</span>
+              </button>
+
+              {/* Plagiarism Checker */}
+              <button
+                type="button"
+                onClick={() => navigateTo(Screen.PLAGIARISM)}
+                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#ab7adb] to-[#7b3fbf] shadow-[0_4px_12px_rgba(123,63,191,0.3)]"
+              >
+                <span className="text-[11px] font-bold text-white leading-snug">
+                  {t('Dashboard.plagiarism_checker')}
+                </span>
+                <span className="text-3xl self-end leading-none select-none">🔍</span>
+              </button>
+            </div>
+          </div>
+
           {/* ════ Row 4: Profile completion banner ════ */}
           {stats.profileCompletion < 100 && (
             <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#667eea] to-[#764ba2]">
