@@ -229,35 +229,14 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
         </p>
       </div>
 
-      {/* Collapsible search */}
-      <div className="flex-1 flex justify-center px-4" ref={searchRef}>
-        {searchOpen ? (
-          <div className="flex items-center gap-2 bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.1] rounded-xl px-3 py-2 w-full max-w-sm transition-all">
-            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder={`${t('Dashboard.search_placeholder')}...`}
-              autoFocus
-              className="flex-1 text-sm bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setSearchOpen(false)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm leading-none px-0.5"
-            >
-              ✕
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-sm text-gray-400 hover:border-gray-300 dark:hover:border-white/[0.15] transition-all"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('Dashboard.search_placeholder')}...</span>
-          </button>
-        )}
+      {/* Search */}
+      <div className="hidden md:block relative mr-auto ml-4 lg:ml-8">
+        <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <input
+          type="text"
+          placeholder={`${t('Dashboard.search_placeholder')}...`}
+          className="w-[200px] focus:w-[280px] h-10 pl-11 pr-12 rounded-full bg-slate-50 border border-transparent text-sm font-medium focus:outline-none focus:border-[#4F46E5]/30 focus:bg-white focus:shadow-[0_0_0_4px_rgba(79,70,229,0.1)] transition-all duration-300 ease-in-out placeholder:text-slate-400 text-slate-700 hover:bg-slate-100 dark:bg-white/[0.04] dark:border-white/[0.06] dark:text-white dark:hover:bg-white/[0.08]"
+        />
       </div>
 
       {/* Controls */}
