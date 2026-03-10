@@ -20,6 +20,9 @@ import {
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
 import folderImg from '../public/icons/folder.png';
+import atsImg from '../public/icons/ATS.png';
+import plagiarismImg from '../public/icons/plagiarism checker.png';
+import telegramImg from '../public/icons/telegram 3d.png';
 
 /* ──── Status badge config ──── */
 const STATUS_CFG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
@@ -643,7 +646,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 label: dashboardData?.telegramConnected
                   ? t('Dashboard.telegram_connected')
                   : t('Dashboard.connect_telegram'),
-                icon: '/icons/qa-telegram.png',
+                icon: telegramImg,
                 emoji: '✈️',
                 bg: 'bg-gradient-to-br from-[#29b6f6] to-[#0288d1]',
                 shadow: 'shadow-[0_4px_14px_rgba(2,136,209,0.35)]',
@@ -658,7 +661,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               },
               {
                 label: t('Dashboard.plagiarism_checker'),
-                icon: '/icons/qa-plagiarism.png',
+                icon: plagiarismImg,
                 emoji: '🛡️',
                 bg: 'bg-gradient-to-br from-[#4caf7d] to-[#2e8a5b]',
                 shadow: 'shadow-[0_4px_14px_rgba(46,138,91,0.35)]',
@@ -682,7 +685,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               },
               {
                 label: t('Dashboard.cv_ats_score'),
-                icon: '/icons/qa-ats.png',
+                icon: atsImg,
                 emoji: '📄',
                 bg: 'bg-gradient-to-br from-[#7c6fcd] to-[#5c4fad]',
                 shadow: 'shadow-[0_4px_14px_rgba(92,79,173,0.35)]',
@@ -737,33 +740,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
             );
           })()}
 
-          {/* ════ Row 4: Profile completion banner ════ */}
-          {stats.profileCompletion < 100 && (
-            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#667eea] to-[#764ba2]">
-              <div className="px-6 py-5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <UserCircleIcon className="w-6 h-6 text-white/80" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-white">
-                      {t('Dashboard.complete_profile_banner')}
-                    </p>
-                    <p className="text-xs text-white/75 mt-0.5 truncate">
-                      {t('Dashboard.profile_x_complete', { percent: stats.profileCompletion })}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo(Screen.PROFILE)}
-                  className="px-5 py-2.5 bg-white text-[#6366f1] rounded-xl text-sm font-bold hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap flex-shrink-0"
-                >
-                  {t('Dashboard.update_profile')}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </DashboardLayout>
