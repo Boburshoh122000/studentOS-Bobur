@@ -632,7 +632,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
             </div>
           </div>
 
-          {/* ════ Quick Actions (Marquee) ════ */}
+          {/* ════ Quick Actions ════ */}
           {(() => {
             const qaCards = [
               {
@@ -640,7 +640,9 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   ? t('Dashboard.telegram_connected')
                   : t('Dashboard.connect_telegram'),
                 icon: '/icons/qa-telegram.png',
+                emoji: '✈️',
                 bg: 'bg-gradient-to-br from-[#29b6f6] to-[#0288d1]',
+                shadow: 'shadow-[0_4px_14px_rgba(2,136,209,0.35)]',
                 onClick: () => {
                   if (!dashboardData?.telegramConnected) {
                     window.open(
@@ -653,31 +655,41 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               {
                 label: t('Dashboard.plagiarism_checker'),
                 icon: '/icons/qa-plagiarism.png',
+                emoji: '🛡️',
                 bg: 'bg-gradient-to-br from-[#4caf7d] to-[#2e8a5b]',
+                shadow: 'shadow-[0_4px_14px_rgba(46,138,91,0.35)]',
                 onClick: () => navigateTo(Screen.PLAGIARISM),
               },
               {
                 label: t('Dashboard.find_scholarships'),
                 icon: '/icons/qa-scholarship.png',
+                emoji: '🏅',
                 bg: 'bg-gradient-to-br from-[#f6a623] to-[#e08010]',
+                shadow: 'shadow-[0_4px_14px_rgba(230,144,16,0.35)]',
                 onClick: () => navigateTo(Screen.SCHOLARSHIPS),
               },
               {
                 label: t('Dashboard.view_board'),
                 icon: '/icons/qa-career.png',
+                emoji: '🗂️',
                 bg: 'bg-gradient-to-br from-[#f06292] to-[#c2185b]',
+                shadow: 'shadow-[0_4px_14px_rgba(194,24,91,0.35)]',
                 onClick: () => navigateTo(Screen.CAREER_TRACKER),
               },
               {
                 label: t('Dashboard.cv_ats_score'),
                 icon: '/icons/qa-ats.png',
+                emoji: '📄',
                 bg: 'bg-gradient-to-br from-[#7c6fcd] to-[#5c4fad]',
+                shadow: 'shadow-[0_4px_14px_rgba(92,79,173,0.35)]',
                 onClick: () => navigateTo(Screen.ATS_CHECKER),
               },
               {
                 label: t('Dashboard.improve_cv'),
                 icon: '/icons/qa-cv.png',
+                emoji: '✨',
                 bg: 'bg-gradient-to-br from-[#ab7adb] to-[#7b3fbf]',
+                shadow: 'shadow-[0_4px_14px_rgba(123,63,191,0.35)]',
                 onClick: () => navigateTo(Screen.CAREER_TOOLS),
               },
             ];
@@ -686,32 +698,36 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                 <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
                   {t('Dashboard.quick_actions')}
                 </h2>
-                <div className="qa-wrap overflow-hidden">
-                  <div className="qa-track flex gap-3 w-max animate-[qa-scroll_28s_linear_infinite]">
-                    {[...qaCards, ...qaCards].map((card, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={card.onClick}
-                        className={`flex-shrink-0 w-[148px] h-[178px] rounded-2xl p-4 flex flex-col text-left transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 ${card.bg}`}
-                      >
-                        <span className="text-[12px] font-semibold text-white/95 leading-snug max-w-[110px]">
-                          {card.label}
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                  {qaCards.map((card, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={card.onClick}
+                      className={`rounded-2xl p-3.5 h-[160px] flex flex-col text-left transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 ${card.bg} ${card.shadow}`}
+                    >
+                      <span className="text-[11px] font-semibold text-white/95 leading-snug">
+                        {card.label}
+                      </span>
+                      <div className="flex-1 flex items-center justify-center">
+                        <img
+                          src={card.icon}
+                          alt={card.label}
+                          draggable={false}
+                          className="w-16 h-16 object-contain drop-shadow-xl select-none"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const fb = (e.target as HTMLImageElement)
+                              .nextElementSibling as HTMLElement;
+                            if (fb) fb.style.display = 'block';
+                          }}
+                        />
+                        <span className="text-4xl hidden select-none leading-none">
+                          {card.emoji}
                         </span>
-                        <div className="flex-1 flex items-center justify-center">
-                          <img
-                            src={card.icon}
-                            alt={card.label}
-                            draggable={false}
-                            className="w-20 h-20 object-contain drop-shadow-xl select-none"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             );
