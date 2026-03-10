@@ -632,94 +632,90 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
             </div>
           </div>
 
-          {/* ════ Quick Actions ════ */}
-          <div>
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-              {t('Dashboard.quick_actions')}
-            </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {/* Telegram */}
-              <button
-                type="button"
-                onClick={() => {
+          {/* ════ Quick Actions (Marquee) ════ */}
+          {(() => {
+            const qaCards = [
+              {
+                label: dashboardData?.telegramConnected
+                  ? t('Dashboard.telegram_connected')
+                  : t('Dashboard.connect_telegram'),
+                icon: '/icons/qa-telegram.png',
+                bg: 'bg-gradient-to-br from-[#29b6f6] to-[#0288d1]',
+                onClick: () => {
                   if (!dashboardData?.telegramConnected) {
                     window.open(
                       `https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`,
                       '_blank'
                     );
                   }
-                }}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#29b6f6] to-[#0288d1] shadow-[0_4px_12px_rgba(2,136,209,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {dashboardData?.telegramConnected
-                    ? t('Dashboard.telegram_connected')
-                    : t('Dashboard.connect_telegram')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">✈️</span>
-              </button>
-
-              {/* ATS Checker */}
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.ATS_CHECKER)}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#7c6fcd] to-[#5c4fad] shadow-[0_4px_12px_rgba(92,79,173,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {t('Dashboard.cv_ats_score')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">🤖</span>
-              </button>
-
-              {/* Scholarships */}
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.SCHOLARSHIPS)}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#f6a623] to-[#e08010] shadow-[0_4px_12px_rgba(230,144,16,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {t('Dashboard.find_scholarships')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">🎓</span>
-              </button>
-
-              {/* Improve CV */}
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.CAREER_TOOLS)}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#4caf7d] to-[#2e8a5b] shadow-[0_4px_12px_rgba(46,138,91,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {t('Dashboard.improve_cv')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">📄</span>
-              </button>
-
-              {/* Career Tracker */}
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.CAREER_TRACKER)}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#f06292] to-[#c2185b] shadow-[0_4px_12px_rgba(194,24,91,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {t('Dashboard.view_board')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">🗂️</span>
-              </button>
-
-              {/* Plagiarism Checker */}
-              <button
-                type="button"
-                onClick={() => navigateTo(Screen.PLAGIARISM)}
-                className="group relative rounded-2xl overflow-hidden aspect-square flex flex-col justify-between p-3.5 text-left hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 bg-gradient-to-br from-[#ab7adb] to-[#7b3fbf] shadow-[0_4px_12px_rgba(123,63,191,0.3)]"
-              >
-                <span className="text-[11px] font-bold text-white leading-snug">
-                  {t('Dashboard.plagiarism_checker')}
-                </span>
-                <span className="text-3xl self-end leading-none select-none">🔍</span>
-              </button>
-            </div>
-          </div>
+                },
+              },
+              {
+                label: t('Dashboard.plagiarism_checker'),
+                icon: '/icons/qa-plagiarism.png',
+                bg: 'bg-gradient-to-br from-[#4caf7d] to-[#2e8a5b]',
+                onClick: () => navigateTo(Screen.PLAGIARISM),
+              },
+              {
+                label: t('Dashboard.find_scholarships'),
+                icon: '/icons/qa-scholarship.png',
+                bg: 'bg-gradient-to-br from-[#f6a623] to-[#e08010]',
+                onClick: () => navigateTo(Screen.SCHOLARSHIPS),
+              },
+              {
+                label: t('Dashboard.view_board'),
+                icon: '/icons/qa-career.png',
+                bg: 'bg-gradient-to-br from-[#f06292] to-[#c2185b]',
+                onClick: () => navigateTo(Screen.CAREER_TRACKER),
+              },
+              {
+                label: t('Dashboard.cv_ats_score'),
+                icon: '/icons/qa-ats.png',
+                bg: 'bg-gradient-to-br from-[#7c6fcd] to-[#5c4fad]',
+                onClick: () => navigateTo(Screen.ATS_CHECKER),
+              },
+              {
+                label: t('Dashboard.improve_cv'),
+                icon: '/icons/qa-cv.png',
+                bg: 'bg-gradient-to-br from-[#ab7adb] to-[#7b3fbf]',
+                onClick: () => navigateTo(Screen.CAREER_TOOLS),
+              },
+            ];
+            return (
+              <div>
+                <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
+                  {t('Dashboard.quick_actions')}
+                </h2>
+                <div className="qa-wrap overflow-hidden">
+                  <div className="qa-track flex gap-3 w-max animate-[qa-scroll_28s_linear_infinite]">
+                    {[...qaCards, ...qaCards].map((card, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={card.onClick}
+                        className={`flex-shrink-0 w-[148px] h-[178px] rounded-2xl p-4 flex flex-col text-left transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 ${card.bg}`}
+                      >
+                        <span className="text-[12px] font-semibold text-white/95 leading-snug max-w-[110px]">
+                          {card.label}
+                        </span>
+                        <div className="flex-1 flex items-center justify-center">
+                          <img
+                            src={card.icon}
+                            alt={card.label}
+                            draggable={false}
+                            className="w-20 h-20 object-contain drop-shadow-xl select-none"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ════ Row 4: Profile completion banner ════ */}
           {stats.profileCompletion < 100 && (

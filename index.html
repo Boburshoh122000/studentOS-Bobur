@@ -276,8 +276,13 @@
               blob: 'blob 7s infinite',
               float: 'float 6s ease-in-out infinite',
               'slide-in-left': 'slideInLeft 0.25s ease-out',
+              'qa-scroll': 'qa-scroll 28s linear infinite',
             },
             keyframes: {
+              'qa-scroll': {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
               blob: {
                 '0%': { transform: 'translate(0px, 0px) scale(1)' },
                 '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
@@ -697,6 +702,11 @@
           transform: scale(0) rotateZ(-10deg) translateY(100px) translateX(-25px);
           opacity: 0;
         }
+      }
+
+      /* Quick Actions Marquee */
+      .qa-wrap:hover .qa-track {
+        animation-play-state: paused;
       }
     </style>
     <script type="importmap">
