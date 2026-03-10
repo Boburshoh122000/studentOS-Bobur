@@ -19,6 +19,7 @@ import {
   ClockIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
+import folderImg from '../public/icons/folder.png';
 
 /* ──── Status badge config ──── */
 const STATUS_CFG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
@@ -473,12 +474,12 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                           {/* Dot */}
                           <div
                             className={`relative w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isRejected && i === currentStep
-                                ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
-                                : i < currentStep
-                                  ? 'border-primary bg-primary'
-                                  : i === currentStep
-                                    ? 'border-primary bg-white dark:bg-[#14161f] ring-2 ring-primary/20'
-                                    : 'border-gray-200 dark:border-white/[0.1] bg-white dark:bg-[#14161f]'
+                              ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                              : i < currentStep
+                                ? 'border-primary bg-primary'
+                                : i === currentStep
+                                  ? 'border-primary bg-white dark:bg-[#14161f] ring-2 ring-primary/20'
+                                  : 'border-gray-200 dark:border-white/[0.1] bg-white dark:bg-[#14161f]'
                               }`}
                           >
                             {i < currentStep ? (
@@ -505,12 +506,12 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                         <div key={i} className="flex-1 last:flex-none">
                           <span
                             className={`text-[9px] font-semibold ${i === currentStep
-                                ? isRejected
-                                  ? 'text-red-500'
-                                  : 'text-primary'
-                                : i < currentStep
-                                  ? 'text-gray-500 dark:text-gray-400'
-                                  : 'text-gray-300 dark:text-gray-600'
+                              ? isRejected
+                                ? 'text-red-500'
+                                : 'text-primary'
+                              : i < currentStep
+                                ? 'text-gray-500 dark:text-gray-400'
+                                : 'text-gray-300 dark:text-gray-600'
                               }`}
                           >
                             {t(stepKey)}
@@ -554,8 +555,8 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                       key={app.id}
                       onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                       className={`group flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer ${i < Math.min(recentApps.length, 5) - 1
-                          ? 'border-b border-gray-50 dark:border-white/[0.03]'
-                          : ''
+                        ? 'border-b border-gray-50 dark:border-white/[0.03]'
+                        : ''
                         }`}
                     >
                       {/* Company letter avatar */}
@@ -694,7 +695,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
               },
               {
                 label: t('Dashboard.view_board'),
-                icon: '/icons/folder.png',
+                icon: folderImg,
                 emoji: '🗂️',
                 bg: 'bg-gradient-to-br from-[#f06292] to-[#c2185b]',
                 shadow: 'shadow-[0_4px_14px_rgba(194,24,91,0.35)]',
