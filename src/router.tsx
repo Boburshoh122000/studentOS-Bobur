@@ -75,12 +75,16 @@ const lazyRetry = (importFn: () => Promise<any>) => {
     try {
       return await importFn();
     } catch (error: any) {
+      const msg: string = error?.message ?? '';
       if (
-        error.message?.includes('Failed to fetch dynamically imported module') ||
+        msg.includes('Failed to fetch dynamically imported module') ||
+        msg.includes('text/html') ||
+        msg.includes('is not a valid JavaScript MIME type') ||
+        msg.includes('Failed to load module script') ||
         error.name === 'ChunkLoadError'
       ) {
         // Prevent infinite reload loop if the file is genuinely missing
-        const storageKey = `retry-${error.message}`;
+        const storageKey = `retry-${msg}`;
         const hasRetried = sessionStorage.getItem(storageKey);
 
         if (!hasRetried) {
