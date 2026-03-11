@@ -147,7 +147,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.2 }}
-          className="absolute top-[10%] left-[8%] w-[240px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col gap-3 pointer-events-auto"
+          className="absolute top-[25%] left-[8%] w-[240px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col gap-3 pointer-events-auto"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.4 }}
-          className="absolute top-[8%] right-[8%] w-[210px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center gap-3 pointer-events-auto"
+          className="absolute top-[22%] right-[8%] w-[210px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center gap-3 pointer-events-auto"
         >
           <div className="flex items-center gap-1.5">
             <CheckIcon className="w-4 h-4 text-emerald-500" />
@@ -400,7 +400,7 @@ export default function TrustlineHero() {
             to="/signup/step-1"
             className="inline-block bg-indigo-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-indigo-700 transition shadow-[0_6px_16px_rgba(79,70,229,0.3)]"
           >
-            Boshlash
+            Get Started
           </Link>
         </motion.div>
       </div>
