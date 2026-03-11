@@ -63,21 +63,21 @@ const packages = [
 const explainers = [
   {
     icon: DocumentTextIcon,
-    label: '1 Credit',
+    label: '10 Credits',
     desc: '1 AI Resume Scan',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50',
   },
   {
     icon: CpuChipIcon,
-    label: '5 Credits',
+    label: '6 Credits',
     desc: 'Generate Learning Plan',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50',
   },
   {
     icon: ShieldCheckIcon,
-    label: '2 Credits',
+    label: 'By word count',
     desc: 'Plagiarism Check',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50',
@@ -181,11 +181,10 @@ export default function MinimalPricing() {
             whileHover={{ y: -12, transition: { type: 'spring', stiffness: 300, damping: 24 } }}
             className={`
                             relative bg-white rounded-3xl p-8 flex flex-col cursor-pointer transition-shadow duration-300
-                            ${
-                              pkg.highlighted
-                                ? 'border-2 border-indigo-600 shadow-xl shadow-indigo-500/15 ring-1 ring-indigo-600/10'
-                                : 'border border-gray-100 shadow-sm hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20'
-                            }
+                            ${pkg.highlighted
+                ? 'border-2 border-indigo-600 shadow-xl shadow-indigo-500/15 ring-1 ring-indigo-600/10'
+                : 'border border-gray-100 shadow-sm hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20'
+              }
                         `}
           >
             {/* Badge */}
@@ -229,11 +228,10 @@ export default function MinimalPricing() {
               onClick={() => handleBuyClick(pkg.name, pkg.credits)}
               className={`
                                 w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-200
-                                ${
-                                  pkg.highlighted
-                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/25'
-                                    : 'bg-gray-50 border border-gray-200 text-gray-900 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/20'
-                                }
+                                ${pkg.highlighted
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/25'
+                  : 'bg-gray-50 border border-gray-200 text-gray-900 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/20'
+                }
                             `}
             >
               {pkg.cta}
