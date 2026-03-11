@@ -1,5 +1,8 @@
 {
   "permissions": {
-    "allow": ["Bash(xargs grep -l \"coverLetter\\\\|CoverLetter\")"]
+    "allow": [
+      "Bash(xargs grep -l \"coverLetter\\\\|CoverLetter\")",
+      "Bash(node -e \"const f = require\\(''./messages/en.json''\\); console.log\\(Object.keys\\(f.Auth\\).join\\(''\\\\n''\\)\\)\")"
+    ]
   }
 }

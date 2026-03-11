@@ -373,6 +373,24 @@
         margin: 0 auto;
       }
 
+      /* CV Preview — dynamic scale wrapper */
+      .cv-preview-wrapper {
+        width: var(--preview-w);
+        min-height: var(--preview-h);
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .cv-preview-page {
+        width: 210mm;
+        min-height: 297mm;
+        transform: scale(var(--preview-scale));
+        transform-origin: top left;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
       /* Glassmorphism utilities */
       .glass {
         background: rgba(255, 255, 255, 0.7);

@@ -77,8 +77,7 @@ const Accordion: React.FC<AccordionProps> = ({
           </span>
         )}
         <span
-          className="material-symbols-outlined text-slate-400 text-sm transition-transform"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)' }}
+          className={`material-symbols-outlined text-slate-400 text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`}
         >
           expand_more
         </span>
@@ -182,7 +181,12 @@ const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
             className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full"
           >
             {skill}
-            <button type="button" onClick={() => removeSkill(index)} className="hover:text-red-500">
+            <button
+              type="button"
+              onClick={() => removeSkill(index)}
+              className="hover:text-red-500"
+              title="Remove skill"
+            >
               <XMarkIcon className="w-3 h-3" />
             </button>
           </span>
@@ -204,6 +208,7 @@ const ExperienceItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove experience"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -271,6 +276,7 @@ const EducationItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove education"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -332,7 +338,12 @@ const LanguageItem: React.FC<{
       <option value="intermediate">Intermediate</option>
       <option value="beginner">Beginner</option>
     </select>
-    <button type="button" onClick={onRemove} className="p-2 text-slate-400 hover:text-red-500">
+    <button
+      type="button"
+      onClick={onRemove}
+      className="p-2 text-slate-400 hover:text-red-500"
+      title="Remove language"
+    >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
   </div>
@@ -348,6 +359,7 @@ const ProjectItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove project"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -389,6 +401,7 @@ const VolunteeringItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove volunteering"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -440,6 +453,7 @@ const AwardItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove award"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -483,6 +497,7 @@ const PublicationItem: React.FC<{
       type="button"
       onClick={onRemove}
       className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+      title="Remove publication"
     >
       <TrashIcon className="w-3.5 h-3.5" />
     </button>
@@ -557,6 +572,7 @@ const CustomSectionEditor: React.FC<{
               type="button"
               onClick={() => removeItem(item.id)}
               className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+              title="Remove item"
             >
               <TrashIcon className="w-3.5 h-3.5" />
             </button>
@@ -709,6 +725,7 @@ export default function CVBuilder() {
   const [mobileStep, setMobileStep] = useState<1 | 2>(1);
   const [previewScale, setPreviewScale] = useState(0.65);
   const previewRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Responsive A4 preview scale — computed so the preview fills available width.
   // Uses 16px total margin (8px each side) on mobile for maximum width.
@@ -725,6 +742,16 @@ export default function CVBuilder() {
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+
+  // Keep CSS custom properties in sync with previewScale
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (el) {
+      el.style.setProperty('--preview-w', `${Math.round(794 * previewScale)}px`);
+      el.style.setProperty('--preview-h', `${Math.round(1123 * previewScale)}px`);
+      el.style.setProperty('--preview-scale', `${previewScale}`);
+    }
+  }, [previewScale]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -1630,25 +1657,8 @@ export default function CVBuilder() {
             This lets flex justify-center work correctly on mobile. */}
         <div className="flex-1 overflow-auto p-2 md:p-8 flex justify-center items-start">
           {/* Wrapper: takes up exactly the visual footprint of the scaled A4 */}
-          <div
-            style={{
-              width: Math.round(794 * previewScale),
-              minHeight: Math.round(1123 * previewScale),
-              position: 'relative',
-              flexShrink: 0,
-            }}
-          >
-            <div
-              id="cv-preview"
-              ref={previewRef}
-              className="bg-white shadow-xl absolute top-0 left-0"
-              style={{
-                width: '210mm',
-                minHeight: '297mm',
-                transform: `scale(${previewScale})`,
-                transformOrigin: 'top left',
-              }}
-            >
+          <div className="cv-preview-wrapper" ref={wrapperRef}>
+            <div id="cv-preview" ref={previewRef} className="cv-preview-page bg-white shadow-xl">
               {renderTemplate()}
             </div>
           </div>
