@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { Instagram, Linkedin, Twitter } from 'lucide-react';
@@ -14,7 +15,7 @@ const linkColumns = [
   },
   {
     title: 'Company',
-    links: ['About Us', 'Pricing (Credits)', 'Contact', 'Careers'],
+    links: ['About Us', 'Pricing (Credits)', 'Contact'],
   },
   {
     title: 'Legal',
@@ -42,14 +43,16 @@ const fadeUp = {
 function MagneticButton({
   children,
   className,
+  to,
 }: {
   children: React.ReactNode;
   className?: string;
+  to?: string;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
-  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
     const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
@@ -59,8 +62,8 @@ function MagneticButton({
 
   const reset = () => setPos({ x: 0, y: 0 });
 
-  return (
-    <motion.button
+  const inner = (
+    <motion.div
       ref={ref}
       onMouseMove={handleMouse}
       onMouseLeave={reset}
@@ -69,8 +72,10 @@ function MagneticButton({
       className={className}
     >
       {children}
-    </motion.button>
+    </motion.div>
   );
+
+  return to ? <Link to={to}>{inner}</Link> : inner;
 }
 
 /* ─── Social Icon with Hover Bounce ─────────────────────── */
@@ -135,7 +140,10 @@ export default function MinimalFooter() {
           transition={{ duration: 0.6, delay: 0.4, ease: smoothEase }}
           className="mt-10"
         >
-          <MagneticButton className="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white font-semibold text-base transition-colors shadow-lg shadow-indigo-500/25 inline-flex items-center gap-2">
+          <MagneticButton
+            to="/signup/step-1"
+            className="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white font-semibold text-base transition-colors shadow-lg shadow-indigo-500/25 inline-flex items-center gap-2 cursor-pointer"
+          >
             Get Started with Free Credits
             <ArrowRightIcon className="w-4 h-4" />
           </MagneticButton>
@@ -155,7 +163,7 @@ export default function MinimalFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
           {/* Column 1: Brand */}
           <motion.div variants={fadeUp} className="col-span-2 md:col-span-1">
-            <Logo iconSize="w-9 h-9" textSize="text-2xl" textColor="text-white" />
+            <Logo iconSize="w-9 h-9" textSize="text-2xl" textColor="text-white" darkBackground />
             <p className="text-gray-500 mt-3 text-sm leading-relaxed max-w-[220px]">
               The operating system for your academic future. Build, track, and succeed.
             </p>

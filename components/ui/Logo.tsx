@@ -14,6 +14,8 @@ interface LogoProps {
   iconOnly?: boolean;
   /** Additional wrapper className */
   className?: string;
+  /** Force dark-surface rendering — white badge wrapper applied unconditionally (no dark: prefix needed) */
+  darkBackground?: boolean;
 }
 
 /**
@@ -33,16 +35,22 @@ const Logo = memo(function Logo({
   textColor = 'text-gray-900',
   iconOnly = false,
   className = '',
+  darkBackground = false,
 }: LogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Logo Image — mix-blend-multiply removes white bg on light surfaces;
-          dark:bg-white/90 + dark:rounded-lg contains the white bg on dark surfaces */}
-      <div className={`flex-shrink-0 rounded-lg dark:bg-white/90 dark:p-0.5 ${iconSize}`}>
+          on always-dark surfaces (darkBackground=true) skip the dark: prefix so the
+          white badge wrapper applies unconditionally regardless of OS theme */}
+      <div
+        className={`flex-shrink-0 rounded-lg ${
+          darkBackground ? 'bg-white/90 p-0.5' : 'dark:bg-white/90 dark:p-0.5'
+        } ${iconSize}`}
+      >
         <img
           src="/logo.png"
           alt={`${BRAND_NAME} Logo`}
-          className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+          className={`w-full h-full object-contain ${darkBackground ? 'mix-blend-normal' : 'mix-blend-multiply dark:mix-blend-normal'}`}
           loading="lazy"
           decoding="async"
         />

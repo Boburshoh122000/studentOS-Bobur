@@ -234,7 +234,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       href="mailto:support@studentos.com"
                       className="text-base font-medium text-text-main dark:text-white hover:text-primary transition-colors"
                     >
-                      support@studentos.com
+                      info@studentos.uz
                     </a>
                   </div>
                 </div>
@@ -248,9 +248,9 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       Visit us
                     </span>
                     <p className="text-base font-medium text-text-main dark:text-white">
-                      123 University Ave
+                      Amir Temur street 13
                       <br />
-                      Palo Alto, CA 94301
+                      Tashkent, Uzbekistan
                     </p>
                   </div>
                 </div>
