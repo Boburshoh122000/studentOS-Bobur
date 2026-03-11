@@ -710,11 +710,13 @@ export default function CVBuilder() {
   const [previewScale, setPreviewScale] = useState(0.65);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Responsive A4 preview scale — fits within viewport on mobile
+  // Responsive A4 preview scale — computed so the preview fills available width.
+  // Uses 16px total margin (8px each side) on mobile for maximum width.
+  // CSS `transform` doesn't affect layout, so we use a sized wrapper + `top left` origin.
   useEffect(() => {
     const update = () => {
       if (window.innerWidth < 768) {
-        setPreviewScale(Math.min((window.innerWidth - 32) / 794, 0.65));
+        setPreviewScale((window.innerWidth - 16) / 794);
       } else {
         setPreviewScale(0.65);
       }
@@ -942,6 +944,12 @@ export default function CVBuilder() {
     if (!previewRef.current) return;
     setIsExporting(true);
 
+    // Safety net: if export hangs for more than 30s, unblock the button
+    const safetyTimeout = setTimeout(() => {
+      setIsExporting(false);
+      toast.error('Export timed out. Please try again.');
+    }, 30000);
+
     try {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
@@ -949,8 +957,11 @@ export default function CVBuilder() {
       const canvas = await html2canvas(previewRef.current, {
         scale: 1.5,
         useCORS: true,
+        allowTaint: true, // required on some mobile browsers
         logging: false,
         backgroundColor: '#ffffff',
+        windowWidth: 794, // render at consistent A4 width regardless of viewport
+        imageTimeout: 0, // disable per-image timeout (avoids partial captures)
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.85);
@@ -971,12 +982,13 @@ export default function CVBuilder() {
 
       const fileName = `${cvData.personalInfo.firstName || 'My'}_${cvData.personalInfo.lastName || 'Resume'}_CV.pdf`;
       pdf.save(fileName);
-      // After successful export, offer to sync profile
+      clearTimeout(safetyTimeout);
       setShowSyncModal(true);
     } catch (error) {
       console.error('Failed to export PDF:', error);
-      alert('Failed to export PDF. Please try again.');
+      toast.error('Export failed. Please try again.');
     } finally {
+      clearTimeout(safetyTimeout);
       setIsExporting(false);
     }
   };
@@ -1572,20 +1584,33 @@ export default function CVBuilder() {
           </div>
         </div>
 
-        {/* Preview Area — A4 constrained, dynamic scale */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center">
+        {/* Preview Area — A4 constrained, dynamic scale.
+            CSS transform does NOT change layout size, so we use a wrapper div sized
+            to the visual (post-scale) dimensions with transformOrigin top-left.
+            This lets flex justify-center work correctly on mobile. */}
+        <div className="flex-1 overflow-auto p-2 md:p-8 flex justify-center items-start">
+          {/* Wrapper: takes up exactly the visual footprint of the scaled A4 */}
           <div
-            id="cv-preview"
-            ref={previewRef}
-            className="bg-white shadow-xl"
             style={{
-              width: '210mm',
-              minHeight: '297mm',
-              transform: `scale(${previewScale})`,
-              transformOrigin: 'top center',
+              width: Math.round(794 * previewScale),
+              minHeight: Math.round(1123 * previewScale),
+              position: 'relative',
+              flexShrink: 0,
             }}
           >
-            {renderTemplate()}
+            <div
+              id="cv-preview"
+              ref={previewRef}
+              className="bg-white shadow-xl absolute top-0 left-0"
+              style={{
+                width: '210mm',
+                minHeight: '297mm',
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {renderTemplate()}
+            </div>
           </div>
         </div>
       </div>
