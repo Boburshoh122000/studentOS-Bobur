@@ -41,7 +41,20 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      // Safely parse JSON — non-JSON bodies (e.g. 504 HTML gateway pages) throw
+      // a SyntaxError which is NOT a TypeError, causing misleading "Network error"
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        if (response.status === 504 || response.status === 502) {
+          return { error: 'The request timed out. Please try again in a moment.' };
+        }
+        if (!response.ok) {
+          return { error: `Server error (${response.status}). Please try again.` };
+        }
+        return { error: 'Unexpected response from server. Please try again.' };
+      }
 
       if (!response.ok) {
         // Handle token expiration
@@ -68,11 +81,12 @@ class ApiClient {
       }
 
       console.error(`[API] Request failed: ${this.baseUrl}${endpoint}`, error);
-      const msg =
-        error instanceof TypeError
-          ? `Server is waking up but couldn't connect after ${MAX_RETRIES} retries. Please try again in a moment.`
-          : 'Network error. Please check your connection.';
-      return { error: msg };
+      return {
+        error:
+          error instanceof TypeError
+            ? `Server is waking up. Please try again in a moment.`
+            : 'Request failed. Please check your connection and try again.',
+      };
     }
   }
 
@@ -127,7 +141,12 @@ class ApiClient {
   }
 
   // Upload files as multipart/form-data (no JSON Content-Type)
-  async postFormData<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+  async postFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    _retryCount = 0
+  ): Promise<ApiResponse<T>> {
+    const MAX_RETRIES = 3;
     const token = this.getToken();
     const headers: HeadersInit = {};
     if (token) {
@@ -140,14 +159,41 @@ class ApiClient {
         headers,
         body: formData,
       });
-      const data = await response.json();
+
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        if (response.status === 504 || response.status === 502) {
+          return { error: 'The request timed out. Please try again in a moment.' };
+        }
+        if (!response.ok) {
+          return { error: `Server error (${response.status}). Please try again.` };
+        }
+        return { error: 'Unexpected response from server. Please try again.' };
+      }
+
       if (!response.ok) {
         return { error: data.error || 'An error occurred' };
       }
       return { data };
     } catch (error) {
+      // Retry on network errors (cold start / flaky mobile connection)
+      if (error instanceof TypeError && _retryCount < MAX_RETRIES) {
+        const delay = (_retryCount + 1) * 3000;
+        console.warn(
+          `[API] FormData upload unreachable, retrying in ${delay / 1000}s... (attempt ${_retryCount + 1}/${MAX_RETRIES})`
+        );
+        await new Promise((r) => setTimeout(r, delay));
+        return this.postFormData<T>(endpoint, formData, _retryCount + 1);
+      }
       console.error(`[API] FormData request failed: ${this.baseUrl}${endpoint}`, error);
-      return { error: 'Network error. Please check your connection.' };
+      return {
+        error:
+          error instanceof TypeError
+            ? 'Server is waking up. Please try again in a moment.'
+            : 'Upload failed. Please check your connection and try again.',
+      };
     }
   }
 
