@@ -964,10 +964,14 @@ export default function CVBuilder() {
       el.style.transformOrigin = '';
       el.style.position = 'static';
 
+      // Lower scale on mobile to reduce memory pressure
+      const isMobile = window.innerWidth < 768;
+      const captureScale = isMobile ? 1.2 : 1.5;
+
       let canvas: HTMLCanvasElement;
       try {
         canvas = await html2canvas(el, {
-          scale: 1.5,
+          scale: captureScale,
           useCORS: true,
           allowTaint: true,
           logging: false,
@@ -997,7 +1001,27 @@ export default function CVBuilder() {
       }
 
       const fileName = `${cvData.personalInfo.firstName || 'My'}_${cvData.personalInfo.lastName || 'Resume'}_CV.pdf`;
-      pdf.save(fileName);
+
+      // iOS Safari ignores the `download` attribute on blob URLs — open in new tab instead
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const blob = pdf.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+
+      if (isIOS) {
+        window.open(blobUrl, '_blank');
+        toast.success('PDF opened — tap Share → Save to Files to download.');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+      } else {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1_000);
+      }
+
       clearTimeout(safetyTimeout);
       setShowSyncModal(true);
     } catch (error) {
