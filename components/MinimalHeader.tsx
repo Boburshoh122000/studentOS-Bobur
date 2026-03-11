@@ -22,7 +22,7 @@ import Logo from './ui/Logo';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
 const toolItems = [
-  { label: 'ATS Resume Checker', icon: DocumentTextIcon, href: '/app/cv-ats' },
+  { label: 'ATS Resume Checker', icon: DocumentTextIcon, href: '/app/ats-checker' },
   { label: 'Plagiarism Check', icon: ShieldCheckIcon, href: '/app/plagiarism' },
   { label: 'Learning Plan', icon: CpuChipIcon, href: '/app/learning-plan' },
   { label: 'Habit Tracker', icon: CheckBadgeIcon, href: '/app/habit-tracker' },
@@ -181,10 +181,11 @@ export default function MinimalHeader() {
           {/* About */}
           <Link
             to={navLinks[0].href}
-            className={`text-sm font-medium transition-colors relative ${pathname === navLinks[0].href
+            className={`text-sm font-medium transition-colors relative ${
+              pathname === navLinks[0].href
                 ? 'text-[#0A0A0A] font-semibold'
                 : 'text-gray-500 hover:text-[#0A0A0A]'
-              }`}
+            }`}
           >
             {navLinks[0].label}
             {pathname === navLinks[0].href && (
@@ -237,10 +238,11 @@ export default function MinimalHeader() {
             <Link
               key={link.label}
               to={link.href}
-              className={`text-sm font-medium transition-colors relative ${pathname === link.href
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === link.href
                   ? 'text-[#0A0A0A] font-semibold'
                   : 'text-gray-500 hover:text-[#0A0A0A]'
-                }`}
+              }`}
             >
               {link.label}
               {pathname === link.href && (
@@ -280,10 +282,11 @@ export default function MinimalHeader() {
                         setActiveLang(lang.code);
                         setLangOpen(false);
                       }}
-                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${activeLang === lang.code
+                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        activeLang === lang.code
                           ? 'bg-indigo-50 text-indigo-600 font-semibold'
                           : 'text-gray-600 hover:bg-gray-50 font-medium'
-                        }`}
+                      }`}
                     >
                       <span>{lang.label}</span>
                       <span className="text-xs text-gray-400">{lang.code}</span>
@@ -422,8 +425,9 @@ export default function MinimalHeader() {
                   key={link.label}
                   to={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`py-4 border-b border-gray-50 text-lg font-medium transition-colors ${pathname === link.href ? 'text-indigo-600' : 'text-gray-900'
-                    }`}
+                  className={`py-4 border-b border-gray-50 text-lg font-medium transition-colors ${
+                    pathname === link.href ? 'text-indigo-600' : 'text-gray-900'
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -441,8 +445,9 @@ export default function MinimalHeader() {
                     transition={{ duration: 0.25 }}
                   >
                     <ChevronDownIcon
-                      className={`w-5 h-5 transition-colors ${mobileToolsOpen ? 'text-indigo-600' : 'text-gray-400'
-                        }`}
+                      className={`w-5 h-5 transition-colors ${
+                        mobileToolsOpen ? 'text-indigo-600' : 'text-gray-400'
+                      }`}
                     />
                   </motion.span>
                 </button>
