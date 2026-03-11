@@ -24,7 +24,14 @@ import {
 } from './CVTemplates';
 import { userApi } from '../../src/services/api';
 import toast from 'react-hot-toast';
-import { ArrowDownTrayIcon, CheckIcon, PlusCircleIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowDownTrayIcon,
+  CheckIcon,
+  PlusCircleIcon,
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY = 'studentos_cv_draft';
@@ -619,6 +626,68 @@ const TEMPLATES: { id: TemplateType; label: string }[] = [
   { id: 'tech', label: 'Tech' },
 ];
 
+// ─── TEMPLATE THUMBNAIL (mobile template picker) ─────────────────────────────
+
+const TEMPLATE_STYLES: Record<TemplateType, { header: string; accent: string }> = {
+  modern: { header: 'bg-blue-600', accent: 'bg-blue-100' },
+  minimalist: { header: 'bg-black', accent: 'bg-gray-200' },
+  professional: { header: 'bg-slate-800', accent: 'bg-indigo-100' },
+  europass: { header: 'bg-blue-800', accent: 'bg-blue-100' },
+  grant: { header: 'bg-emerald-700', accent: 'bg-emerald-100' },
+  tech: { header: 'bg-gray-900', accent: 'bg-cyan-100' },
+};
+
+function TemplateThumbnail({
+  id,
+  label,
+  selected,
+  onClick,
+}: {
+  id: TemplateType;
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const s = TEMPLATE_STYLES[id];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+        selected
+          ? 'border-primary shadow-lg'
+          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+      }`}
+    >
+      <div className="w-full aspect-[3/4] bg-white p-1.5 flex flex-col gap-1">
+        <div className={`${s.header} h-5 rounded-sm`} />
+        <div className="flex gap-1 flex-1">
+          <div className="w-1/3 flex flex-col gap-1 pt-1">
+            <div className={`h-2 ${s.accent} rounded-sm`} />
+            <div className="h-1.5 bg-slate-100 rounded-sm" />
+            <div className="h-1.5 bg-slate-100 rounded-sm" />
+          </div>
+          <div className="flex-1 flex flex-col gap-1 pt-1">
+            <div className="h-1.5 bg-slate-200 rounded-sm" />
+            <div className="h-1.5 bg-slate-200 rounded-sm" />
+            <div className="h-1.5 bg-slate-200 rounded-sm w-3/4" />
+            <div className="h-1.5 bg-slate-200 rounded-sm mt-1" />
+            <div className="h-1.5 bg-slate-200 rounded-sm w-2/3" />
+          </div>
+        </div>
+      </div>
+      <div className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-semibold text-center py-1.5 border-t border-slate-200 dark:border-slate-700">
+        {label}
+      </div>
+      {selected && (
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow">
+          <CheckIcon className="w-3 h-3 text-white" />
+        </div>
+      )}
+    </button>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -637,7 +706,23 @@ export default function CVBuilder() {
   ]);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [mobileStep, setMobileStep] = useState<1 | 2>(1);
+  const [previewScale, setPreviewScale] = useState(0.65);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Responsive A4 preview scale — fits within viewport on mobile
+  useEffect(() => {
+    const update = () => {
+      if (window.innerWidth < 768) {
+        setPreviewScale(Math.min((window.innerWidth - 32) / 794, 0.65));
+      } else {
+        setPreviewScale(0.65);
+      }
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -862,13 +947,13 @@ export default function CVBuilder() {
       const { jsPDF } = await import('jspdf');
 
       const canvas = await html2canvas(previewRef.current, {
-        scale: 3,
+        scale: 1.5,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = 210;
       const pageHeight = 297;
@@ -880,7 +965,7 @@ export default function CVBuilder() {
 
       while (position < imgHeight) {
         if (position > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, -position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, -position, imgWidth, imgHeight);
         position += pageHeight;
       }
 
@@ -1008,7 +1093,8 @@ export default function CVBuilder() {
                 onClick={addExperience}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Experience
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Experience
               </button>
             </div>
           </Accordion>
@@ -1037,7 +1123,8 @@ export default function CVBuilder() {
                 onClick={addEducation}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Education
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Education
               </button>
             </div>
           </Accordion>
@@ -1082,7 +1169,8 @@ export default function CVBuilder() {
                 onClick={addLanguage}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Language
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Language
               </button>
             </div>
           </Accordion>
@@ -1111,7 +1199,8 @@ export default function CVBuilder() {
                 onClick={addProject}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Project
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Project
               </button>
             </div>
           </Accordion>
@@ -1140,7 +1229,8 @@ export default function CVBuilder() {
                 onClick={addVolunteering}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Volunteering
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Volunteering
               </button>
             </div>
           </Accordion>
@@ -1169,7 +1259,8 @@ export default function CVBuilder() {
                 onClick={addAward}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Award
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Award
               </button>
             </div>
           </Accordion>
@@ -1198,7 +1289,8 @@ export default function CVBuilder() {
                 onClick={addPublication}
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
-                <PlusIcon className="w-3.5 h-3.5" />Add Publication
+                <PlusIcon className="w-3.5 h-3.5" />
+                Add Publication
               </button>
             </div>
           </Accordion>
@@ -1212,9 +1304,33 @@ export default function CVBuilder() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Left Panel - Editor */}
-      <div className="w-[420px] shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark overflow-y-auto">
-        <div className="p-6 pb-20 space-y-4">
+      {/* ── LEFT PANEL: Form ───────────────────────────────────────────────────
+          Desktop (md+): always visible, fixed 420px width
+          Mobile (<md):  full screen on step 1, hidden on step 2              */}
+      <div
+        className={`border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark
+          md:w-[420px] md:shrink-0 md:flex md:flex-col md:overflow-y-auto
+          ${mobileStep === 1 ? 'flex flex-1 flex-col overflow-y-auto' : 'hidden'}`}
+      >
+        {/* Mobile step indicator */}
+        <div className="md:hidden flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+              1
+            </span>
+            <span className="text-xs font-semibold text-primary">Information</span>
+          </div>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="flex items-center gap-1.5 opacity-40">
+            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center">
+              2
+            </span>
+            <span className="text-xs font-semibold text-slate-400">Design</span>
+          </div>
+        </div>
+
+        {/* Form content */}
+        <div className="p-6 pb-4 space-y-4 flex-1">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-800 dark:text-white">CV Editor</h2>
             <button
@@ -1335,18 +1451,77 @@ export default function CVBuilder() {
             )}
           </div>
         </div>
+
+        {/* Mobile: sticky "Choose Design" CTA */}
+        <div className="md:hidden shrink-0 sticky bottom-0 p-4 bg-white dark:bg-card-dark border-t border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setMobileStep(2)}
+            className="w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            Choose Design
+            <ArrowDownTrayIcon className="w-4 h-4 -rotate-90" />
+          </button>
+        </div>
       </div>
 
-      {/* Right Panel - Preview */}
-      <div className="flex-1 bg-slate-100 dark:bg-[#0B0D15] flex flex-col overflow-hidden">
-        {/* Template Toolbar */}
-        <div className="shrink-0 px-6 py-3 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+      {/* ── RIGHT PANEL: Template picker + Preview ─────────────────────────────
+          Desktop (md+): always visible, flex-1
+          Mobile (<md):  full screen on step 2, hidden on step 1              */}
+      <div
+        className={`bg-slate-100 dark:bg-[#0B0D15]
+          md:flex md:flex-1 md:flex-col md:overflow-hidden
+          ${mobileStep === 2 ? 'flex flex-1 flex-col overflow-hidden' : 'hidden'}`}
+      >
+        {/* Mobile: step indicator + Back + Download PDF */}
+        <div className="md:hidden shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setMobileStep(1)}
+            className="flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
+          >
+            <ArrowPathIcon className="w-4 h-4 rotate-180" />
+            Back
+          </button>
+          <div className="flex items-center gap-2 flex-1 justify-center">
+            <div className="flex items-center gap-1 opacity-40">
+              <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center">
+                1
+              </span>
+              <span className="text-xs font-semibold text-slate-400">Information</span>
+            </div>
+            <div className="w-6 h-px bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-center gap-1">
+              <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+                2
+              </span>
+              <span className="text-xs font-semibold text-primary">Design</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={exportToPDF}
+            disabled={isExporting}
+            className="bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {isExporting ? (
+              <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            )}
+            {isExporting ? 'Exporting...' : 'Download PDF'}
+          </button>
+        </div>
+
+        {/* Desktop: template toolbar (hidden on mobile) */}
+        <div className="hidden md:flex shrink-0 px-6 py-3 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-slate-500 uppercase">Template:</span>
             <div className="flex gap-1 flex-wrap">
               {TEMPLATES.map((template) => (
                 <button
                   key={template.id}
+                  type="button"
                   onClick={() => setSelectedTemplate(template.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     selectedTemplate === template.id
@@ -1360,6 +1535,7 @@ export default function CVBuilder() {
             </div>
           </div>
           <button
+            type="button"
             onClick={exportToPDF}
             disabled={isExporting}
             className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -1378,8 +1554,26 @@ export default function CVBuilder() {
           </button>
         </div>
 
-        {/* Preview Area — A4 constrained */}
-        <div className="flex-1 overflow-auto p-8 flex justify-center">
+        {/* Mobile: template thumbnail grid (hidden on desktop) */}
+        <div className="md:hidden shrink-0 p-4 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700">
+          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-3">
+            Choose a Template
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {TEMPLATES.map((t) => (
+              <TemplateThumbnail
+                key={t.id}
+                id={t.id}
+                label={t.label}
+                selected={selectedTemplate === t.id}
+                onClick={() => setSelectedTemplate(t.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Preview Area — A4 constrained, dynamic scale */}
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center">
           <div
             id="cv-preview"
             ref={previewRef}
@@ -1387,7 +1581,7 @@ export default function CVBuilder() {
             style={{
               width: '210mm',
               minHeight: '297mm',
-              transform: 'scale(0.65)',
+              transform: `scale(${previewScale})`,
               transformOrigin: 'top center',
             }}
           >
