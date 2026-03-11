@@ -708,6 +708,42 @@
       .qa-wrap:hover .qa-track {
         animation-play-state: paused;
       }
+
+      /* Learning Plan — glowing animated border (hue-rotate = GPU composited, no paint) */
+      .plan-input-glow {
+        background: linear-gradient(135deg, #67e8f9, #a78bfa, #818cf8);
+        animation: planGlow 4s linear infinite;
+      }
+      @keyframes planGlow {
+        0% {
+          filter: hue-rotate(0deg);
+        }
+        100% {
+          filter: hue-rotate(360deg);
+        }
+      }
+
+      /* Learning Plan — AI star colour shift */
+      .ai-star {
+        animation: aiStarColor 2s linear infinite;
+      }
+      @keyframes aiStarColor {
+        0% {
+          fill: #60a5fa;
+        }
+        25% {
+          fill: #a78bfa;
+        }
+        50% {
+          fill: #34d399;
+        }
+        75% {
+          fill: #fbbf24;
+        }
+        100% {
+          fill: #60a5fa;
+        }
+      }
     </style>
     <script type="importmap">
       {

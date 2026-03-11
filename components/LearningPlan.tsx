@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -6,7 +6,6 @@ import DashboardLayout from './DashboardLayout';
 import { ThemeToggle } from './ThemeToggle';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
 import {
-  AcademicCapIcon,
   ArrowLeftIcon,
   ArrowTopRightOnSquareIcon,
   CheckIcon,
@@ -16,7 +15,6 @@ import {
   PlusIcon,
   SparklesIcon,
 } from '@heroicons/react/24/solid';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 
@@ -97,6 +95,63 @@ function PegtopLoader() {
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 
+/* ─── Template Data ─────────────────────────────────────────────────────────── */
+
+const TEMPLATE_CATEGORIES = [
+  { id: 'all', label: 'All' },
+  { id: 'programming', label: 'Programming' },
+  { id: 'languages', label: 'Languages' },
+  { id: 'science', label: 'Science' },
+  { id: 'business', label: 'Business' },
+  { id: 'exam-prep', label: 'Exam Prep' },
+];
+
+const TEMPLATES = [
+  {
+    id: 1,
+    category: 'programming',
+    name: 'Web Development',
+    description: 'Master frontend and backend web development from HTML/CSS to React and Node.js',
+    prompt:
+      'I want to learn full-stack web development including HTML, CSS, JavaScript, React and Node.js',
+  },
+  {
+    id: 2,
+    category: 'exam-prep',
+    name: 'IELTS Preparation',
+    description: 'Prepare for IELTS exam with a structured study plan covering all sections',
+    prompt: 'Help me prepare for IELTS exam and achieve a score of 7.0 or higher',
+  },
+  {
+    id: 3,
+    category: 'programming',
+    name: 'Data Science',
+    description: 'Learn data analysis, machine learning, and Python for data science',
+    prompt: 'I want to learn data science, Python, machine learning, and data analysis',
+  },
+  {
+    id: 4,
+    category: 'business',
+    name: 'Digital Marketing',
+    description: 'Master SEO, social media marketing, and content strategy',
+    prompt: 'I want to learn digital marketing including SEO, social media, and content creation',
+  },
+  {
+    id: 5,
+    category: 'languages',
+    name: 'English Speaking',
+    description: 'Improve English speaking and conversation skills from intermediate to advanced',
+    prompt: 'I want to improve my English speaking and communication skills to an advanced level',
+  },
+  {
+    id: 6,
+    category: 'science',
+    name: 'Mathematics',
+    description: 'Build a strong math foundation from algebra to calculus',
+    prompt: 'I want to learn mathematics from algebra through calculus and beyond',
+  },
+];
+
 export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [topic, setTopic] = useState('');
   const [duration, setDuration] = useState('4 weeks');
@@ -110,6 +165,8 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
   const [recentPlans, setRecentPlans] = useState<string[]>([]);
 
   const { refreshBalance } = useCredits();
+  const [templateCategory, setTemplateCategory] = useState('all');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Credit-gate modal state (402 from backend triggers this)
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
@@ -342,136 +399,168 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
     );
   }
 
-  /* ─── Empty State ────────────────────────────────────────────────────────── */
+  /* ─── Empty State (Landing) ──────────────────────────────────────────────── */
 
   if (!plan && !isGenerating) {
+    const filteredTemplates =
+      templateCategory === 'all'
+        ? TEMPLATES
+        : TEMPLATES.filter((t) => t.category === templateCategory);
+
     return (
       <DashboardLayout
         currentScreen={Screen.LEARNING_PLAN}
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
-        <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
-          <div className="max-w-3xl mx-auto p-8 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="flex-1 overflow-y-auto bg-[#f8fafc] dark:bg-[#0f111a]">
+          <div className="max-w-[960px] mx-auto px-6 pt-14 pb-12 flex flex-col items-center">
+            {/* Error */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm w-full">
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm w-full max-w-[680px]">
                 {error}
               </div>
             )}
-            <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <AcademicCapIcon className="w-10 h-10 text-primary" />
-            </div>
-            <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">
-              What are you preparing for?
-            </h3>
-            <p className="text-text-sub text-center max-w-md mb-6">
-              Describe your career goal and our AI will generate a personalized, phased learning
-              plan with mixed exercises, videos, and articles.
+
+            {/* Title */}
+            <h1 className="text-[32px] font-bold text-gray-900 dark:text-white text-center mb-2 leading-tight">
+              Let's build your learning plan
+            </h1>
+            <p className="text-base text-gray-500 dark:text-gray-400 text-center mb-8 max-w-md">
+              Describe any learning goal and watch it become a plan in seconds.
             </p>
 
-            {/* Feature pills */}
-            <div className="flex flex-wrap justify-center gap-3 mb-10">
-              {[
-                { emoji: '🎯', label: 'Career-focused' },
-                { emoji: '🎬', label: 'Videos + Articles' },
-                { emoji: '✍️', label: 'Hands-on Exercises' },
-                { emoji: '📈', label: 'Progress tracking' },
-              ].map((f) => (
-                <span
-                  key={f.label}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-800 rounded-full text-xs font-medium text-text-main dark:text-white shadow-sm"
+            {/* Glowing animated border textarea */}
+            <div className="plan-input-glow w-full max-w-[680px] rounded-2xl p-[2px]">
+              <div className="bg-white dark:bg-[#1a1f32] rounded-[14px] p-5 relative min-h-[140px]">
+                <textarea
+                  ref={textareaRef}
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate();
+                  }}
+                  placeholder="I want to learn Python programming from scratch and build web applications..."
+                  rows={3}
+                  className="w-full bg-transparent border-none outline-none ring-0 text-[15px] text-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none pr-[120px] leading-relaxed"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !topic.trim()}
+                  className="absolute bottom-4 right-4 px-4 py-2 bg-gray-100 dark:bg-white/[0.08] hover:bg-gray-200 dark:hover:bg-white/[0.14] border border-gray-200 dark:border-white/[0.1] rounded-lg text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {f.emoji} {f.label}
-                </span>
-              ))}
+                  Build plan
+                </button>
+              </div>
             </div>
 
-            {/* ── Prompt Bar ── */}
-            <div className="w-full max-w-2xl mx-auto">
-              {/* Goal input */}
-              <div className="bg-white dark:bg-card-dark shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 dark:border-gray-800 rounded-2xl p-4 mb-3">
-                <div className="flex items-center gap-2 mb-3">
-                  <SparklesIcon className="w-4 h-4 text-primary flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-                    placeholder="e.g. Prepare for journalism internship at Kun.uz, Learn React from scratch, Get IELTS 7.0+"
-                    className="flex-1 bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-transparent text-sm text-text-main dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  />
-                </div>
-
-                {/* Controls row */}
-                <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
-                  {/* Difficulty pills */}
-                  <div className="flex items-center gap-1.5">
-                    {(['beginner', 'intermediate', 'advanced'] as const).map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setDifficulty(d)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-all ${
-                          difficulty === d
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* Duration select */}
-                    <div className="relative flex items-center">
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        aria-label="Duration"
-                        className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium text-xs cursor-pointer appearance-none border-none outline-none ring-0 rounded-full pl-3 pr-7 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <option value="1 week">1 week</option>
-                        <option value="2 weeks">2 weeks</option>
-                        <option value="3 weeks">3 weeks</option>
-                        <option value="4 weeks">4 weeks</option>
-                        <option value="2 months">2 months</option>
-                        <option value="3 months">3 months</option>
-                      </select>
-                      <svg
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-
-                    {/* Generate button */}
-                    <button
-                      onClick={handleGenerate}
-                      disabled={isGenerating || !topic.trim()}
-                      className="px-4 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-full text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-md shadow-primary/20"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <SparklesIcon className="w-3.5 h-3.5" />
-                          Generate Plan
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
+            {/* Difficulty + duration controls */}
+            <div className="flex items-center gap-2.5 mt-3 w-full max-w-[680px] flex-wrap">
+              {(['beginner', 'intermediate', 'advanced'] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDifficulty(d)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-all ${
+                    difficulty === d
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.1] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.1]'
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+              <div className="relative ml-auto">
+                <select
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  aria-label="Duration"
+                  className="bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.1] text-gray-600 dark:text-gray-300 font-medium text-xs cursor-pointer appearance-none outline-none rounded-full pl-3 pr-7 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.1] transition-colors"
+                >
+                  <option value="1 week">1 week</option>
+                  <option value="2 weeks">2 weeks</option>
+                  <option value="3 weeks">3 weeks</option>
+                  <option value="4 weeks">4 weeks</option>
+                  <option value="2 months">2 months</option>
+                  <option value="3 months">3 months</option>
+                </select>
+                <svg
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <p className="text-xs text-text-sub text-center">
-                AI generates a phased roadmap with exercises, videos &amp; articles tailored to your
-                goal
-              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 w-full max-w-[680px] my-7">
+              <div className="flex-1 h-px bg-gray-200 dark:bg-white/[0.08]" />
+              <span className="text-xs text-gray-400">or</span>
+              <div className="flex-1 h-px bg-gray-200 dark:bg-white/[0.08]" />
+            </div>
+
+            {/* Start from scratch */}
+            <button
+              type="button"
+              onClick={() => {
+                setTopic('');
+                setTimeout(() => textareaRef.current?.focus(), 50);
+              }}
+              className="flex items-center gap-1.5 px-6 py-2.5 border border-gray-200 dark:border-white/[0.1] rounded-xl bg-white dark:bg-white/[0.04] text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.18] transition-all"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Start from scratch
+            </button>
+
+            {/* Templates */}
+            <div className="w-full mt-12">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Start with a template
+              </h2>
+
+              {/* Category tabs */}
+              <div className="flex gap-2 mb-5 flex-wrap">
+                {TEMPLATE_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setTemplateCategory(cat.id)}
+                    className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                      templateCategory === cat.id
+                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Template cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredTemplates.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => {
+                      setTopic(tpl.prompt);
+                      setTimeout(() => textareaRef.current?.focus(), 50);
+                    }}
+                    className="text-left border border-gray-100 dark:border-white/[0.07] rounded-xl p-5 bg-white dark:bg-[#14161f] hover:border-gray-300 dark:hover:border-white/[0.15] hover:shadow-sm transition-all"
+                  >
+                    <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1.5">
+                      {tpl.name}
+                    </p>
+                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                      {tpl.description}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -488,80 +577,168 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         navigateTo={navigateTo}
         headerContent={headerContent}
       >
-        <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-[#0f111a]">
-          <div className="max-w-6xl mx-auto p-8">
-            {/* Thinking message */}
-            <div className="flex flex-col items-center mb-10">
-              <PegtopLoader />
-              <p className="text-sm font-medium text-text-main dark:text-white mt-4">
-                AI is structuring your learning journey...
-              </p>
-            </div>
+        <div className="flex-1 overflow-y-auto bg-[#f8fafc] dark:bg-[#0f111a] flex items-center justify-center">
+          <div className="flex flex-col items-center py-16 px-6">
+            {/* Workflow SVG skeleton */}
+            <svg viewBox="0 0 500 290" className="w-full max-w-[480px]" aria-hidden="true">
+              {/* ── Top node (gray) ── */}
+              <rect
+                x="185"
+                y="10"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#e2e8f0"
+                strokeWidth="1.5"
+              />
+              <circle cx="213" cy="32" r="9" fill="#e2e8f0" className="animate-pulse" />
+              <rect
+                x="231"
+                y="26"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
 
-            <div className="flex gap-8">
-              {/* Phase skeletons */}
-              <div className="flex-1 space-y-8">
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="relative pl-16"
-                    style={{ animationDelay: `${i * 200}ms` }}
-                  >
-                    {/* Phase number circle */}
-                    <div
-                      className="absolute left-0 top-0 size-14 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"
-                      style={{ animationDelay: `${i * 200}ms` }}
-                    />
-                    {/* Phase card */}
-                    <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-                      <div
-                        className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2 animate-pulse"
-                        style={{ animationDelay: `${i * 200}ms` }}
-                      />
-                      <div
-                        className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-72 mb-6 animate-pulse"
-                        style={{ animationDelay: `${i * 200 + 100}ms` }}
-                      />
-                      <div className="space-y-3">
-                        {[0, 1, 2].map((j) => (
-                          <div
-                            key={j}
-                            className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 animate-pulse"
-                            style={{ animationDelay: `${i * 200 + j * 150}ms` }}
-                          >
-                            <div className="size-9 rounded-lg bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
-                            <div className="flex-1">
-                              <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1.5" />
-                              <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
-                            </div>
-                            <div className="size-5 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* Connector */}
+              <line x1="250" y1="54" x2="250" y2="76" stroke="#e2e8f0" strokeWidth="1.5" />
 
-              {/* Sidebar skeleton */}
-              <div className="w-80 flex-shrink-0 space-y-6">
-                <div className="bg-white dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28 mb-6" />
-                  <div className="space-y-4">
-                    <div className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg" />
-                    <div className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg" />
-                  </div>
-                </div>
-                <div
-                  className="bg-white dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse"
-                  style={{ animationDelay: '300ms' }}
-                >
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4" />
-                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full mb-2" />
-                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-4/5" />
-                </div>
-              </div>
-            </div>
+              {/* ── AI node (dashed cyan) ── */}
+              <rect
+                x="185"
+                y="76"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#67e8f9"
+                strokeDasharray="5 3"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M213 98 L215.5 91 L218 98 L225 100.5 L218 103 L215.5 110 L213 103 L206 100.5 Z"
+                className="ai-star"
+              />
+              <rect
+                x="231"
+                y="92"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
+
+              {/* Branch connectors */}
+              <line x1="250" y1="120" x2="250" y2="148" stroke="#e2e8f0" strokeWidth="1.5" />
+              <path d="M250 148 Q250 163 165 163" fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
+              <path d="M250 148 Q250 163 335 163" fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
+
+              {/* ── Left: gray node ── */}
+              <rect
+                x="100"
+                y="163"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#e2e8f0"
+                strokeWidth="1.5"
+              />
+              <circle cx="128" cy="185" r="9" fill="#e2e8f0" className="animate-pulse" />
+              <rect
+                x="146"
+                y="179"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
+              <line x1="165" y1="207" x2="165" y2="228" stroke="#e2e8f0" strokeWidth="1.5" />
+
+              {/* ── Left: AI node ── */}
+              <rect
+                x="100"
+                y="228"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#67e8f9"
+                strokeDasharray="5 3"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M128 250 L130.5 243 L133 250 L140 252.5 L133 255 L130.5 262 L128 255 L121 252.5 Z"
+                className="ai-star"
+              />
+              <rect
+                x="146"
+                y="244"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
+
+              {/* ── Right: gray node ── */}
+              <rect
+                x="270"
+                y="163"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#e2e8f0"
+                strokeWidth="1.5"
+              />
+              <circle cx="298" cy="185" r="9" fill="#e2e8f0" className="animate-pulse" />
+              <rect
+                x="316"
+                y="179"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
+              <line x1="335" y1="207" x2="335" y2="228" stroke="#e2e8f0" strokeWidth="1.5" />
+
+              {/* ── Right: AI node ── */}
+              <rect
+                x="270"
+                y="228"
+                width="130"
+                height="44"
+                rx="10"
+                className="fill-white dark:fill-[#14161f]"
+                stroke="#67e8f9"
+                strokeDasharray="5 3"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M298 250 L300.5 243 L303 250 L310 252.5 L303 255 L300.5 262 L298 255 L291 252.5 Z"
+                className="ai-star"
+              />
+              <rect
+                x="316"
+                y="244"
+                width="64"
+                height="12"
+                rx="6"
+                fill="#f1f5f9"
+                className="animate-pulse"
+              />
+            </svg>
+
+            <p className="mt-8 text-base text-gray-500 dark:text-gray-400">
+              Loading your learning plan...
+            </p>
           </div>
         </div>
       </DashboardLayout>
