@@ -75,7 +75,7 @@ interface Filters {
 export default function CareerTracker({ navigateTo: _navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -112,6 +112,52 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     filters.remoteOnly,
     filters.sort,
   ]);
+
+  /* ── Coming Soon gate for students ── */
+  const isStudent = !user || user.role === 'STUDENT' || user.role === 'EDUCATOR';
+  if (isStudent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#0a0c14] dark:via-[#0f1120] dark:to-[#12132a] flex flex-col items-center justify-center px-6 text-center font-display">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.06]"
+        >
+          <ArrowLeftIcon className="w-4 h-4" />
+          {t('Common.back')}
+        </button>
+
+        {/* Icon */}
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/25">
+          <BriefcaseIcon className="w-10 h-10 text-white" />
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-3">
+          {t('CareerTracker.title')}
+        </h1>
+
+        {/* Badge */}
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-bold mb-6">
+          🚧 Coming Soon
+        </span>
+
+        {/* Description */}
+        <p className="text-gray-500 dark:text-gray-400 max-w-md text-base leading-relaxed mb-10">
+          We're building a powerful career tracking experience for you.
+          Discover internships, graduate roles, and full-time positions — all in one place. Stay tuned!
+        </p>
+
+        {/* CTA */}
+        <button
+          onClick={() => navigate(-1)}
+          className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all active:scale-[0.97]"
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   const fetchJobs = async () => {
     try {
@@ -411,40 +457,40 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
         filters.jobTypes.length > 0 ||
         filters.paidOnly ||
         filters.remoteOnly) && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs font-medium text-text-sub mb-2">
-            {t('CareerTracker.active_filters')}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {filters.paidOnly && (
-              <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                {t('CareerTracker.paid_only')}
-              </span>
-            )}
-            {filters.remoteOnly && (
-              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                {t('CareerTracker.remote')}
-              </span>
-            )}
-            {filters.locationTypes.map((locType) => (
-              <span
-                key={locType}
-                className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
-              >
-                {t(JOB_TYPE_KEYS[locType] || `CareerTracker.${locType.toLowerCase()}`)}
-              </span>
-            ))}
-            {filters.jobTypes.map((jobType) => (
-              <span
-                key={jobType}
-                className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
-              >
-                {formatJobType(jobType)}
-              </span>
-            ))}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-text-sub mb-2">
+              {t('CareerTracker.active_filters')}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {filters.paidOnly && (
+                <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                  {t('CareerTracker.paid_only')}
+                </span>
+              )}
+              {filters.remoteOnly && (
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                  {t('CareerTracker.remote')}
+                </span>
+              )}
+              {filters.locationTypes.map((locType) => (
+                <span
+                  key={locType}
+                  className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
+                >
+                  {t(JOB_TYPE_KEYS[locType] || `CareerTracker.${locType.toLowerCase()}`)}
+                </span>
+              ))}
+              {filters.jobTypes.map((jobType) => (
+                <span
+                  key={jobType}
+                  className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                >
+                  {formatJobType(jobType)}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 
@@ -666,13 +712,12 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1.5 mb-3">
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase whitespace-nowrap ${
-                            job.jobType === 'INTERNSHIP'
-                              ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-                              : job.jobType === 'GRADUATE'
-                                ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                                : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                          }`}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase whitespace-nowrap ${job.jobType === 'INTERNSHIP'
+                            ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                            : job.jobType === 'GRADUATE'
+                              ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                              : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                            }`}
                         >
                           {formatJobType(job.jobType)}
                         </span>
