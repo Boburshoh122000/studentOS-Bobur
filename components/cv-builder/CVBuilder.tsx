@@ -954,15 +954,31 @@ export default function CVBuilder() {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true, // required on some mobile browsers
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 794, // render at consistent A4 width regardless of viewport
-        imageTimeout: 0, // disable per-image timeout (avoids partial captures)
-      });
+      // html2canvas hangs when the target element has position:absolute + CSS transform.
+      // Temporarily reset both so it captures the native A4 size, then restore.
+      const el = previewRef.current;
+      const savedTransform = el.style.transform;
+      const savedTransformOrigin = el.style.transformOrigin;
+      const savedPosition = el.style.position;
+      el.style.transform = 'none';
+      el.style.transformOrigin = '';
+      el.style.position = 'static';
+
+      let canvas: HTMLCanvasElement;
+      try {
+        canvas = await html2canvas(el, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          imageTimeout: 0,
+        });
+      } finally {
+        el.style.transform = savedTransform;
+        el.style.transformOrigin = savedTransformOrigin;
+        el.style.position = savedPosition;
+      }
 
       const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const pdf = new jsPDF('p', 'mm', 'a4');

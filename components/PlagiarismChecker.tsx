@@ -106,6 +106,20 @@ type ScanOption = {
   iconColor: string;
 };
 
+// File size limits per format (bytes)
+const FILE_SIZE_LIMITS: Record<string, number> = {
+  'application/pdf': 10 * 1024 * 1024,
+  'application/msword': 5 * 1024 * 1024,
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 5 * 1024 * 1024,
+  'text/plain': 2 * 1024 * 1024,
+};
+const FILE_SIZE_LABELS: Record<string, string> = {
+  'application/pdf': '10 MB',
+  'application/msword': '5 MB',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '5 MB',
+  'text/plain': '2 MB',
+};
+
 const SCAN_OPTIONS: ScanOption[] = [
   {
     id: 'advanced-ai',
@@ -189,6 +203,16 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // File size validation
+    const sizeLimit = FILE_SIZE_LIMITS[file.type];
+    if (sizeLimit && file.size > sizeLimit) {
+      const ext = file.name.split('.').pop()?.toUpperCase() ?? 'File';
+      setError(`${ext} files must be under ${FILE_SIZE_LABELS[file.type]}.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     if (file.type === 'text/plain') {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -302,9 +326,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   return (
     <>
       <DashboardLayout currentScreen={Screen.PLAGIARISM} navigateTo={navigateTo}>
-        <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] bg-gray-50 dark:bg-background-dark overflow-hidden">
+        <div className="flex flex-col md:flex-row md:h-[calc(100vh-4rem)] bg-gray-50 dark:bg-background-dark md:overflow-hidden">
           {/* ═══════ LEFT: Document Editor ═══════ */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-card-dark m-3 md:m-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+          <div className="flex flex-col bg-white dark:bg-card-dark m-3 mb-0 md:m-4 md:flex-1 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2.5">
                 <DocumentTextIcon className="w-5 h-5 text-indigo-500" />
@@ -339,9 +363,48 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 </button>
               </div>
             </div>
+            {/* ── Mobile: "Add your document" section ── */}
+            <div className="md:hidden px-4 pt-4 pb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
+                Add your document
+              </p>
+              {/* Upload card */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors disabled:opacity-50 text-left"
+              >
+                <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                  {isUploading ? (
+                    <ArrowPathIcon className="w-5 h-5 animate-spin text-indigo-500" />
+                  ) : (
+                    <DocumentArrowUpIcon className="w-5 h-5 text-indigo-500" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    {isUploading ? 'Extracting text…' : 'Upload a document'}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    PDF · 10 MB &nbsp;·&nbsp; DOCX · 5 MB &nbsp;·&nbsp; TXT · 2 MB
+                  </p>
+                </div>
+                <ArrowRightIcon className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+              </button>
+              {/* Divider */}
+              <div className="flex items-center gap-2 mt-3">
+                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                  or paste text below
+                </span>
+                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+              </div>
+            </div>
+
             <textarea
-              className="flex-1 w-full p-8 md:p-12 resize-none outline-none border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-lg leading-relaxed placeholder-gray-400 dark:placeholder-gray-600 bg-transparent"
-              placeholder="Paste your text here or upload a document to check for plagiarism and AI-generated content..."
+              className="flex-1 w-full p-5 md:p-12 min-h-[200px] resize-none outline-none border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed placeholder-gray-400 dark:placeholder-gray-600 bg-transparent"
+              placeholder="Paste your essay, article, or assignment here…"
               value={textContent}
               onChange={(e) => {
                 setTextContent(e.target.value);
@@ -473,8 +536,11 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
           </div>
 
           {/* ═══════ RIGHT: Analysis Sidebar ═══════ */}
-          <div className="w-full md:w-80 lg:w-96 bg-gray-50 dark:bg-background-dark md:border-l border-gray-200 dark:border-gray-700 flex flex-col p-4 overflow-y-auto">
+          <div className="w-full md:w-80 lg:w-96 bg-gray-50 dark:bg-background-dark md:border-l border-gray-200 dark:border-gray-700 flex flex-col px-3 pt-3 pb-3 md:p-4 overflow-y-auto">
             <div className="flex-1 space-y-3">
+              <p className="md:hidden text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1 pb-1">
+                Scan options
+              </p>
               {SCAN_OPTIONS.map((opt) => {
                 const isSelected = selectedOptions.includes(opt.id);
                 return (
