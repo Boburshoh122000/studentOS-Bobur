@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowRightIcon,
   ArrowsRightLeftIcon,
-  ChartBarIcon,
   CheckIcon,
   CpuChipIcon,
   ShieldCheckIcon,
@@ -148,7 +147,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.2 }}
-          className="absolute top-[15%] left-[2%] lg:left-[5%] w-[240px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col gap-3 pointer-events-auto"
+          className="absolute top-[10%] left-[8%] w-[240px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col gap-3 pointer-events-auto"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -176,7 +175,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.4 }}
-          className="absolute top-[10%] right-[2%] lg:right-[5%] w-[210px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center gap-3 pointer-events-auto"
+          className="absolute top-[8%] right-[8%] w-[210px] bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center gap-3 pointer-events-auto"
         >
           <div className="flex items-center gap-1.5">
             <CheckIcon className="w-4 h-4 text-emerald-500" />
@@ -197,7 +196,7 @@ export default function TrustlineHero() {
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.6 }}
-          className="absolute bottom-[5%] left-[2%] lg:left-[5%] w-[230px] pointer-events-auto"
+          className="absolute bottom-[8%] left-[8%] w-[230px] pointer-events-auto"
         >
           <span className="text-xs font-bold text-slate-700 mb-1.5 block ml-3">Your Peers</span>
           <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-slate-100 relative">
@@ -248,23 +247,12 @@ export default function TrustlineHero() {
           </div>
         </motion.div>
 
-        {/* Center Pill */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.7 }}
-          className="absolute bottom-[18%] left-1/2 -translate-x-1/2 bg-indigo-600 px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(99,102,241,0.4)] flex items-center gap-2 pointer-events-auto"
-        >
-          <ChartBarIcon className="w-3.5 h-3.5 text-white" />
-          <span className="text-xs font-bold text-white tracking-wide">StudentOS</span>
-        </motion.div>
-
         {/* D. Bottom-Right: Mentors Network */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.8 }}
-          className="absolute bottom-[5%] right-[2%] lg:right-[5%] w-[280px] pointer-events-auto"
+          className="absolute bottom-[8%] right-[8%] w-[280px] pointer-events-auto"
         >
           <div className="absolute -top-3 right-6 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100 flex items-center gap-1.5 z-20">
             <UsersIcon className="w-3 h-3 text-amber-500" />
@@ -408,9 +396,12 @@ export default function TrustlineHero() {
           transition={{ duration: 0.8, delay: 0.5, ease: smoothEase }}
           className="flex flex-row items-center justify-center gap-4 mt-10"
         >
-          <button className="bg-indigo-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-indigo-700 transition shadow-[0_6px_16px_rgba(79,70,229,0.3)]">
-            Get started
-          </button>
+          <Link
+            to="/signup/step-1"
+            className="inline-block bg-indigo-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-indigo-700 transition shadow-[0_6px_16px_rgba(79,70,229,0.3)]"
+          >
+            Boshlash
+          </Link>
         </motion.div>
       </div>
     </section>

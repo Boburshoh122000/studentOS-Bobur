@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 /** Brand name constant — change once, reflected everywhere */
 const BRAND_NAME = 'StudentOS' as const;
@@ -36,14 +36,17 @@ const Logo = memo(function Logo({
 }: LogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      {/* Logo Image */}
-      <img
-        src="/logo.png"
-        alt={`${BRAND_NAME} Logo`}
-        className={`object-contain flex-shrink-0 ${iconSize}`}
-        loading="lazy"
-        decoding="async"
-      />
+      {/* Logo Image — mix-blend-multiply removes white bg on light surfaces;
+          dark:bg-white/90 + dark:rounded-lg contains the white bg on dark surfaces */}
+      <div className={`flex-shrink-0 rounded-lg dark:bg-white/90 dark:p-0.5 ${iconSize}`}>
+        <img
+          src="/logo.png"
+          alt={`${BRAND_NAME} Logo`}
+          className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
 
       {/* Brand name — hidden when iconOnly is true */}
       {!iconOnly && (
