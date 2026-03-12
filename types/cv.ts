@@ -96,7 +96,17 @@ export interface CVData {
   customSections: CustomSection[];
 }
 
-export type TemplateType = 'modern' | 'minimalist' | 'professional' | 'europass' | 'grant' | 'tech';
+export type TemplateType =
+  | 'modern'
+  | 'minimalist'
+  | 'professional'
+  | 'europass'
+  | 'grant'
+  | 'tech'
+  | 'creative'
+  | 'executive'
+  | 'simple'
+  | 'starter';
 
 export const defaultCVData: CVData = {
   personalInfo: {

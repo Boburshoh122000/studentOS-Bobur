@@ -21,6 +21,10 @@ import {
   EuropassTemplate,
   GrantTemplate,
   TechTemplate,
+  CreativeTemplate,
+  ExecutiveTemplate,
+  SimpleTemplate,
+  StarterTemplate,
 } from './CVTemplates';
 import { userApi } from '../../src/services/api';
 import toast from 'react-hot-toast';
@@ -640,9 +644,13 @@ const TEMPLATES: { id: TemplateType; label: string }[] = [
   { id: 'europass', label: 'Europass' },
   { id: 'grant', label: 'Academic' },
   { id: 'tech', label: 'Tech' },
+  { id: 'creative', label: 'Creative' },
+  { id: 'executive', label: 'Executive' },
+  { id: 'simple', label: 'Simple' },
+  { id: 'starter', label: 'Starter' },
 ];
 
-// ─── TEMPLATE THUMBNAIL (mobile template picker) ─────────────────────────────
+// ─── TEMPLATE THUMBNAIL (mobile + desktop template picker) ───────────────────
 
 const TEMPLATE_STYLES: Record<TemplateType, { header: string; accent: string }> = {
   modern: { header: 'bg-blue-600', accent: 'bg-blue-100' },
@@ -651,6 +659,10 @@ const TEMPLATE_STYLES: Record<TemplateType, { header: string; accent: string }> 
   europass: { header: 'bg-blue-800', accent: 'bg-blue-100' },
   grant: { header: 'bg-emerald-700', accent: 'bg-emerald-100' },
   tech: { header: 'bg-gray-900', accent: 'bg-cyan-100' },
+  creative: { header: 'bg-violet-700', accent: 'bg-violet-100' },
+  executive: { header: 'bg-slate-900', accent: 'bg-amber-100' },
+  simple: { header: 'bg-white border border-gray-300', accent: 'bg-gray-100' },
+  starter: { header: 'bg-teal-500', accent: 'bg-teal-100' },
 };
 
 function TemplateThumbnail({
@@ -658,46 +670,50 @@ function TemplateThumbnail({
   label,
   selected,
   onClick,
+  compact = false,
 }: {
   id: TemplateType;
   label: string;
   selected: boolean;
   onClick: () => void;
+  compact?: boolean;
 }) {
   const s = TEMPLATE_STYLES[id];
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+      className={`relative rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
+        compact ? 'w-14' : 'w-full'
+      } ${
         selected
-          ? 'border-primary shadow-lg'
+          ? 'border-primary shadow-md'
           : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
       }`}
     >
-      <div className="w-full aspect-[3/4] bg-white p-1.5 flex flex-col gap-1">
-        <div className={`${s.header} h-5 rounded-sm`} />
-        <div className="flex gap-1 flex-1">
-          <div className="w-1/3 flex flex-col gap-1 pt-1">
-            <div className={`h-2 ${s.accent} rounded-sm`} />
-            <div className="h-1.5 bg-slate-100 rounded-sm" />
-            <div className="h-1.5 bg-slate-100 rounded-sm" />
+      <div className="w-full aspect-[3/4] bg-white p-1 flex flex-col gap-0.5">
+        <div className={`${s.header} h-4 rounded-sm`} />
+        <div className="flex gap-0.5 flex-1">
+          <div className="w-1/3 flex flex-col gap-0.5 pt-0.5">
+            <div className={`h-1.5 ${s.accent} rounded-sm`} />
+            <div className="h-1 bg-slate-100 rounded-sm" />
+            <div className="h-1 bg-slate-100 rounded-sm" />
           </div>
-          <div className="flex-1 flex flex-col gap-1 pt-1">
-            <div className="h-1.5 bg-slate-200 rounded-sm" />
-            <div className="h-1.5 bg-slate-200 rounded-sm" />
-            <div className="h-1.5 bg-slate-200 rounded-sm w-3/4" />
-            <div className="h-1.5 bg-slate-200 rounded-sm mt-1" />
-            <div className="h-1.5 bg-slate-200 rounded-sm w-2/3" />
+          <div className="flex-1 flex flex-col gap-0.5 pt-0.5">
+            <div className="h-1 bg-slate-200 rounded-sm" />
+            <div className="h-1 bg-slate-200 rounded-sm" />
+            <div className="h-1 bg-slate-200 rounded-sm w-3/4" />
+            <div className="h-1 bg-slate-200 rounded-sm mt-0.5" />
+            <div className="h-1 bg-slate-200 rounded-sm w-2/3" />
           </div>
         </div>
       </div>
-      <div className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-semibold text-center py-1.5 border-t border-slate-200 dark:border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-semibold text-center py-1 border-t border-slate-200 dark:border-slate-700 truncate px-1">
         {label}
       </div>
       {selected && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow">
-          <CheckIcon className="w-3 h-3 text-white" />
+        <div className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow">
+          <CheckIcon className="w-2.5 h-2.5 text-white" />
         </div>
       )}
     </button>
@@ -743,14 +759,29 @@ export default function CVBuilder() {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Keep CSS custom properties in sync with previewScale
+  // Keep CSS custom properties in sync with previewScale.
+  // ResizeObserver watches the actual page height (which can exceed one A4 page)
+  // so the wrapper always matches the full scaled content — no cut-off.
   useEffect(() => {
-    const el = wrapperRef.current;
-    if (el) {
-      el.style.setProperty('--preview-w', `${Math.round(794 * previewScale)}px`);
-      el.style.setProperty('--preview-h', `${Math.round(1123 * previewScale)}px`);
-      el.style.setProperty('--preview-scale', `${previewScale}`);
-    }
+    const page = previewRef.current;
+    const wrapper = wrapperRef.current;
+    if (!page || !wrapper) return;
+
+    const sync = () => {
+      const naturalH = page.offsetHeight; // actual rendered height (pre-scale)
+      const scaledH = Math.max(
+        Math.round(naturalH * previewScale),
+        Math.round(1123 * previewScale)
+      );
+      wrapper.style.setProperty('--preview-w', `${Math.round(794 * previewScale)}px`);
+      wrapper.style.setProperty('--preview-h', `${scaledH}px`);
+      wrapper.style.setProperty('--preview-scale', `${previewScale}`);
+    };
+
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(page);
+    return () => observer.disconnect();
   }, [previewScale]);
 
   // Load from localStorage on mount
@@ -1011,20 +1042,29 @@ export default function CVBuilder() {
         el.style.position = savedPosition;
       }
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = 210;
-      const pageHeight = 297;
+      const buildPdf = (imgData: string) => {
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * pageWidth) / canvas.width;
+        let position = 0;
+        while (position < imgHeight) {
+          if (position > 0) pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, -position, imgWidth, imgHeight);
+          position += pageHeight;
+        }
+        return pdf;
+      };
 
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      let imgData = canvas.toDataURL('image/jpeg', 0.85);
+      let pdf = buildPdf(imgData);
 
-      let position = 0;
-
-      while (position < imgHeight) {
-        if (position > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, -position, imgWidth, imgHeight);
-        position += pageHeight;
+      // Auto-reduce quality if PDF > 5 MB
+      const MAX_BYTES = 5 * 1024 * 1024;
+      if (pdf.output('blob').size > MAX_BYTES) {
+        imgData = canvas.toDataURL('image/jpeg', 0.65);
+        pdf = buildPdf(imgData);
       }
 
       const fileName = `${cvData.personalInfo.firstName || 'My'}_${cvData.personalInfo.lastName || 'Resume'}_CV.pdf`;
@@ -1124,6 +1164,14 @@ export default function CVBuilder() {
         return <GrantTemplate data={cvData} />;
       case 'tech':
         return <TechTemplate data={cvData} />;
+      case 'creative':
+        return <CreativeTemplate data={cvData} />;
+      case 'executive':
+        return <ExecutiveTemplate data={cvData} />;
+      case 'simple':
+        return <SimpleTemplate data={cvData} />;
+      case 'starter':
+        return <StarterTemplate data={cvData} />;
       default:
         return <ModernTemplate data={cvData} />;
     }
@@ -1593,23 +1641,21 @@ export default function CVBuilder() {
         </div>
 
         {/* Desktop: template toolbar (hidden on mobile) */}
-        <div className="hidden md:flex shrink-0 px-6 py-3 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Template:</span>
-            <div className="flex gap-1 flex-wrap">
+        <div className="hidden md:flex shrink-0 px-4 py-3 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 items-center gap-4">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase shrink-0">
+            Shablon:
+          </span>
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex gap-2 pb-1">
               {TEMPLATES.map((template) => (
-                <button
+                <TemplateThumbnail
                   key={template.id}
-                  type="button"
+                  id={template.id}
+                  label={template.label}
+                  selected={selectedTemplate === template.id}
                   onClick={() => setSelectedTemplate(template.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    selectedTemplate === template.id
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                  }`}
-                >
-                  {template.label}
-                </button>
+                  compact
+                />
               ))}
             </div>
           </div>
@@ -1617,17 +1663,17 @@ export default function CVBuilder() {
             type="button"
             onClick={exportToPDF}
             disabled={isExporting}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="shrink-0 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {isExporting ? (
               <>
                 <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
-                Exporting...
+                Yuklanmoqda...
               </>
             ) : (
               <>
                 <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
-                Download PDF
+                PDF yuklab olish
               </>
             )}
           </button>
