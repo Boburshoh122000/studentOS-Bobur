@@ -71,7 +71,34 @@ router.get('/webhook-info', async (_req: Request, res: Response) => {
     res.json({
       webhookInfo: data,
       expectedUrl: backendUrl ? `${backendUrl}/api/telegram/webhook` : 'BACKEND_URL not set',
+      match: backendUrl ? data?.result?.url === `${backendUrl}/api/telegram/webhook` : false,
     });
+  } catch (err: any) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
+// ─── Manual: Re-register webhook ────────────────────────────────────────────
+router.post('/register-webhook', async (_req: Request, res: Response) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const backendUrl = process.env.BACKEND_URL;
+  if (!token) {
+    res.json({ ok: false, error: 'TELEGRAM_BOT_TOKEN not set in Railway env' });
+    return;
+  }
+  if (!backendUrl) {
+    res.json({ ok: false, error: 'BACKEND_URL not set in Railway env' });
+    return;
+  }
+  try {
+    const webhookUrl = `${backendUrl}/api/telegram/webhook`;
+    const r = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl }),
+    });
+    const data: any = await r.json();
+    res.json({ ...data, webhookUrl });
   } catch (err: any) {
     res.json({ ok: false, error: err.message });
   }
