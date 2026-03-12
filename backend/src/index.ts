@@ -48,7 +48,11 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
   message: { error: 'Too many requests, please try again later.' },
 });
-app.use('/api/', limiter);
+// Exclude Telegram webhook from rate limiting (Telegram sends server-to-server requests at high frequency)
+app.use('/api/', (req, res, next) => {
+  if (req.path.startsWith('/telegram/webhook')) return next();
+  return limiter(req, res, next);
+});
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
