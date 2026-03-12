@@ -183,6 +183,43 @@ router.post('/verify-otp', validate(verifyOtpSchema), async (req, res, next) => 
   }
 });
 
+// Verify email for existing unverified account (redirected from login)
+router.post('/verify-email', async (req, res, next) => {
+  try {
+    const { email, otpCode } = req.body as { email: string; otpCode: string };
+    if (!email || !otpCode) {
+      res.status(400).json({ error: 'email and otpCode are required' });
+      return;
+    }
+
+    const entry = otpStore.get(email);
+    if (!entry || entry.code !== otpCode || Date.now() > entry.expiresAt) {
+      res.status(400).json({ error: 'Invalid or expired verification code' });
+      return;
+    }
+    otpStore.delete(email);
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(404).json({ error: 'No account found for this email' });
+      return;
+    }
+
+    await prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
+
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
+    const refreshToken = await generateRefreshToken(user.id);
+
+    res.json({ accessToken, refreshToken });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Register (now requires OTP)
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {

@@ -214,6 +214,9 @@ export const authApi = {
   verifyOtp: (data: { email: string; code: string }) =>
     api.post<{ verified: boolean }>('/auth/verify-otp', data),
 
+  verifyEmail: (data: { email: string; otpCode: string }) =>
+    api.post<{ accessToken: string; refreshToken: string }>('/auth/verify-email', data),
+
   register: async (data: {
     email: string;
     password: string;

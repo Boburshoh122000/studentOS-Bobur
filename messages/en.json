@@ -193,6 +193,7 @@
     "code_sent_toast": "Verification code sent to your email",
     "new_code_sent": "New code sent!",
     "account_created": "Account created successfully!",
+    "email_verified": "Email verified! Welcome back.",
     "email_not_verified_toast": "Email not verified. A new verification code has been sent.",
     "password_min_length": "Password must be at least 10 characters",
     "password_need_uppercase": "Password must contain at least one uppercase letter",

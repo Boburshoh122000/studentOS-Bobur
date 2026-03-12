@@ -193,6 +193,7 @@
     "code_sent_toast": "Tasdiqlash kodi emailingizga yuborildi",
     "new_code_sent": "Yangi kod yuborildi!",
     "account_created": "Hisob muvaffaqiyatli yaratildi!",
+    "email_verified": "Email tasdiqlandi! Xush kelibsiz.",
     "email_not_verified_toast": "Email tasdiqlanmagan. Yangi tasdiqlash kodi yuborildi.",
     "password_min_length": "Parol kamida 10 ta belgidan iborat bo'lishi kerak",
     "password_need_uppercase": "Parolda kamida bitta katta harf bo'lishi kerak",

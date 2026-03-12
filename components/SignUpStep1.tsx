@@ -145,30 +145,49 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
     setIsVerifying(true);
 
     try {
-      // Register with OTP code
-      const { data, error: apiError } = await authApi.register({
-        email,
-        password,
-        fullName,
-        otpCode,
-      });
+      let accessToken: string | undefined;
+      let refreshToken: string | undefined;
+      let isNewAccount = true;
 
-      if (apiError) {
-        setError(apiError);
-        return;
+      if (!password) {
+        // Redirect-from-login flow: existing unverified user, just verify the OTP
+        const { data, error: apiError } = await authApi.verifyEmail({ email, otpCode });
+        if (apiError) {
+          setError(apiError);
+          return;
+        }
+        accessToken = data?.accessToken;
+        refreshToken = data?.refreshToken;
+        isNewAccount = false;
+      } else {
+        // Normal registration flow
+        const { data, error: apiError } = await authApi.register({
+          email,
+          password,
+          fullName,
+          otpCode,
+        });
+        if (apiError) {
+          setError(apiError);
+          return;
+        }
+        accessToken = data?.accessToken;
+        refreshToken = data?.refreshToken;
       }
 
-      if (data) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+      if (accessToken && refreshToken) {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
 
-        toast.success(t('Auth.account_created'));
+        toast.success(isNewAccount ? t('Auth.account_created') : t('Auth.email_verified'));
 
         const redirectTo = searchParams.get('redirect');
         if (redirectTo) {
           navigate(redirectTo, { replace: true });
-        } else {
+        } else if (isNewAccount) {
           navigate('/signup/step-2', { replace: true });
+        } else {
+          navigate('/app', { replace: true });
         }
       }
     } catch (err) {
