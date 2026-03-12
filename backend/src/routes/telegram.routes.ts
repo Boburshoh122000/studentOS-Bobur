@@ -57,6 +57,26 @@ router.post('/link-account', async (req: Request, res: Response) => {
   return res.json({ success: true, name });
 });
 
+// ─── Debug: Webhook info + re-register ──────────────────────────────────────
+router.get('/webhook-info', async (_req: Request, res: Response) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const backendUrl = process.env.BACKEND_URL;
+  if (!token) {
+    res.json({ ok: false, error: 'TELEGRAM_BOT_TOKEN not set' });
+    return;
+  }
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+    const data: any = await r.json();
+    res.json({
+      webhookInfo: data,
+      expectedUrl: backendUrl ? `${backendUrl}/api/telegram/webhook` : 'BACKEND_URL not set',
+    });
+  } catch (err: any) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
 // ─── Telegram Webhook Handler ───────────────────────────────────────────────
 // This endpoint receives updates from Telegram. No auth middleware —
 // it's called by Telegram's servers. The route is secured by keeping the
@@ -64,6 +84,7 @@ router.post('/link-account', async (req: Request, res: Response) => {
 
 router.post('/webhook', async (req: Request, res: Response) => {
   try {
+    console.log('[Telegram Webhook] Received update:', JSON.stringify(req.body).slice(0, 200));
     const update = req.body;
 
     // Handle regular messages (commands)
