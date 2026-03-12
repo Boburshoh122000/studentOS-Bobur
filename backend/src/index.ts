@@ -96,6 +96,25 @@ const HOST = '0.0.0.0'; // Required for Railway - must listen on all interfaces
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);
   console.log(`📝 Environment: ${env.NODE_ENV}`);
+
+  // Auto-register Telegram webhook when both token and backend URL are set
+  if (env.TELEGRAM_BOT_TOKEN && env.BACKEND_URL) {
+    const webhookUrl = `${env.BACKEND_URL}/api/telegram/webhook`;
+    fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl }),
+    })
+      .then((r) => r.json())
+      .then((data: any) => {
+        if (data.ok) {
+          console.log(`✅ Telegram webhook registered: ${webhookUrl}`);
+        } else {
+          console.warn('⚠️  Telegram webhook registration failed:', data.description);
+        }
+      })
+      .catch((err) => console.warn('⚠️  Telegram webhook registration error:', err.message));
+  }
 });
 
 export default app;

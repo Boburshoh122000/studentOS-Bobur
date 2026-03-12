@@ -15,6 +15,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
+  BACKEND_URL: z.string().optional(), // e.g. https://studentos-api.up.railway.app
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
