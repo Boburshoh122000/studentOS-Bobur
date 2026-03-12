@@ -197,4 +197,70 @@ router.post(
   }
 );
 
+// ─── Telegram Integration ───────────────────────────────────────────────────
+
+// GET /telegram/status — returns connection state + pending code if any
+router.get('/telegram/status', authenticate, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: {
+        telegramChatId: true,
+        telegramUsername: true,
+        telegramLinkCode: true,
+        telegramLinkCodeExpiry: true,
+      },
+    });
+    const pendingCode =
+      user?.telegramLinkCode &&
+      user.telegramLinkCodeExpiry &&
+      user.telegramLinkCodeExpiry > new Date()
+        ? { code: user.telegramLinkCode, expiresAt: user.telegramLinkCodeExpiry }
+        : null;
+    res.json({
+      connected: !!user?.telegramChatId,
+      username: user?.telegramUsername ?? null,
+      pendingCode,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /telegram/generate-code — create a 6-digit pairing code (10 min TTL)
+router.post(
+  '/telegram/generate-code',
+  authenticate,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const code = Math.floor(100_000 + Math.random() * 900_000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { telegramLinkCode: code, telegramLinkCodeExpiry: expiresAt },
+      });
+      res.json({ code, expiresAt });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// DELETE /telegram/disconnect — unlink Telegram account
+router.delete(
+  '/telegram/disconnect',
+  authenticate,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { telegramChatId: null, telegramUsername: null },
+      });
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;

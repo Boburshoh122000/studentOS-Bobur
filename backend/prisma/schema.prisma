@@ -133,8 +133,11 @@ model User {
   creditBalance    Int     @default(10)
   referralCode     String? @unique
   referredBy       String? // User ID who referred this user
-  telegramCredited Boolean @default(false)
-  telegramChatId   BigInt? @unique
+  telegramCredited       Boolean   @default(false)
+  telegramChatId         BigInt?   @unique
+  telegramUsername       String?
+  telegramLinkCode       String?
+  telegramLinkCodeExpiry DateTime?
 
   // Relations
   studentProfile    StudentProfile?

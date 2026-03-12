@@ -45,14 +45,29 @@ async function handleMessage(message: any) {
   if (text.startsWith('/start')) {
     const payload = text.split(' ')[1]; // The user UUID
     if (payload) {
-      await handleStartCommand(chatId, payload);
+      await handleStartCommand(chatId, message.from, payload);
     } else {
       await sendTelegramMessageDirect(
         chatId,
         '👋 <b>Welcome to StudentOS Bot!</b>\n\n' +
-          'To connect your account, use the link from your StudentOS Dashboard.\n\n' +
+          'To connect your account, go to <b>Settings → Integrations</b> in StudentOS and generate a link code, then send:\n\n' +
+          '<code>/link 123456</code>\n\n' +
           '💡 <b>Commands:</b>\n' +
           "/habits — View & toggle today's habits"
+      );
+    }
+    return;
+  }
+
+  // /link CODE command — pair via generated code
+  if (text.startsWith('/link ')) {
+    const code = text.split(' ')[1]?.trim();
+    if (code) {
+      await handleLinkCommand(chatId, message.from, code);
+    } else {
+      await sendTelegramMessageDirect(
+        chatId,
+        '❌ Please provide the code: <code>/link 123456</code>'
       );
     }
     return;
@@ -74,9 +89,8 @@ async function handleMessage(message: any) {
 }
 
 // ─── Deep Link: Connect Telegram to StudentOS account ───────────────────────
-async function handleStartCommand(chatId: number, userUuid: string) {
+async function handleStartCommand(chatId: number, from: any, userUuid: string) {
   try {
-    // Find the user by ID
     const user = await prisma.user.findUnique({
       where: { id: userUuid },
       select: { id: true, email: true, studentProfile: { select: { fullName: true } } },
@@ -85,12 +99,11 @@ async function handleStartCommand(chatId: number, userUuid: string) {
     if (!user) {
       await sendTelegramMessageDirect(
         chatId,
-        '❌ Invalid link. Please use the Connect button from your StudentOS Dashboard.'
+        '❌ Invalid link. Please use the Connect button from your StudentOS Settings.'
       );
       return;
     }
 
-    // Check if this Telegram account is already linked to another user
     const existing = await prisma.user.findFirst({
       where: { telegramChatId: BigInt(chatId), id: { not: userUuid } },
     });
@@ -103,10 +116,11 @@ async function handleStartCommand(chatId: number, userUuid: string) {
       return;
     }
 
-    // Link the Telegram chat ID to the user
+    const username = from?.username ? `@${from.username}` : from?.first_name || null;
+
     await prisma.user.update({
       where: { id: userUuid },
-      data: { telegramChatId: BigInt(chatId) },
+      data: { telegramChatId: BigInt(chatId), telegramUsername: username },
     });
 
     const name = user.studentProfile?.fullName || user.email;
@@ -120,6 +134,64 @@ async function handleStartCommand(chatId: number, userUuid: string) {
     );
   } catch (err) {
     console.error('[Telegram] handleStartCommand error:', err);
+    await sendTelegramMessageDirect(chatId, '❌ Something went wrong. Please try again.');
+  }
+}
+
+// ─── /link CODE — Pair via generated code ───────────────────────────────────
+async function handleLinkCommand(chatId: number, from: any, code: string) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        telegramLinkCode: code,
+        telegramLinkCodeExpiry: { gt: new Date() },
+      },
+      select: { id: true, email: true, studentProfile: { select: { fullName: true } } },
+    });
+
+    if (!user) {
+      await sendTelegramMessageDirect(
+        chatId,
+        '❌ Invalid or expired code. Please generate a new one from <b>Settings → Integrations</b> in StudentOS.'
+      );
+      return;
+    }
+
+    const existing = await prisma.user.findFirst({
+      where: { telegramChatId: BigInt(chatId), id: { not: user.id } },
+    });
+
+    if (existing) {
+      await sendTelegramMessageDirect(
+        chatId,
+        '⚠️ This Telegram account is already connected to a different StudentOS account.'
+      );
+      return;
+    }
+
+    const username = from?.username ? `@${from.username}` : from?.first_name || null;
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        telegramChatId: BigInt(chatId),
+        telegramUsername: username,
+        telegramLinkCode: null,
+        telegramLinkCodeExpiry: null,
+      },
+    });
+
+    const name = user.studentProfile?.fullName || user.email;
+
+    await sendTelegramMessageDirect(
+      chatId,
+      `✅ <b>Successfully connected to StudentOS!</b>\n\n` +
+        `Hello, <b>${name}</b>! Your account is now linked.\n\n` +
+        `💡 <b>Commands:</b>\n` +
+        `/habits — View & toggle today's habits`
+    );
+  } catch (err) {
+    console.error('[Telegram] handleLinkCommand error:', err);
     await sendTelegramMessageDirect(chatId, '❌ Something went wrong. Please try again.');
   }
 }

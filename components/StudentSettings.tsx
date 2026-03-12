@@ -8,7 +8,6 @@ import DashboardLayout from './DashboardLayout';
 import { GlobalLoader } from './ui/GlobalLoader';
 import {
   ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
   BellIcon,
   CheckCircleIcon,
   CheckIcon,
@@ -17,6 +16,7 @@ import {
   ExclamationTriangleIcon,
   EyeIcon,
   GiftIcon,
+  LinkIcon,
   MapPinIcon,
   PaperAirplaneIcon,
   PencilIcon,
@@ -28,7 +28,14 @@ import {
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { EyeSlashIcon } from '@heroicons/react/24/solid';
 
-type SettingsTab = 'profile' | 'security' | 'notifications' | 'billing' | 'earn' | 'delete';
+type SettingsTab =
+  | 'profile'
+  | 'security'
+  | 'notifications'
+  | 'billing'
+  | 'earn'
+  | 'integrations'
+  | 'delete';
 
 interface Notification {
   id: string;
@@ -63,6 +70,7 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType; danger?: 
   { id: 'notifications', label: 'Notifications', icon: BellIcon },
   { id: 'billing', label: 'Billing', icon: CreditCardIcon },
   { id: 'earn', label: 'Earn Credits', icon: GiftIcon },
+  { id: 'integrations', label: 'Integrations', icon: LinkIcon },
   { id: 'delete', label: 'Delete Account', icon: TrashIcon, danger: true },
 ];
 
@@ -158,6 +166,16 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   const [telegramClaimed, setTelegramClaimed] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // ── Telegram integration state ──
+  const [tgConnected, setTgConnected] = useState(false);
+  const [tgUsername, setTgUsername] = useState<string | null>(null);
+  const [tgCode, setTgCode] = useState<string | null>(null);
+  const [tgCodeExpiry, setTgCodeExpiry] = useState<Date | null>(null);
+  const [tgSecondsLeft, setTgSecondsLeft] = useState(0);
+  const [isLoadingTg, setIsLoadingTg] = useState(false);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
   // ── Delete state ──
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -218,6 +236,42 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     }
   }, []);
 
+  // ── Fetch Telegram status ──
+  const fetchTelegramStatus = useCallback(async () => {
+    setIsLoadingTg(true);
+    try {
+      const { data } = await userApi.getTelegramStatus();
+      if (data) {
+        setTgConnected(data.connected);
+        setTgUsername(data.username ?? null);
+        if (data.pendingCode) {
+          setTgCode(data.pendingCode.code);
+          setTgCodeExpiry(new Date(data.pendingCode.expiresAt));
+        }
+      }
+    } catch {
+      // silent
+    } finally {
+      setIsLoadingTg(false);
+    }
+  }, []);
+
+  // ── Countdown for link code ──
+  useEffect(() => {
+    if (!tgCodeExpiry) return;
+    const tick = () => {
+      const left = Math.max(0, Math.round((tgCodeExpiry.getTime() - Date.now()) / 1000));
+      setTgSecondsLeft(left);
+      if (left === 0) {
+        setTgCode(null);
+        setTgCodeExpiry(null);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [tgCodeExpiry]);
+
   // ── Initial fetch ──
   useEffect(() => {
     if (user) {
@@ -231,7 +285,15 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     if (activeTab === 'notifications' && notifications.length === 0) fetchNotifications();
     if ((activeTab === 'billing' || activeTab === 'earn') && creditHistory.length === 0)
       fetchCreditData();
-  }, [activeTab, notifications.length, creditHistory.length, fetchNotifications, fetchCreditData]);
+    if (activeTab === 'integrations') fetchTelegramStatus();
+  }, [
+    activeTab,
+    notifications.length,
+    creditHistory.length,
+    fetchNotifications,
+    fetchCreditData,
+    fetchTelegramStatus,
+  ]);
 
   const initials = (profile.fullName || 'U')
     .split(' ')
@@ -330,6 +392,46 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       setTimeout(() => setCopied(false), 3000);
     } catch {
       toast.error('Failed to copy link');
+    }
+  };
+
+  // ── Telegram: generate pairing code ──
+  const handleGenerateTgCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const { data, error } = await userApi.generateTelegramCode();
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      if (data) {
+        setTgCode(data.code);
+        setTgCodeExpiry(new Date(data.expiresAt));
+      }
+    } catch {
+      toast.error('Failed to generate code');
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
+
+  // ── Telegram: disconnect ──
+  const handleDisconnectTg = async () => {
+    if (!confirm('Disconnect your Telegram account?')) return;
+    setIsDisconnecting(true);
+    try {
+      const { error } = await userApi.disconnectTelegram();
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setTgConnected(false);
+      setTgUsername(null);
+      toast.success('Telegram disconnected');
+    } catch {
+      toast.error('Failed to disconnect');
+    } finally {
+      setIsDisconnecting(false);
     }
   };
 
@@ -940,12 +1042,217 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     </div>
   );
 
+  const renderIntegrations = () => {
+    const TgIcon = () => (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+      </svg>
+    );
+
+    const fmtTime = (s: number) =>
+      `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+    return (
+      <div className="space-y-4">
+        {/* Header card */}
+        <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 rounded-xl bg-[#229ED9]/10 flex items-center justify-center text-[#229ED9]">
+              <TgIcon />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                Telegram Integration
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Connect the StudentOS bot to manage habits directly from Telegram.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Connected state */}
+        {isLoadingTg ? (
+          <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm flex items-center gap-3">
+            <ArrowPathIcon className="w-5 h-5 animate-spin text-gray-400" />
+            <span className="text-sm text-gray-500">Checking connection…</span>
+          </div>
+        ) : tgConnected ? (
+          <div className="bg-emerald-50 dark:bg-emerald-900/15 rounded-2xl border border-emerald-200 dark:border-emerald-800/40 p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <CheckCircleIcon className="w-6 h-6 text-emerald-500 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                  Connected{tgUsername ? ` as ${tgUsername}` : ''}
+                </p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  Your Telegram account is linked. You can use /habits in the bot.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDisconnectTg}
+              disabled={isDisconnecting}
+              className="shrink-0 px-4 py-2 rounded-xl border border-red-200 dark:border-red-800/50 text-red-500 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {isDisconnecting ? (
+                <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <XMarkIcon className="w-3.5 h-3.5" />
+              )}
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* How to connect */}
+            <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[#229ED9]/10 flex items-center justify-center text-[#229ED9]">
+                  <TgIcon />
+                </div>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white">How to connect</h4>
+              </div>
+              <ol className="space-y-2.5 mb-5">
+                {(
+                  [
+                    [
+                      'Click ',
+                      <strong key="b">"Open in Telegram"</strong>,
+                      ' below to open the bot.',
+                    ],
+                    [
+                      'Click ',
+                      <strong key="b">Generate Link Code</strong>,
+                      ' to create a pairing key.',
+                    ],
+                    [
+                      'Send the generated code to the bot as ',
+                      <code
+                        key="c"
+                        className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono"
+                      >
+                        /link 123456
+                      </code>,
+                      '.',
+                    ],
+                    ["You'll receive a confirmation and can start using the bot!"],
+                  ] as React.ReactNode[][]
+                ).map((parts, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-300"
+                  >
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#229ED9]/15 text-[#229ED9] text-[11px] font-bold flex items-center justify-center mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span>{parts}</span>
+                  </li>
+                ))}
+              </ol>
+              <a
+                href="https://t.me/Student_OS_bot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#229ED9] hover:bg-[#1e8ec5] text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                <TgIcon />
+                Open in Telegram
+                <svg
+                  className="w-3.5 h-3.5 opacity-70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
+                </svg>
+              </a>
+            </div>
+
+            {/* Generate link code */}
+            <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-6 shadow-sm text-center">
+              {tgCode && tgSecondsLeft > 0 ? (
+                <>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
+                    Your link code
+                  </p>
+                  <div className="inline-flex items-center gap-3 bg-gray-50 dark:bg-gray-800/60 rounded-2xl px-6 py-3 mb-3">
+                    <span className="text-3xl font-bold font-mono tracking-widest text-gray-900 dark:text-white">
+                      {tgCode}
+                    </span>
+                    <button
+                      type="button"
+                      title="Copy code"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`/link ${tgCode}`);
+                        toast.success('Copied!');
+                      }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <ClipboardIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                    Send <code className="font-mono">/link {tgCode}</code> to the bot
+                  </p>
+                  <p className="text-xs text-amber-500 font-medium">
+                    Expires in {fmtTime(tgSecondsLeft)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleGenerateTgCode}
+                    disabled={isGeneratingCode}
+                    className="mt-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline transition-colors"
+                  >
+                    Generate new code
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                    <ArrowPathIcon className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                    No active code
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+                    Generate a code to pair your Telegram account
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleGenerateTgCode}
+                    disabled={isGeneratingCode}
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
+                  >
+                    {isGeneratingCode ? (
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <LinkIcon className="w-4 h-4" />
+                    )}
+                    Generate Link Code
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   const tabContent: Record<SettingsTab, () => React.ReactNode> = {
     profile: renderProfile,
     security: renderSecurity,
     notifications: renderNotifications,
     billing: renderBilling,
     earn: renderEarnCredits,
+    integrations: renderIntegrations,
     delete: renderDelete,
   };
 
