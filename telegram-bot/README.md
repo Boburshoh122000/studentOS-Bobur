@@ -1,21 +1,21 @@
 # StudentOS Telegram Bot
 
-AI-powered Telegram bot with **Presentation Maker** and **Habit Tracker**.
+Telegram bot for StudentOS — habit tracking and account integration.
 
 ## Features
 
-### 📊 Presentation Maker
-
-- Multi-step guided flow via inline buttons
-- Topic → Slide count → AI generation → `.pptx` file delivery
-- Uses OpenAI (`gpt-4o-mini`) for content, `pptxgenjs` for PowerPoint generation
-- Professional dark theme slide design
-
 ### 🗓 Habit Tracker
 
-- Add/view/delete habits
+- Add / view / delete habits
 - Mark habits done daily with a single tap
 - 🔥 Streak counting with automatic reset
+- Multi-language: 🇬🇧 English / 🇺🇿 O'zbek / 🇷🇺 Русский
+
+### 🔗 StudentOS Account Linking
+
+- Generate a link code in **Settings → Integrations** on StudentOS
+- Send `/link 123456` to the bot to connect your account
+- Receive notifications and manage habits via Telegram
 
 ## Setup
 
@@ -23,7 +23,7 @@ AI-powered Telegram bot with **Presentation Maker** and **Habit Tracker**.
 cd telegram-bot
 npm install
 cp .env.example .env
-# Edit .env with your BOT_TOKEN and OPENAI_API_KEY
+# Edit .env with your BOT_TOKEN, OPENAI_API_KEY, and BACKEND_URL
 npm start
 ```
 
@@ -31,15 +31,17 @@ npm start
 
 | Variable         | Required | Description                                                  |
 | ---------------- | -------- | ------------------------------------------------------------ |
-| `BOT_TOKEN`      | ✅       | Telegram bot token from [@BotFather](https://t.me/BotFather) |
-| `OPENAI_API_KEY` | ✅       | OpenAI API key                                               |
-| `OPENAI_MODEL`   | ❌       | Model to use (default: `gpt-4o-mini`)                        |
+| `BOT_TOKEN`      | Yes      | Telegram bot token from [@BotFather](https://t.me/BotFather) |
+| `OPENAI_API_KEY` | Yes      | OpenAI API key                                               |
+| `OPENAI_MODEL`   | No       | Model to use (default: `gpt-4o-mini`)                        |
+| `BACKEND_URL`    | Yes      | StudentOS backend URL (e.g. `https://api.studentos.uz`)      |
 
 ## Commands
 
-| Command   | Description                 |
-| --------- | --------------------------- |
-| `/start`  | Welcome message + main menu |
-| `/menu`   | Show main menu              |
-| `/help`   | Help & feature descriptions |
-| `/cancel` | Cancel current action       |
+| Command      | Description                          |
+| ------------ | ------------------------------------ |
+| `/start`     | Welcome message + language selection |
+| `/menu`      | Show main menu                       |
+| `/help`      | Help & feature descriptions          |
+| `/link CODE` | Connect your StudentOS account       |
+| `/cancel`    | Cancel current action                |

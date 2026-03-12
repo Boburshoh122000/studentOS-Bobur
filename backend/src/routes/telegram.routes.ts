@@ -9,6 +9,54 @@ import {
 
 const router = Router();
 
+// ─── Public: Link account via code (called by the polling bot) ──────────────
+// No JWT auth — the 6-digit code IS the credential. Expires in 10 minutes.
+router.post('/link-account', async (req: Request, res: Response) => {
+  const { chatId, username, code } = req.body as {
+    chatId: number;
+    username: string | null;
+    code: string;
+  };
+
+  if (!chatId || !code) {
+    return res.status(400).json({ error: 'chatId and code are required' });
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      telegramLinkCode: code,
+      telegramLinkCodeExpiry: { gt: new Date() },
+    },
+    select: { id: true, email: true, studentProfile: { select: { fullName: true } } },
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: 'Invalid or expired code' });
+  }
+
+  // Prevent this Telegram account from linking to multiple StudentOS accounts
+  const conflict = await prisma.user.findFirst({
+    where: { telegramChatId: BigInt(chatId), id: { not: user.id } },
+  });
+
+  if (conflict) {
+    return res.status(409).json({ error: 'Telegram already linked to another account' });
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      telegramChatId: BigInt(chatId),
+      telegramUsername: username,
+      telegramLinkCode: null,
+      telegramLinkCodeExpiry: null,
+    },
+  });
+
+  const name = user.studentProfile?.fullName || user.email;
+  return res.json({ success: true, name });
+});
+
 // ─── Telegram Webhook Handler ───────────────────────────────────────────────
 // This endpoint receives updates from Telegram. No auth middleware —
 // it's called by Telegram's servers. The route is secured by keeping the

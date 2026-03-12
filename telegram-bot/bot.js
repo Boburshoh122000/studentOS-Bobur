@@ -10,11 +10,37 @@ require('dotenv').config();
 
 const { Telegraf, Markup, Scenes, session } = require('telegraf');
 const OpenAI = require('openai');
+const https = require('https');
+const http = require('http');
 
 // ─── Validate env ──────────────────────────────────────────
-const { BOT_TOKEN, OPENAI_API_KEY } = process.env;
+const { BOT_TOKEN, OPENAI_API_KEY, BACKEND_URL } = process.env;
 if (!BOT_TOKEN) { console.error('❌ BOT_TOKEN missing'); process.exit(1); }
 if (!OPENAI_API_KEY) { console.error('❌ OPENAI_API_KEY missing'); process.exit(1); }
+
+// ─── Helper: POST to backend ────────────────────────────────
+function postToBackend(path, body) {
+    return new Promise((resolve, reject) => {
+        const base = BACKEND_URL || 'http://localhost:5000';
+        const url = new URL(path, base);
+        const payload = JSON.stringify(body);
+        const lib = url.protocol === 'https:' ? https : http;
+        const req = lib.request(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+        }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+                catch { resolve({ status: res.statusCode, body: {} }); }
+            });
+        });
+        req.on('error', reject);
+        req.write(payload);
+        req.end();
+    });
+}
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const bot = new Telegraf(BOT_TOKEN);
@@ -263,6 +289,38 @@ bot.action('back_habits', async (ctx) => {
 });
 
 bot.command('cancel', (ctx) => ctx.reply(t(ctx, 'cancelled'), mainMenuKb(ctx)));
+
+// ── /link CODE — Connect Telegram to StudentOS account ──────
+bot.command('link', async (ctx) => {
+    const code = ctx.message.text.split(' ')[1]?.trim();
+    if (!code) {
+        return ctx.reply('❌ Please provide the code:\n\n<code>/link 123456</code>', { parse_mode: 'HTML' });
+    }
+
+    const chatId = ctx.from.id;
+    const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name || null;
+
+    try {
+        const result = await postToBackend('/api/telegram/link-account', { chatId, username, code });
+        if (result.status === 200 && result.body.success) {
+            const name = result.body.name || 'there';
+            return ctx.reply(
+                `✅ <b>Successfully connected to StudentOS!</b>\n\nHello, <b>${name}</b>! Your Telegram is now linked.\n\n💡 <b>Commands:</b>\n/habits — View & toggle today's habits`,
+                { parse_mode: 'HTML' }
+            );
+        }
+        if (result.status === 404) {
+            return ctx.reply('❌ Invalid or expired code. Please generate a new one from <b>Settings → Integrations</b> in StudentOS.', { parse_mode: 'HTML' });
+        }
+        if (result.status === 409) {
+            return ctx.reply('⚠️ This Telegram account is already connected to a different StudentOS account.');
+        }
+        return ctx.reply('❌ Something went wrong. Please try again.');
+    } catch {
+        return ctx.reply('❌ Could not reach StudentOS server. Please try again later.');
+    }
+});
+
 bot.catch((err, ctx) => { console.error(`Error [${ctx.updateType}]:`, err); ctx.reply(t(ctx, 'error_generic'), mainMenuKb(ctx)); });
 
 // ─── Launch ────────────────────────────────────────────────
