@@ -9,14 +9,12 @@
 require('dotenv').config();
 
 const { Telegraf, Markup, Scenes, session } = require('telegraf');
-const OpenAI = require('openai');
 const https = require('https');
 const http = require('http');
 
 // ─── Validate env ──────────────────────────────────────────
-const { BOT_TOKEN, OPENAI_API_KEY, BACKEND_URL } = process.env;
+const { BOT_TOKEN, BACKEND_URL } = process.env;
 if (!BOT_TOKEN) { console.error('❌ BOT_TOKEN missing'); process.exit(1); }
-if (!OPENAI_API_KEY) { console.error('❌ OPENAI_API_KEY missing'); process.exit(1); }
 
 // ─── Helper: POST to backend ────────────────────────────────
 function postToBackend(path, body) {
@@ -42,7 +40,6 @@ function postToBackend(path, body) {
     });
 }
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const bot = new Telegraf(BOT_TOKEN);
 
 // ─── Habit Store ───────────────────────────────────────────
