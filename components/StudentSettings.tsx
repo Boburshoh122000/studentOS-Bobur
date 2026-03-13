@@ -383,10 +383,11 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   };
 
   // ── Copy Referral Link ──
-  const referralLink = `studentos.uz/ref/${referralCode || user?.email?.split('@')[0] || 'invite'}`;
+  const referralLink = referralCode ? `https://studentos.uz/ref/${referralCode}` : null;
   const handleCopyReferral = async () => {
+    if (!referralLink) return;
     try {
-      await navigator.clipboard.writeText(`https://${referralLink}`);
+      await navigator.clipboard.writeText(referralLink);
       setCopied(true);
       toast.success('Referral link copied!');
       setTimeout(() => setCopied(false), 3000);
@@ -446,14 +447,19 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
     setIsClaiming(true);
     try {
-      window.open('https://t.me/creo_life', '_blank');
       const { data, error } = await userApi.claimTelegramCredits();
       if (error) {
-        toast.error(error);
+        if (error.includes('Join @creo_life')) {
+          // Open channel so user can join, then try again
+          window.open('https://t.me/creo_life', '_blank');
+          toast.error('Join the channel first, then click Verify again');
+        } else {
+          toast.error(error);
+        }
         return;
       }
       if (data) {
-        toast.success('🎉 +5 Credits added!');
+        toast.success('+5 Credits added!');
         setTelegramClaimed(true);
         await Promise.all([refreshUser(), refreshBalance()]);
       }
@@ -943,13 +949,14 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <input
               type="text"
               readOnly
-              value={referralLink}
+              value={referralLink ?? 'Loading your link...'}
               aria-label="Referral link"
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 text-xs font-mono focus:outline-none truncate"
             />
             <button
               onClick={handleCopyReferral}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm ${copied ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+              disabled={!referralLink || copied}
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm disabled:opacity-50 ${copied ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
             >
               {copied ? (
                 <CheckCircleIcon className="w-5 h-5" />
@@ -1018,7 +1025,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 </>
               ) : (
                 <>
-                  <PaperAirplaneIcon className="w-4 h-4" /> Join &amp; Verify
+                  <PaperAirplaneIcon className="w-4 h-4" /> Verify
                 </>
               )}
             </button>
