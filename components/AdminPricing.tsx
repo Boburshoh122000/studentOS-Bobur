@@ -122,6 +122,7 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
   const [usagePeriod, setUsagePeriod] = useState('30d');
   const [usageStats, setUsageStats] = useState<any>(null);
   const [usageLoading, setUsageLoading] = useState(true);
+  const [usageError, setUsageError] = useState<string | null>(null);
 
   // New tool form
   const [newTool, setNewTool] = useState({
@@ -171,13 +172,16 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
   // Fetch usage stats
   const fetchUsageStats = async (period: string) => {
     setUsageLoading(true);
+    setUsageError(null);
     try {
       const res = await adminApi.getToolUsageStats(period);
       if (res.data) {
         setUsageStats(res.data);
+      } else {
+        setUsageError(res.error || 'Failed to load usage statistics');
       }
     } catch {
-      console.error('Failed to fetch usage stats');
+      setUsageError('Failed to load usage statistics');
     } finally {
       setUsageLoading(false);
     }
@@ -398,10 +402,11 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                   key={p}
                   type="button"
                   onClick={() => setUsagePeriod(p)}
-                  className={`px-3 py-1.5 text-xs font-bold transition-colors ${usagePeriod === p
-                    ? 'bg-primary text-white'
-                    : 'bg-white dark:bg-[#1e2330] text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors ${
+                    usagePeriod === p
+                      ? 'bg-primary text-white'
+                      : 'bg-white dark:bg-[#1e2330] text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
                   {p}
                 </button>
@@ -413,14 +418,26 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
             <div className="flex items-center justify-center py-12">
               <GlobalLoader fullScreen={false} />
             </div>
-          ) : !usageStats || usageStats.total_usages === 0 ? (
+          ) : usageError ? (
+            <div className="py-12 text-center">
+              <ChartBarIcon className="w-12 h-12 text-red-300 dark:text-red-700 mx-auto mb-3" />
+              <p className="text-red-500 dark:text-red-400 font-medium">{usageError}</p>
+              <button
+                type="button"
+                onClick={() => fetchUsageStats(usagePeriod)}
+                className="mt-3 text-sm text-primary hover:underline font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          ) : !usageStats || usageStats.no_tools || usageStats.stats?.length === 0 ? (
             <div className="py-12 text-center">
               <ChartBarIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
               <p className="text-slate-500 dark:text-slate-400 font-medium">
-                No usage data recorded yet
+                No tools configured yet
               </p>
               <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-                Statistics will appear as users start using tools.
+                Add tools above to see usage statistics here.
               </p>
             </div>
           ) : (
@@ -881,7 +898,8 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                           </td>
                           <td className="px-6 py-4">
                             <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
-                              {tool.creditCost} <img src="/icons/diamond.png" alt="Credits" className="w-4 h-4" />
+                              {tool.creditCost}{' '}
+                              <img src="/icons/diamond.png" alt="Credits" className="w-4 h-4" />
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
@@ -1037,7 +1055,11 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     min="0"
                   />
                   <div className="absolute right-3 top-2 flex h-full items-center -mt-2">
-                    <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5 pointer-events-none" />
+                    <img
+                      src="/icons/diamond.png"
+                      alt="Credits"
+                      className="w-5 h-5 pointer-events-none"
+                    />
                   </div>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">Set to 0 for free tools</p>
@@ -1108,7 +1130,11 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     min="0"
                   />
                   <div className="absolute right-3 top-2 flex h-full items-center -mt-2">
-                    <img src="/icons/diamond.png" alt="Credits" className="w-5 h-5 pointer-events-none" />
+                    <img
+                      src="/icons/diamond.png"
+                      alt="Credits"
+                      className="w-5 h-5 pointer-events-none"
+                    />
                   </div>
                 </div>
               </div>

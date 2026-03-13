@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { authenticate, requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// All tools admin routes require authentication + admin role
+router.use(authenticate, requireAdmin);
 
 // =============================================================================
 // TOOLS ENDPOINTS
@@ -136,7 +140,7 @@ router.delete('/tools/:id', async (req, res) => {
   }
 });
 
-// GET /admin/tools/usage-stats - Tool usage statistics
+// GET /admin/tools/usage-stats - Tool usage statistics (includes all tools, even with 0 uses)
 router.get('/tools/usage-stats', async (req, res) => {
   try {
     const period = (req.query.period as string) || '30d';
@@ -146,6 +150,27 @@ router.get('/tools/usage-stats', async (req, res) => {
     const periodStart = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     const prevPeriodStart = new Date(periodStart.getTime() - days * 24 * 60 * 60 * 1000);
 
+    // Get ALL tools (so we show 0-use tools too)
+    const allTools = await prisma.tool.findMany({
+      select: { id: true, name: true, slug: true, category: true },
+      orderBy: { name: 'asc' },
+    });
+
+    if (allTools.length === 0) {
+      return res.json({
+        success: true,
+        period,
+        total_usages: 0,
+        total_active_users: 0,
+        total_trend: '+0%',
+        total_trend_direction: 'up',
+        users_trend: '+0%',
+        users_trend_direction: 'up',
+        stats: [],
+        no_tools: true,
+      });
+    }
+
     // Current period stats per tool
     const currentStats = await prisma.toolUsage.groupBy({
       by: ['toolId'],
@@ -153,63 +178,53 @@ router.get('/tools/usage-stats', async (req, res) => {
       _count: { id: true },
     });
 
-    // Unique users per tool in current period
-    const uniqueUsersCurrent = await prisma.toolUsage.groupBy({
-      by: ['toolId'],
-      where: { usedAt: { gte: periodStart } },
-      _count: { userId: true },
-    });
-
-    // Distinct users per tool (Prisma groupBy doesn't support distinct, use raw)
-    const uniqueUsersRaw: Array<{ toolId: string; unique_users: bigint }> = await prisma.$queryRaw`
-      SELECT "toolId", COUNT(DISTINCT "userId") as unique_users
-      FROM "ToolUsage"
-      WHERE "usedAt" >= ${periodStart}
-      GROUP BY "toolId"
-    `;
-
-    // Previous period stats per tool (for trend calculation)
+    // Previous period stats per tool (for trend)
     const prevStats = await prisma.toolUsage.groupBy({
       by: ['toolId'],
       where: { usedAt: { gte: prevPeriodStart, lt: periodStart } },
       _count: { id: true },
     });
 
-    // Total unique users in current period
-    const totalUniqueUsersRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
+    // Distinct users per tool in current period
+    const uniqueUsersRaw: Array<{ toolId: string; unique_users: bigint }> = await prisma.$queryRaw`
+        SELECT "toolId", COUNT(DISTINCT "userId") as unique_users
+        FROM "ToolUsage"
+        WHERE "usedAt" >= ${periodStart}
+        GROUP BY "toolId"
+      `;
+
+    // Total unique active users in current period
+    const totalUniqueRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
       SELECT COUNT(DISTINCT "userId") as count
       FROM "ToolUsage"
       WHERE "usedAt" >= ${periodStart}
     `;
 
-    // Previous period total unique users (for trend)
-    const prevTotalUniqueUsersRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
+    // Previous period total unique users
+    const prevUniqueRaw: Array<{ count: bigint }> = await prisma.$queryRaw`
       SELECT COUNT(DISTINCT "userId") as count
       FROM "ToolUsage"
       WHERE "usedAt" >= ${prevPeriodStart} AND "usedAt" < ${periodStart}
     `;
 
-    // Get tool details
-    const tools = await prisma.tool.findMany({
-      select: { id: true, name: true, slug: true, category: true },
-    });
-    const toolMap = new Map(tools.map((t) => [t.id, t]));
-
-    // Build stats
-    const totalUsages = currentStats.reduce((sum, s) => sum + s._count.id, 0);
-    const prevTotalUsages = prevStats.reduce((sum, s) => sum + s._count.id, 0);
-    const prevStatsMap = new Map(prevStats.map((s) => [s.toolId, s._count.id]));
+    const currentMap = new Map(currentStats.map((s) => [s.toolId, s._count.id]));
+    const prevMap = new Map(prevStats.map((s) => [s.toolId, s._count.id]));
     const uniqueUsersMap = new Map(uniqueUsersRaw.map((r) => [r.toolId, Number(r.unique_users)]));
 
-    const stats = currentStats
-      .map((s) => {
-        const tool = toolMap.get(s.toolId);
-        if (!tool) return null;
-        const prevCount = prevStatsMap.get(s.toolId) || 0;
+    const totalUsages = currentStats.reduce((sum, s) => sum + s._count.id, 0);
+    const prevTotalUsages = prevStats.reduce((sum, s) => sum + s._count.id, 0);
+    const totalActiveUsers = Number(totalUniqueRaw[0]?.count || 0);
+    const prevTotalActiveUsers = Number(prevUniqueRaw[0]?.count || 0);
+
+    // Build stats for ALL tools (LEFT JOIN style — 0 counts for unused tools)
+    const stats = allTools
+      .map((tool) => {
+        const total_uses = currentMap.get(tool.id) || 0;
+        const prevCount = prevMap.get(tool.id) || 0;
         const trendPct =
           prevCount > 0
-            ? Math.round(((s._count.id - prevCount) / prevCount) * 100)
-            : s._count.id > 0
+            ? Math.round(((total_uses - prevCount) / prevCount) * 100)
+            : total_uses > 0
               ? 100
               : 0;
 
@@ -217,18 +232,15 @@ router.get('/tools/usage-stats', async (req, res) => {
           tool_id: tool.slug,
           tool_name: tool.name,
           category: tool.category,
-          total_uses: s._count.id,
-          unique_users: uniqueUsersMap.get(s.toolId) || 0,
-          percentage: totalUsages > 0 ? Math.round((s._count.id / totalUsages) * 1000) / 10 : 0,
+          total_uses,
+          unique_users: uniqueUsersMap.get(tool.id) || 0,
+          percentage: totalUsages > 0 ? Math.round((total_uses / totalUsages) * 1000) / 10 : 0,
           trend: `${trendPct >= 0 ? '+' : ''}${trendPct}%`,
-          trend_direction: trendPct >= 0 ? 'up' : ('down' as 'up' | 'down'),
+          trend_direction: (trendPct >= 0 ? 'up' : 'down') as 'up' | 'down',
         };
       })
-      .filter(Boolean)
-      .sort((a: any, b: any) => b.total_uses - a.total_uses);
+      .sort((a, b) => b.total_uses - a.total_uses);
 
-    const totalActiveUsers = Number(totalUniqueUsersRaw[0]?.count || 0);
-    const prevTotalActiveUsers = Number(prevTotalUniqueUsersRaw[0]?.count || 0);
     const totalTrendPct =
       prevTotalUsages > 0
         ? Math.round(((totalUsages - prevTotalUsages) / prevTotalUsages) * 100)
