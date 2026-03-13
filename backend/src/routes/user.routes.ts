@@ -239,10 +239,11 @@ router.post(
       }
 
       // Verify the user is a member of @creo_life
+      // null = bot is not a channel admin (can't verify) → trust the user
       const isMember = await checkChannelMembership(user.telegramChatId, '@creo_life');
-      if (!isMember) {
+      if (isMember === false) {
         return res.status(400).json({
-          error: 'You must join @creo_life on Telegram first, then click Verify',
+          error: 'Join @creo_life on Telegram first, then click Verify again',
         });
       }
 

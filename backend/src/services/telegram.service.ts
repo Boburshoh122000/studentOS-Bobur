@@ -136,25 +136,33 @@ export async function editTelegramMessage(
 
 /**
  * Check if a user (by their Telegram chatId) is a member of a channel.
- * Returns true for creator/administrator/member/restricted statuses.
- * Returns false for left/kicked or any API error.
+ * Returns:
+ *   true  — confirmed member (creator/administrator/member/restricted)
+ *   false — confirmed non-member (left/kicked)
+ *   null  — cannot determine (bot is not an admin of the channel, or API error)
+ *
+ * Callers should treat null as "grant benefit of the doubt".
  */
 export async function checkChannelMembership(
   chatId: bigint | number | string,
   channel: string
-): Promise<boolean> {
-  if (!env.TELEGRAM_BOT_TOKEN) return false;
+): Promise<boolean | null> {
+  if (!env.TELEGRAM_BOT_TOKEN) return null;
 
   try {
     const res = await fetch(
       `${TELEGRAM_API}/getChatMember?chat_id=${encodeURIComponent(channel)}&user_id=${chatId.toString()}`
     );
     const data: any = await res.json();
-    if (!data.ok) return false;
+    if (!data.ok) {
+      // Bot is not an admin of the channel — can't verify membership
+      return null;
+    }
     const status: string = data.result?.status ?? '';
-    return ['creator', 'administrator', 'member', 'restricted'].includes(status);
+    if (['left', 'kicked'].includes(status)) return false;
+    return true; // creator, administrator, member, restricted
   } catch {
-    return false;
+    return null;
   }
 }
 

@@ -5,7 +5,11 @@ import {
   sendTelegramMessageWithButtons,
   editTelegramMessage,
   answerCallbackQuery,
+  checkChannelMembership,
 } from '../services/telegram.service.js';
+
+const CREO_CHANNEL = '@creo_life';
+const CREO_CHANNEL_URL = 'https://t.me/creo_life';
 
 const router = Router();
 
@@ -146,10 +150,8 @@ async function handleMessage(message: any) {
       await sendTelegramMessageDirect(
         chatId,
         '👋 <b>Welcome to StudentOS Bot!</b>\n\n' +
-          'To connect your account, go to <b>Settings → Integrations</b> in StudentOS and generate a link code, then send:\n\n' +
-          '<code>/link 123456</code>\n\n' +
-          '💡 <b>Commands:</b>\n' +
-          "/habits — View & toggle today's habits"
+          'To connect your account, go to <b>Settings → Integrations</b> in StudentOS and tap <b>Connect Telegram</b>.\n\n' +
+          helpText()
       );
     }
     return;
@@ -175,12 +177,35 @@ async function handleMessage(message: any) {
     return;
   }
 
+  // /credits command — show balance
+  if (text === '/credits' || text === '/balance') {
+    await handleCreditsCommand(chatId);
+    return;
+  }
+
+  // /earn command — show earn opportunities
+  if (text === '/earn') {
+    await handleEarnCommand(chatId);
+    return;
+  }
+
+  // /verify command — verify @creo_life membership and award credits
+  if (text === '/verify') {
+    await handleVerifyCommand(chatId);
+    return;
+  }
+
   // Unknown command
-  await sendTelegramMessageDirect(
-    chatId,
-    "🤖 I don't understand that command.\n\n" +
-      '💡 <b>Available commands:</b>\n' +
-      "/habits — View & toggle today's habits"
+  await sendTelegramMessageDirect(chatId, helpText());
+}
+
+function helpText(): string {
+  return (
+    '🤖 <b>StudentOS Bot Commands:</b>\n\n' +
+    "/habits — View & toggle today's habits\n" +
+    '/credits — Check your credit balance\n' +
+    '/earn — How to earn free credits\n' +
+    '/verify — Verify channel join &amp; claim credits'
   );
 }
 
@@ -225,8 +250,7 @@ async function handleStartCommand(chatId: number, from: any, userUuid: string) {
       chatId,
       `✅ <b>Successfully connected to StudentOS!</b>\n\n` +
         `Hello, <b>${name}</b>! You will now receive notifications here.\n\n` +
-        `💡 <b>Commands:</b>\n` +
-        `/habits — View & toggle today's habits`
+        helpText()
     );
   } catch (err) {
     console.error('[Telegram] handleStartCommand error:', err);
@@ -283,11 +307,157 @@ async function handleLinkCommand(chatId: number, from: any, code: string) {
       chatId,
       `✅ <b>Successfully connected to StudentOS!</b>\n\n` +
         `Hello, <b>${name}</b>! Your account is now linked.\n\n` +
-        `💡 <b>Commands:</b>\n` +
-        `/habits — View & toggle today's habits`
+        helpText()
     );
   } catch (err) {
     console.error('[Telegram] handleLinkCommand error:', err);
+    await sendTelegramMessageDirect(chatId, '❌ Something went wrong. Please try again.');
+  }
+}
+
+// ─── /credits — Show current credit balance ──────────────────────────────────
+async function handleCreditsCommand(chatId: number) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { telegramChatId: BigInt(chatId) },
+      select: { creditBalance: true, studentProfile: { select: { fullName: true } } },
+    });
+
+    if (!user) {
+      await sendTelegramMessageDirect(
+        chatId,
+        '❌ Your Telegram is not linked to a StudentOS account.\n\n' +
+          'Go to <b>Settings → Integrations</b> in StudentOS to connect.'
+      );
+      return;
+    }
+
+    const name = user.studentProfile?.fullName || 'there';
+    await sendTelegramMessageDirect(
+      chatId,
+      `💳 <b>Your Credit Balance</b>\n\n` +
+        `Hi <b>${name}</b>, you have:\n\n` +
+        `🪙 <b>${user.creditBalance} credits</b>\n\n` +
+        `Use credits to access AI-powered tools on StudentOS.\n` +
+        `Send /earn to see how to get more credits!`
+    );
+  } catch (err) {
+    console.error('[Telegram] handleCreditsCommand error:', err);
+    await sendTelegramMessageDirect(chatId, '❌ Failed to fetch balance. Please try again.');
+  }
+}
+
+// ─── /earn — Show earn opportunities ─────────────────────────────────────────
+async function handleEarnCommand(chatId: number) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { telegramChatId: BigInt(chatId) },
+      select: {
+        creditBalance: true,
+        telegramCredited: true,
+        referralCode: true,
+      },
+    });
+
+    if (!user) {
+      await sendTelegramMessageDirect(
+        chatId,
+        '❌ Your Telegram is not linked to a StudentOS account.\n\n' +
+          'Go to <b>Settings → Integrations</b> in StudentOS to connect.'
+      );
+      return;
+    }
+
+    const channelStatus = user.telegramCredited ? '✅ Claimed' : '⬜ Not claimed';
+    const referralLink = user.referralCode
+      ? `https://studentos.uz/ref/${user.referralCode}`
+      : 'Go to studentos.uz to get your link';
+
+    await sendTelegramMessageDirect(
+      chatId,
+      `🎁 <b>Earn Free Credits</b>\n\n` +
+        `💳 Balance: <b>${user.creditBalance} credits</b>\n\n` +
+        `━━━━━━━━━━━━━━━\n\n` +
+        `1️⃣ <b>Join Our Channel</b> — +5 credits\n` +
+        `   Status: ${channelStatus}\n` +
+        `   👉 Join: ${CREO_CHANNEL_URL}\n` +
+        `   Then send /verify to claim!\n\n` +
+        `2️⃣ <b>Invite Friends</b> — +5 credits per friend\n` +
+        `   Share your link:\n` +
+        `   👉 ${referralLink}`
+    );
+  } catch (err) {
+    console.error('[Telegram] handleEarnCommand error:', err);
+    await sendTelegramMessageDirect(chatId, '❌ Failed to load earn info. Please try again.');
+  }
+}
+
+// ─── /verify — Verify @creo_life membership and award credits ────────────────
+async function handleVerifyCommand(chatId: number) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { telegramChatId: BigInt(chatId) },
+      select: { id: true, telegramCredited: true, creditBalance: true },
+    });
+
+    if (!user) {
+      await sendTelegramMessageDirect(
+        chatId,
+        '❌ Your Telegram is not linked to a StudentOS account.\n\n' +
+          'Go to <b>Settings → Integrations</b> in StudentOS to connect.'
+      );
+      return;
+    }
+
+    if (user.telegramCredited) {
+      await sendTelegramMessageDirect(
+        chatId,
+        `✅ <b>Already claimed!</b>\n\n` +
+          `You already received your 5 credits for joining ${CREO_CHANNEL}.\n\n` +
+          `💳 Balance: <b>${user.creditBalance} credits</b>`
+      );
+      return;
+    }
+
+    // Check channel membership (null = can't verify → trust user)
+    const isMember = await checkChannelMembership(BigInt(chatId), CREO_CHANNEL);
+
+    if (isMember === false) {
+      await sendTelegramMessageDirect(
+        chatId,
+        `❌ <b>Not a member yet!</b>\n\n` +
+          `Join ${CREO_CHANNEL} first:\n` +
+          `👉 ${CREO_CHANNEL_URL}\n\n` +
+          `Then send /verify again to claim your 5 credits.`
+      );
+      return;
+    }
+
+    // Award 5 credits
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        creditBalance: { increment: 5 },
+        telegramCredited: true,
+      },
+      select: { creditBalance: true },
+    });
+
+    const verifiedMsg =
+      isMember === true
+        ? `✅ Verified — you're a member of ${CREO_CHANNEL}!`
+        : `✅ Verified — welcome to the community!`;
+
+    await sendTelegramMessageDirect(
+      chatId,
+      `🎉 <b>Credits Claimed!</b>\n\n` +
+        `${verifiedMsg}\n\n` +
+        `🪙 <b>+5 credits added!</b>\n` +
+        `💳 New balance: <b>${updated.creditBalance} credits</b>\n\n` +
+        `Send /earn to see more ways to earn!`
+    );
+  } catch (err) {
+    console.error('[Telegram] handleVerifyCommand error:', err);
     await sendTelegramMessageDirect(chatId, '❌ Something went wrong. Please try again.');
   }
 }
