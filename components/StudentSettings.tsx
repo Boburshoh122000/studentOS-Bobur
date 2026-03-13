@@ -437,16 +437,23 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
   // ── Telegram Credits ──
   const handleClaimTelegram = async () => {
+    // Must have Telegram linked
+    if (!tgConnected) {
+      toast.error('Connect your Telegram account first (Settings → Integrations)');
+      setActiveTab('integrations');
+      return;
+    }
+
     setIsClaiming(true);
     try {
-      window.open('https://t.me/studentos_channel', '_blank');
+      window.open('https://t.me/creo_life', '_blank');
       const { data, error } = await userApi.claimTelegramCredits();
       if (error) {
         toast.error(error);
         return;
       }
       if (data) {
-        toast.success('🎉 +50 Credits added!');
+        toast.success('🎉 +5 Credits added!');
         setTelegramClaimed(true);
         await Promise.all([refreshUser(), refreshBalance()]);
       }
@@ -926,11 +933,11 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             <GiftIcon className="w-[18px] h-[18px] text-blue-600 dark:text-blue-400" />
             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Invite Friends</h4>
             <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
-              +50 Credits
+              +5 Credits
             </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3.5">
-            Invite a friend and get <strong>50 credits</strong> when they sign up.
+            Invite a friend and get <strong>5 credits</strong> when they sign up using your link.
           </p>
           <div className="flex items-center gap-2">
             <input
@@ -967,32 +974,51 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                   <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                 </svg>
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Join Our Telegram
+                  Join Our Telegram Channel
                 </h4>
                 <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
-                  +20 Credits
+                  +5 Credits
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Join our official Telegram channel for <strong>20 free credits</strong>.
+                Join{' '}
+                <a
+                  href="https://t.me/creo_life"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline font-medium"
+                >
+                  @creo_life
+                </a>{' '}
+                on Telegram for <strong>5 free credits</strong>.{' '}
+                {!tgConnected && (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    Connect Telegram first →
+                  </span>
+                )}
               </p>
             </div>
             <button
+              type="button"
               onClick={handleClaimTelegram}
               disabled={isClaiming || telegramClaimed}
-              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shadow-sm ${telegramClaimed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 cursor-default' : 'bg-[#229ED9] text-white hover:bg-[#1e8ec5] disabled:opacity-50'}`}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shadow-sm ${telegramClaimed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 cursor-default' : !tgConnected ? 'bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50' : 'bg-[#229ED9] text-white hover:bg-[#1e8ec5] disabled:opacity-50'}`}
             >
               {isClaiming ? (
                 <>
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" /> Joining...
+                  <ArrowPathIcon className="w-4 h-4 animate-spin" /> Verifying...
                 </>
               ) : telegramClaimed ? (
                 <>
                   <CheckCircleIcon className="w-4 h-4" /> Claimed!
                 </>
+              ) : !tgConnected ? (
+                <>
+                  <PaperAirplaneIcon className="w-4 h-4" /> Connect Telegram
+                </>
               ) : (
                 <>
-                  <PaperAirplaneIcon className="w-4 h-4" /> Join Channel
+                  <PaperAirplaneIcon className="w-4 h-4" /> Join &amp; Verify
                 </>
               )}
             </button>

@@ -157,11 +157,13 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         isNewAccount = false;
       } else {
         // Normal registration flow
+        const refCode = searchParams.get('ref') ?? undefined;
         const { error: apiError } = await authApi.register({
           email,
           password,
           fullName,
           otpCode,
+          referralCode: refCode,
         });
         if (apiError) {
           setError(apiError);

@@ -135,6 +135,30 @@ export async function editTelegramMessage(
 }
 
 /**
+ * Check if a user (by their Telegram chatId) is a member of a channel.
+ * Returns true for creator/administrator/member/restricted statuses.
+ * Returns false for left/kicked or any API error.
+ */
+export async function checkChannelMembership(
+  chatId: bigint | number | string,
+  channel: string
+): Promise<boolean> {
+  if (!env.TELEGRAM_BOT_TOKEN) return false;
+
+  try {
+    const res = await fetch(
+      `${TELEGRAM_API}/getChatMember?chat_id=${encodeURIComponent(channel)}&user_id=${chatId.toString()}`
+    );
+    const data: any = await res.json();
+    if (!data.ok) return false;
+    const status: string = data.result?.status ?? '';
+    return ['creator', 'administrator', 'member', 'restricted'].includes(status);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Answer a callback query (removes the loading spinner on button press).
  */
 export async function answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {

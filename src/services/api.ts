@@ -191,8 +191,13 @@ export const authApi = {
   verifyEmail: (data: { email: string; otpCode: string }) =>
     api.post<{ accessToken: string; refreshToken: string }>('/auth/verify-email', data),
 
-  register: (data: { email: string; password: string; fullName: string; otpCode?: string }) =>
-    api.post<{ user: any; accessToken: string; refreshToken: string }>('/auth/register', data),
+  register: (data: {
+    email: string;
+    password: string;
+    fullName: string;
+    otpCode?: string;
+    referralCode?: string;
+  }) => api.post<{ user: any; accessToken: string; refreshToken: string }>('/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
     api.post<{ user: any; accessToken: string; refreshToken: string }>('/auth/login', data),

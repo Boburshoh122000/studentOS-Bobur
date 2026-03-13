@@ -65,6 +65,7 @@ const registerSchema = z.object({
       .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
     fullName: z.string().min(2, 'Name must be at least 2 characters'),
     otpCode: z.string().length(6).optional(),
+    referralCode: z.string().optional(),
   }),
 });
 
@@ -101,6 +102,10 @@ const OTP_LENGTH = 6;
 
 function generateOTP(): string {
   return Array.from({ length: OTP_LENGTH }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+function generateReferralCode(): string {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
 // Send OTP
@@ -225,7 +230,7 @@ router.post('/verify-email', async (req, res, next) => {
 // Register (now requires OTP)
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, otpCode } = req.body;
+    const { email, password, otpCode, referralCode: incomingReferralCode } = req.body;
     const fullName = sanitizeText(req.body.fullName ?? '');
 
     // Verify OTP if provided
@@ -247,8 +252,28 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
       throw new AppError(409, 'User already exists');
     }
 
+    // Resolve referrer (if any)
+    let referrerId: string | null = null;
+    if (incomingReferralCode) {
+      const referrer = await prisma.user.findUnique({
+        where: { referralCode: incomingReferralCode },
+        select: { id: true },
+      });
+      if (referrer) referrerId = referrer.id;
+    }
+
     // Hash password
     const passwordHash = await hashPassword(password);
+
+    // Generate unique referral code for new user
+    let newReferralCode: string | null = null;
+    let attempts = 0;
+    while (!newReferralCode && attempts < 5) {
+      const candidate = generateReferralCode();
+      const existing = await prisma.user.findUnique({ where: { referralCode: candidate } });
+      if (!existing) newReferralCode = candidate;
+      attempts++;
+    }
 
     // Create user with student profile
     const user = await prisma.user.create({
@@ -258,6 +283,8 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         role: 'STUDENT',
         emailVerified: !!otpCode, // Verified if OTP was provided and passed
         creditBalance: 10, // Welcome bonus
+        referralCode: newReferralCode,
+        referredBy: referrerId,
         studentProfile: {
           create: {
             fullName,
@@ -268,6 +295,16 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
         studentProfile: true,
       },
     });
+
+    // Award referrer +5 credits (fire-and-forget)
+    if (referrerId) {
+      prisma.user
+        .update({
+          where: { id: referrerId },
+          data: { creditBalance: { increment: 5 } },
+        })
+        .catch((err) => console.error('[Referral] Failed to award referrer credits:', err));
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken({

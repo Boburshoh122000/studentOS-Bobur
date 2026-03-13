@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { calculateProfileCompletion } from '../services/auth.service.js';
 import { sanitizeText } from '../utils/sanitize.js';
+import { checkChannelMembership } from '../services/telegram.service.js';
 
 const router = Router();
 
@@ -212,7 +213,7 @@ router.get('/dashboard', authenticate, async (req: AuthenticatedRequest, res, ne
   }
 });
 
-// Claim Telegram credits (one-time +50)
+// Claim Telegram channel credits (one-time +5, requires Telegram linked + member of @creo_life)
 router.post(
   '/claim-telegram-credits',
   authenticate,
@@ -220,27 +221,42 @@ router.post(
     try {
       const userId = req.user!.id;
 
-      // Check if already claimed
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { telegramCredited: true },
+        select: { telegramCredited: true, telegramChatId: true },
       });
 
       if (user?.telegramCredited) {
-        return res.status(400).json({ error: 'Telegram credits already claimed' });
+        return res.status(400).json({ error: 'Telegram channel credits already claimed' });
+      }
+
+      // Must have Telegram account linked
+      if (!user?.telegramChatId) {
+        return res.status(400).json({
+          error: 'Connect your Telegram account first, then join the channel and try again',
+          needsTelegramLink: true,
+        });
+      }
+
+      // Verify the user is a member of @creo_life
+      const isMember = await checkChannelMembership(user.telegramChatId, '@creo_life');
+      if (!isMember) {
+        return res.status(400).json({
+          error: 'You must join @creo_life on Telegram first, then click Verify',
+        });
       }
 
       // Atomically increment credits and mark as claimed
       const updated = await prisma.user.update({
         where: { id: userId },
         data: {
-          creditBalance: { increment: 50 },
+          creditBalance: { increment: 5 },
           telegramCredited: true,
         },
         select: { creditBalance: true },
       });
 
-      res.json({ creditBalance: updated.creditBalance, message: '+50 credits added!' });
+      res.json({ creditBalance: updated.creditBalance, message: '+5 credits added!' });
     } catch (error) {
       next(error);
     }

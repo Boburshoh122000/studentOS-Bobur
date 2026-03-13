@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import RootLayout from './ui/RootLayout';
 import AdminLayout from './ui/AdminLayout';
 import { withNavigate } from './ui/withNavigate';
@@ -153,6 +153,12 @@ const AdminDemographicsPage = withNavigate(
 // Employer
 const EmployerDashboard = withNavigate(lazyRetry(() => import('../components/EmployerDashboard')));
 
+// Referral link redirect: /ref/:code → /signup/step-1?ref=CODE
+function ReferralRedirect() {
+  const { code } = useParams<{ code: string }>();
+  return <Navigate to={`/signup/step-1?ref=${code ?? ''}`} replace />;
+}
+
 // Helper component to wrap protected student routes
 function StudentRoute({ children }: { children: React.ReactNode }) {
   return (
@@ -288,6 +294,10 @@ export const router = createBrowserRouter([
             <CareerTracker />
           </Wrap>
         ),
+      },
+      {
+        path: '/ref/:code',
+        element: <ReferralRedirect />,
       },
 
       // ========================================

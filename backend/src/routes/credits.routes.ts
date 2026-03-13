@@ -18,13 +18,30 @@ router.get('/balance', async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: userId },
       select: { creditBalance: true, referralCode: true },
     });
 
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Lazy-generate referral code if missing
+    if (!user.referralCode) {
+      let code: string | null = null;
+      for (let i = 0; i < 5 && !code; i++) {
+        const candidate = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const exists = await prisma.user.findUnique({ where: { referralCode: candidate } });
+        if (!exists) code = candidate;
+      }
+      if (code) {
+        user = await prisma.user.update({
+          where: { id: userId },
+          data: { referralCode: code },
+          select: { creditBalance: true, referralCode: true },
+        });
+      }
     }
 
     res.json({
