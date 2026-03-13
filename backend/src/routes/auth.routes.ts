@@ -21,15 +21,17 @@ import {
 } from '../services/rate-limiter.js';
 import { sendEmail, emailTemplates } from '../services/email.service.js';
 import { env } from '../config/env.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
-// Cookie options for secure token storage
-const isProduction = process.env.NODE_ENV === 'production';
+// Cookie options for secure token storage.
+// sameSite: 'none' is required while the API is cross-origin (studentos.up.railway.app).
+// TODO: Change to 'strict' once a same-origin proxy (Cloudflare) is configured.
 const cookieOptions = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? ('strict' as const) : ('lax' as const),
+  secure: true,
+  sameSite: 'none' as const,
   path: '/',
 };
 
@@ -223,7 +225,8 @@ router.post('/verify-email', async (req, res, next) => {
 // Register (now requires OTP)
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, fullName, otpCode } = req.body;
+    const { email, password, otpCode } = req.body;
+    const fullName = sanitizeText(req.body.fullName ?? '');
 
     // Verify OTP if provided
     if (otpCode) {
@@ -327,10 +330,7 @@ router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, 
           retryAfterMinutes: 30,
         });
       } else {
-        res.status(401).json({
-          error: 'Invalid credentials',
-          remaining_attempts: remaining,
-        });
+        res.status(401).json({ error: 'Invalid email or password' });
       }
       return;
     }
@@ -351,10 +351,7 @@ router.post('/login', loginRateLimiter, validate(loginSchema), async (req, res, 
           retryAfterMinutes: 30,
         });
       } else {
-        res.status(401).json({
-          error: 'Invalid credentials',
-          remaining_attempts: remaining,
-        });
+        res.status(401).json({ error: 'Invalid email or password' });
       }
       return;
     }
@@ -532,18 +529,22 @@ router.post(
   validate(onboardingSchema),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const {
-        role,
-        university,
-        universityId,
-        major,
-        institution,
-        institutionId,
-        department,
-        companyName,
-        industry,
-        website,
-      } = req.body;
+      const { role, universityId, institutionId } = req.body;
+      const university = req.body.university
+        ? sanitizeText(req.body.university)
+        : req.body.university;
+      const major = req.body.major ? sanitizeText(req.body.major) : req.body.major;
+      const institution = req.body.institution
+        ? sanitizeText(req.body.institution)
+        : req.body.institution;
+      const department = req.body.department
+        ? sanitizeText(req.body.department)
+        : req.body.department;
+      const companyName = req.body.companyName
+        ? sanitizeText(req.body.companyName)
+        : req.body.companyName;
+      const industry = req.body.industry ? sanitizeText(req.body.industry) : req.body.industry;
+      const website = req.body.website ? sanitizeText(req.body.website) : req.body.website;
       const userId = req.user!.id;
 
       let userRole: string;

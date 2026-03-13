@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../src/lib/supabase';
+import { supabase, signOutSupabase } from '../src/lib/supabase';
 import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -37,8 +37,6 @@ export default function AuthCallback() {
 
         const { user, access_token } = sessionData.session;
 
-        console.log('[AuthCallback] Supabase user:', user?.email);
-
         // Exchange Supabase session for our backend JWT tokens
         const response = await authApi.googleCallback({
           supabaseAccessToken: access_token,
@@ -55,10 +53,11 @@ export default function AuthCallback() {
         }
 
         if (response.data) {
-          // Store tokens
-          localStorage.setItem('accessToken', response.data.accessToken);
-          localStorage.setItem('refreshToken', response.data.refreshToken);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+          // Mark user as authenticated (non-sensitive flag for route guards)
+          localStorage.setItem('wasAuthenticated', '1');
+
+          // Clear Supabase OAuth session — tokens are now in HttpOnly cookies
+          signOutSupabase().catch(() => {});
 
           // Refresh auth context
           await refreshUser();

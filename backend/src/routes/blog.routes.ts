@@ -2,6 +2,7 @@ import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/role.middleware.js';
+import { sanitizeText, sanitizeHTML } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -115,7 +116,10 @@ router.get(
 // Admin: Create post
 router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { title, content, excerpt, coverImageUrl, tags, status, authorName } = req.body;
+    const rawTitle: string = req.body.title ?? '';
+    const title = sanitizeText(rawTitle);
+    const content = sanitizeHTML(req.body.content ?? '');
+    const { excerpt, coverImageUrl, tags, status, authorName } = req.body;
 
     // Generate slug with collision handling
     let slug = title
@@ -154,6 +158,8 @@ router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, r
 router.patch('/:id', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
     const data: any = { ...req.body };
+    if (data.title) data.title = sanitizeText(data.title);
+    if (data.content) data.content = sanitizeHTML(data.content);
 
     // Update publishedAt if publishing for first time
     if (data.status === 'PUBLISHED') {

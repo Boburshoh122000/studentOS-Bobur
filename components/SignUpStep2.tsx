@@ -105,9 +105,8 @@ export default function SignUpStep2() {
         return;
       }
 
-      // Update tokens
-      if (data?.accessToken) localStorage.setItem('accessToken', data.accessToken);
-      if (data?.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      // Mark authenticated for route guards (tokens stored in HttpOnly cookies)
+      localStorage.setItem('wasAuthenticated', '1');
 
       // Refresh user context
       await refreshUser();

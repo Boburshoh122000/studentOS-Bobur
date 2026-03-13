@@ -208,8 +208,6 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
         setConfirmPassword('');
         // Redirect to login after a short delay
         setTimeout(() => {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
           navigateTo(Screen.SIGN_IN);
         }, 2000);
       }

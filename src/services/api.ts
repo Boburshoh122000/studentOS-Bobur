@@ -14,31 +14,23 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private getToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
     _retryCount = 0
   ): Promise<ApiResponse<T>> {
     const MAX_RETRIES = 3;
-    const token = this.getToken();
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
 
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
         headers,
+        credentials: 'include',
       });
 
       // Safely parse JSON — non-JSON bodies (e.g. 504 HTML gateway pages) throw
@@ -91,30 +83,17 @@ class ApiClient {
   }
 
   private async refreshToken(): Promise<boolean> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) return false;
-
     try {
+      // refreshToken cookie is sent automatically via credentials: 'include'
       const response = await fetch(`${this.baseUrl}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        return true;
-      }
+      return response.ok;
     } catch {
-      // Silently fail - refresh token expired or invalid
+      return false;
     }
-
-    // Clear tokens on failure
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    return false;
   }
 
   // HTTP Methods
@@ -147,17 +126,12 @@ class ApiClient {
     _retryCount = 0
   ): Promise<ApiResponse<T>> {
     const MAX_RETRIES = 3;
-    const token = this.getToken();
-    const headers: HeadersInit = {};
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
     // Do NOT set Content-Type — browser sets multipart/form-data + boundary
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
-        headers,
         body: formData,
+        credentials: 'include',
       });
 
       let data: any;
@@ -217,45 +191,13 @@ export const authApi = {
   verifyEmail: (data: { email: string; otpCode: string }) =>
     api.post<{ accessToken: string; refreshToken: string }>('/auth/verify-email', data),
 
-  register: async (data: {
-    email: string;
-    password: string;
-    fullName: string;
-    otpCode?: string;
-  }) => {
-    console.log('[Auth] Attempting registration for:', data.email);
-    const result = await api.post<{ user: any; accessToken: string; refreshToken: string }>(
-      '/auth/register',
-      data
-    );
-    if (result.error) {
-      console.error('[Auth] Registration failed:', result.error);
-    } else {
-      console.log('[Auth] Registration successful:', result.data?.user?.email);
-    }
-    return result;
-  },
+  register: (data: { email: string; password: string; fullName: string; otpCode?: string }) =>
+    api.post<{ user: any; accessToken: string; refreshToken: string }>('/auth/register', data),
 
-  login: async (data: { email: string; password: string }) => {
-    console.log('[Auth] Attempting login for:', data.email);
-    const result = await api.post<{ user: any; accessToken: string; refreshToken: string }>(
-      '/auth/login',
-      data
-    );
-    if (result.error) {
-      console.error('[Auth] Login failed:', result.error);
-    } else {
-      console.log(
-        '[Auth] Login successful:',
-        result.data?.user?.email,
-        'Role:',
-        result.data?.user?.role
-      );
-    }
-    return result;
-  },
+  login: (data: { email: string; password: string }) =>
+    api.post<{ user: any; accessToken: string; refreshToken: string }>('/auth/login', data),
 
-  logout: (refreshToken: string) => api.post('/auth/logout', { refreshToken }),
+  logout: () => api.post('/auth/logout', {}),
 
   me: () => api.get<{ id: string; email: string; role: string; profile: any }>('/auth/me'),
 
@@ -289,15 +231,14 @@ export const authApi = {
   resetPassword: (data: { token: string; password: string }) =>
     api.post<{ message: string }>('/auth/reset-password', data),
 
-  googleCallback: async (data: {
+  googleCallback: (data: {
     supabaseAccessToken: string;
     email: string;
     fullName: string;
     avatarUrl: string;
     providerId: string;
-  }) => {
-    console.log('[Auth] Exchanging Supabase OAuth for backend token:', data.email);
-    const result = await api.post<{
+  }) =>
+    api.post<{
       user: {
         id: string;
         email: string;
@@ -307,14 +248,7 @@ export const authApi = {
       accessToken: string;
       refreshToken: string;
       isNewUser: boolean;
-    }>('/auth/google-callback', data);
-    if (result.error) {
-      console.error('[Auth] Google callback failed:', result.error);
-    } else {
-      console.log('[Auth] Google callback successful:', result.data?.user?.email);
-    }
-    return result;
-  },
+    }>('/auth/google-callback', data),
 };
 
 export const userApi = {

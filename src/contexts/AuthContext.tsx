@@ -23,7 +23,6 @@ interface AuthContextType {
   ) => Promise<{
     success: boolean;
     error?: string;
-    remaining_attempts?: number;
     blocked?: boolean;
     retryAfterMinutes?: number;
     email?: string;
@@ -44,24 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
+  // Check for existing session on mount — cookies are sent automatically
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
       const { data, error } = await authApi.me();
       if (data && !error) {
         setUser(data as User);
       }
-      // Do NOT clear tokens here on error.
-      // The API client already handles 401 (invalid/expired token) via the refresh token
-      // flow, which clears tokens when refresh also fails. For network errors (e.g., backend
-      // cold-starting after a deployment), clearing tokens would log the user out incorrectly
-      // and cause admin/employer guards to show a permanent 404.
       setIsLoading(false);
     };
 
@@ -76,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return {
         success: false,
         error,
-        remaining_attempts: extra?.remaining_attempts as number | undefined,
         blocked: extra?.blocked as boolean | undefined,
         retryAfterMinutes: extra?.retryAfterMinutes as number | undefined,
         email: extra?.email as string | undefined,
@@ -84,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
+      // Cookies set by backend automatically — just sync user state
+      localStorage.setItem('wasAuthenticated', '1');
       setUser(data.user);
       return { success: true as const, user: data.user };
     }
@@ -101,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
+      // Cookies set by backend automatically
+      localStorage.setItem('wasAuthenticated', '1');
       setUser(data.user);
       return { success: true };
     }
@@ -111,16 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
     try {
-      if (refreshToken) {
-        await authApi.logout(refreshToken);
-      }
+      await authApi.logout(); // backend clears cookies server-side
     } catch {
       // Best-effort server-side logout — always clear local state below
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('wasAuthenticated');
       setUser(null);
     }
   };
@@ -130,20 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshUser = async () => {
-    // First try to get from localStorage (set by OAuth callback)
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser) as User);
-      } catch {
-        // If parse fails, try to fetch from API
-      }
-    }
-    // Also verify with API
     const { data, error } = await authApi.me();
     if (data && !error) {
       setUser(data as User);
-      localStorage.setItem('user', JSON.stringify(data));
     }
   };
 

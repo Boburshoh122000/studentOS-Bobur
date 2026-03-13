@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/role.middleware.js';
 import { mediumCache } from '../middleware/cache.middleware.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -262,8 +263,11 @@ router.get('/saved/list', authenticate, async (req: AuthenticatedRequest, res, n
 // Admin: Create scholarship
 router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
+    const body = req.body;
+    if (body.title) body.title = sanitizeText(body.title);
+    if (body.description) body.description = sanitizeText(body.description);
     const scholarship = await prisma.scholarship.create({
-      data: req.body,
+      data: body,
     });
     res.status(201).json(scholarship);
   } catch (error) {
@@ -274,9 +278,12 @@ router.post('/', authenticate, requireAdmin, async (req: AuthenticatedRequest, r
 // Admin: Update scholarship
 router.patch('/:id', authenticate, requireAdmin, async (req: AuthenticatedRequest, res, next) => {
   try {
+    const updateBody = req.body;
+    if (updateBody.title) updateBody.title = sanitizeText(updateBody.title);
+    if (updateBody.description) updateBody.description = sanitizeText(updateBody.description);
     const scholarship = await prisma.scholarship.update({
       where: { id: req.params.id as string },
-      data: req.body,
+      data: updateBody,
     });
     res.json(scholarship);
   } catch (error) {

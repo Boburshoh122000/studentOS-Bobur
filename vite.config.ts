@@ -25,6 +25,12 @@ export default defineConfig(({ mode }) => {
       'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
     },
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: { drop_console: true, drop_debugger: true },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

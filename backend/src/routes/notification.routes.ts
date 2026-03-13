@@ -4,6 +4,7 @@ import prisma from '../config/database.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { sendTelegramMessage, sendTelegramMessageDirect } from '../services/telegram.service.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -76,8 +77,8 @@ router.post(
       const notification = await prisma.notification.create({
         data: {
           userId: req.user!.id,
-          title,
-          message,
+          title: sanitizeText(title ?? ''),
+          message: message ? sanitizeText(message) : message,
           type: type || 'INFO',
           link,
         },
@@ -97,7 +98,9 @@ router.post('/admin/send', authenticate, async (req: AuthenticatedRequest, res, 
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const { email, broadcast, title, message, type } = req.body;
+    const { email, broadcast, type } = req.body;
+    const title = sanitizeText(req.body.title ?? '');
+    const message = req.body.message ? sanitizeText(req.body.message) : req.body.message;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });

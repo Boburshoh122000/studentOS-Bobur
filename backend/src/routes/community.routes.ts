@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/auth.middleware.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -62,7 +63,7 @@ router.post('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
 
     const post = await prisma.communityPost.create({
       data: {
-        content,
+        content: sanitizeText(content ?? ''),
         imageUrl,
         userId: req.user!.id,
       },
@@ -183,7 +184,7 @@ router.post('/:id/comments', authenticate, async (req: AuthenticatedRequest, res
       data: {
         postId: req.params.id as string,
         userId: req.user!.id,
-        content,
+        content: sanitizeText(content ?? ''),
       },
       include: {
         user: {

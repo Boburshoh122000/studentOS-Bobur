@@ -145,23 +145,19 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
     setIsVerifying(true);
 
     try {
-      let accessToken: string | undefined;
-      let refreshToken: string | undefined;
       let isNewAccount = true;
 
       if (!password) {
         // Redirect-from-login flow: existing unverified user, just verify the OTP
-        const { data, error: apiError } = await authApi.verifyEmail({ email, otpCode });
+        const { error: apiError } = await authApi.verifyEmail({ email, otpCode });
         if (apiError) {
           setError(apiError);
           return;
         }
-        accessToken = data?.accessToken;
-        refreshToken = data?.refreshToken;
         isNewAccount = false;
       } else {
         // Normal registration flow
-        const { data, error: apiError } = await authApi.register({
+        const { error: apiError } = await authApi.register({
           email,
           password,
           fullName,
@@ -171,24 +167,20 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
           setError(apiError);
           return;
         }
-        accessToken = data?.accessToken;
-        refreshToken = data?.refreshToken;
       }
 
-      if (accessToken && refreshToken) {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+      // Auth succeeded — cookies set by backend, mark locally for route guards
+      localStorage.setItem('wasAuthenticated', '1');
 
-        toast.success(isNewAccount ? t('Auth.account_created') : t('Auth.email_verified'));
+      toast.success(isNewAccount ? t('Auth.account_created') : t('Auth.email_verified'));
 
-        const redirectTo = searchParams.get('redirect');
-        if (redirectTo) {
-          navigate(redirectTo, { replace: true });
-        } else if (isNewAccount) {
-          navigate('/signup/step-2', { replace: true });
-        } else {
-          navigate('/app', { replace: true });
-        }
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo) {
+        navigate(redirectTo, { replace: true });
+      } else if (isNewAccount) {
+        navigate('/signup/step-2', { replace: true });
+      } else {
+        navigate('/app', { replace: true });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : t('Auth.verification_failed');

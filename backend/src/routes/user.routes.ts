@@ -4,6 +4,7 @@ import prisma from '../config/database.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { calculateProfileCompletion } from '../services/auth.service.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -51,15 +52,64 @@ router.patch(
   validate(updateProfileSchema),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const data = req.body;
+      // Explicitly extract only allowed fields to prevent unknown keys reaching Prisma
+      const {
+        fullName,
+        avatarUrl,
+        bio,
+        educationLevel,
+        university,
+        graduationYear,
+        major,
+        country,
+        goals,
+        skills,
+        headline,
+        educationHistory,
+        workExperience,
+        certificates,
+        universityId,
+      } = req.body;
+
+      const updateData: Record<string, unknown> = {};
+      const raw: Record<string, unknown> = {
+        fullName,
+        avatarUrl,
+        bio,
+        educationLevel,
+        university,
+        graduationYear,
+        major,
+        country,
+        goals,
+        skills,
+        headline,
+        educationHistory,
+        workExperience,
+        certificates,
+        universityId,
+      };
+      for (const [k, v] of Object.entries(raw)) {
+        if (v !== undefined) updateData[k] = v;
+      }
+
+      // Sanitize plain-text fields
+      if (updateData.fullName) updateData.fullName = sanitizeText(updateData.fullName as string);
+      if (updateData.bio) updateData.bio = sanitizeText(updateData.bio as string);
+      if (updateData.headline) updateData.headline = sanitizeText(updateData.headline as string);
+      if (updateData.major) updateData.major = sanitizeText(updateData.major as string);
+      if (updateData.university)
+        updateData.university = sanitizeText(updateData.university as string);
+      if (updateData.country) updateData.country = sanitizeText(updateData.country as string);
+      if (updateData.educationLevel)
+        updateData.educationLevel = sanitizeText(
+          (updateData.educationLevel as string).toUpperCase()
+        );
 
       // Update student profile
       const profile = await prisma.studentProfile.update({
         where: { userId: req.user!.id },
-        data: {
-          ...data,
-          educationLevel: data.educationLevel?.toUpperCase(),
-        },
+        data: updateData,
       });
 
       // Calculate and update profile completion

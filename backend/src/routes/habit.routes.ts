@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth.middleware.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -35,32 +36,40 @@ router.get('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
       take: 50, // Max 50 habits per user
     });
 
-    res.json(habits.map((h) => ({
-      ...h,
-      completedToday: h.logs.some(
-        (l) => new Date(l.completedAt).toDateString() === new Date().toDateString()
-      ),
-      streak: calculateStreak(h.logs),
-    })));
+    res.json(
+      habits.map((h) => ({
+        ...h,
+        completedToday: h.logs.some(
+          (l) => new Date(l.completedAt).toDateString() === new Date().toDateString()
+        ),
+        streak: calculateStreak(h.logs),
+      }))
+    );
   } catch (error) {
     next(error);
   }
 });
 
 // Create habit
-router.post('/', authenticate, validate(habitSchema), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const habit = await prisma.habit.create({
-      data: {
-        ...req.body,
-        userId: req.user!.id,
-      },
-    });
-    res.status(201).json(habit);
-  } catch (error) {
-    next(error);
+router.post(
+  '/',
+  authenticate,
+  validate(habitSchema),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const habit = await prisma.habit.create({
+        data: {
+          ...req.body,
+          title: sanitizeText(req.body.title ?? ''),
+          userId: req.user!.id,
+        },
+      });
+      res.status(201).json(habit);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Update habit
 router.patch('/:id', authenticate, async (req: AuthenticatedRequest, res, next) => {

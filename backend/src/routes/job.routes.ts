@@ -6,6 +6,7 @@ import { authenticate, optionalAuth, AuthenticatedRequest } from '../middleware/
 import { requireEmployer } from '../middleware/role.middleware.js';
 import { mediumCache } from '../middleware/cache.middleware.js';
 import { sendEmail } from '../services/email.service.js';
+import { sanitizeText } from '../utils/sanitize.js';
 
 const router = Router();
 
@@ -323,11 +324,15 @@ router.post('/', authenticate, requireEmployer, async (req: AuthenticatedRequest
       return;
     }
 
+    const jobBody = req.body;
     const job = await prisma.job.create({
       data: {
-        ...req.body,
+        ...jobBody,
+        title: sanitizeText(jobBody.title ?? ''),
+        description: jobBody.description ? sanitizeText(jobBody.description) : jobBody.description,
+        location: jobBody.location ? sanitizeText(jobBody.location) : jobBody.location,
+        company: sanitizeText(jobBody.company || employerProfile.companyName),
         employerId: employerProfile.id,
-        company: req.body.company || employerProfile.companyName,
       },
     });
     res.status(201).json(job);
@@ -404,9 +409,13 @@ router.patch(
         return;
       }
 
+      const updateBody = req.body;
+      if (updateBody.title) updateBody.title = sanitizeText(updateBody.title);
+      if (updateBody.description) updateBody.description = sanitizeText(updateBody.description);
+      if (updateBody.location) updateBody.location = sanitizeText(updateBody.location);
       const job = await prisma.job.update({
         where: { id: req.params.id as string },
-        data: req.body,
+        data: updateBody,
       });
       res.json(job);
     } catch (error) {

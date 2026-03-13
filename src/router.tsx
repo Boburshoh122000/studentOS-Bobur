@@ -40,7 +40,7 @@ function AdminGuard() {
   if (!isAuthenticated) {
     // Token present = user was previously logged in (knows URL); recover via signin.
     // No token = unknown visitor probing URLs; show 404 to obscure the route.
-    return localStorage.getItem('accessToken') ? (
+    return localStorage.getItem('wasAuthenticated') ? (
       <Navigate to="/signin?redirect=%2Fconsole-admin" replace />
     ) : (
       <NotFound />
@@ -55,7 +55,7 @@ function EmployerGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <Loader />;
   if (!isAuthenticated) {
-    return localStorage.getItem('accessToken') ? (
+    return localStorage.getItem('wasAuthenticated') ? (
       <Navigate to="/signin?redirect=%2Fconsole-employer" replace />
     ) : (
       <NotFound />
