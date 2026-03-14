@@ -105,7 +105,11 @@ export default function SignUpStep2() {
         return;
       }
 
-      // Mark authenticated for route guards (tokens stored in HttpOnly cookies)
+      // Save fresh tokens (onboarding returns new tokens with updated role)
+      if (data?.accessToken) localStorage.setItem('accessToken', data.accessToken);
+      if (data?.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+      // Mark authenticated for route guards
       localStorage.setItem('wasAuthenticated', '1');
 
       // Refresh user context
