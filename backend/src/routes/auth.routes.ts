@@ -791,64 +791,68 @@ const googleCallbackSchema = z.object({
 // Google OAuth Callback - Exchange Supabase OAuth for our JWT tokens
 router.post('/google-callback', validate(googleCallbackSchema), async (req, res, next) => {
   try {
-    const { email, fullName, avatarUrl, providerId } = req.body;
+    const { email, fullName, avatarUrl } = req.body;
 
-    // Find or create user
-    let user = await prisma.user.findUnique({
+    // Determine if this is a new user (read before upsert to capture state)
+    const existingUser = await prisma.user.findUnique({
       where: { email },
+      select: { id: true },
+    });
+    const isNewUser = !existingUser;
+
+    // Generate a referral code for new OAuth users
+    let newReferralCode: string | null = null;
+    if (isNewUser) {
+      let attempts = 0;
+      while (!newReferralCode && attempts < 5) {
+        const candidate = generateReferralCode();
+        const taken = await prisma.user.findUnique({ where: { referralCode: candidate } });
+        if (!taken) newReferralCode = candidate;
+        attempts++;
+      }
+    }
+
+    // Upsert: atomic create-or-update — safe against concurrent requests (P2002-proof)
+    let user = await prisma.user.upsert({
+      where: { email },
+      create: {
+        email,
+        role: 'STUDENT',
+        emailVerified: true,
+        creditBalance: 10,
+        referralCode: newReferralCode,
+        studentProfile: {
+          create: {
+            fullName: fullName || email.split('@')[0],
+            avatarUrl: avatarUrl || null,
+          },
+        },
+      },
+      update: {
+        lastLoginAt: new Date(),
+        emailVerified: true,
+      },
       include: {
         studentProfile: true,
         employerProfile: true,
       },
     });
 
-    let isNewUser = false;
-
-    if (!user) {
-      // Create new user (OAuth users don't have a password)
-      isNewUser = true;
-      user = await prisma.user.create({
-        data: {
-          email,
-          role: 'STUDENT',
-          emailVerified: true, // OAuth emails are already verified
-          creditBalance: 10, // Welcome bonus
-          studentProfile: {
-            create: {
-              fullName: fullName || email.split('@')[0],
-              avatarUrl: avatarUrl || null,
-            },
-          },
-        },
-        include: {
-          studentProfile: true,
-          employerProfile: true,
-        },
-      });
-
-      // Send welcome email for new OAuth users (fire-and-forget)
+    // Send welcome email for new OAuth users (fire-and-forget)
+    if (isNewUser) {
       const welcomeTemplate = emailTemplates.welcomeEmail(fullName || email.split('@')[0]);
       sendEmail({ to: email, ...welcomeTemplate }).catch((err) =>
         console.error('Failed to send welcome email:', err)
       );
-    } else {
-      // Update existing user's last login and potentially avatar
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          lastLoginAt: new Date(),
-          emailVerified: true,
-        },
-      });
+    }
 
-      // Update avatar if provided and user has a student profile
-      if (avatarUrl && user.studentProfile && !user.studentProfile.avatarUrl) {
-        await prisma.studentProfile.update({
-          where: { userId: user.id },
-          data: { avatarUrl },
-        });
-        user.studentProfile.avatarUrl = avatarUrl;
-      }
+    // Update avatar for existing users who don't have one yet
+    if (!isNewUser && avatarUrl && user.studentProfile && !user.studentProfile.avatarUrl) {
+      await prisma.studentProfile.update({
+        where: { userId: user.id },
+        data: { avatarUrl },
+      });
+      user.studentProfile.avatarUrl = avatarUrl;
     }
 
     // Check if user is active

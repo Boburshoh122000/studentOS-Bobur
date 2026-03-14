@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authApi } from '../services/api';
 
 interface User {
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const { data, error } = await authApi.login({ email, password });
 
     if (error) {
@@ -78,9 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return { success: false, error: 'Login failed' };
-  };
+  }, []);
 
-  const register = async (email: string, password: string, fullName: string) => {
+  const register = useCallback(async (email: string, password: string, fullName: string) => {
     const { data, error } = await authApi.register({ email, password, fullName });
 
     if (error) {
@@ -95,9 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return { success: false, error: 'Registration failed' };
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authApi.logout(); // backend clears cookies server-side
     } catch {
@@ -106,18 +106,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('wasAuthenticated');
       setUser(null);
     }
-  };
+  }, []);
 
-  const updateUser = (updates: Partial<User>) => {
+  const updateUser = useCallback((updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
-  };
+  }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const { data, error } = await authApi.me();
     if (data && !error) {
       setUser(data as User);
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

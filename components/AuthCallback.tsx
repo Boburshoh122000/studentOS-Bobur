@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, signOutSupabase } from '../src/lib/supabase';
 import { authApi } from '../src/services/api';
@@ -16,8 +16,13 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    // Guard against double-invocation (React StrictMode, unstable deps, etc.)
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleAuthCallback = async () => {
       try {
         // Get the session from Supabase (it parses the URL hash automatically)
