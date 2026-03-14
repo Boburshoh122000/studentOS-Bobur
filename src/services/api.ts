@@ -50,7 +50,10 @@ class ApiClient {
 
       if (!response.ok) {
         // Handle token expiration
-        if (response.status === 401 && data.error === 'Token expired') {
+        if (
+          response.status === 401 &&
+          (data.error === 'Token expired' || data.error === 'No token provided')
+        ) {
           const refreshed = await this.refreshToken();
           if (refreshed) {
             // Retry the request with new token
