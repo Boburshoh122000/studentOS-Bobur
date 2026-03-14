@@ -24,6 +24,16 @@ const getSupabaseClient = (): SupabaseClient => {
         autoRefreshToken: false,
         persistSession: false,
         detectSessionInUrl: true,
+        // Use implicit flow (hash-based token) instead of PKCE.
+        // With persistSession:false, PKCE stores the code verifier in memory —
+        // which is cleared when the OAuth redirect navigates away from the page.
+        // The new client instance on /auth/callback can't find the verifier,
+        // so getSession() returns null (breaks iOS Safari and some Android browsers).
+        // Implicit flow puts the access_token directly in the URL hash, which
+        // detectSessionInUrl reads without needing any stored state.
+        // Safe here because we immediately exchange for our own HttpOnly-cookie
+        // JWT and call signOutSupabase() to clear the Supabase session.
+        flowType: 'implicit',
       },
     });
   }
