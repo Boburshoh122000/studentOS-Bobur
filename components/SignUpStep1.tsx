@@ -149,16 +149,23 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
 
       if (!password) {
         // Redirect-from-login flow: existing unverified user, just verify the OTP
-        const { error: apiError } = await authApi.verifyEmail({ email, otpCode });
+        const { data: verifyData, error: apiError } = await authApi.verifyEmail({ email, otpCode });
         if (apiError) {
           setError(apiError);
           return;
+        }
+        // Save tokens so ApiClient can authenticate subsequent requests (e.g. onboarding)
+        if ((verifyData as any)?.accessToken) {
+          localStorage.setItem('accessToken', (verifyData as any).accessToken);
+        }
+        if ((verifyData as any)?.refreshToken) {
+          localStorage.setItem('refreshToken', (verifyData as any).refreshToken);
         }
         isNewAccount = false;
       } else {
         // Normal registration flow
         const refCode = searchParams.get('ref') ?? undefined;
-        const { error: apiError } = await authApi.register({
+        const { data: regData, error: apiError } = await authApi.register({
           email,
           password,
           fullName,
@@ -168,6 +175,13 @@ export default function SignUpStep1({ navigateTo: _navigateTo }: NavigationProps
         if (apiError) {
           setError(apiError);
           return;
+        }
+        // Save tokens so ApiClient can authenticate subsequent requests (e.g. onboarding)
+        if (regData?.accessToken) {
+          localStorage.setItem('accessToken', regData.accessToken);
+        }
+        if (regData?.refreshToken) {
+          localStorage.setItem('refreshToken', regData.refreshToken);
         }
       }
 

@@ -257,6 +257,13 @@ export const authApi = {
       refreshToken: string;
       isNewUser: boolean;
     }>('/auth/google-callback', data),
+
+  // Alias used in the redirect-from-login unverified email flow
+  verifyEmail: (data: { email: string; otpCode: string }) =>
+    api.post<{ accessToken: string; refreshToken: string } | { message: string }>(
+      '/auth/verify-otp',
+      data
+    ),
 };
 
 export const userApi = {
