@@ -49,15 +49,16 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        // Handle token expiration
+        // Handle token expiration — only attempt once (_retryCount===0) to prevent
+        // infinite loops on mobile where cookies may not be stored cross-origin.
         if (
           response.status === 401 &&
+          _retryCount === 0 &&
           (data.error === 'Token expired' || data.error === 'No token provided')
         ) {
           const refreshed = await this.refreshToken();
           if (refreshed) {
-            // Retry the request with new token
-            return this.request<T>(endpoint, options);
+            return this.request<T>(endpoint, options, 1);
           }
         }
         return { data, error: data.error || 'An error occurred' };

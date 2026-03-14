@@ -34,7 +34,7 @@ interface AuthContextType {
   ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
-  refreshUser: () => Promise<void>;
+  refreshUser: (preloadedUser?: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,7 +112,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
   }, []);
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (preloadedUser?: User) => {
+    // If caller already has the user object (e.g. from OAuth callback response),
+    // set it directly to avoid a /me round-trip that may fail on mobile cross-origin.
+    if (preloadedUser) {
+      setUser(preloadedUser);
+      return;
+    }
     const { data, error } = await authApi.me();
     if (data && !error) {
       setUser(data as User);

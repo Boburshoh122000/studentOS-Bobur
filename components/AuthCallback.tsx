@@ -64,8 +64,12 @@ export default function AuthCallback() {
           // Clear Supabase OAuth session — tokens are now in HttpOnly cookies
           signOutSupabase().catch(() => {});
 
-          // Refresh auth context
-          await refreshUser();
+          // Hydrate auth context directly from the googleCallback response.
+          // Do NOT call authApi.me() here — on mobile (iOS Safari / ITP) the just-set
+          // cross-origin HttpOnly cookie may not be attached to an immediate subsequent
+          // fetch, causing /me to return 401, leaving user=null, and triggering a
+          // redirect loop back to /signin.
+          await refreshUser(response.data.user as any);
 
           toast.success(
             `Welcome${response.data.isNewUser ? '' : ' back'}, ${response.data.user.profile?.fullName || response.data.user.email}!`
