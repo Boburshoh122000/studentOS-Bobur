@@ -14,17 +14,26 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  private getToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
     _retryCount = 0
   ): Promise<ApiResponse<T>> {
     const MAX_RETRIES = 3;
+    const token = this.getToken();
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
+
+    if (token) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    }
 
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -87,14 +96,29 @@ class ApiClient {
   }
 
   private async refreshToken(): Promise<boolean> {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
     try {
-      // refreshToken cookie is sent automatically via credentials: 'include'
       const response = await fetch(`${this.baseUrl}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        // Send stored refresh token in body as fallback for mobile where
+        // cross-origin cookies may not be sent
+        body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined,
       });
-      return response.ok;
+
+      if (response.ok) {
+        const data = await response.json();
+        // Persist new tokens so subsequent requests have a valid Bearer header
+        if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        return true;
+      }
+
+      // Refresh failed — clear stale tokens
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      return false;
     } catch {
       return false;
     }
