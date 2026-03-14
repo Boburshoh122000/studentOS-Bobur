@@ -1012,23 +1012,26 @@ export default function CVBuilder() {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
-      // html2canvas hangs when the target element has position:absolute + CSS transform.
-      // Temporarily reset both so it captures the native A4 size, then restore.
       const el = previewRef.current;
-      const savedTransform = el.style.transform;
-      const savedTransformOrigin = el.style.transformOrigin;
-      const savedPosition = el.style.position;
-      el.style.transform = 'none';
-      el.style.transformOrigin = '';
-      el.style.position = 'static';
-
-      // Lower scale on mobile to reduce memory pressure
       const isMobile = window.innerWidth < 768;
-      const captureScale = isMobile ? 1.2 : 1.5;
+      const captureScale = isMobile ? 1.5 : 2;
+
+      // Clone the preview into a fixed off-screen container appended directly to
+      // document.body. This bypasses the parent overflow-auto that clips the element
+      // when its transform/position are reset — which caused empty PDFs on desktop
+      // and "Export failed" errors on mobile.
+      const offscreen = document.createElement('div');
+      offscreen.style.cssText =
+        'position:fixed;top:0;left:0;width:210mm;z-index:-9999;pointer-events:none;overflow:visible;';
+      document.body.appendChild(offscreen);
+      const clone = el.cloneNode(true) as HTMLDivElement;
+      clone.style.cssText =
+        'transform:none;transform-origin:top left;width:210mm;position:relative;';
+      offscreen.appendChild(clone);
 
       let canvas: HTMLCanvasElement;
       try {
-        canvas = await html2canvas(el, {
+        canvas = await html2canvas(clone, {
           scale: captureScale,
           useCORS: true,
           allowTaint: true,
@@ -1037,9 +1040,7 @@ export default function CVBuilder() {
           imageTimeout: 0,
         });
       } finally {
-        el.style.transform = savedTransform;
-        el.style.transformOrigin = savedTransformOrigin;
-        el.style.position = savedPosition;
+        document.body.removeChild(offscreen);
       }
 
       const buildPdf = (imgData: string) => {
