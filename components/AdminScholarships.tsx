@@ -810,9 +810,9 @@ export default function AdminScholarships({ navigateTo }: NavigationProps) {
                       value={editorData.country}
                       onChange={(e) => setEditorData({ ...editorData, country: e.target.value })}
                     >
-                      {countries.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
+                      {COUNTRIES.map((c) => (
+                        <option key={c.name} value={c.name}>
+                          {c.name}
                         </option>
                       ))}
                     </select>
