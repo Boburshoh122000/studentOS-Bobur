@@ -50,31 +50,18 @@ export const isSupabaseConfigured = (): boolean => {
 
 /**
  * Sign in with Google OAuth
- * Redirects user to Google sign-in page
+ * Redirects directly to Google — bypass Supabase so redirect_uri shows our domain
  */
-export const signInWithGoogle = async () => {
-  const supabase = getSupabaseClient();
-
-  // Dynamically build redirect URL based on current origin
-  const redirectTo = `${window.location.origin}/auth/callback`;
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo,
-      queryParams: {
-        access_type: 'offline', // Request refresh token
-        prompt: 'consent', // Always prompt for account selection
-      },
-    },
+export const signInWithGoogle = () => {
+  const params = new URLSearchParams({
+    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    redirect_uri: `${window.location.origin}/auth/callback`,
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'offline',
+    prompt: 'select_account',
   });
-
-  if (error) {
-    console.error('[Supabase] Google OAuth error:', error);
-    throw error;
-  }
-
-  return data;
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 };
 
 /**

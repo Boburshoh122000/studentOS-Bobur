@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, signOutSupabase } from '../src/lib/supabase';
 import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -25,31 +24,23 @@ export default function AuthCallback() {
 
     const handleAuthCallback = async () => {
       try {
-        // Get the session from Supabase (it parses the URL hash automatically)
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const errorParam = urlParams.get('error');
 
-        if (sessionError) {
-          console.error('[AuthCallback] Session error:', sessionError);
-          setError(sessionError.message);
+        if (errorParam) {
+          setError(`Google sign-in cancelled or failed: ${errorParam}`);
           return;
         }
 
-        if (!sessionData.session) {
-          console.error('[AuthCallback] No session found');
-          setError('No session found. Please try signing in again.');
+        if (!code) {
+          console.error('[AuthCallback] No authorization code in URL');
+          setError('No authorization code received. Please try signing in again.');
           return;
         }
 
-        const { user, access_token } = sessionData.session;
-
-        // Exchange Supabase session for our backend JWT tokens
-        const response = await authApi.googleCallback({
-          supabaseAccessToken: access_token,
-          email: user?.email || '',
-          fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
-          avatarUrl: user?.user_metadata?.avatar_url || '',
-          providerId: user?.id || '',
-        });
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        const response = await authApi.googleExchange(code, redirectUri);
 
         if (response.error) {
           console.error('[AuthCallback] Backend error:', response.error);
@@ -66,21 +57,13 @@ export default function AuthCallback() {
           if (response.data.refreshToken)
             localStorage.setItem('refreshToken', response.data.refreshToken);
 
-          // Clear Supabase OAuth session — tokens are now in HttpOnly cookies
-          signOutSupabase().catch(() => {});
-
-          // Hydrate auth context directly from the googleCallback response.
-          // Do NOT call authApi.me() here — on mobile (iOS Safari / ITP) the just-set
-          // cross-origin HttpOnly cookie may not be attached to an immediate subsequent
-          // fetch, causing /me to return 401, leaving user=null, and triggering a
-          // redirect loop back to /signin.
+          // Hydrate auth context directly to avoid /me round-trip on mobile
           await refreshUser(response.data.user as any);
 
           toast.success(
             `Welcome${response.data.isNewUser ? '' : ' back'}, ${response.data.user.profile?.fullName || response.data.user.email}!`
           );
 
-          // Redirect based on whether user is new (needs onboarding) or existing
           if (response.data.isNewUser) {
             navigate('/signup/step-2', { replace: true });
           } else {

@@ -887,6 +887,144 @@ router.post('/google-callback', validate(googleCallbackSchema), async (req, res,
   }
 });
 
+// Google OAuth Exchange - Direct code exchange (no Supabase intermediary)
+// Frontend redirects to Google with redirect_uri = {frontend}/auth/callback,
+// then sends the one-time code here for secure server-side exchange.
+const googleExchangeSchema = z.object({
+  body: z.object({
+    code: z.string(),
+    redirectUri: z.string().url(),
+  }),
+});
+
+router.post('/google/exchange', validate(googleExchangeSchema), async (req, res, next) => {
+  try {
+    const { code, redirectUri } = req.body;
+
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+      return next(new AppError(500, 'Google OAuth not configured on server'));
+    }
+
+    // Exchange authorization code for Google tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: env.GOOGLE_CLIENT_ID,
+        client_secret: env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+    const googleTokens = (await tokenRes.json()) as any;
+    if (googleTokens.error) {
+      return next(new AppError(400, googleTokens.error_description || 'Google OAuth failed'));
+    }
+
+    // Get user info from Google
+    const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${googleTokens.access_token}` },
+    });
+    const googleUser = (await userInfoRes.json()) as any;
+
+    const email: string = googleUser.email;
+    const fullName: string = googleUser.name || '';
+    const avatarUrl: string = googleUser.picture || '';
+    const googleId: string = googleUser.id;
+
+    // Determine if new user
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    const isNewUser = !existingUser;
+
+    // Generate referral code for new users
+    let newReferralCode: string | null = null;
+    if (isNewUser) {
+      let attempts = 0;
+      while (!newReferralCode && attempts < 5) {
+        const candidate = generateReferralCode();
+        const taken = await prisma.user.findUnique({ where: { referralCode: candidate } });
+        if (!taken) newReferralCode = candidate;
+        attempts++;
+      }
+    }
+
+    // Upsert user
+    let user = await prisma.user.upsert({
+      where: { email },
+      create: {
+        email,
+        role: 'STUDENT',
+        emailVerified: true,
+        creditBalance: 10,
+        referralCode: newReferralCode,
+        googleId,
+        studentProfile: {
+          create: {
+            fullName: fullName || email.split('@')[0],
+            avatarUrl: avatarUrl || null,
+          },
+        },
+      },
+      update: {
+        lastLoginAt: new Date(),
+        emailVerified: true,
+        googleId: googleId || undefined,
+      },
+      include: {
+        studentProfile: true,
+        employerProfile: true,
+      },
+    });
+
+    // Send welcome email for new users (fire-and-forget)
+    if (isNewUser) {
+      const welcomeTemplate = emailTemplates.welcomeEmail(fullName || email.split('@')[0]);
+      sendEmail({ to: email, ...welcomeTemplate }).catch((err) =>
+        console.error('Failed to send welcome email:', err)
+      );
+    }
+
+    // Update avatar for existing users who don't have one yet
+    if (!isNewUser && avatarUrl && user.studentProfile && !user.studentProfile.avatarUrl) {
+      await prisma.studentProfile.update({
+        where: { userId: user.id },
+        data: { avatarUrl },
+      });
+      user.studentProfile.avatarUrl = avatarUrl;
+    }
+
+    if (!user.isActive) {
+      return next(new AppError(403, 'Your account has been deactivated. Please contact support.'));
+    }
+
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
+    const refreshToken = await generateRefreshToken(user.id);
+    setAuthCookies(res, accessToken, refreshToken);
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        profile: user.studentProfile || user.employerProfile,
+      },
+      accessToken,
+      refreshToken,
+      isNewUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Delete account (soft-delete: deactivate + revoke tokens)
 router.delete('/account', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {

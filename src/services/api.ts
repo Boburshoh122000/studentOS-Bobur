@@ -283,6 +283,19 @@ export const authApi = {
       isNewUser: boolean;
     }>('/auth/google-callback', data),
 
+  googleExchange: (code: string, redirectUri: string) =>
+    api.post<{
+      user: {
+        id: string;
+        email: string;
+        role: string;
+        profile: { fullName?: string; avatarUrl?: string } | null;
+      };
+      accessToken: string;
+      refreshToken: string;
+      isNewUser: boolean;
+    }>('/auth/google/exchange', { code, redirectUri }),
+
   // Alias used in the redirect-from-login unverified email flow
   verifyEmail: (data: { email: string; otpCode: string }) =>
     api.post<{ accessToken: string; refreshToken: string } | { message: string }>(
