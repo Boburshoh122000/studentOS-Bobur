@@ -1,9 +1,34 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
+import { authApi } from '../src/services/api';
 import { CheckIcon, ClockIcon, LockClosedIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 export default function VerificationPending() {
-  const { logout } = useAuth();
+  const { logout, refreshUser } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkApproval = async () => {
+      const { data } = await authApi.me();
+      if (data?.profile?.verificationStatus === 'verified') {
+        await refreshUser();
+        navigate('/console-employer', { replace: true });
+      }
+    };
+
+    // Poll every 15 seconds while on this screen
+    const interval = setInterval(checkApproval, 15000);
+
+    // Also re-check immediately when the browser tab regains focus
+    // (employer opens admin panel in another tab, approves, comes back)
+    window.addEventListener('focus', checkApproval);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', checkApproval);
+    };
+  }, [refreshUser, navigate]);
 
   return (
     <div className="min-h-screen flex bg-white font-sans">
