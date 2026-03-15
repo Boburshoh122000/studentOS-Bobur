@@ -27,6 +27,8 @@ import telegramRoutes from './routes/telegram.routes.js';
 import learningPlanRoutes from './routes/learning-plan.routes.js';
 import teamRoutes from './routes/team.routes.js';
 import universityRoutes from './routes/university.routes.js';
+import scholarshipScraperRoutes from './routes/scholarship-scraper.routes.js';
+import { startScholarshipCron } from './services/scholarship-cron.js';
 
 const app = express();
 
@@ -115,6 +117,7 @@ app.use('/api/telegram', telegramRoutes);
 app.use('/api/learning-plans', learningPlanRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/universities', universityRoutes);
+app.use('/api/admin/scholarships', scholarshipScraperRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -149,6 +152,8 @@ app.listen(PORT, HOST, () => {
       })
       .catch((err) => console.warn('⚠️  Telegram webhook registration error:', err.message));
   }
+
+  startScholarshipCron();
 });
 
 export default app;
