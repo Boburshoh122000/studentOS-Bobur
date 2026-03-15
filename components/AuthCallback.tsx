@@ -60,6 +60,11 @@ export default function AuthCallback() {
         if (response.data) {
           // Mark user as authenticated (non-sensitive flag for route guards)
           localStorage.setItem('wasAuthenticated', '1');
+          // Persist tokens for mobile where cross-origin cookies may not be stored
+          if (response.data.accessToken)
+            localStorage.setItem('accessToken', response.data.accessToken);
+          if (response.data.refreshToken)
+            localStorage.setItem('refreshToken', response.data.refreshToken);
 
           // Clear Supabase OAuth session — tokens are now in HttpOnly cookies
           signOutSupabase().catch(() => {});
@@ -111,6 +116,7 @@ export default function AuthCallback() {
             </h2>
             <p className="text-slate-500 dark:text-slate-400">{error}</p>
             <button
+              type="button"
               onClick={() => navigate('/signin')}
               className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
             >

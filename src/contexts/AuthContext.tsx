@@ -71,8 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      // Cookies set by backend automatically — just sync user state
       localStorage.setItem('wasAuthenticated', '1');
+      // Persist tokens for mobile where cross-origin cookies may not be stored
+      if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
       setUser(data.user);
       return { success: true as const, user: data.user };
     }
@@ -88,8 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      // Cookies set by backend automatically
       localStorage.setItem('wasAuthenticated', '1');
+      // /register doesn't set cookies — save tokens so Authorization header works
+      if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
       setUser(data.user);
       return { success: true };
     }
@@ -104,6 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Best-effort server-side logout — always clear local state below
     } finally {
       localStorage.removeItem('wasAuthenticated');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       setUser(null);
     }
   }, []);
