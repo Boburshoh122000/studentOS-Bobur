@@ -134,13 +134,15 @@ router.patch(
 router.get('/dashboard', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
+    const now = new Date();
+    const toKey = (d: Date) => d.toISOString().split('T')[0];
 
-    // Get profile
+    // Get profile + user data
     const [profile, userData] = await Promise.all([
       prisma.studentProfile.findUnique({ where: { userId } }),
       prisma.user.findUnique({
         where: { id: userId },
-        select: { telegramChatId: true },
+        select: { telegramChatId: true, lastLoginAt: true },
       }),
     ]);
 
@@ -167,14 +169,14 @@ router.get('/dashboard', authenticate, async (req: AuthenticatedRequest, res, ne
         logs: {
           where: {
             completedAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             },
           },
         },
       },
     });
 
-    // Calculate streak
+    // Calculate today's habit completions
     const todayLogs = await prisma.habitLog.count({
       where: {
         userId,
@@ -182,6 +184,104 @@ router.get('/dashboard', authenticate, async (req: AuthenticatedRequest, res, ne
           gte: new Date(new Date().setHours(0, 0, 0, 0)),
         },
       },
+    });
+
+    // ── NEW: ATS scan history ──
+    const atsScans = await prisma.atsScan.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { score: true, jobRole: true, createdAt: true },
+    });
+    const atsHistory = [...atsScans].reverse().map((s) => ({
+      score: s.score,
+      date: s.createdAt.toISOString(),
+      jobTitle: s.jobRole ?? undefined,
+    }));
+    const previousAtsScore = atsScans.length > 1 ? atsScans[1].score : null;
+    const lastCvScanDate = atsScans.length > 0 ? atsScans[0].createdAt.toISOString() : null;
+
+    // ── NEW: Upcoming deadlines (saved scholarships with deadline in next 60 days) ──
+    const in60Days = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const savedWithDeadlines = await prisma.savedScholarship.findMany({
+      where: {
+        userId,
+        scholarship: {
+          deadline: { gte: now, lte: in60Days },
+          isActive: true,
+        },
+      },
+      include: { scholarship: { select: { title: true, deadline: true } } },
+      orderBy: { scholarship: { deadline: 'asc' } },
+      take: 5,
+    });
+    const upcomingDeadlines = savedWithDeadlines.map((s) => ({
+      id: s.id,
+      type: 'scholarship' as const,
+      title: s.scholarship.title,
+      deadline: s.scholarship.deadline!.toISOString(),
+      screen: 'SCHOLARSHIPS',
+    }));
+
+    // ── NEW: Activity heatmap (last 28 days) ──
+    const heatmapStart = new Date(now.getTime() - 27 * 24 * 60 * 60 * 1000);
+    heatmapStart.setHours(0, 0, 0, 0);
+
+    const [atsActivity, habitActivity, appActivity, savedActivity] = await Promise.all([
+      prisma.atsScan.findMany({
+        where: { userId, createdAt: { gte: heatmapStart } },
+        select: { createdAt: true },
+      }),
+      prisma.habitLog.findMany({
+        where: { userId, completedAt: { gte: heatmapStart } },
+        select: { completedAt: true },
+      }),
+      prisma.jobApplication.findMany({
+        where: { userId, appliedAt: { gte: heatmapStart } },
+        select: { appliedAt: true },
+      }),
+      prisma.savedScholarship.findMany({
+        where: { userId, savedAt: { gte: heatmapStart } },
+        select: { savedAt: true },
+      }),
+    ]);
+
+    const heatmapMap: Record<string, number> = {};
+    [
+      ...atsActivity.map((x) => x.createdAt),
+      ...habitActivity.map((x) => x.completedAt),
+      ...appActivity.map((x) => x.appliedAt),
+      ...savedActivity.map((x) => x.savedAt),
+    ].forEach((d) => {
+      const k = toKey(d);
+      heatmapMap[k] = (heatmapMap[k] || 0) + 1;
+    });
+    const activityHeatmap = Array.from({ length: 28 }, (_, i) => {
+      const d = new Date(heatmapStart.getTime() + i * 24 * 60 * 60 * 1000);
+      const key = toKey(d);
+      return { date: key, count: heatmapMap[key] || 0 };
+    });
+
+    // ── NEW: Streak days ──
+    const allLogs = await prisma.habitLog.findMany({
+      where: { userId },
+      orderBy: { completedAt: 'desc' },
+      select: { completedAt: true },
+    });
+    const loggedDays = new Set(allLogs.map((l) => toKey(l.completedAt)));
+    let streakDays = 0;
+    const checkDate = new Date();
+    while (loggedDays.has(toKey(checkDate))) {
+      streakDays++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    // ── NEW: Learning plans ──
+    const learningPlans = await prisma.learningPlan.findMany({
+      where: { userId },
+      select: { id: true, topic: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
     });
 
     res.json({
@@ -205,8 +305,22 @@ router.get('/dashboard', authenticate, async (req: AuthenticatedRequest, res, ne
         atsScore: profile?.atsScore || 0,
         habitsCompletedToday: todayLogs,
         profileCompletion: profile?.profileCompletion || 0,
+        totalHabits: habits.length,
       },
       telegramConnected: !!userData?.telegramChatId,
+      // New fields
+      atsHistory,
+      previousAtsScore,
+      lastCvScanDate,
+      upcomingDeadlines,
+      activityHeatmap,
+      streakDays,
+      lastLoginAt: userData?.lastLoginAt?.toISOString() ?? null,
+      learningPlans: learningPlans.map((p) => ({
+        id: p.id,
+        name: p.topic,
+        lastProgressAt: null,
+      })),
     });
   } catch (error) {
     next(error);
