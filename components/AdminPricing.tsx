@@ -449,7 +449,7 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     Total Uses
                   </p>
                   <p className="text-2xl font-black text-slate-900 dark:text-white">
-                    {usageStats.total_usages.toLocaleString()}
+                    {(usageStats.total_usages ?? 0).toLocaleString()}
                   </p>
                   <span
                     className={`text-xs font-bold ${usageStats.total_trend_direction === 'up' ? 'text-emerald-600' : 'text-red-500'}`}
@@ -462,7 +462,7 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                     Active Users
                   </p>
                   <p className="text-2xl font-black text-slate-900 dark:text-white">
-                    {usageStats.total_active_users.toLocaleString()}
+                    {(usageStats.total_active_users ?? 0).toLocaleString()}
                   </p>
                   <span
                     className={`text-xs font-bold ${usageStats.users_trend_direction === 'up' ? 'text-emerald-600' : 'text-red-500'}`}
@@ -559,10 +559,10 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                           <p className="text-xs text-slate-400">{s.category}</p>
                         </td>
                         <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">
-                          {s.total_uses.toLocaleString()}
+                          {(s.total_uses ?? 0).toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-right">
-                          {s.unique_users.toLocaleString()}
+                          {(s.unique_users ?? 0).toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-right">
                           {s.percentage}%
@@ -1435,8 +1435,8 @@ export default function AdminPricing({ navigateTo: _navigateTo }: NavigationProp
                       </div>
                     </div>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
-                      Example: at {pricingExtra.extraThreshold.toLocaleString()} words, cost is{' '}
-                      {pricingExtra.extraBase} credits. Every additional 10,000 words adds{' '}
+                      Example: at {(pricingExtra.extraThreshold ?? 0).toLocaleString()} words, cost
+                      is {pricingExtra.extraBase} credits. Every additional 10,000 words adds{' '}
                       {pricingExtra.extraPer10k} credits.
                     </p>
                   </div>
