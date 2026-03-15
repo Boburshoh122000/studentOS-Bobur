@@ -132,6 +132,7 @@ const CommunityFeed = withNavigate(lazyRetry(() => import('../components/Communi
 const ProfileSettings = withNavigate(lazyRetry(() => import('../components/ProfileSettings')));
 const UserProfile = withNavigate(lazyRetry(() => import('../components/UserProfile')));
 const StudentSettings = withNavigate(lazyRetry(() => import('../components/StudentSettings')));
+const Notifications = withNavigate(lazyRetry(() => import('../components/Notifications')));
 
 // Admin
 const AdminDashboard = withNavigate(lazyRetry(() => import('../components/AdminDashboard')));
@@ -413,6 +414,14 @@ export const router = createBrowserRouter([
         element: (
           <StudentRoute>
             <StudentSettings />
+          </StudentRoute>
+        ),
+      },
+      {
+        path: '/app/notifications',
+        element: (
+          <StudentRoute>
+            <Notifications />
           </StudentRoute>
         ),
       },
