@@ -424,20 +424,6 @@ router.patch(
   }
 );
 
-// TEMPORARY: one-time cleanup — remove after use
-router.delete('/clear-all-secret', async (req, res, next) => {
-  try {
-    if (req.headers['x-cleanup-secret'] !== process.env.ADMIN_PASSWORD) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
-    }
-    const result = await prisma.job.deleteMany({});
-    res.json({ deleted: result.count });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Employer: Delete job
 router.delete(
   '/:id',
