@@ -6,10 +6,8 @@ import { withNavigate } from './ui/withNavigate';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 
-import { GlobalLoader } from '../components/ui/GlobalLoader';
-
 function Loader() {
-  return <GlobalLoader />;
+  return null;
 }
 
 function Wrap({ children }: { children: React.ReactNode }) {
