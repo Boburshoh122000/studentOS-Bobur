@@ -1008,4 +1008,14 @@ router.delete('/team/:id', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
+// TEMPORARY: one-time job cleanup endpoint — remove after use
+router.delete('/jobs/clear-all', async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const result = await prisma.job.deleteMany({});
+    res.json({ deleted: result.count });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
