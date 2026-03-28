@@ -488,16 +488,31 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-card-light dark:bg-card-dark">
         <div className="max-w-[1280px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-1.5 text-sm text-text-sub hover:text-text-main dark:hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              {t('Common.back')}
-            </button>
-            <div className="flex items-center gap-3">
+          <div className="grid grid-cols-3 items-center py-4">
+            {/* Left */}
+            <div className="flex items-center">
               <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-1.5 text-sm text-text-sub hover:text-text-main dark:hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ArrowLeftIcon className="w-4 h-4" />
+                {t('Common.back')}
+              </button>
+            </div>
+
+            {/* Center */}
+            <div className="flex flex-col items-center text-center">
+              <h1 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
+                <BriefcaseIcon className="w-6 h-6 text-primary" />
+                {t('CareerTracker.title')}
+              </h1>
+              <p className="text-sm text-text-sub mt-0.5">{t('CareerTracker.subtitle')}</p>
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                 className="lg:hidden px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
@@ -507,6 +522,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
               </button>
               {!isAuthenticated && (
                 <button
+                  type="button"
                   onClick={() => navigate('/signin?redirect_to=/career-tracker')}
                   className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors shadow-sm"
                 >
@@ -514,13 +530,6 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
                 </button>
               )}
             </div>
-          </div>
-          <div className="text-center pb-1">
-            <h1 className="text-2xl font-bold text-text-main dark:text-white flex items-center justify-center gap-2">
-              <BriefcaseIcon className="w-6 h-6 text-primary" />
-              {t('CareerTracker.title')}
-            </h1>
-            <p className="text-sm text-text-sub mt-0.5">{t('CareerTracker.subtitle')}</p>
           </div>
         </div>
       </div>
