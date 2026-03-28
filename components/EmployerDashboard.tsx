@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { employerApi, jobApi, userApi } from '../src/services/api';
 import { downloadCSV } from '../src/utils/csv';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../src/contexts/AuthContext';
+import LanguageSwitcher from './LanguageSwitcher';
 import PostJobModal from './PostJobModal';
 import ViewApplicantModal from './ViewApplicantModal';
 import CandidatePortfolioModal from './CandidatePortfolioModal';
@@ -52,6 +54,7 @@ interface EmployerStats {
 }
 
 export default function EmployerDashboard({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const { logout, user } = useAuth();
   const [fullName, setFullName] = useState('');
   const [activeTab, setActiveTab] = useState<
@@ -373,7 +376,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   StudentOS
                 </h1>
                 <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                  Employer Console
+                  {t('Employer.console')}
                 </p>
               </div>
             </div>
@@ -391,7 +394,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <span
                   className={`text-sm ${activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'}`}
                 >
-                  Dashboard
+                  {t('Employer.dashboard')}
                 </span>
               </button>
 
@@ -407,7 +410,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <span
                   className={`text-sm ${activeTab === 'jobs' ? 'font-semibold' : 'font-medium'}`}
                 >
-                  My Jobs
+                  {t('Employer.my_jobs')}
                 </span>
               </button>
 
@@ -423,7 +426,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <span
                   className={`text-sm ${activeTab === 'students' ? 'font-semibold' : 'font-medium'}`}
                 >
-                  Student Profiles
+                  {t('Employer.student_profiles')}
                 </span>
               </button>
 
@@ -439,13 +442,16 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <span
                   className={`text-sm ${activeTab === 'company' ? 'font-semibold' : 'font-medium'}`}
                 >
-                  Company Profile
+                  {t('Employer.company_profile')}
                 </span>
               </button>
             </nav>
           </div>
 
           <div className="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-800">
+              <LanguageSwitcher />
+            </div>
             <button
               onClick={() => setActiveTab('profile')}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-all cursor-pointer ${activeTab === 'profile' ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
@@ -490,7 +496,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               >
                 {isLoggingOut ? 'progress_activity' : 'logout'}
               </span>
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
+              {isLoggingOut ? t('Common.logging_out') : t('Employer.logout')}
             </button>
           </div>
         </div>
@@ -519,7 +525,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         StudentOS
                       </h1>
                       <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                        Employer Console
+                        {t('Employer.console')}
                       </p>
                     </div>
                   </div>
@@ -534,10 +540,18 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
                 <nav className="flex flex-col gap-1.5">
                   {[
-                    { id: 'dashboard' as const, icon: 'dashboard', label: 'Dashboard' },
-                    { id: 'jobs' as const, icon: 'work_history', label: 'My Jobs' },
-                    { id: 'students' as const, icon: 'person_search', label: 'Student Profiles' },
-                    { id: 'company' as const, icon: 'business', label: 'Company Profile' },
+                    { id: 'dashboard' as const, icon: 'dashboard', label: t('Employer.dashboard') },
+                    { id: 'jobs' as const, icon: 'work_history', label: t('Employer.my_jobs') },
+                    {
+                      id: 'students' as const,
+                      icon: 'person_search',
+                      label: t('Employer.student_profiles'),
+                    },
+                    {
+                      id: 'company' as const,
+                      icon: 'business',
+                      label: t('Employer.company_profile'),
+                    },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -563,6 +577,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               </div>
 
               <div className="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-800">
+                  <LanguageSwitcher />
+                </div>
                 <button
                   onClick={() => {
                     setActiveTab('profile');
@@ -609,7 +626,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   >
                     {isLoggingOut ? 'progress_activity' : 'logout'}
                   </span>
-                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                  {isLoggingOut ? t('Common.logging_out') : t('Employer.logout')}
                 </button>
               </div>
             </div>
@@ -632,7 +649,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <AcademicCapIcon className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm font-bold text-slate-900 dark:text-white">
-              Employer Console
+              {t('Employer.console')}
             </span>
           </div>
           <div className="w-10" />
@@ -645,10 +662,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                    Employer Dashboard
+                    {t('Employer.dashboard')}
                   </h2>
                   <p className="text-base text-slate-500 dark:text-slate-400 font-medium">
-                    Overview of your hiring activity
+                    {t('Employer.manage_listings')}
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -657,14 +674,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm"
                   >
                     <BuildingOffice2Icon className="w-5 h-5" />
-                    <span>View Profile</span>
+                    <span>{t('Employer.view_profile')}</span>
                   </button>
                   <button
                     onClick={() => setShowPostJobModal(true)}
                     className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg shadow-primary/30"
                   >
                     <PlusIcon className="w-5 h-5" />
-                    <span>Post New Job</span>
+                    <span>{t('Employer.post_new_job')}</span>
                   </button>
                 </div>
               </header>
@@ -675,7 +692,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-card-dark p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between">
                     <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                      Active Vacancies
+                      {t('Employer.active_listings')}
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-primary dark:bg-primary/20 dark:text-primary-light">
                       <ClipboardDocumentListIcon className="w-5 h-5" />
@@ -689,7 +706,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
                         <ArrowTrendingUpIcon className="w-4 h-4" />2 New
                       </span>
-                      <span className="text-slate-400 font-medium">this week</span>
+                      <span className="text-slate-400 font-medium">
+                        {t('Employer.new_this_week')}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -697,7 +716,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-card-dark p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between">
                     <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                      Total Applicants
+                      {t('Employer.total_applicants')}
                     </p>
                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300">
                       <UsersIcon className="w-5 h-5" />
@@ -712,7 +731,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         <ArrowTrendingUpIcon className="w-4 h-4" />
                         +45
                       </span>
-                      <span className="text-slate-400 font-medium">since last login</span>
+                      <span className="text-slate-400 font-medium">
+                        {t('Employer.since_last_login')}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -721,7 +742,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/5 rounded-bl-full -mr-4 -mt-4"></div>
                   <div className="flex items-start justify-between relative z-10">
                     <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-                      Shortlisted Candidates
+                      {t('Employer.shortlisted')}
                     </p>
                     <div className="p-2 rounded-lg bg-orange-50 text-orange-500 dark:bg-orange-900/20 dark:text-orange-400">
                       <StarIcon className="w-5 h-5" />
@@ -736,7 +757,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         <ArrowTrendingUpIcon className="w-4 h-4" />
                         +5
                       </span>
-                      <span className="text-slate-400 font-medium">this week</span>
+                      <span className="text-slate-400 font-medium">
+                        {t('Employer.new_this_week')}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -744,7 +767,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-card-dark p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between">
                     <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                      New Applications
+                      {t('Employer.in_review')}
                     </p>
                     <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300">
                       <UserPlusIcon className="w-5 h-5" />
@@ -756,7 +779,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     </p>
                     <div className="mt-2 flex items-center gap-2 text-sm">
                       <span className="text-slate-500 dark:text-slate-400 font-medium">
-                        Requires review
+                        {t('Employer.requires_review')}
                       </span>
                       <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
                     </div>
@@ -771,13 +794,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="flex flex-col h-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-5">
                       <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                        Recent Applications
+                        {t('Employer.recent_applications')}
                       </h3>
                       <button
                         onClick={() => setActiveTab('students')}
                         className="text-sm font-semibold text-primary hover:text-primary-dark transition-colors hover:underline"
                       >
-                        View All
+                        {t('Employer.view_all')}
                       </button>
                     </div>
 
@@ -834,7 +857,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="flex flex-col h-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark shadow-sm overflow-hidden p-6">
                     <div className="flex items-center justify-between mb-8">
                       <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                        Application Trends
+                        {t('Employer.application_trends')}
                       </h3>
                       <button
                         aria-label="Application trends options"
@@ -876,12 +899,12 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
                     <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
                       <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        Total this week
+                        {t('Employer.total_this_week_label')}
                       </span>
                       <span className="text-xl font-black text-slate-900 dark:text-white">
                         184{' '}
                         <span className="text-sm font-medium text-slate-500 dark:text-slate-400 ml-1">
-                          Applicants
+                          {t('Employer.applicants_page')}
                         </span>
                       </span>
                     </div>
@@ -917,10 +940,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                        Job Vacancies
+                        {t('Employer.job_vacancies')}
                       </h2>
                       <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        Manage your active listings and candidate applications
+                        {t('Employer.manage_listings')}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -929,7 +952,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
                       >
                         <EyeIcon className="w-[18px] h-[18px]" />
-                        View Profile
+                        {t('Employer.view_profile')}
                       </button>
                       <button
                         onClick={() => {
@@ -939,7 +962,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
                       >
                         <PlusIcon className="w-[18px] h-[18px]" />
-                        Post New Job
+                        {t('Employer.post_new_job')}
                       </button>
                     </div>
                   </header>
@@ -949,7 +972,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                          Active Listings
+                          {t('Employer.active_listings')}
                         </h3>
                         <ClipboardDocumentListIcon className="w-5 h-5 text-primary" />
                       </div>
@@ -966,14 +989,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           {jobStats?.newThisWeek ?? 0} New
                         </span>
                         <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">
-                          this week
+                          {t('Employer.new_this_week')}
                         </span>
                       </div>
                     </div>
                     <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                          Total Applicants
+                          {t('Employer.total_applicants')}
                         </h3>
                         <UsersIcon className="w-5 h-5 text-primary" />
                       </div>
@@ -984,7 +1007,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="flex items-center gap-1 mt-2 text-sm">
                         <span className="text-slate-500 dark:text-slate-400 text-xs">
-                          Across all postings
+                          {t('Employer.across_all_postings')}
                         </span>
                       </div>
                     </div>
@@ -992,7 +1015,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <div className="absolute top-0 left-0 w-full h-1 bg-orange-500"></div>
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                          New Applications
+                          {t('Employer.in_review')}
                         </h3>
                         <ClockIcon className="w-5 h-5 text-orange-500" />
                       </div>
@@ -1003,13 +1026,15 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="flex items-center gap-1 mt-2 text-sm">
                         <ClockIcon className="w-3.5 h-3.5 text-orange-500" />
-                        <span className="text-orange-500 font-medium">Requires review</span>
+                        <span className="text-orange-500 font-medium">
+                          {t('Employer.requires_review')}
+                        </span>
                       </div>
                     </div>
                     <div className="bg-white dark:bg-card-dark p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                          Interviews
+                          {t('Employer.interviews')}
                         </h3>
                         <VideoCameraIcon className="w-5 h-5 text-primary" />
                       </div>
@@ -1020,7 +1045,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="flex items-center gap-1 mt-2 text-sm">
                         <span className="text-slate-500 dark:text-slate-400 text-xs">
-                          Scheduled this week
+                          {t('Employer.scheduled_this_week')}
                         </span>
                       </div>
                     </div>
@@ -1032,13 +1057,13 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       onClick={() => setJobsTab('active')}
                       className={`pb-3 border-b-2 text-sm font-bold transition-colors ${jobsTab === 'active' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                     >
-                      Active Jobs ({jobStats?.activeJobs ?? 0})
+                      {t('Employer.active_jobs')} ({jobStats?.activeJobs ?? 0})
                     </button>
                     <button
                       onClick={() => setJobsTab('closed')}
                       className={`pb-3 border-b-2 text-sm font-bold transition-colors ${jobsTab === 'closed' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                     >
-                      Closed ({jobStats?.closedJobs ?? 0})
+                      {t('Employer.closed')} ({jobStats?.closedJobs ?? 0})
                     </button>
                   </div>
 
@@ -1048,7 +1073,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white transition-all shadow-sm"
-                        placeholder="Search job titles or locations..."
+                        placeholder={t('Employer.search_jobs')}
                         type="text"
                         value={jobSearch}
                         onChange={(e) => setJobSearch(e.target.value)}
@@ -1057,11 +1082,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
                         <FunnelIcon className="w-[18px] h-[18px]" />
-                        Filter
+                        {t('Common.filter')}
                       </button>
                       <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-slate-700 dark:text-white">
                         <ArrowsUpDownIcon className="w-[18px] h-[18px]" />
-                        Sort
+                        {t('Common.sort')}
                       </button>
                     </div>
                   </div>
@@ -1072,12 +1097,12 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-white/5 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
-                            <th className="px-6 py-4">Job Title</th>
-                            <th className="px-6 py-4">Department</th>
-                            <th className="px-6 py-4">Posted Date</th>
-                            <th className="px-6 py-4">Applicants</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                            <th className="px-6 py-4">{t('Employer.job_title')}</th>
+                            <th className="px-6 py-4">{t('Employer.department')}</th>
+                            <th className="px-6 py-4">{t('Employer.posted_date')}</th>
+                            <th className="px-6 py-4">{t('Employer.applicants')}</th>
+                            <th className="px-6 py-4">{t('Employer.status')}</th>
+                            <th className="px-6 py-4 text-right">{t('Employer.actions')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -1095,7 +1120,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               <td colSpan={6} className="text-center py-16">
                                 <BriefcaseIcon className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
                                 <p className="text-slate-500 dark:text-slate-400 font-medium">
-                                  {jobSearch ? 'No jobs match your search.' : 'No jobs posted yet.'}
+                                  {jobSearch
+                                    ? t('Employer.no_jobs_search')
+                                    : t('Employer.no_jobs_yet')}
                                 </p>
                                 {!jobSearch && (
                                   <button
@@ -1105,7 +1132,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                     }}
                                     className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark"
                                   >
-                                    + Post Your First Job
+                                    + {t('Employer.post_first_job_cta')}
                                   </button>
                                 )}
                               </td>
@@ -1174,7 +1201,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                         }}
                                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2"
                                       >
-                                        ✏️ Edit Job
+                                        ✏️ {t('Employer.edit_job')}
                                       </button>
                                       <button
                                         onClick={async () => {
@@ -1197,8 +1224,8 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2"
                                       >
                                         {job.status === 'ACTIVE'
-                                          ? '⏸️ Pause Listing'
-                                          : '▶️ Activate'}
+                                          ? `⏸️ ${t('Employer.pause_listing')}`
+                                          : `▶️ ${t('Employer.activate')}`}
                                       </button>
                                       <div className="border-t border-slate-100 dark:border-slate-700 my-1"></div>
                                       <button
@@ -1221,7 +1248,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                         }}
                                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
                                       >
-                                        🗑️ Delete Job
+                                        🗑️ {t('Employer.delete_job')}
                                       </button>
                                     </div>
                                   )}
@@ -1235,28 +1262,30 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     {/* Pagination */}
                     <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
                       <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Showing{' '}
+                        {t('Common.showing')}{' '}
                         <span className="font-bold text-slate-900 dark:text-white">
                           {showFrom}-{showTo}
                         </span>{' '}
-                        of{' '}
+                        {t('Common.of')}{' '}
                         <span className="font-bold text-slate-900 dark:text-white">
                           {totalFiltered}
                         </span>{' '}
-                        {jobsTab === 'active' ? 'active' : 'closed'} listings
+                        {jobsTab === 'active'
+                          ? t('Employer.active_listings_count')
+                          : t('Employer.closed_listings_count')}
                       </p>
                       <div className="flex items-center gap-2">
                         <button
                           className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           disabled={currentJobPage <= 1}
                         >
-                          Previous
+                          {t('Common.previous')}
                         </button>
                         <button
                           className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           disabled={currentJobPage >= totalPages}
                         >
-                          Next
+                          {t('Common.next')}
                         </button>
                       </div>
                     </div>
@@ -1272,10 +1301,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
-                    Applicants
+                    {t('Employer.applicants_page')}
                   </h1>
                   <p className="text-slate-500 dark:text-slate-400">
-                    Manage your active candidate pipeline
+                    {t('Employer.manage_pipeline').replace('.', '')}
                     {jobFilter
                       ? ` for ${jobs.find((j: any) => j.id === jobFilter)?.title || 'selected job'}`
                       : ''}
@@ -1288,11 +1317,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-700 dark:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-bold text-sm shadow-sm"
                   >
                     <ArrowDownTrayIcon className="w-5 h-5" />
-                    Export List
+                    {t('Employer.export_list')}
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-bold text-sm shadow-sm shadow-primary/30">
                     <PlusIcon className="w-5 h-5" />
-                    Add Candidate
+                    {t('Employer.add_candidate')}
                   </button>
                 </div>
               </div>
@@ -1313,7 +1342,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           setAppPage(1);
                         }}
                       >
-                        <option value="">All Jobs</option>
+                        <option value="">{t('Employer.all_jobs')}</option>
                         {jobs.map((j: any) => (
                           <option key={j.id} value={j.id}>
                             {j.title}
@@ -1324,11 +1353,11 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   </div>
                   <div className="flex overflow-x-auto gap-1 no-scrollbar w-full sm:w-auto border-b sm:border-none border-slate-200 dark:border-slate-800">
                     {[
-                      { label: 'All Applicants', value: undefined },
-                      { label: 'New', value: 'NEW' },
-                      { label: 'Screening', value: 'SCREENING' },
-                      { label: 'Interview', value: 'INTERVIEW' },
-                      { label: 'Rejected', value: 'REJECTED' },
+                      { label: t('Employer.all_applicants'), value: undefined },
+                      { label: t('Employer.new'), value: 'NEW' },
+                      { label: t('Employer.screening'), value: 'SCREENING' },
+                      { label: t('Employer.interview'), value: 'INTERVIEW' },
+                      { label: t('Employer.rejected'), value: 'REJECTED' },
                     ].map((filter) => (
                       <button
                         key={filter.label}
@@ -1353,7 +1382,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent placeholder-slate-400 dark:placeholder-slate-500 font-medium"
-                      placeholder="Search by name, university..."
+                      placeholder={t('Employer.search_applicants')}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => {
@@ -1375,7 +1404,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {applications.length === 0 ? (
                   <div className="col-span-full text-center p-12 text-slate-500 bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800">
-                    No applications received yet.
+                    {t('Employer.no_applicants')}
                   </div>
                 ) : (
                   applications.map((app, idx) => {
@@ -1448,7 +1477,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               }}
                               className="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-primary text-white hover:bg-primary-dark shadow-sm"
                             >
-                              Review Application
+                              {t('Employer.review_application')}
                             </button>
                             <button
                               onClick={() => {
@@ -1460,7 +1489,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               }}
                               className="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 shadow-sm"
                             >
-                              👤 View Portfolio
+                              👤 {t('Employer.view_portfolio')}
                             </button>
                           </div>
                         </div>
@@ -1473,19 +1502,19 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               {/* Pagination */}
               <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-6">
                 <div className="text-sm text-slate-500 dark:text-slate-400">
-                  Showing{' '}
+                  {t('Common.showing')}{' '}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {(appPagination.page - 1) * appPagination.limit + 1}
                   </span>{' '}
-                  to{' '}
+                  -{' '}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {Math.min(appPagination.page * appPagination.limit, appPagination.total)}
                   </span>{' '}
-                  of{' '}
+                  {t('Common.of')}{' '}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {appPagination.total}
                   </span>{' '}
-                  applicants
+                  {t('Employer.applicants_page').toLowerCase()}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -1493,14 +1522,14 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     onClick={() => setAppPage((p) => Math.max(1, p - 1))}
                     className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {t('Common.previous')}
                   </button>
                   <button
                     disabled={appPage >= appPagination.pages}
                     onClick={() => setAppPage((p) => p + 1)}
                     className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {t('Common.next')}
                   </button>
                 </div>
               </div>
@@ -1513,16 +1542,16 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    Company Profile
+                    {t('Employer.company_profile_page')}
                   </h2>
                   <p className="text-slate-500 dark:text-slate-400 mt-1">
-                    Manage your company information visible to candidates.
+                    {t('Employer.manage_company_info')}
                   </p>
                 </div>
                 <div className="flex space-x-3">
                   <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
                     <EyeIcon className="w-[18px] h-[18px]" />
-                    View Public Profile
+                    {t('Employer.view_public_profile')}
                   </button>
                   <button
                     onClick={updateCompanyProfile}
@@ -1530,7 +1559,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-primary/30 disabled:opacity-50"
                   >
                     <CheckIcon className="w-[18px] h-[18px]" />
-                    {isLoading ? 'Saving...' : 'Save Changes'}
+                    {isLoading ? t('Common.loading') : t('Employer.save_changes')}
                   </button>
                 </div>
               </div>
@@ -1540,7 +1569,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                       <h3 className="font-bold text-slate-900 dark:text-white">
-                        General Information
+                        {t('Employer.general_info')}
                       </h3>
                       <BuildingOffice2Icon className="w-5 h-5 text-slate-400" />
                     </div>
@@ -1548,7 +1577,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       <div className="flex items-start gap-6">
                         <div className="flex-shrink-0">
                           <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-                            Company Logo
+                            {t('Employer.company_logo')}
                           </label>
                           <div
                             className="group relative w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary cursor-pointer bg-slate-50 dark:bg-slate-800/50 transition-colors flex flex-col items-center justify-center overflow-hidden"
@@ -1571,7 +1600,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                                   <CloudArrowUpIcon className="w-6 h-6 text-slate-500 dark:text-slate-400 group-hover:text-primary" />
                                 </div>
                                 <span className="text-xs text-center text-slate-500 dark:text-slate-400 px-2 group-hover:text-primary">
-                                  Click to upload
+                                  {t('Employer.click_to_upload')}
                                 </span>
                               </>
                             )}
@@ -1599,7 +1628,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                               htmlFor="companyName"
                             >
-                              Company Name
+                              {t('Employer.company_name')}
                             </label>
                             <input
                               className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1615,7 +1644,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                               className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                               htmlFor="tagline"
                             >
-                              Tagline
+                              {t('Employer.tagline')}
                             </label>
                             <input
                               className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1634,7 +1663,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                             htmlFor="industry"
                           >
-                            Industry
+                            {t('Employer.industry')}
                           </label>
                           <select
                             className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1653,7 +1682,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                             htmlFor="companySize"
                           >
-                            Company Size
+                            {t('Employer.company_size')}
                           </label>
                           <select
                             className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1674,7 +1703,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
-                      <h3 className="font-bold text-slate-900 dark:text-white">About Company</h3>
+                      <h3 className="font-bold text-slate-900 dark:text-white">
+                        {t('Employer.about_company')}
+                      </h3>
                       <DocumentTextIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6">
@@ -1701,7 +1732,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="lg:col-span-1 space-y-6">
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
-                      <h3 className="font-bold text-slate-900 dark:text-white">Headquarters</h3>
+                      <h3 className="font-bold text-slate-900 dark:text-white">
+                        {t('Employer.headquarters')}
+                      </h3>
                       <MapPinIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6 space-y-4">
@@ -1710,7 +1743,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                           htmlFor="address"
                         >
-                          Address
+                          {t('Employer.address')}
                         </label>
                         <input
                           className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1727,7 +1760,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                             htmlFor="city"
                           >
-                            City / Location
+                            {t('Employer.city')}
                           </label>
                           <input
                             className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1743,7 +1776,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                             htmlFor="state"
                           >
-                            State/Region
+                            {t('Employer.state_region')}
                           </label>
                           <input
                             className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1760,7 +1793,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                           htmlFor="country"
                         >
-                          Country
+                          {t('Employer.country_field')}
                         </label>
                         <input
                           className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm p-2.5"
@@ -1776,7 +1809,9 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
 
                   <div className="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
-                      <h3 className="font-bold text-slate-900 dark:text-white">Online Presence</h3>
+                      <h3 className="font-bold text-slate-900 dark:text-white">
+                        {t('Employer.online_presence')}
+                      </h3>
                       <GlobeAltIcon className="w-5 h-5 text-slate-400" />
                     </div>
                     <div className="p-6 space-y-4">
@@ -1785,7 +1820,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                           htmlFor="website"
                         >
-                          Website URL
+                          {t('Employer.website_url')}
                         </label>
                         <div className="relative rounded-md shadow-sm">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -1806,7 +1841,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                           className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
                           htmlFor="linkedIn"
                         >
-                          LinkedIn Profile
+                          {t('Employer.linkedin_profile')}
                         </label>
                         <div className="relative rounded-md shadow-sm">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -1883,7 +1918,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                             }
                           }}
                         >
-                          <option value="">+ Add Social Link...</option>
+                          <option value="">{t('Employer.add_social_link')}...</option>
                           <option value="twitter">Twitter / X</option>
                           <option value="facebook">Facebook</option>
                           <option value="instagram">Instagram</option>
@@ -1907,10 +1942,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    Profile Settings
+                    {t('Employer.profile_settings')}
                   </h2>
                   <p className="text-slate-500 dark:text-slate-400 mt-1">
-                    Manage your account and security preferences
+                    {t('Employer.profile_settings_subtitle')}
                   </p>
                 </div>
               </div>
@@ -1920,10 +1955,10 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <UserIcon className="w-5 h-5 text-primary" />
-                    Profile Information
+                    {t('Employer.profile_information')}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Update your profile details visible to applicants
+                    {t('Employer.update_profile_details')}
                   </p>
                 </div>
                 <div className="p-6">
@@ -1942,7 +1977,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         </button>
                       </div>
                       <button className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
-                        Change Photo
+                        {t('Employer.change_photo')}
                       </button>
                     </div>
 
@@ -1950,7 +1985,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Full Name
+                          {t('Employer.full_name')}
                         </label>
                         <input
                           type="text"
@@ -1962,7 +1997,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Company Name
+                          {t('Employer.company_name')}
                         </label>
                         <input
                           type="text"
@@ -1974,7 +2009,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Job Title
+                          {t('Employer.job_title_field')}
                         </label>
                         <input
                           type="text"
@@ -2008,7 +2043,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       }}
                       className="px-6 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/30 disabled:opacity-50"
                     >
-                      Save Profile
+                      {t('Employer.save_profile')}
                     </button>
                   </div>
                 </div>
@@ -2019,17 +2054,17 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <LockClosedIcon className="w-5 h-5 text-primary" />
-                    Security Settings
+                    {t('Employer.security_settings')}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Manage your password and account security
+                    {t('Employer.manage_password')}
                   </p>
                 </div>
                 <div className="p-6">
                   {/* Email Display */}
                   <div className="mb-6">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Email Address
+                      {t('Employer.email_address')}
                     </label>
                     <div className="flex items-center gap-3">
                       <input
@@ -2040,23 +2075,23 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
                       />
                       <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-bold">
-                        Verified
+                        {t('Employer.verified')}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-                      Contact support to change your email address
+                      {t('Employer.contact_support_email')}
                     </p>
                   </div>
 
                   {/* Password Change */}
                   <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                     <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">
-                      Change Password
+                      {t('Employer.change_password')}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                          New Password
+                          {t('Employer.new_password')}
                         </label>
                         <input
                           type="password"
@@ -2066,7 +2101,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                          Confirm New Password
+                          {t('Employer.confirm_password')}
                         </label>
                         <input
                           type="password"
@@ -2080,7 +2115,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                         onClick={() => toast.success('Password updated successfully!')}
                         className="px-6 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                       >
-                        Update Password
+                        {t('Employer.update_password')}
                       </button>
                     </div>
                   </div>
@@ -2094,13 +2129,15 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
                     <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-red-800 dark:text-red-300">Danger Zone</h4>
+                    <h4 className="font-bold text-red-800 dark:text-red-300">
+                      {t('Employer.danger_zone')}
+                    </h4>
                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                      Once you delete your account, there is no going back. Please be certain.
+                      {t('Employer.danger_zone_desc')}
                     </p>
                   </div>
                   <button className="px-4 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-                    Delete Account
+                    {t('Settings.delete_account')}
                   </button>
                 </div>
               </div>
