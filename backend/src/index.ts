@@ -86,6 +86,17 @@ app.use('/api/', (req, res, next) => {
   return limiter(req, res, next);
 });
 
+// Request logging
+if (env.NODE_ENV !== 'test') {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+  });
+}
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -130,7 +141,7 @@ app.use((req, res) => {
 const PORT = parseInt(env.PORT, 10);
 const HOST = '0.0.0.0'; // Required for Railway - must listen on all interfaces
 
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);
   console.log(`📝 Environment: ${env.NODE_ENV}`);
 
@@ -154,6 +165,21 @@ app.listen(PORT, HOST, () => {
   }
 
   startScholarshipCron();
+});
+
+process.on('unhandledRejection', (reason: unknown) => {
+  console.error('Unhandled Rejection:', reason);
+  server.close(() => process.exit(1));
+});
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => process.exit(0));
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => process.exit(0));
 });
 
 export default app;

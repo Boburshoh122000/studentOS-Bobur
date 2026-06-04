@@ -115,7 +115,6 @@ export default function JobDetailModal({
   onApply,
   onToggleSave,
 }: JobDetailModalProps) {
-  // Close on Escape
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -147,7 +146,7 @@ export default function JobDetailModal({
   );
   const duration = formatDuration(job.durationWeeks);
 
-  /* ── Sections (only render if data exists) ── */
+  /* ── Content sections (only if data exists) ── */
   const sections: { title: string; content: React.ReactNode }[] = [];
 
   if (job.description) {
@@ -244,26 +243,28 @@ export default function JobDetailModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-[#141722] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800 animate-in slide-in-from-bottom-4 duration-300">
+      <div className="relative bg-white dark:bg-[#141722] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800 animate-in slide-in-from-bottom-4 duration-300 flex flex-col">
         {/* ── Header ── */}
-        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 text-base font-bold text-gray-700 dark:text-gray-300">
+            <div className="size-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
               {job.employer?.logoUrl ? (
                 <img
                   src={job.employer.logoUrl}
                   alt={job.company}
-                  className="w-full h-full rounded-xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                job.company?.[0]?.toUpperCase() || 'C'
+                <span className="text-base font-bold text-gray-700 dark:text-gray-300">
+                  {job.company?.[0]?.toUpperCase() || 'C'}
+                </span>
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                 {job.title}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                 {job.employer?.companyName || job.company}
                 {job.employer?.verificationStatus === 'verified' && (
                   <span className="text-blue-500" title="Verified">
@@ -275,6 +276,7 @@ export default function JobDetailModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
           >
@@ -282,104 +284,83 @@ export default function JobDetailModal({
           </button>
         </div>
 
-        {/* ── Body: two columns ── */}
-        <div className="flex flex-col md:flex-row max-h-[calc(90vh-88px)]">
-          {/* Left — scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 border-r-0 md:border-r border-gray-100 dark:border-gray-800">
-            {sections.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">
-                No detailed information has been provided for this listing.
-              </p>
-            ) : (
-              sections.map((sec) => (
-                <div key={sec.title}>
-                  <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
-                    {sec.title}
-                  </h3>
-                  {sec.content}
-                </div>
-              ))
-            )}
-          </div>
+        {/* ── Scrollable body ── */}
+        <div className="flex-1 overflow-y-auto">
+          {/* ── Info grid ── */}
+          <div className="px-6 pt-5 pb-5 border-b border-gray-100 dark:border-gray-800">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <InfoCard label="Job Type" icon={<BriefcaseIcon className="w-3.5 h-3.5" />}>
+                {formatJobType(job.jobType)}
+              </InfoCard>
 
-          {/* Right — quick info sidebar */}
-          <div className="w-full md:w-72 flex-shrink-0 p-6 space-y-4 bg-gray-50 dark:bg-white/[0.02] overflow-y-auto">
-            {/* Info items */}
-            <InfoRow label="Job Type" icon={<BriefcaseIcon className="w-4 h-4" />}>
-              {formatJobType(job.jobType)}
-            </InfoRow>
+              <InfoCard label="Work Mode" icon={<MapPinIcon className="w-3.5 h-3.5" />}>
+                {formatLocationType(job.locationType)}
+              </InfoCard>
 
-            <InfoRow label="Work Mode" icon={<MapPinIcon className="w-4 h-4" />}>
-              {formatLocationType(job.locationType)}
-            </InfoRow>
-
-            <InfoRow label="Salary" icon={<CurrencyDollarIcon className="w-4 h-4" />}>
-              <span
-                className={
-                  isPaid ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-gray-500'
-                }
+              <InfoCard
+                label="Salary"
+                icon={<CurrencyDollarIcon className="w-3.5 h-3.5" />}
+                highlight={isPaid ? 'green' : undefined}
               >
                 {isPaid ? salary : 'Unpaid'}
-              </span>
-            </InfoRow>
+              </InfoCard>
 
-            {job.location && (
-              <InfoRow label="Location" icon={<MapPinIcon className="w-4 h-4" />}>
-                📍 {job.location}
-              </InfoRow>
-            )}
+              {job.location && (
+                <InfoCard label="Location" icon={<MapPinIcon className="w-3.5 h-3.5" />}>
+                  {job.location}
+                </InfoCard>
+              )}
 
-            {duration && (
-              <InfoRow label="Duration" icon={<ClockIcon className="w-4 h-4" />}>
-                {duration}
-              </InfoRow>
-            )}
+              {duration && (
+                <InfoCard label="Duration" icon={<ClockIcon className="w-3.5 h-3.5" />}>
+                  {duration}
+                </InfoCard>
+              )}
 
-            {job.hoursPerWeek && (
-              <InfoRow label="Hours" icon={<ClockIcon className="w-4 h-4" />}>
-                {job.hoursPerWeek} hrs/week
-              </InfoRow>
-            )}
+              {job.hoursPerWeek && (
+                <InfoCard label="Hours" icon={<ClockIcon className="w-3.5 h-3.5" />}>
+                  {job.hoursPerWeek} hrs/week
+                </InfoCard>
+              )}
 
-            {job.startDate && (
-              <InfoRow label="Start Date" icon={<CalendarIcon className="w-4 h-4" />}>
-                {new Date(job.startDate).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </InfoRow>
-            )}
+              {job.startDate && (
+                <InfoCard label="Start Date" icon={<CalendarIcon className="w-3.5 h-3.5" />}>
+                  {new Date(job.startDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </InfoCard>
+              )}
 
-            {deadline && (
-              <InfoRow label="Deadline" icon={<CalendarIcon className="w-4 h-4" />}>
-                <span
-                  className={
-                    isDeadlinePassed
-                      ? 'text-gray-400'
-                      : isDeadlineSoon
-                        ? 'text-red-600 dark:text-red-400 font-semibold'
-                        : ''
-                  }
+              {deadline && (
+                <InfoCard
+                  label="Deadline"
+                  icon={<CalendarIcon className="w-3.5 h-3.5" />}
+                  highlight={isDeadlinePassed ? 'gray' : isDeadlineSoon ? 'red' : undefined}
                 >
-                  📅 {fmtDate(deadline)}
-                  {days !== null && days > 0 && (
-                    <span className="block text-[11px] mt-0.5">
-                      {days} day{days !== 1 ? 's' : ''} left
-                    </span>
-                  )}
-                  {isDeadlinePassed && (
-                    <span className="block text-[11px] mt-0.5">Deadline passed</span>
-                  )}
-                </span>
-              </InfoRow>
-            )}
+                  <span>
+                    {fmtDate(deadline)}
+                    {days !== null && days > 0 && (
+                      <span className="block text-[11px] mt-0.5 font-normal opacity-70">
+                        {days} day{days !== 1 ? 's' : ''} left
+                      </span>
+                    )}
+                    {isDeadlinePassed && (
+                      <span className="block text-[11px] mt-0.5 font-normal opacity-70">
+                        Deadline passed
+                      </span>
+                    )}
+                  </span>
+                </InfoCard>
+              )}
 
-            <InfoRow label="Posted" icon={<CalendarIcon className="w-4 h-4" />}>
-              {timeAgo(job.postedAt)}
-            </InfoRow>
+              <InfoCard label="Posted" icon={<CalendarIcon className="w-3.5 h-3.5" />}>
+                {timeAgo(job.postedAt)}
+              </InfoCard>
+            </div>
 
-            {/* Category badge */}
-            <div>
+            {/* Badges */}
+            <div className="flex gap-2 mt-3">
               <span
                 className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
                   job.jobType === 'INTERNSHIP'
@@ -390,7 +371,7 @@ export default function JobDetailModal({
                 }`}
               >
                 {formatJobType(job.jobType)}
-              </span>{' '}
+              </span>
               <span
                 className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
                   isPaid
@@ -401,77 +382,104 @@ export default function JobDetailModal({
                 {isPaid ? 'Paid' : 'Unpaid'}
               </span>
             </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2.5">
-              {/* Apply button */}
-              {job.hasApplied ? (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
-                >
-                  <CheckCircleIcon className="w-5 h-5" />
-                  Applied
-                </button>
-              ) : isDeadlinePassed ? (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
-                >
-                  ⏰ Deadline Passed
-                </button>
-              ) : (
-                <button
-                  onClick={() => onApply(job)}
-                  className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary/30"
-                >
-                  Apply Now <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Save button */}
-              <button
-                onClick={() => onToggleSave(job)}
-                className={`w-full py-2.5 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
-                  job.isSaved
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary'
-                }`}
-              >
-                {job.isSaved ? (
-                  <>
-                    <BookmarkIcon className="w-4 h-4" /> Saved
-                  </>
-                ) : (
-                  <>
-                    <BookmarkOutlineIcon className="w-4 h-4" /> Save Job
-                  </>
-                )}
-              </button>
-            </div>
           </div>
+
+          {/* ── Content sections ── */}
+          {sections.length > 0 && (
+            <div className="px-6 py-6 space-y-6">
+              {sections.map((sec) => (
+                <div key={sec.title}>
+                  <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+                    {sec.title}
+                  </h3>
+                  {sec.content}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Sticky footer: action buttons ── */}
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#141722] flex-shrink-0">
+          {job.hasApplied ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 py-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
+            >
+              <CheckCircleIcon className="w-5 h-5" />
+              Applied
+            </button>
+          ) : isDeadlinePassed ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
+            >
+              ⏰ Deadline Passed
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onApply(job)}
+              className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary/30"
+            >
+              Apply Now <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onToggleSave(job)}
+            className={`px-5 py-3 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
+              job.isSaved
+                ? 'border-primary bg-primary/5 text-primary'
+                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary'
+            }`}
+          >
+            {job.isSaved ? (
+              <>
+                <BookmarkIcon className="w-4 h-4" /> Saved
+              </>
+            ) : (
+              <>
+                <BookmarkOutlineIcon className="w-4 h-4" /> Save
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Tiny helper sub-component ── */
-function InfoRow({
+/* ── Info card sub-component ── */
+function InfoCard({
   label,
   icon,
   children,
+  highlight,
 }: {
   label: string;
   icon: React.ReactNode;
   children: React.ReactNode;
+  highlight?: 'green' | 'red' | 'gray';
 }) {
+  const valueColor =
+    highlight === 'green'
+      ? 'text-green-600 dark:text-green-400'
+      : highlight === 'red'
+        ? 'text-red-600 dark:text-red-400'
+        : highlight === 'gray'
+          ? 'text-gray-400'
+          : 'text-gray-800 dark:text-gray-200';
+
   return (
-    <div>
-      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1 flex items-center gap-1.5">
+    <div className="bg-gray-50 dark:bg-white/[0.03] rounded-xl p-3.5 border border-gray-100 dark:border-white/[0.06]">
+      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1.5 flex items-center gap-1">
         {icon} {label}
       </p>
-      <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{children}</p>
+      <p className={`text-sm font-semibold leading-snug ${valueColor}`}>{children}</p>
     </div>
   );
 }

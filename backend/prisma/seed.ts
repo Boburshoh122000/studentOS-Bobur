@@ -472,12 +472,15 @@ async function main() {
     },
   ];
 
-  for (const scholarship of scholarships) {
-    await prisma.scholarship.create({
-      data: scholarship,
-    });
+  const scholarshipCount = await prisma.scholarship.count();
+  if (scholarshipCount === 0) {
+    for (const scholarship of scholarships) {
+      await prisma.scholarship.create({ data: scholarship });
+    }
+    console.log('✅ Sample scholarships created (10 scholarships)');
+  } else {
+    console.log(`⏭️  Scholarships skipped (${scholarshipCount} already exist)`);
   }
-  console.log('✅ Sample scholarships created (10 scholarships)');
 
   // Create sample blog posts (authored by admin)
   const blogPosts = [
@@ -567,11 +570,13 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
   ];
 
   for (const post of blogPosts) {
-    await prisma.blogPost.create({
-      data: post,
+    await prisma.blogPost.upsert({
+      where: { slug: post.slug },
+      update: {},
+      create: post,
     });
   }
-  console.log('✅ Sample blog posts created (3 posts)');
+  console.log('✅ Sample blog posts created/verified (3 posts)');
 
   // Create pricing plans
   const plans = [
@@ -629,12 +634,15 @@ Celebrate small wins. This positive reinforcement makes habits more likely to st
     },
   ];
 
-  for (const plan of plans) {
-    await prisma.pricingPlan.create({
-      data: plan,
-    });
+  const planCount = await prisma.pricingPlan.count();
+  if (planCount === 0) {
+    for (const plan of plans) {
+      await prisma.pricingPlan.create({ data: plan });
+    }
+    console.log('✅ Pricing plans created (4 plans)');
+  } else {
+    console.log(`⏭️  Pricing plans skipped (${planCount} already exist)`);
   }
-  console.log('✅ Pricing plans created (4 plans)');
 
   // =============================================================================
   // SEED: TOOLS (Credit System)

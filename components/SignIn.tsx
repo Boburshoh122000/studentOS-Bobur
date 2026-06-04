@@ -29,7 +29,11 @@ export default function SignIn({ navigateTo: _navigateTo }: NavigationProps) {
   useEffect(() => {
     if (isAuthenticated && user && !hasRedirected.current) {
       hasRedirected.current = true;
-      const redirectTo = searchParams.get('redirect') || getDefaultRouteForRole(user.role);
+      const raw = searchParams.get('redirect');
+      const redirectTo =
+        raw && raw.startsWith('/') && !raw.startsWith('//')
+          ? raw
+          : getDefaultRouteForRole(user.role);
       navigate(redirectTo, { replace: true });
     }
   }, [isAuthenticated, user, navigate, searchParams]);

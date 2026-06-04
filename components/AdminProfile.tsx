@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavigationProps } from '../types';
+import { NavigationProps, Screen } from '../types';
 import { authApi, userApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import {

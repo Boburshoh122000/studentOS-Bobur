@@ -302,8 +302,14 @@ export const userApi = {
   updateProfile: (data: any) => api.patch('/users/profile', data),
   getDashboard: () => api.get('/users/dashboard'),
   claimTelegramCredits: () => api.post('/users/claim-telegram-credits'),
-  getTelegramStatus: () => api.get('/users/telegram/status'),
-  generateTelegramCode: () => api.post('/users/telegram/generate-code'),
+  getTelegramStatus: () =>
+    api.get<{
+      connected: boolean;
+      username?: string;
+      pendingCode?: { code: string; expiresAt: string };
+    }>('/users/telegram/status'),
+  generateTelegramCode: () =>
+    api.post<{ code: string; expiresAt: string }>('/users/telegram/generate-code'),
   disconnectTelegram: () => api.delete('/users/telegram/disconnect'),
 };
 

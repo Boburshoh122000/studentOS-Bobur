@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { habitApi } from '../src/services/api';
 import { ThemeToggle } from './ThemeToggle';
@@ -55,6 +56,7 @@ const getColorClasses = (color: string) => {
 };
 
 export default function HabitTracker({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [stats, setStats] = useState<HabitStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +81,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
       if (statsRes.data && !statsRes.error) setStats(statsRes.data as HabitStats);
     } catch (error) {
       console.error('Failed to fetch habits:', error);
-      toast.error('Failed to load habits');
+      toast.error(t('HabitTracker.toast_load_fail'));
     } finally {
       setIsLoading(false);
     }
@@ -97,15 +99,15 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
     try {
       if (currentlyCompleted) {
         await habitApi.unlog(id);
-        toast.success('Habit unmarked');
+        toast.success(t('HabitTracker.toast_unmarked'));
       } else {
         await habitApi.log(id);
-        toast.success('Habit completed! 🎉');
+        toast.success(t('HabitTracker.toast_completed'));
       }
       fetchData();
     } catch (error) {
       console.error('Failed to toggle habit:', error);
-      toast.error('Failed to update habit');
+      toast.error(t('HabitTracker.toast_update_fail'));
     } finally {
       setTogglingId(null);
     }
@@ -127,24 +129,24 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
         return;
       }
 
-      toast.success('Habit created!');
+      toast.success(t('HabitTracker.toast_created'));
       setNewHabitTitle('');
       setShowNewHabitModal(false);
       fetchData();
     } catch (error) {
-      toast.error('Failed to create habit');
+      toast.error(t('HabitTracker.toast_create_fail'));
     }
   };
 
   const handleDeleteHabit = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this habit?')) return;
+    if (!confirm(t('HabitTracker.confirm_delete'))) return;
 
     try {
       await habitApi.delete(id);
-      toast.success('Habit deleted');
+      toast.success(t('HabitTracker.toast_deleted'));
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete habit');
+      toast.error(t('HabitTracker.toast_delete_fail'));
     }
   };
 
@@ -156,21 +158,20 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
     <header className="h-auto min-h-[5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-background-light dark:bg-background-dark z-10 gap-3">
       <div className="flex flex-col justify-center">
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
-          Habit Tracker
+          {t('HabitTracker.title')}
         </h2>
-        <p className="text-sm text-text-sub">
-          Track your daily goals, build consistency, and analyze your progress.
-        </p>
+        <p className="text-sm text-text-sub">{t('HabitTracker.subtitle')}</p>
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <NotificationDropdown />
         <button
+          type="button"
           onClick={() => setShowNewHabitModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors shadow-sm text-sm font-medium"
         >
           <PlusIcon className="w-[18px] h-[18px]" />
-          New Habit
+          {t('HabitTracker.new_habit')}
         </button>
       </div>
     </header>
@@ -191,21 +192,25 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-text-sub">Best Streak</span>
+                  <span className="text-sm font-medium text-text-sub">
+                    {t('HabitTracker.best_streak')}
+                  </span>
                   <FireIcon className="w-5 h-5 text-orange-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">{maxStreak}</h3>
-                  <span className="text-sm text-text-sub">days</span>
+                  <span className="text-sm text-text-sub">{t('HabitTracker.days_unit')}</span>
                 </div>
                 <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                  <ArrowTrendingUpIcon className="w-3.5 h-3.5" /> Top performing habit
+                  <ArrowTrendingUpIcon className="w-3.5 h-3.5" /> {t('HabitTracker.top_habit')}
                 </p>
               </div>
 
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-text-sub">Today's Rate</span>
+                  <span className="text-sm font-medium text-text-sub">
+                    {t('HabitTracker.todays_rate')}
+                  </span>
                   <ChartPieIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -214,7 +219,10 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                   </h3>
                 </div>
                 <p className="text-xs text-text-sub mt-2">
-                  {completedCount} of {habits.length} habits done
+                  {t('HabitTracker.habits_done', {
+                    completed: completedCount,
+                    total: habits.length,
+                  })}
                 </p>
                 <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 mt-3">
                   <div
@@ -227,26 +235,29 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
                 <div className="absolute -right-4 -top-4 size-20 bg-blue-400/10 rounded-full blur-xl"></div>
                 <div className="flex justify-between items-start mb-2 relative z-10">
-                  <span className="text-sm font-medium text-text-sub">Streak Freezes</span>
+                  <span className="text-sm font-medium text-text-sub">
+                    {t('HabitTracker.streak_freezes')}
+                  </span>
                   <StopIcon className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="flex items-baseline gap-2 relative z-10">
                   <h3 className="text-3xl font-bold text-text-main dark:text-white">
                     {streakFreezes}
                   </h3>
-                  <span className="text-sm text-text-sub">remaining</span>
+                  <span className="text-sm text-text-sub">{t('HabitTracker.remaining')}</span>
                 </div>
                 <div className="mt-3 relative z-10">
                   {streakFreezes < MAX_FREEZES ? (
                     <button
+                      type="button"
                       onClick={handleGetFreeze}
                       className="text-xs font-semibold text-primary hover:text-primary-dark flex items-center gap-1 transition-colors"
                     >
-                      Acquire (+1) <PlusCircleIcon className="w-3.5 h-3.5" />
+                      {t('HabitTracker.acquire')} <PlusCircleIcon className="w-3.5 h-3.5" />
                     </button>
                   ) : (
                     <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
-                      Max Capacity <CheckCircleIcon className="w-3.5 h-3.5" />
+                      {t('HabitTracker.max_capacity')} <CheckCircleIcon className="w-3.5 h-3.5" />
                     </span>
                   )}
                 </div>
@@ -254,7 +265,9 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
 
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-text-sub">Active Habits</span>
+                  <span className="text-sm font-medium text-text-sub">
+                    {t('HabitTracker.active_habits')}
+                  </span>
                   <ClipboardDocumentListIcon className="w-5 h-5 text-purple-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -262,28 +275,29 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                     {habits.length}
                   </h3>
                 </div>
-                <p className="text-xs text-text-sub mt-2">Total tracked habits</p>
+                <p className="text-xs text-text-sub mt-2">{t('HabitTracker.total_tracked')}</p>
               </div>
             </div>
 
             {/* Habits List */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-text-main dark:text-white">Today's Habits</h3>
+              <h3 className="text-lg font-bold text-text-main dark:text-white">
+                {t('HabitTracker.todays_habits')}
+              </h3>
 
               {habits.length === 0 ? (
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-12 text-center border border-gray-100 dark:border-gray-800">
                   <FireIcon className="w-5 h-5 text-gray-300 dark:text-gray-700" />
                   <h4 className="text-lg font-bold text-text-main dark:text-white mb-2">
-                    No habits yet
+                    {t('HabitTracker.empty_title')}
                   </h4>
-                  <p className="text-text-sub mb-4">
-                    Start building your daily routine by creating your first habit.
-                  </p>
+                  <p className="text-text-sub mb-4">{t('HabitTracker.empty_desc')}</p>
                   <button
+                    type="button"
                     onClick={() => setShowNewHabitModal(true)}
                     className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
                   >
-                    Create Your First Habit
+                    {t('HabitTracker.create_first')}
                   </button>
                 </div>
               ) : (
@@ -298,7 +312,8 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                         {habit.completedToday && (
                           <div className="absolute top-0 right-0 p-0">
                             <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-bl-xl text-xs font-bold flex items-center gap-1">
-                              <CheckCircleIcon className="w-3.5 h-3.5" /> Completed
+                              <CheckCircleIcon className="w-3.5 h-3.5" />{' '}
+                              {t('HabitTracker.completed_badge')}
                             </div>
                           </div>
                         )}
@@ -316,13 +331,17 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                               <h4 className="font-bold text-text-main dark:text-white">
                                 {habit.title}
                               </h4>
-                              <p className="text-sm text-text-sub">Streak: {habit.streak} days</p>
+                              <p className="text-sm text-text-sub">
+                                {t('HabitTracker.streak_label', { days: habit.streak })}
+                              </p>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 mr-12 sm:mr-0">
                             <div className="flex items-center gap-1 text-orange-500 bg-orange-50 dark:bg-orange-900/10 px-2 py-1 rounded-md">
                               <FireIcon className="w-4 h-4" />
-                              <span className="text-xs font-bold">{habit.streak} Days</span>
+                              <span className="text-xs font-bold">
+                                {t('HabitTracker.streak_days', { days: habit.streak })}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -331,22 +350,29 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                           <div className="flex gap-2 w-full sm:w-auto">
                             {!habit.completedToday ? (
                               <button
+                                type="button"
                                 onClick={() => toggleHabit(habit.id, false)}
                                 disabled={togglingId === habit.id}
                                 className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark text-sm font-medium transition-colors shadow-sm shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {togglingId === habit.id ? 'Saving...' : 'Mark Complete'}
+                                {togglingId === habit.id
+                                  ? t('HabitTracker.saving')
+                                  : t('HabitTracker.mark_complete')}
                               </button>
                             ) : (
                               <button
+                                type="button"
                                 onClick={() => toggleHabit(habit.id, true)}
                                 disabled={togglingId === habit.id}
                                 className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {togglingId === habit.id ? 'Saving...' : 'Undo'}
+                                {togglingId === habit.id
+                                  ? t('HabitTracker.saving')
+                                  : t('HabitTracker.undo')}
                               </button>
                             )}
                             <button
+                              type="button"
                               onClick={() => handleDeleteHabit(habit.id)}
                               aria-label="Delete habit"
                               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors"
@@ -370,8 +396,11 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-card-dark rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-text-main dark:text-white">Create New Habit</h3>
+              <h3 className="text-xl font-bold text-text-main dark:text-white">
+                {t('HabitTracker.create_modal_title')}
+              </h3>
               <button
+                type="button"
                 onClick={() => setShowNewHabitModal(false)}
                 aria-label="Close modal"
                 className="text-text-sub hover:text-text-main transition-colors"
@@ -383,13 +412,13 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
             <form onSubmit={handleCreateHabit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-main dark:text-white mb-2">
-                  Habit Name
+                  {t('HabitTracker.habit_name')}
                 </label>
                 <input
                   type="text"
                   value={newHabitTitle}
                   onChange={(e) => setNewHabitTitle(e.target.value)}
-                  placeholder="e.g., Read for 30 minutes"
+                  placeholder={t('HabitTracker.habit_placeholder')}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-text-main dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                   required
                 />
@@ -397,7 +426,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
 
               <div>
                 <label className="block text-sm font-medium text-text-main dark:text-white mb-2">
-                  Icon
+                  {t('HabitTracker.icon_label')}
                 </label>
                 <div className="flex gap-2 flex-wrap">
                   {[
@@ -424,7 +453,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
 
               <div>
                 <label className="block text-sm font-medium text-text-main dark:text-white mb-2">
-                  Color
+                  {t('HabitTracker.color_label')}
                 </label>
                 <div className="flex gap-2">
                   {['indigo', 'teal', 'amber', 'blue'].map((color) => (
@@ -455,13 +484,13 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
                   onClick={() => setShowNewHabitModal(false)}
                   className="flex-1 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
-                  Cancel
+                  {t('HabitTracker.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
                 >
-                  Create Habit
+                  {t('HabitTracker.create')}
                 </button>
               </div>
             </form>

@@ -26,6 +26,7 @@ interface AuthContextType {
     blocked?: boolean;
     retryAfterMinutes?: number;
     email?: string;
+    remaining_attempts?: number;
   }>;
   register: (
     email: string,
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         blocked: extra?.blocked as boolean | undefined,
         retryAfterMinutes: extra?.retryAfterMinutes as number | undefined,
         email: extra?.email as string | undefined,
+        remaining_attempts: extra?.remaining_attempts as number | undefined,
       };
     }
 
@@ -79,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true as const, user: data.user };
     }
 
-    return { success: false, error: 'Login failed' };
+    return { success: false, error: 'Login failed', remaining_attempts: undefined };
   }, []);
 
   const register = useCallback(async (email: string, password: string, fullName: string) => {

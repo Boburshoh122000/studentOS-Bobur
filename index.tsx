@@ -12,6 +12,7 @@ import { ThemeProvider } from './src/contexts/ThemeContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { CreditProvider } from './src/contexts/CreditContext';
 import AutoLogoutProvider from './components/providers/AutoLogoutProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
@@ -22,17 +23,19 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="light" enableSystem={false}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <AutoLogoutProvider>
-            <CreditProvider>
-              <RouterProvider router={router} />
-            </CreditProvider>
-          </AutoLogoutProvider>
-        </AuthProvider>
-        <Toaster position="top-right" />
-      </QueryClientProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="light" enableSystem={false}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <AutoLogoutProvider>
+              <CreditProvider>
+                <RouterProvider router={router} />
+              </CreditProvider>
+            </AutoLogoutProvider>
+          </AuthProvider>
+          <Toaster position="top-right" />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

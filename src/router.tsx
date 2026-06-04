@@ -3,11 +3,12 @@ import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import RootLayout from './ui/RootLayout';
 import AdminLayout from './ui/AdminLayout';
 import { withNavigate } from './ui/withNavigate';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
+import { GlobalLoader } from '../components/ui/GlobalLoader';
 
 function Loader() {
-  return null;
+  return <GlobalLoader />;
 }
 
 function Wrap({ children }: { children: React.ReactNode }) {
@@ -170,6 +171,7 @@ function StudentRoute({ children }: { children: React.ReactNode }) {
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <NotFound />,
     children: [
       // ========================================
       // PUBLIC ROUTES
@@ -289,9 +291,9 @@ export const router = createBrowserRouter([
       {
         path: '/career-tracker',
         element: (
-          <Wrap>
+          <StudentRoute>
             <CareerTracker />
-          </Wrap>
+          </StudentRoute>
         ),
       },
       {

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import toast from 'react-hot-toast';
 import { creditsApi } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -39,6 +40,7 @@ export function CreditProvider({ children }: CreditProviderProps) {
     } catch (err) {
       console.error('Failed to fetch credit balance:', err);
       setError('Failed to load credit balance');
+      toast.error('Could not load credit balance. Please refresh.', { id: 'credit-balance-error' });
     } finally {
       setIsLoading(false);
     }
