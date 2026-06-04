@@ -286,101 +286,100 @@ export default function JobDetailModal({
 
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto">
-          {/* ── Info grid ── */}
-          <div className="px-6 pt-5 pb-5 border-b border-gray-100 dark:border-gray-800">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <InfoCard label="Job Type" icon={<BriefcaseIcon className="w-3.5 h-3.5" />}>
-                {formatJobType(job.jobType)}
-              </InfoCard>
-
-              <InfoCard label="Work Mode" icon={<MapPinIcon className="w-3.5 h-3.5" />}>
-                {formatLocationType(job.locationType)}
-              </InfoCard>
-
-              <InfoCard
-                label="Salary"
-                icon={<CurrencyDollarIcon className="w-3.5 h-3.5" />}
-                highlight={isPaid ? 'green' : undefined}
+          {/* ── Job highlights ── */}
+          <div className="px-6 pt-5 pb-5 border-b border-gray-100 dark:border-gray-800 space-y-4">
+            {/* Chips row: type + mode + compensation */}
+            <div className="flex flex-wrap gap-2">
+              <JobChip
+                color={
+                  job.jobType === 'INTERNSHIP'
+                    ? 'purple'
+                    : job.jobType === 'GRADUATE'
+                      ? 'indigo'
+                      : 'emerald'
+                }
               >
-                {isPaid ? salary : 'Unpaid'}
-              </InfoCard>
+                <BriefcaseIcon className="w-3 h-3" />
+                {formatJobType(job.jobType)}
+              </JobChip>
+              <JobChip color="blue">
+                <MapPinIcon className="w-3 h-3" />
+                {formatLocationType(job.locationType)}
+              </JobChip>
+              <JobChip color={isPaid ? 'green' : 'gray'}>
+                <CurrencyDollarIcon className="w-3 h-3" />
+                {isPaid ? 'Paid' : 'Unpaid'}
+              </JobChip>
+            </div>
 
+            {/* Salary hero */}
+            <div className="flex items-end gap-3">
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-0.5">
+                  Salary
+                </p>
+                <p
+                  className={`text-2xl font-extrabold leading-none ${
+                    isPaid
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  {isPaid ? salary : 'Unpaid'}
+                </p>
+              </div>
+              {isPaid && (
+                <div className="mb-0.5 size-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+              )}
+            </div>
+
+            {/* Details: clean 2-col list, no inner boxes */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3 pt-1">
               {job.location && (
-                <InfoCard label="Location" icon={<MapPinIcon className="w-3.5 h-3.5" />}>
+                <DetailRow icon={<MapPinIcon className="w-3.5 h-3.5" />} label="Location">
                   {job.location}
-                </InfoCard>
+                </DetailRow>
               )}
-
               {duration && (
-                <InfoCard label="Duration" icon={<ClockIcon className="w-3.5 h-3.5" />}>
+                <DetailRow icon={<ClockIcon className="w-3.5 h-3.5" />} label="Duration">
                   {duration}
-                </InfoCard>
+                </DetailRow>
               )}
-
               {job.hoursPerWeek && (
-                <InfoCard label="Hours" icon={<ClockIcon className="w-3.5 h-3.5" />}>
+                <DetailRow icon={<ClockIcon className="w-3.5 h-3.5" />} label="Hours">
                   {job.hoursPerWeek} hrs/week
-                </InfoCard>
+                </DetailRow>
               )}
-
               {job.startDate && (
-                <InfoCard label="Start Date" icon={<CalendarIcon className="w-3.5 h-3.5" />}>
+                <DetailRow icon={<CalendarIcon className="w-3.5 h-3.5" />} label="Start Date">
                   {new Date(job.startDate).toLocaleDateString('en-US', {
                     month: 'short',
                     year: 'numeric',
                   })}
-                </InfoCard>
+                </DetailRow>
               )}
-
               {deadline && (
-                <InfoCard
-                  label="Deadline"
+                <DetailRow
                   icon={<CalendarIcon className="w-3.5 h-3.5" />}
-                  highlight={isDeadlinePassed ? 'gray' : isDeadlineSoon ? 'red' : undefined}
+                  label="Deadline"
+                  accent={isDeadlinePassed ? 'muted' : isDeadlineSoon ? 'red' : undefined}
                 >
-                  <span>
-                    {fmtDate(deadline)}
-                    {days !== null && days > 0 && (
-                      <span className="block text-[11px] mt-0.5 font-normal opacity-70">
-                        {days} day{days !== 1 ? 's' : ''} left
-                      </span>
-                    )}
-                    {isDeadlinePassed && (
-                      <span className="block text-[11px] mt-0.5 font-normal opacity-70">
-                        Deadline passed
-                      </span>
-                    )}
-                  </span>
-                </InfoCard>
+                  {fmtDate(deadline)}
+                  {days !== null && days > 0 && (
+                    <span className="ml-1.5 text-[11px] font-semibold text-amber-500">
+                      ({days}d left)
+                    </span>
+                  )}
+                  {isDeadlinePassed && (
+                    <span className="ml-1.5 text-[11px] text-gray-400">passed</span>
+                  )}
+                </DetailRow>
               )}
-
-              <InfoCard label="Posted" icon={<CalendarIcon className="w-3.5 h-3.5" />}>
+              <DetailRow icon={<CalendarIcon className="w-3.5 h-3.5" />} label="Posted">
                 {timeAgo(job.postedAt)}
-              </InfoCard>
-            </div>
-
-            {/* Badges */}
-            <div className="flex gap-2 mt-3">
-              <span
-                className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
-                  job.jobType === 'INTERNSHIP'
-                    ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-                    : job.jobType === 'GRADUATE'
-                      ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                      : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                }`}
-              >
-                {formatJobType(job.jobType)}
-              </span>
-              <span
-                className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
-                  isPaid
-                    ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-                }`}
-              >
-                {isPaid ? 'Paid' : 'Unpaid'}
-              </span>
+              </DetailRow>
             </div>
           </div>
 
@@ -453,33 +452,58 @@ export default function JobDetailModal({
   );
 }
 
-/* ── Info card sub-component ── */
-function InfoCard({
-  label,
-  icon,
+/* ── Chip pill for job type / mode / compensation ── */
+const CHIP_COLORS = {
+  purple: 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300',
+  indigo: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300',
+  emerald: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300',
+  blue: 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300',
+  green: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300',
+  gray: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+};
+
+function JobChip({
   children,
-  highlight,
+  color,
 }: {
-  label: string;
-  icon: React.ReactNode;
   children: React.ReactNode;
-  highlight?: 'green' | 'red' | 'gray';
+  color: keyof typeof CHIP_COLORS;
 }) {
-  const valueColor =
-    highlight === 'green'
-      ? 'text-green-600 dark:text-green-400'
-      : highlight === 'red'
-        ? 'text-red-600 dark:text-red-400'
-        : highlight === 'gray'
-          ? 'text-gray-400'
-          : 'text-gray-800 dark:text-gray-200';
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${CHIP_COLORS[color]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/* ── Clean label + value row (no box) ── */
+function DetailRow({
+  icon,
+  label,
+  children,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+  accent?: 'red' | 'muted';
+}) {
+  const valueClass =
+    accent === 'red'
+      ? 'text-red-600 dark:text-red-400'
+      : accent === 'muted'
+        ? 'text-gray-400'
+        : 'text-gray-800 dark:text-gray-200';
 
   return (
-    <div className="bg-gray-50 dark:bg-white/[0.03] rounded-xl p-3.5 border border-gray-100 dark:border-white/[0.06]">
-      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1.5 flex items-center gap-1">
-        {icon} {label}
+    <div className="flex flex-col gap-0.5">
+      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold flex items-center gap-1">
+        <span className="text-gray-300 dark:text-gray-600">{icon}</span>
+        {label}
       </p>
-      <p className={`text-sm font-semibold leading-snug ${valueColor}`}>{children}</p>
+      <p className={`text-sm font-semibold ${valueClass}`}>{children}</p>
     </div>
   );
 }
