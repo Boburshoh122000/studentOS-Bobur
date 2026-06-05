@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import {
   AcademicCapIcon,
   CheckIcon,
   CalendarDaysIcon,
   ClockIcon,
   ChartBarIcon,
-  UsersIcon,
   SparklesIcon,
   BookOpenIcon,
   FireIcon,
@@ -17,118 +16,134 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/solid';
 
-/* ═══════════════════════════════════════════════════
-   COORDINATE SYSTEM
-   Design reference: 1440 × 920 px section
-   Hub center: (720, 330)
-   Cards are desktop-only (hidden below lg)
-══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   COORDINATE SYSTEM  —  design ref: 1440 × 920 px
+   Hub centre: (720, 330).  Cards are desktop-only (lg+).
+══════════════════════════════════════════════════════════════ */
 
 const SVG_W = 1440;
 const SVG_H = 920;
-const HUB = { x: 720, y: 330 }; // hub center in SVG coords
+const HUB = { x: 720, y: 330 };
 
-/* Each card:
-   - css: absolute positioning for card div
-   - svgC: center of card in SVG coordinate space (for connector line)
-   - float: stagger delay & duration for the y-loop animation */
 const CARDS = [
   {
     id: 'schedule',
     pos: 'top-[62px] left-[58px]',
     svgC: { x: 172, y: 130 },
-    float: { delay: 0, duration: 3.6 },
-    mount: { delay: 0.1 },
+    /** entrance stagger delay (s) */
+    mountDelay: 0.1,
+    /** float phase offset (s) */
+    floatDelay: 0,
+    floatDuration: 3.6,
+    /** scroll parallax range [start, end] */
+    scrollX: [0, -60] as [number, number],
+    scrollY: [0, -120] as [number, number],
   },
   {
     id: 'gpa',
     pos: 'top-[44px] right-[68px]',
     svgC: { x: 1267, y: 101 },
-    float: { delay: 0.4, duration: 4.0 },
-    mount: { delay: 0.2 },
+    mountDelay: 0.2,
+    floatDelay: 0.4,
+    floatDuration: 4.0,
+    scrollX: [0, 90] as [number, number],
+    scrollY: [0, -100] as [number, number],
   },
   {
     id: 'deadline',
     pos: 'top-[296px] left-[18px]',
     svgC: { x: 135, y: 364 },
-    float: { delay: 0.8, duration: 3.8 },
-    mount: { delay: 0.3 },
+    mountDelay: 0.3,
+    floatDelay: 0.8,
+    floatDuration: 3.8,
+    scrollX: [0, -80] as [number, number],
+    scrollY: [0, -40] as [number, number],
   },
   {
     id: 'progress',
     pos: 'top-[308px] right-[18px]',
     svgC: { x: 1305, y: 373 },
-    float: { delay: 1.2, duration: 4.2 },
-    mount: { delay: 0.4 },
+    mountDelay: 0.4,
+    floatDelay: 1.2,
+    floatDuration: 4.2,
+    scrollX: [0, 90] as [number, number],
+    scrollY: [0, -30] as [number, number],
   },
   {
     id: 'group',
     pos: 'top-[528px] left-[52px]',
     svgC: { x: 167, y: 597 },
-    float: { delay: 1.6, duration: 3.5 },
-    mount: { delay: 0.5 },
+    mountDelay: 0.5,
+    floatDelay: 1.6,
+    floatDuration: 3.5,
+    scrollX: [0, -60] as [number, number],
+    scrollY: [0, 80] as [number, number],
   },
   {
     id: 'tools',
     pos: 'top-[546px] right-[58px]',
     svgC: { x: 1270, y: 608 },
-    float: { delay: 2.0, duration: 3.9 },
-    mount: { delay: 0.6 },
+    mountDelay: 0.6,
+    floatDelay: 2.0,
+    floatDuration: 3.9,
+    scrollX: [0, 70] as [number, number],
+    scrollY: [0, 80] as [number, number],
   },
 ] as const;
 
 type CardId = (typeof CARDS)[number]['id'];
 
-/* ── SVG connector lines ── */
-function ConnectorLines({ visible }: { visible: boolean }) {
+/* ── SVG connector lines — motion.path so pathLength works ── */
+function ConnectorLines() {
   return (
     <svg
       className="absolute inset-0 w-full h-full pointer-events-none z-0"
       viewBox={`0 0 ${SVG_W} ${SVG_H}`}
       preserveAspectRatio="xMidYMid slice"
     >
-      {CARDS.map((card, i) => (
-        <g key={card.id}>
-          {/* Connector line */}
-          <motion.line
-            x1={HUB.x}
-            y1={HUB.y}
-            x2={card.svgC.x}
-            y2={card.svgC.y}
-            stroke="#C4B5FD"
-            strokeWidth="1.5"
-            strokeDasharray="5 5"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={visible ? { pathLength: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.9, delay: 0.4 + i * 0.12, ease: 'easeInOut' }}
-          />
-          {/* Dot at card end */}
-          <motion.circle
-            cx={card.svgC.x}
-            cy={card.svgC.y}
-            r={4}
-            fill="#7C3AED"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={visible ? { scale: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.3, delay: 1.2 + i * 0.1 }}
-          />
-          {/* Dot at hub end */}
-          <motion.circle
-            cx={HUB.x + Math.sign(card.svgC.x - HUB.x) * 64}
-            cy={HUB.y + Math.sign(card.svgC.y - HUB.y) * 64}
-            r={3}
-            fill="#A78BFA"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={visible ? { scale: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.3, delay: 0.9 + i * 0.1 }}
-          />
-        </g>
-      ))}
+      {CARDS.map((card, i) => {
+        const d = `M ${HUB.x} ${HUB.y} L ${card.svgC.x} ${card.svgC.y}`;
+        return (
+          <g key={card.id}>
+            {/* Dashed line: pathLength 0→1 (requires motion.path, not motion.line) */}
+            <motion.path
+              d={d}
+              stroke="#C4B5FD"
+              strokeWidth="1.5"
+              strokeDasharray="5 5"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.8 + i * 0.1, ease: 'easeInOut' }}
+            />
+            {/* Dot at card end */}
+            <motion.circle
+              cx={card.svgC.x}
+              cy={card.svgC.y}
+              r={4}
+              fill="#7C3AED"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 1.6 + i * 0.1 }}
+            />
+            {/* Dot at hub end */}
+            <motion.circle
+              cx={HUB.x + Math.sign(card.svgC.x - HUB.x) * 64}
+              cy={HUB.y + Math.sign(card.svgC.y - HUB.y) * 64}
+              r={3}
+              fill="#A78BFA"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 1.3 + i * 0.1 }}
+            />
+          </g>
+        );
+      })}
     </svg>
   );
 }
 
-/* ── Card contents ── */
+/* ── Card contents (unchanged) ── */
 function CardContent({ id }: { id: CardId }) {
   if (id === 'schedule') {
     return (
@@ -137,7 +152,7 @@ function CardContent({ id }: { id: CardId }) {
           <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
             <CalendarDaysIcon className="w-4 h-4 text-blue-600" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Today's Schedule</span>
+          <span className="text-xs font-bold text-slate-700">Today&apos;s Schedule</span>
         </div>
         {[
           { time: '09:00', label: 'Mathematics', dot: 'bg-indigo-500' },
@@ -323,7 +338,7 @@ function CardContent({ id }: { id: CardId }) {
   return null;
 }
 
-/* ── Center hub icon ── */
+/* ── Centre hub icon ── */
 function HubIcon({ visible }: { visible: boolean }) {
   return (
     <motion.div
@@ -332,17 +347,14 @@ function HubIcon({ visible }: { visible: boolean }) {
       transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.05 }}
       className="relative"
     >
-      {/* Outer glow ring */}
       <motion.div
         animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.45, 0.25] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute inset-0 rounded-[2rem] bg-violet-400 blur-2xl"
       />
-      {/* Main icon */}
       <div className="relative w-[120px] h-[120px] rounded-[2rem] bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-violet-500/40">
         <AcademicCapIcon className="w-14 h-14 text-white" />
       </div>
-      {/* Checkmark badge */}
       <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-md">
         <CheckIcon className="w-4 h-4 text-white" />
       </div>
@@ -350,15 +362,58 @@ function HubIcon({ visible }: { visible: boolean }) {
   );
 }
 
-/* ══════════════════════════════════════════════════ */
-/* MAIN COMPONENT                                      */
-/* ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════ */
+/* MAIN COMPONENT                                              */
+/* ══════════════════════════════════════════════════════════ */
 
 export default function TrustlineHero() {
+  const heroRef = useRef<HTMLElement>(null);
   const [mounted, setMounted] = useState(false);
 
+  /* ── Scroll tracking on the hero section ── */
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  /* Spring-smooth the raw progress for a gentle scrub feel */
+  const sp = useSpring(scrollYProgress, { stiffness: 80, damping: 25, mass: 0.1 });
+
+  /* ── Per-card parallax — each drifts in a unique direction ── */
+  const c0x = useTransform(sp, [0, 1], CARDS[0].scrollX); // schedule → up-left
+  const c0y = useTransform(sp, [0, 1], CARDS[0].scrollY);
+  const c1x = useTransform(sp, [0, 1], CARDS[1].scrollX); // gpa → up-right
+  const c1y = useTransform(sp, [0, 1], CARDS[1].scrollY);
+  const c2x = useTransform(sp, [0, 1], CARDS[2].scrollX); // deadline → left
+  const c2y = useTransform(sp, [0, 1], CARDS[2].scrollY);
+  const c3x = useTransform(sp, [0, 1], CARDS[3].scrollX); // progress → right
+  const c3y = useTransform(sp, [0, 1], CARDS[3].scrollY);
+  const c4x = useTransform(sp, [0, 1], CARDS[4].scrollX); // group → down-left
+  const c4y = useTransform(sp, [0, 1], CARDS[4].scrollY);
+  const c5x = useTransform(sp, [0, 1], CARDS[5].scrollX); // tools → down-right
+  const c5y = useTransform(sp, [0, 1], CARDS[5].scrollY);
+
+  /* Look up the right pair for each card index */
+  const cardScrollMotion = [
+    { x: c0x, y: c0y },
+    { x: c1x, y: c1y },
+    { x: c2x, y: c2y },
+    { x: c3x, y: c3y },
+    { x: c4x, y: c4y },
+    { x: c5x, y: c5y },
+  ];
+
+  /* Cards + lines fade to near-invisible as hero scrolls out */
+  const elementsOpacity = useTransform(sp, [0, 0.5, 1], [1, 0.75, 0.1]);
+
+  /* Hub scales down slightly on scroll */
+  const hubScale = useTransform(sp, [0, 1], [1, 0.82]);
+
+  /* Hero text moves up faster (stronger parallax than cards) */
+  const textY = useTransform(sp, [0, 1], [0, -70]);
+
+  /* Mount flag — set on first rAF so layout is stable */
   useEffect(() => {
-    // Short rAF delay ensures layout is stable before animations start
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
@@ -366,143 +421,168 @@ export default function TrustlineHero() {
   if (!mounted) return null;
 
   return (
-    <section className="relative w-full min-h-[920px] bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* ── Subtle background radial gradient ── */}
+    <section
+      ref={heroRef}
+      className="relative w-full min-h-[920px] bg-[#F8FAFC] overflow-hidden font-sans"
+    >
+      {/* Background radial glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-radial from-violet-100/60 to-transparent rounded-full blur-3xl" />
       </div>
 
-      {/* ── LAYER 0: SVG connector lines ── */}
-      <div className="absolute inset-0 hidden lg:block">
-        <ConnectorLines visible={mounted} />
-      </div>
+      {/* ── LAYER 0: SVG connector lines (scroll-faded) ── */}
+      <motion.div className="absolute inset-0 hidden lg:block" style={{ opacity: elementsOpacity }}>
+        <ConnectorLines />
+      </motion.div>
 
-      {/* ── LAYER 1: 6 floating cards (desktop only) ── */}
+      {/* ── LAYER 1: 6 cards — 3-layer motion ── */}
       <div className="absolute inset-0 pointer-events-none hidden lg:block">
-        {CARDS.map((card) => (
+        {CARDS.map((card, i) => (
+          /*
+           * LAYER A — scroll parallax (position shifts as user scrolls)
+           * x / y from useTransform; opacity fades with scroll
+           */
           <motion.div
             key={card.id}
             className={`absolute pointer-events-auto ${card.pos}`}
-            /* Mount: staggered fade+scale in */
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              type: 'spring',
-              stiffness: 100,
-              damping: 18,
-              delay: card.mount.delay,
+            style={{
+              x: cardScrollMotion[i].x,
+              y: cardScrollMotion[i].y,
+              opacity: elementsOpacity,
             }}
           >
-            {/* Continuous float loop (runs after mount via AnimatePresence-free approach) */}
+            {/*
+             * LAYER B — entrance (runs once on mount, staggered)
+             * opacity: 0 → 1,  scale: 0.8 → 1  over 0.5 s
+             */}
             <motion.div
-              animate={{ y: [0, -9, 0] }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{
-                duration: card.float.duration,
-                repeat: Infinity,
-                ease: 'easeInOut',
-                delay: card.float.delay,
+                duration: 0.5,
+                delay: card.mountDelay,
+                ease: 'easeOut',
               }}
             >
-              <CardContent id={card.id} />
+              {/*
+               * LAYER C — continuous float (loops forever, independent)
+               * y: 0 → -10 → 0,  unique phase per card
+               */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{
+                  duration: card.floatDuration,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: card.floatDelay,
+                  repeatType: 'loop',
+                }}
+              >
+                <CardContent id={card.id} />
+              </motion.div>
             </motion.div>
           </motion.div>
         ))}
       </div>
 
-      {/* ── LAYER 2: Center hub icon ── */}
-      {/* Positioned at the hub's CSS location (matches SVG HUB coords) */}
-      {/* hub center: top = HUB.y(330) - half icon(60) = 270px */}
-      <div className="absolute hidden lg:flex items-center justify-center top-[270px] left-1/2 -translate-x-1/2 z-20">
+      {/* ── LAYER 2: Centre hub — scales down on scroll ── */}
+      {/* hub centre: top = HUB.y(330) − half icon(60) = 270 px */}
+      <motion.div
+        className="absolute hidden lg:flex items-center justify-center top-[270px] left-1/2 -translate-x-1/2 z-20"
+        style={{ scale: hubScale, opacity: elementsOpacity }}
+      >
         <HubIcon visible={mounted} />
-      </div>
+      </motion.div>
 
-      {/* ── LAYER 3: Center text & CTA ── */}
+      {/* ── LAYER 3: Centre text — moves up faster than cards ── */}
       <div className="relative z-[30] flex flex-col items-center justify-center text-center px-4 pt-16 lg:pt-0">
-        {/* Spacer: HUB.y(330) + half icon(60) + gap(48) = 438px */}
+        {/* Spacer: HUB.y(330) + half icon(60) + gap(48) = 438 px */}
         <div className="hidden lg:block h-[438px]" />
 
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.7 }}
-          className="mb-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-200"
-        >
-          <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
-            <CheckIcon className="w-2.5 h-2.5 text-white" />
-          </span>
-          <span className="text-sm font-semibold text-violet-700">
-            Built for students, by students
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.8 }}
-          className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-3xl"
-        >
-          All-in-one{' '}
-          <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-            student platform
-          </span>
-        </motion.h1>
-
-        {/* Subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.95 }}
-          className="mt-5 text-lg md:text-xl text-slate-500 max-w-xl leading-relaxed"
-        >
-          Organize your studies, track deadlines, improve your CV, and land your first role — all
-          from one place.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.1 }}
-          className="mt-8 flex flex-col sm:flex-row items-center gap-3"
-        >
-          <Link
-            to="/signup/step-1"
-            className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-7 py-3.5 rounded-full font-semibold text-sm shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-200"
+        <motion.div style={{ y: textY }} className="flex flex-col items-center">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.7 }}
+            className="mb-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-200"
           >
-            Get Started Free
-            <ArrowRightIcon className="w-4 h-4" />
-          </Link>
-          <Link
-            to="/about"
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 px-6 py-3.5 rounded-full font-medium text-sm border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200"
-          >
-            See how it works
-          </Link>
-        </motion.div>
+            <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
+              <CheckIcon className="w-2.5 h-2.5 text-white" />
+            </span>
+            <span className="text-sm font-semibold text-violet-700">
+              Built for students, by students
+            </span>
+          </motion.div>
 
-        {/* Social proof strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1.3 }}
-          className="mt-8 flex items-center gap-3 pb-12"
-        >
-          <div className="flex -space-x-2">
-            {['12', '47', '33', '8', '59'].map((n) => (
-              <img
-                key={n}
-                src={`https://i.pravatar.cc/40?img=${n}`}
-                alt=""
-                className="w-8 h-8 rounded-full border-2 border-white"
-              />
-            ))}
-          </div>
-          <p className="text-sm text-slate-500">
-            <span className="font-bold text-slate-700">10,000+</span> students already using
-            StudentOS
-          </p>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.8 }}
+            className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-3xl"
+          >
+            All-in-one{' '}
+            <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+              student platform
+            </span>
+          </motion.h1>
+
+          {/* Subtext */}
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.95 }}
+            className="mt-5 text-lg md:text-xl text-slate-500 max-w-xl leading-relaxed"
+          >
+            Organize your studies, track deadlines, improve your CV, and land your first role — all
+            from one place.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.1 }}
+            className="mt-8 flex flex-col sm:flex-row items-center gap-3"
+          >
+            <Link
+              to="/signup/step-1"
+              className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-7 py-3.5 rounded-full font-semibold text-sm shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-200"
+            >
+              Get Started Free
+              <ArrowRightIcon className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 px-6 py-3.5 rounded-full font-medium text-sm border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200"
+            >
+              See how it works
+            </Link>
+          </motion.div>
+
+          {/* Social proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1.3 }}
+            className="mt-8 flex items-center gap-3 pb-12"
+          >
+            <div className="flex -space-x-2">
+              {['12', '47', '33', '8', '59'].map((n) => (
+                <img
+                  key={n}
+                  src={`https://i.pravatar.cc/40?img=${n}`}
+                  alt=""
+                  className="w-8 h-8 rounded-full border-2 border-white"
+                />
+              ))}
+            </div>
+            <p className="text-sm text-slate-500">
+              <span className="font-bold text-slate-700">10,000+</span> students already using
+              StudentOS
+            </p>
+          </motion.div>
         </motion.div>
       </div>
     </section>
