@@ -93,6 +93,7 @@ export default function MinimalHeader() {
   const { scrollY } = useScroll();
   const { pathname } = useLocation();
   const [hidden, setHidden] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -108,6 +109,7 @@ export default function MinimalHeader() {
   const { isAuthenticated, user, logout } = useAuth();
 
   useMotionValueEvent(scrollY, 'change', (y) => {
+    setScrolled(y > 60);
     if (y < 50) {
       setHidden(false);
     } else if (y > lastYPos) {
@@ -164,7 +166,11 @@ export default function MinimalHeader() {
         initial={{ y: -100, opacity: 0 }}
         animate={hidden ? 'hidden' : 'visible'}
         transition={{ duration: 0.6, type: 'spring', stiffness: 100, damping: 20 }}
-        className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-6 py-3 flex items-center justify-between w-[95%] max-w-5xl"
+        className={`pointer-events-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-full flex items-center justify-between w-[95%] max-w-5xl transition-[padding,box-shadow] duration-300 ${
+          scrolled
+            ? 'px-4 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)]'
+            : 'px-6 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.06)]'
+        }`}
       >
         {/* ─── Logo ─── */}
         <Link to="/" className="flex items-center">
@@ -384,9 +390,9 @@ export default function MinimalHeader() {
                 <MagneticButton>
                   <Link
                     to="/signup/step-1"
-                    className="inline-block px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:bg-indigo-700 hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all"
+                    className="inline-block px-5 py-2.5 rounded-full bg-[#0A0A0A] text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(0,0,0,0.25)] hover:bg-[#222] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] transition-all"
                   >
-                    Get Started
+                    Request a Demo
                   </Link>
                 </MagneticButton>
               </div>
