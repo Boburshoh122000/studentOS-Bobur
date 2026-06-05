@@ -412,6 +412,14 @@ input[type='range']:focus {
   }
 }
 
+/* Hero hub-and-spoke: card dynamic positioning via CSS custom properties */
+.hero-card {
+  position: absolute;
+  top: var(--card-top, auto);
+  left: var(--card-left, auto);
+  right: var(--card-right, auto);
+}
+
 /* Hero floating tool cards */
 .tool-card-shadow {
   box-shadow:
