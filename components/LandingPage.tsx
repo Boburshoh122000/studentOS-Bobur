@@ -6,6 +6,7 @@ import MinimalPricing from './MinimalPricing';
 import MinimalFooter from './MinimalFooter';
 import ProblemSection from './landing/ProblemSection';
 import FeatureShowcase from './landing/FeatureShowcase';
+import FeaturesSection from './landing/FeaturesSection';
 import HowItWorks from './landing/HowItWorks';
 import FinalCTA from './landing/FinalCTA';
 
@@ -22,6 +23,7 @@ export default function LandingPage({ navigateTo: _navigateTo }: NavigationProps
         <TrustlineHero />
         <ProblemSection />
         <FeatureShowcase />
+        <FeaturesSection />
         <MinimalCoreTools />
         <HowItWorks />
         <MinimalPricing />
