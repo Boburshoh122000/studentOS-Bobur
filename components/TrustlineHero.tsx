@@ -9,7 +9,59 @@ import {
   CpuChipIcon,
   ShieldCheckIcon,
   UsersIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  AcademicCapIcon,
+  BriefcaseIcon,
+  BookOpenIcon,
+  FireIcon,
 } from '@heroicons/react/24/solid';
+
+/* ── Floating 3D tool icons data ── */
+const floatingTools = [
+  {
+    Icon: DocumentTextIcon,
+    label: 'CV Builder',
+    color: 'bg-indigo-500',
+    shadow: 'shadow-indigo-500/40',
+    delay: 0,
+  },
+  {
+    Icon: ChartBarIcon,
+    label: 'ATS Checker',
+    color: 'bg-emerald-500',
+    shadow: 'shadow-emerald-500/40',
+    delay: 0.4,
+  },
+  {
+    Icon: AcademicCapIcon,
+    label: 'Plagiarism',
+    color: 'bg-amber-500',
+    shadow: 'shadow-amber-500/40',
+    delay: 0.8,
+  },
+  {
+    Icon: BriefcaseIcon,
+    label: 'Career Tracker',
+    color: 'bg-sky-500',
+    shadow: 'shadow-sky-500/40',
+    delay: 1.2,
+  },
+  {
+    Icon: BookOpenIcon,
+    label: 'Learning Plans',
+    color: 'bg-purple-500',
+    shadow: 'shadow-purple-500/40',
+    delay: 1.6,
+  },
+  {
+    Icon: FireIcon,
+    label: 'Habit Tracker',
+    color: 'bg-rose-500',
+    shadow: 'shadow-rose-500/40',
+    delay: 2.0,
+  },
+];
 
 export default function TrustlineHero() {
   const [mounted, setMounted] = useState(false);
@@ -389,18 +441,55 @@ export default function TrustlineHero() {
           study plans organized.
         </motion.p>
 
+        {/* Animated 3D floating tool icons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45, ease: smoothEase }}
+          className="mt-9 flex flex-wrap items-center justify-center gap-3"
+        >
+          {floatingTools.map((tool) => (
+            <motion.div
+              key={tool.label}
+              animate={{ y: [0, -7, 0] }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: tool.delay,
+              }}
+              whileHover={{
+                scale: 1.08,
+                rotateZ: [-1, 1],
+                transition: { duration: 0.15 },
+              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-slate-100 tool-card-shadow ${tool.shadow} cursor-default select-none`}
+            >
+              {/* 3D-style icon cube */}
+              <div
+                className={`w-7 h-7 rounded-xl ${tool.color} flex items-center justify-center tool-icon-3d`}
+              >
+                <tool.Icon className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">
+                {tool.label}
+              </span>
+            </motion.div>
+          ))}
+        </motion.div>
+
         {/* Buttons — one row, no duplicates */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: smoothEase }}
-          className="flex flex-row items-center justify-center gap-4 mt-10"
+          transition={{ duration: 0.8, delay: 0.6, ease: smoothEase }}
+          className="flex flex-row items-center justify-center gap-4 mt-9"
         >
           <Link
             to="/signup/step-1"
-            className="inline-block bg-indigo-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-indigo-700 transition shadow-[0_6px_16px_rgba(79,70,229,0.3)]"
+            className="inline-block bg-indigo-600 text-white px-8 py-3.5 rounded-full font-semibold hover:bg-indigo-700 transition shadow-[0_6px_24px_rgba(79,70,229,0.35)] hover:shadow-[0_8px_32px_rgba(79,70,229,0.45)]"
           >
-            Get Started
+            Get Started — it&apos;s free
           </Link>
         </motion.div>
       </div>
