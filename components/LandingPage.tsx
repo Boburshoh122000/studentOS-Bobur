@@ -7,6 +7,7 @@ import MinimalFooter from './MinimalFooter';
 import ProblemSection from './landing/ProblemSection';
 import FeatureShowcase from './landing/FeatureShowcase';
 import FeaturesSection from './landing/FeaturesSection';
+import Integrations from './landing/Integrations';
 import HowItWorks from './landing/HowItWorks';
 import FinalCTA from './landing/FinalCTA';
 
@@ -24,6 +25,7 @@ export default function LandingPage({ navigateTo: _navigateTo }: NavigationProps
         <ProblemSection />
         <FeatureShowcase />
         <FeaturesSection />
+        <Integrations />
         <MinimalCoreTools />
         <HowItWorks />
         <MinimalPricing />
