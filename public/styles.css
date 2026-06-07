@@ -3,6 +3,32 @@ html {
   scroll-behavior: smooth;
 }
 
+/* CoreSolutions vertical marquee */
+@keyframes marqueeUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+@keyframes marqueeDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.marquee-up {
+  animation: marqueeUp var(--marquee-duration, 18s) linear infinite;
+  will-change: transform;
+}
+.marquee-down {
+  animation: marqueeDown var(--marquee-duration, 18s) linear infinite;
+  will-change: transform;
+}
+
 body {
   /* Prevent layout shift from scrollbar */
   overflow-y: scroll;
