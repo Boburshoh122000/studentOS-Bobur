@@ -268,30 +268,25 @@ const cards: Omit<FeatureCardProps, 'index'>[] = [
 
 export default function FeaturesSection() {
   return (
-    <section className="w-full py-24 md:py-32 px-4 bg-white">
+    <section className="w-full py-20 md:py-28 px-4 bg-white">
       <div className="max-w-5xl mx-auto">
-        {/* Heading — blur reveal */}
-        <div className="text-center mb-14">
+        {/* Heading */}
+        <div className="text-center mb-12">
           <ScrollReveal>
-            <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 mb-4">
-              Built for every student
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-              Everything you need,
-              <br className="hidden md:block" />
-              <span className="text-indigo-600"> nothing you don&apos;t.</span>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
+              Built for everyone
             </h2>
           </ScrollReveal>
 
-          <ScrollReveal delay={0.15} className="mt-5">
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
-              From your first class to your first job offer — StudentOS keeps you organised, on
-              track, and ahead of the curve.
+          <ScrollReveal delay={0.12} className="mt-4">
+            <p className="text-base text-gray-400 max-w-md mx-auto">
+              Thousands of students, from freshmen to PhD candidates, use StudentOS to handle their
+              academic life.
             </p>
           </ScrollReveal>
         </div>
 
-        {/* Feature cards — staggered rise */}
+        {/* Feature cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {cards.map((card, i) => (
             <FeatureCard key={card.title} {...card} index={i} />

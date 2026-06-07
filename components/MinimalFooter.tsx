@@ -1,202 +1,131 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/solid';
-import { Instagram, Linkedin, Twitter } from 'lucide-react';
-import Logo from './ui/Logo';
 
 /* ─── Footer Link Data ──────────────────────────────────── */
-const linkColumns = [
+const columns = [
   {
-    title: 'Tools',
-    links: ['CV Scanner', 'Plagiarism Check', 'Learning Plans', 'Habit Tracker'],
+    title: 'Product',
+    links: [
+      { label: 'CV Scanner', href: '/app/ats-checker' },
+      { label: 'Learning Plan', href: '/app/learning-plan' },
+      { label: 'Habit Tracker', href: '/app/habit-tracker' },
+      { label: 'Plagiarism Check', href: '/app/plagiarism' },
+    ],
   },
   {
-    title: 'Company',
-    links: ['About Us', 'Pricing (Credits)', 'Contact'],
+    title: 'Features',
+    links: [
+      { label: 'Scholarships', href: '/app/scholarships' },
+      { label: 'Career Tools', href: '/app/career-tools' },
+      { label: 'Community', href: '/app/community' },
+      { label: 'Analytics', href: '/app' },
+    ],
   },
   {
-    title: 'Legal',
-    links: ['Privacy Policy', 'Terms of Service'],
+    title: 'Pricing',
+    links: [
+      { label: 'Free Plan', href: '/signup/step-1' },
+      { label: 'Credits', href: '/signin' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Blog', href: '/blog' },
+      { label: 'About Us', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Privacy Policy', href: '/privacy' },
+    ],
   },
 ];
 
-/* ─── Animation config ──────────────────────────────────── */
-const smoothEase: [number, number, number, number] = [0.25, 0.1, 0.25, 1.0];
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: smoothEase } },
-};
-
-/* ─── Magnetic Hover Button ─────────────────────────────── */
-function MagneticButton({
-  children,
-  className,
-  to,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  to?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-
-  const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
-    setPos({ x, y });
-  };
-
-  const reset = () => setPos({ x: 0, y: 0 });
-
-  const inner = (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-      animate={{ x: pos.x, y: pos.y }}
-      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
+/* ─── Social icons ─────────────────────────────────────── */
+function IconInstagram() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
   );
-
-  return to ? <Link to={to}>{inner}</Link> : inner;
 }
 
-/* ─── Social Icon with Hover Bounce ─────────────────────── */
-function SocialIcon({
-  icon: Icon,
-  label,
-}: {
-  icon: React.FC<{ className?: string }>;
-  label: string;
-}) {
+function IconX() {
   return (
-    <motion.a
-      href="#"
-      aria-label={label}
-      whileHover={{ scale: 1.2, y: -2 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-      className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-colors"
-    >
-      <Icon className="w-4 h-4" />
-    </motion.a>
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.26 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function IconTiktok() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.01a8.16 8.16 0 004.77 1.52V7.07a4.85 4.85 0 01-1-.38z" />
+    </svg>
   );
 }
 
 /* ─── Main Footer Component ─────────────────────────────── */
 export default function MinimalFooter() {
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const linksRef = useRef<HTMLDivElement>(null);
-  const ctaInView = useInView(ctaRef, { once: true, margin: '-50px' });
-  const linksInView = useInView(linksRef, { once: true, margin: '-50px' });
-
   return (
-    <footer className="fixed bottom-0 left-0 w-full h-[700px] md:h-[600px] bg-[#0A0A0A] text-white -z-20 flex flex-col justify-between pt-16 pb-8 px-4 md:px-8">
-      {/* ═══════════════════════════════════════════ */}
-      {/* SECTION 1: MASSIVE CTA                      */}
-      {/* ═══════════════════════════════════════════ */}
-      <div ref={ctaRef} className="w-full max-w-5xl mx-auto text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: smoothEase }}
-          className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1]"
-        >
-          Ready to ace your
-          <br />
-          academic life?
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2, ease: smoothEase }}
-          className="text-gray-400 max-w-2xl mx-auto mt-6 text-lg leading-relaxed"
-        >
-          Join thousands of students using StudentOS to optimize their CVs, track habits, and manage
-          their credits.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.4, ease: smoothEase }}
-          className="mt-10"
-        >
-          <MagneticButton
-            to="/signup/step-1"
-            className="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white font-semibold text-base transition-colors shadow-lg shadow-indigo-500/25 inline-flex items-center gap-2 cursor-pointer"
-          >
-            Get Started with Free Credits
-            <ArrowRightIcon className="w-4 h-4" />
-          </MagneticButton>
-        </motion.div>
-      </div>
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* SECTION 2: LINKS GRID                       */}
-      {/* ═══════════════════════════════════════════ */}
-      <motion.div
-        ref={linksRef}
-        variants={staggerContainer}
-        initial="hidden"
-        animate={linksInView ? 'visible' : 'hidden'}
-        className="w-full max-w-6xl mx-auto border-t border-white/10 pt-10"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
-          {/* Column 1: Brand */}
-          <motion.div variants={fadeUp} className="col-span-2 md:col-span-1">
-            <Logo iconSize="w-9 h-9" textSize="text-2xl" textColor="text-white" darkBackground />
-            <p className="text-gray-500 mt-3 text-sm leading-relaxed max-w-[220px]">
-              The operating system for your academic future. Build, track, and succeed.
+    <footer className="fixed bottom-0 left-0 w-full h-[520px] bg-white -z-20 flex flex-col overflow-hidden">
+      {/* ─── Links grid ─── */}
+      <div className="w-full max-w-5xl mx-auto px-6 pt-12 pb-8 flex-1">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          {/* Brand column */}
+          <div className="col-span-2 md:col-span-1">
+            <p className="text-sm text-gray-500 leading-relaxed max-w-[200px]">
+              StudentOS is the platform that builds a thriving academic career — all in one place.
             </p>
-          </motion.div>
+          </div>
 
-          {/* Columns 2-4: Links */}
-          {linkColumns.map((col) => (
-            <motion.div key={col.title} variants={fadeUp} className="flex flex-col gap-3">
-              <span className="text-white font-semibold text-sm mb-1">{col.title}</span>
+          {/* Link columns */}
+          {columns.map((col) => (
+            <div key={col.title} className="flex flex-col gap-2.5">
+              <span className="text-sm font-semibold text-[#111827] mb-1">{col.title}</span>
               {col.links.map((link) => (
-                <a
-                  key={link}
-                  href="#"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-sm text-gray-400 hover:text-[#111827] transition-colors"
                 >
-                  {link}
-                </a>
+                  {link.label}
+                </Link>
               ))}
-            </motion.div>
+            </div>
           ))}
         </div>
-      </motion.div>
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* SECTION 3: BOTTOM BAR                       */}
-      {/* ═══════════════════════════════════════════ */}
-      <div className="w-full max-w-6xl mx-auto border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <span className="text-xs text-gray-500">© 2026 StudentOS. All rights reserved.</span>
-        <div className="flex items-center gap-3">
-          <SocialIcon icon={Twitter} label="Twitter" />
-          <SocialIcon icon={Instagram} label="Instagram" />
-          <SocialIcon icon={Linkedin} label="LinkedIn" />
+        {/* Social + copyright */}
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+          <span className="text-xs text-gray-400">© 2026 StudentOS. All rights reserved.</span>
+          <div className="flex items-center gap-2">
+            {[
+              { Icon: IconInstagram, label: 'Instagram' },
+              { Icon: IconX, label: 'X (Twitter)' },
+              { Icon: IconTiktok, label: 'TikTok' },
+            ].map(({ Icon, label }) => (
+              <a
+                key={label}
+                href="#"
+                aria-label={label}
+                className="w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:text-[#111827] hover:border-gray-300 transition-colors"
+              >
+                <Icon />
+              </a>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* ─── Huge brand name at bottom ─── */}
+      <div className="w-full overflow-hidden select-none pointer-events-none">
+        <p
+          className="text-[clamp(80px,14vw,180px)] font-extrabold text-[#E85540] leading-none tracking-tight whitespace-nowrap text-center"
+          aria-hidden="true"
+        >
+          StudentOS
+        </p>
       </div>
     </footer>
   );

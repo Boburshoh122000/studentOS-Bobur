@@ -1,7 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, EyeIcon, LightBulbIcon, ShieldCheckIcon, TvIcon } from '@heroicons/react/24/solid';
+import {
+  CheckIcon,
+  EyeIcon,
+  LightBulbIcon,
+  ShieldCheckIcon,
+  TvIcon,
+} from '@heroicons/react/24/solid';
 
 /* 
   DATA ARRAY ARCHITECTURE (Strict Layout & Timeline)

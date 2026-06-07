@@ -1,179 +1,128 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { BriefcaseIcon, ChartBarIcon, CpuChipIcon, DocumentTextIcon, FireIcon, RectangleStackIcon, TrophyIcon } from '@heroicons/react/24/solid';
+import { UserIcon } from '@heroicons/react/24/solid';
 
-/* 
-  DATA ARRAY ARCHITECTURE (Dual-Wrapper Parallax)
-  
-  Each tool receives a precise percentage-based absolute position to keep it orbiting the center.
-  Parallax bounds map `scrollYProgress` [0, 1] mapped against an array (e.g., `[0, -400]`).
-*/
-const toolsConfig = [
-  // LEFT SIDE ALIGNMENT
+/* Student photos scattered on both sides — matches video frame_01/02 style */
+const leftPhotos = [
   {
-    id: 'ats',
-    title: 'ATS Checker',
-    icon: <DocumentTextIcon className="w-5 h-5 text-indigo-600" />,
-    top: '15%',
-    left: '8%',
-    parallaxSpeed: [0, -350],
-    delay: 0,
+    id: 'l1',
+    src: 'https://i.pravatar.cc/300?u=student1',
+    className: 'w-44 h-52 top-[8%] left-[2%] rotate-[-3deg]',
+    delay: 0.1,
   },
   {
-    id: 'habit',
-    title: 'Habit Tracker',
-    icon: <ChartBarIcon className="w-5 h-5 text-indigo-600" />,
-    top: '45%',
-    left: '12%',
-    parallaxSpeed: [0, -200],
-    delay: 0.5,
-  },
-  {
-    id: 'cv',
-    title: 'Smart CV',
-    icon: <BriefcaseIcon className="w-5 h-5 text-indigo-600" />,
-    top: '75%',
-    left: '6%',
-    parallaxSpeed: [0, -450],
-    delay: 1.2,
-  },
-
-  // RIGHT SIDE ALIGNMENT
-  {
-    id: 'job',
-    title: 'Job Board',
-    icon: <FireIcon className="w-5 h-5 text-indigo-600" />,
-    top: '20%',
-    left: '72%',
-    parallaxSpeed: [0, -400],
+    id: 'l2',
+    src: 'https://i.pravatar.cc/300?u=student2',
+    className: 'w-36 h-44 top-[38%] left-[6%] rotate-[2deg]',
     delay: 0.2,
   },
   {
-    id: 'scholarship',
-    title: 'Scholarships',
-    icon: <TrophyIcon className="w-5 h-5 text-indigo-600" />,
-    top: '55%',
-    left: '76%',
-    parallaxSpeed: [0, -600],
-    delay: 0.8,
+    id: 'l3',
+    src: 'https://i.pravatar.cc/300?u=student3',
+    className: 'w-28 h-32 top-[72%] left-[1%] rotate-[-1deg]',
+    delay: 0.3,
   },
   {
-    id: 'ai',
-    title: 'Mock Interviews',
-    icon: <CpuChipIcon className="w-5 h-5 text-indigo-600" />,
-    top: '80%',
-    left: '70%',
-    parallaxSpeed: [0, -250],
-    delay: 1.5,
+    id: 'l4',
+    src: 'https://i.pravatar.cc/300?u=student9',
+    className: 'w-36 h-40 top-[22%] left-[18%] rotate-[1deg]',
+    delay: 0.15,
   },
 ];
 
-export interface ToolConfig {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  top: string;
-  left: string;
-  parallaxSpeed: number[];
-  delay: number;
-}
-
-// Extracted ToolCard component for cleaner rendering
-function ToolCard({
-  tool,
-  scrollYProgress,
-}: {
-  tool: ToolConfig;
-  scrollYProgress: MotionValue<number>;
-}) {
-  // CRITICAL: The outer wrapper handles the sticky viewport scroll parallax via useTransform.
-  const yTransform = useTransform(scrollYProgress, [0, 1], tool.parallaxSpeed);
-
-  return (
-    <motion.div
-      style={{
-        top: tool.top,
-        left: tool.left,
-        y: yTransform as any,
-      }}
-      className="absolute z-20 hidden md:block" // Hide on small mobile to prevent text overlap
-    >
-      {/* 
-        CRITICAL: The inner wrapper handles the continuous independent localized yoyo floating.
-        Separating these prevents Framer's physics engines from conflicting. 
-      */}
-      <motion.div
-        animate={{ y: [-10, 10, -10] }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: tool.delay,
-        }}
-        className="bg-white/90 backdrop-blur-md border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-2xl p-4 flex items-center gap-4 w-56 hover:shadow-[0_12px_40px_rgb(99,102,241,0.15)] hover:scale-105 transition-all cursor-default"
-      >
-        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-          {tool.icon}
-        </div>
-        <span className="font-semibold text-gray-800 tracking-tight text-[15px]">{tool.title}</span>
-      </motion.div>
-    </motion.div>
-  );
-}
+const rightPhotos = [
+  {
+    id: 'r1',
+    src: 'https://i.pravatar.cc/300?u=student4',
+    className: 'w-36 h-44 top-[6%] right-[3%] rotate-[2deg]',
+    delay: 0.1,
+  },
+  {
+    id: 'r2',
+    src: 'https://i.pravatar.cc/300?u=student5',
+    className: 'w-28 h-36 top-[36%] right-[0%] rotate-[-2deg]',
+    delay: 0.25,
+  },
+  {
+    id: 'r3',
+    src: 'https://i.pravatar.cc/300?u=student6',
+    className: 'w-40 h-48 top-[60%] right-[4%] rotate-[1deg]',
+    delay: 0.2,
+  },
+  {
+    id: 'r4',
+    src: 'https://i.pravatar.cc/300?u=student7',
+    className: 'w-24 h-28 top-[20%] right-[18%] rotate-[-3deg]',
+    delay: 0.35,
+  },
+];
 
 export default function CoreSolutions() {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Hook scroll progress to the exact bounds of this section
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start'],
-  });
 
   return (
-    <section
-      ref={containerRef}
-      className="relative w-full min-h-[130vh] flex items-center justify-center overflow-hidden bg-[#FAFAFA] py-32 mt-12"
-    >
-      {/* 
-        1. CENTER CONTENT (Static & Centered) 
-      */}
-      <div className="relative z-30 flex flex-col items-center text-center px-4">
-        {/* Top Floating Badge */}
-        <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6 shadow-sm shadow-indigo-200/50">
-          <RectangleStackIcon className="w-6 h-6" />
-        </div>
-
-        {/* Core Typography */}
-        <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
-          Core Student <br className="hidden sm:block" /> solutions
-        </h2>
-        <p className="text-lg text-gray-500 max-w-md mt-6 leading-relaxed">
-          Streamline your studies, habits, and career path in one centralized platform, enhancing
-          your productivity.
-        </p>
-
-        {/* Trigger Button */}
-        <button
-          onClick={() => navigate('/tools')}
-          className="mt-8 px-8 py-4 rounded-full bg-indigo-600 text-white font-semibold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all text-lg"
-        >
-          Explore tools
-        </button>
-      </div>
-
-      {/* 
-        2. THE PARALLAX FLOATING CARDS (Orbiting Perimeter)
-      */}
-      <div className="absolute inset-0 w-full max-w-[1400px] mx-auto pointer-events-none">
-        {toolsConfig.map((tool) => (
-          <div key={tool.id} className="pointer-events-auto">
-            <ToolCard tool={tool} scrollYProgress={scrollYProgress} />
-          </div>
+    <section className="relative w-full min-h-[620px] flex items-center justify-center overflow-hidden bg-[#f4f4f7] py-24">
+      {/* Left scattered photos */}
+      <div className="absolute inset-0 pointer-events-none hidden md:block">
+        {leftPhotos.map((photo) => (
+          <motion.div
+            key={photo.id}
+            className={`absolute ${photo.className} rounded-2xl overflow-hidden shadow-lg`}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, delay: photo.delay, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <img src={photo.src} alt="Student" className="w-full h-full object-cover" />
+          </motion.div>
         ))}
       </div>
+
+      {/* Right scattered photos */}
+      <div className="absolute inset-0 pointer-events-none hidden md:block">
+        {rightPhotos.map((photo) => (
+          <motion.div
+            key={photo.id}
+            className={`absolute ${photo.className} rounded-2xl overflow-hidden shadow-lg`}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, delay: photo.delay, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <img src={photo.src} alt="Student" className="w-full h-full object-cover" />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Center content */}
+      <motion.div
+        className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        {/* Top icon */}
+        <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center mb-8">
+          <UserIcon className="w-7 h-7 text-[#7C3AED]" />
+        </div>
+
+        <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#111827] leading-[1.08]">
+          Core Student
+          <br />
+          solutions
+        </h2>
+        <p className="text-base text-gray-500 mt-5 leading-relaxed max-w-xs">
+          Streamline your studies in one centralized platform, enhancing your productivity.
+        </p>
+
+        <button
+          onClick={() => navigate('/signup/step-1')}
+          className="mt-8 px-8 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition-all active:scale-95"
+        >
+          Learn more
+        </button>
+      </motion.div>
     </section>
   );
 }
