@@ -2,127 +2,142 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon } from '@heroicons/react/24/solid';
 
-/* Student photos scattered on both sides — matches video frame_01/02 style */
-const leftPhotos = [
-  {
-    id: 'l1',
-    src: 'https://i.pravatar.cc/300?u=student1',
-    className: 'w-44 h-52 top-[8%] left-[2%] rotate-[-3deg]',
-    delay: 0.1,
-  },
-  {
-    id: 'l2',
-    src: 'https://i.pravatar.cc/300?u=student2',
-    className: 'w-36 h-44 top-[38%] left-[6%] rotate-[2deg]',
-    delay: 0.2,
-  },
-  {
-    id: 'l3',
-    src: 'https://i.pravatar.cc/300?u=student3',
-    className: 'w-28 h-32 top-[72%] left-[1%] rotate-[-1deg]',
-    delay: 0.3,
-  },
-  {
-    id: 'l4',
-    src: 'https://i.pravatar.cc/300?u=student9',
-    className: 'w-36 h-40 top-[22%] left-[18%] rotate-[1deg]',
-    delay: 0.15,
-  },
+/* Four columns of photos — left outer, left inner, right inner, right outer.
+   Each column scrolls upward infinitely at slightly different speeds.
+   We duplicate the list so the loop is seamless (move -50% = one full set). */
+
+const colA = [
+  'https://i.pravatar.cc/300?u=col_a1',
+  'https://i.pravatar.cc/300?u=col_a2',
+  'https://i.pravatar.cc/300?u=col_a3',
+  'https://i.pravatar.cc/300?u=col_a4',
+  'https://i.pravatar.cc/300?u=col_a5',
+];
+const colB = [
+  'https://i.pravatar.cc/300?u=col_b1',
+  'https://i.pravatar.cc/300?u=col_b2',
+  'https://i.pravatar.cc/300?u=col_b3',
+  'https://i.pravatar.cc/300?u=col_b4',
+  'https://i.pravatar.cc/300?u=col_b5',
+];
+const colC = [
+  'https://i.pravatar.cc/300?u=col_c1',
+  'https://i.pravatar.cc/300?u=col_c2',
+  'https://i.pravatar.cc/300?u=col_c3',
+  'https://i.pravatar.cc/300?u=col_c4',
+  'https://i.pravatar.cc/300?u=col_c5',
+];
+const colD = [
+  'https://i.pravatar.cc/300?u=col_d1',
+  'https://i.pravatar.cc/300?u=col_d2',
+  'https://i.pravatar.cc/300?u=col_d3',
+  'https://i.pravatar.cc/300?u=col_d4',
+  'https://i.pravatar.cc/300?u=col_d5',
 ];
 
-const rightPhotos = [
-  {
-    id: 'r1',
-    src: 'https://i.pravatar.cc/300?u=student4',
-    className: 'w-36 h-44 top-[6%] right-[3%] rotate-[2deg]',
-    delay: 0.1,
-  },
-  {
-    id: 'r2',
-    src: 'https://i.pravatar.cc/300?u=student5',
-    className: 'w-28 h-36 top-[36%] right-[0%] rotate-[-2deg]',
-    delay: 0.25,
-  },
-  {
-    id: 'r3',
-    src: 'https://i.pravatar.cc/300?u=student6',
-    className: 'w-40 h-48 top-[60%] right-[4%] rotate-[1deg]',
-    delay: 0.2,
-  },
-  {
-    id: 'r4',
-    src: 'https://i.pravatar.cc/300?u=student7',
-    className: 'w-24 h-28 top-[20%] right-[18%] rotate-[-3deg]',
-    delay: 0.35,
-  },
-];
+interface PhotoColumnProps {
+  photos: string[];
+  duration: number;
+  /** true = scroll up, false = scroll down */
+  reverse?: boolean;
+  cardHeight?: string;
+  gap?: string;
+}
+
+function PhotoColumn({
+  photos,
+  duration,
+  reverse = false,
+  cardHeight = 'h-44',
+  gap = 'gap-4',
+}: PhotoColumnProps) {
+  const doubled = [...photos, ...photos];
+  return (
+    <div className="overflow-hidden h-full">
+      <motion.div
+        className={`flex flex-col ${gap}`}
+        animate={{ y: reverse ? ['-50%', '0%'] : ['0%', '-50%'] }}
+        transition={{
+          duration,
+          repeat: Infinity,
+          ease: 'linear',
+          repeatType: 'loop',
+        }}
+      >
+        {doubled.map((src, i) => (
+          <div
+            key={i}
+            className={`shrink-0 w-full ${cardHeight} rounded-2xl overflow-hidden shadow-md bg-gray-100`}
+          >
+            <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
 
 export default function CoreSolutions() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative w-full min-h-[620px] flex items-center justify-center overflow-hidden bg-[#f4f4f7] py-24">
-      {/* Left scattered photos */}
-      <div className="absolute inset-0 pointer-events-none hidden md:block">
-        {leftPhotos.map((photo) => (
-          <motion.div
-            key={photo.id}
-            className={`absolute ${photo.className} rounded-2xl overflow-hidden shadow-lg`}
-            initial={{ opacity: 0, scale: 0.85, y: 20 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, delay: photo.delay, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <img src={photo.src} alt="Student" className="w-full h-full object-cover" />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Right scattered photos */}
-      <div className="absolute inset-0 pointer-events-none hidden md:block">
-        {rightPhotos.map((photo) => (
-          <motion.div
-            key={photo.id}
-            className={`absolute ${photo.className} rounded-2xl overflow-hidden shadow-lg`}
-            initial={{ opacity: 0, scale: 0.85, y: 20 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, delay: photo.delay, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <img src={photo.src} alt="Student" className="w-full h-full object-cover" />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Center content */}
-      <motion.div
-        className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-      >
-        {/* Top icon */}
-        <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center mb-8">
-          <UserIcon className="w-7 h-7 text-[#7C3AED]" />
+    <section className="relative w-full overflow-hidden bg-[#f4f4f7] py-16">
+      <div className="relative flex items-center justify-center min-h-[640px]">
+        {/* ── LEFT SIDE: 2 scrolling columns ── */}
+        <div className="absolute left-0 top-0 bottom-0 hidden md:flex gap-3 w-[340px] -translate-x-4">
+          {/* Outer left column — taller cards, slower */}
+          <div className="w-[155px]">
+            <PhotoColumn photos={colA} duration={18} cardHeight="h-52" gap="gap-3" />
+          </div>
+          {/* Inner left column — shorter cards, faster, reversed */}
+          <div className="w-[155px]">
+            <PhotoColumn photos={colB} duration={14} reverse cardHeight="h-40" gap="gap-3" />
+          </div>
         </div>
 
-        <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#111827] leading-[1.08]">
-          Core Student
-          <br />
-          solutions
-        </h2>
-        <p className="text-base text-gray-500 mt-5 leading-relaxed max-w-xs">
-          Streamline your studies in one centralized platform, enhancing your productivity.
-        </p>
-
-        <button
-          onClick={() => navigate('/signup/step-1')}
-          className="mt-8 px-8 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition-all active:scale-95"
+        {/* ── CENTER CONTENT ── */}
+        <motion.div
+          className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          Learn more
-        </button>
-      </motion.div>
+          {/* Top icon */}
+          <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center mb-8">
+            <UserIcon className="w-7 h-7 text-[#7C3AED]" />
+          </div>
+
+          <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#111827] leading-[1.08]">
+            Core Student
+            <br />
+            solutions
+          </h2>
+          <p className="text-base text-gray-500 mt-5 leading-relaxed max-w-xs">
+            Streamline your studies in one centralized platform, enhancing your productivity.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => navigate('/signup/step-1')}
+            className="mt-8 px-8 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition-all active:scale-95"
+          >
+            Learn more
+          </button>
+        </motion.div>
+
+        {/* ── RIGHT SIDE: 2 scrolling columns ── */}
+        <div className="absolute right-0 top-0 bottom-0 hidden md:flex gap-3 w-[340px] translate-x-4">
+          {/* Inner right column — shorter cards, reversed */}
+          <div className="w-[155px]">
+            <PhotoColumn photos={colC} duration={16} reverse cardHeight="h-40" gap="gap-3" />
+          </div>
+          {/* Outer right column — taller cards, slower */}
+          <div className="w-[155px]">
+            <PhotoColumn photos={colD} duration={20} cardHeight="h-52" gap="gap-3" />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
