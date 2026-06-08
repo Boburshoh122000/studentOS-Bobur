@@ -28,6 +28,28 @@ html {
   animation: marqueeDown var(--marquee-duration, 18s) linear infinite;
   will-change: transform;
 }
+.photo-col-fade {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+.marquee-dur-15 {
+  --marquee-duration: 15s;
+}
+.marquee-dur-16 {
+  --marquee-duration: 16s;
+}
+.marquee-dur-20 {
+  --marquee-duration: 20s;
+}
+.marquee-dur-22 {
+  --marquee-duration: 22s;
+}
 
 body {
   /* Prevent layout shift from scrollbar */

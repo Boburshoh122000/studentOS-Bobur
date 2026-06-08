@@ -9,24 +9,23 @@ const COL_D = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
 
 interface ColProps {
   seeds: string[];
-  durationS: number;
+  durationClass: string;
   direction?: 'up' | 'down';
   wide?: boolean;
 }
 
-function PhotoCol({ seeds, durationS, direction = 'up', wide = false }: ColProps) {
+function PhotoCol({ seeds, durationClass, direction = 'up', wide = false }: ColProps) {
   const doubled = [...seeds, ...seeds];
   return (
-    <div className={`overflow-hidden h-full ${wide ? 'w-[155px]' : 'w-[130px]'} shrink-0`}>
-      <div
-        className={direction === 'up' ? 'marquee-up' : 'marquee-down'}
-        style={{ '--marquee-duration': `${durationS}s` } as React.CSSProperties}
-      >
-        <div className="flex flex-col gap-3">
+    <div
+      className={`photo-col-fade overflow-hidden h-full ${wide ? 'w-[155px]' : 'w-[130px]'} shrink-0`}
+    >
+      <div className={`${direction === 'up' ? 'marquee-up' : 'marquee-down'} ${durationClass}`}>
+        <div className="flex flex-col">
           {doubled.map((seed, i) => (
             <div
               key={i}
-              className={`w-full shrink-0 rounded-2xl overflow-hidden shadow-md bg-gray-200 ${wide ? 'h-[200px]' : 'h-[165px]'}`}
+              className={`w-full shrink-0 rounded-2xl overflow-hidden shadow-md bg-gray-200 mb-3 ${wide ? 'h-[200px]' : 'h-[165px]'}`}
             >
               <img
                 src={`https://i.pravatar.cc/400?u=sos_${seed}`}
@@ -50,8 +49,8 @@ export default function CoreSolutions() {
       <div className="relative h-[680px] flex items-center justify-center">
         {/* ── LEFT: outer col + inner col ── */}
         <div className="absolute left-0 top-0 bottom-0 hidden md:flex gap-3">
-          <PhotoCol seeds={COL_A} durationS={16} direction="up" wide />
-          <PhotoCol seeds={COL_B} durationS={22} direction="down" />
+          <PhotoCol seeds={COL_A} durationClass="marquee-dur-16" direction="up" wide />
+          <PhotoCol seeds={COL_B} durationClass="marquee-dur-22" direction="down" />
         </div>
 
         {/* ── CENTER ── */}
@@ -87,8 +86,8 @@ export default function CoreSolutions() {
 
         {/* ── RIGHT: inner col + outer col ── */}
         <div className="absolute right-0 top-0 bottom-0 hidden md:flex gap-3">
-          <PhotoCol seeds={COL_C} durationS={20} direction="up" />
-          <PhotoCol seeds={COL_D} durationS={15} direction="down" wide />
+          <PhotoCol seeds={COL_C} durationClass="marquee-dur-20" direction="up" />
+          <PhotoCol seeds={COL_D} durationClass="marquee-dur-15" direction="down" wide />
         </div>
       </div>
     </section>
