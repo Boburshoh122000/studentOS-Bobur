@@ -68,28 +68,36 @@ function EmployerGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Helper to retry lazy imports on chunk load errors (e.g., after deployment)
+// Helper to retry lazy imports on chunk load errors (e.g., after deployment).
+// Uses a sessionStorage flag keyed by error message to allow exactly one reload
+// per unique error. On reload the page gets fresh HTML + new chunk URLs, so
+// stale-chunk errors should not repeat. If they do (file genuinely missing),
+// we throw and let the router's errorElement handle it.
 const lazyRetry = (importFn: () => Promise<any>) => {
   return lazy(async () => {
     try {
       return await importFn();
     } catch (error: any) {
       const msg: string = error?.message ?? '';
-      if (
+      const isChunkError =
         msg.includes('Failed to fetch dynamically imported module') ||
         msg.includes('text/html') ||
         msg.includes('is not a valid JavaScript MIME type') ||
         msg.includes('Failed to load module script') ||
-        error.name === 'ChunkLoadError'
-      ) {
-        // Prevent infinite reload loop if the file is genuinely missing
-        const storageKey = `retry-${msg}`;
+        error.name === 'ChunkLoadError';
+
+      if (isChunkError) {
+        const storageKey = `chunk-retry-${msg.slice(0, 120)}`;
         const hasRetried = sessionStorage.getItem(storageKey);
 
         if (!hasRetried) {
-          sessionStorage.setItem(storageKey, 'true');
+          // Clear ALL prior retry flags so a new deployment gets a clean slate
+          Object.keys(sessionStorage)
+            .filter((k) => k.startsWith('chunk-retry-'))
+            .forEach((k) => sessionStorage.removeItem(k));
+
+          sessionStorage.setItem(storageKey, '1');
           window.location.reload();
-          // Return a never-resolving promise to wait for reload
           return new Promise(() => {});
         }
       }
