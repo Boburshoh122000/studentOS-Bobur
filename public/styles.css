@@ -460,58 +460,6 @@ input[type='range']:focus {
   }
 }
 
-/* OrbitalRing — responsive orbit radius via CSS custom property */
-.orbital-ring {
-  --orbit-r: 130px;
-  position: relative;
-  width: calc(var(--orbit-r) * 2 + 64px);
-  height: calc(var(--orbit-r) * 2 + 64px);
-}
-@media (min-width: 768px) {
-  .orbital-ring {
-    --orbit-r: 168px;
-  }
-}
-.orbit-track {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: calc(var(--orbit-r) * 2);
-  height: calc(var(--orbit-r) * 2);
-  border-radius: 9999px;
-  border: 1px dashed #e5e7eb;
-  transform: translate(-50%, -50%);
-}
-.orbit-slot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-}
-.orbit-slot-0 {
-  transform: rotate(0deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-1 {
-  transform: rotate(45deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-2 {
-  transform: rotate(90deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-3 {
-  transform: rotate(135deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-4 {
-  transform: rotate(180deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-5 {
-  transform: rotate(225deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-6 {
-  transform: rotate(270deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-.orbit-slot-7 {
-  transform: rotate(315deg) translateY(calc(-1 * var(--orbit-r, 130px))) translate(-50%, -50%);
-}
-
 /* Integrations row — 3D card tilt requires perspective on the parent */
 .integrations-row {
   perspective: 1200px;
