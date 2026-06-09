@@ -1,87 +1,97 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon } from '@heroicons/react/24/solid';
 
-type CardSpec = { img: string; cls: string; delay: number };
+type OrbPos = {
+  x: number;
+  y: number;
+  scale: number;
+  blur: number;
+  opacity: number;
+  zIndex: number;
+};
 
-// Positions are HARDCODED as literal Tailwind classes so CDN Tailwind generates them.
-// Each card has a unique position — no stacking.
-const LEFT_CARDS: CardSpec[] = [
-  {
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-10 left-10 w-32 h-40',
-    delay: 0,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-1/3 right-0 w-36 h-36 z-20',
-    delay: 1.4,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute bottom-10 left-12 w-32 h-40',
-    delay: 2.8,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute -bottom-6 -left-8 w-24 h-32',
-    delay: 4.2,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-1/4 -left-6 w-20 h-28',
-    delay: 5.6,
-  },
+// 5 orbital positions per side. (0,0) = centre of the zone.
+// Cards cycle through all 5; pos 4 is always hidden (back of orbit).
+// Zigzag: top-corner → inner-centre → bottom-corner → outer-edge → hidden
+const LEFT_POSITIONS: OrbPos[] = [
+  { x: -130, y: -230, scale: 1.0, blur: 0, opacity: 1, zIndex: 4 }, // top-left big
+  { x: 30, y: -50, scale: 1.12, blur: 0, opacity: 1, zIndex: 5 }, // inner-centre (biggest)
+  { x: -130, y: 140, scale: 0.95, blur: 0, opacity: 1, zIndex: 4 }, // bottom-left
+  { x: -205, y: 60, scale: 0.7, blur: 5, opacity: 0.55, zIndex: 2 }, // outer edge, partial
+  { x: -220, y: -95, scale: 0.45, blur: 10, opacity: 0, zIndex: 1 }, // hidden
 ];
 
-const RIGHT_CARDS: CardSpec[] = [
-  {
-    img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-12 right-12 w-28 h-32',
-    delay: 0.7,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-1/3 left-4 w-40 h-40 z-20',
-    delay: 2.1,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute bottom-12 right-16 w-32 h-36',
-    delay: 3.5,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute -bottom-4 -right-10 w-24 h-32',
-    delay: 4.9,
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
-    cls: 'absolute top-16 -right-8 w-20 h-40',
-    delay: 6.3,
-  },
+const RIGHT_POSITIONS: OrbPos[] = [
+  { x: 130, y: -230, scale: 1.0, blur: 0, opacity: 1, zIndex: 4 },
+  { x: -30, y: -50, scale: 1.12, blur: 0, opacity: 1, zIndex: 5 },
+  { x: 130, y: 140, scale: 0.95, blur: 0, opacity: 1, zIndex: 4 },
+  { x: 205, y: 60, scale: 0.7, blur: 5, opacity: 0.55, zIndex: 2 },
+  { x: 220, y: -95, scale: 0.45, blur: 10, opacity: 0, zIndex: 1 },
 ];
 
-// Each card floats on its own 3D depth cycle: scale + blur simulate the orbit depth.
-// The baseline absolute position is preserved — only scale/blur/y are animated.
-function PhotoCard({ card }: { card: CardSpec }) {
+const LEFT_IMGS = [
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+];
+
+const RIGHT_IMGS = [
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
+];
+
+function OrbitZone({ imgs, positions }: { imgs: string[]; positions: OrbPos[] }) {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setOffset((o) => (o + 1) % 5);
+    }, 3500);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <motion.div
-      className={`${card.cls} border-[6px] border-white rounded-[2rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] overflow-hidden`}
-      animate={{
-        y: [0, -10, 0, 10, 0],
-        scale: [1, 0.88, 0.72, 0.88, 1],
-        filter: ['blur(0px)', 'blur(2px)', 'blur(4px)', 'blur(2px)', 'blur(0px)'],
-      }}
-      transition={{
-        duration: 7,
-        delay: card.delay,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    >
-      <img src={card.img} alt="" className="w-full h-full object-cover" loading="lazy" />
-    </motion.div>
+    <div className="relative w-full h-full flex items-center justify-center">
+      {imgs.map((img, i) => {
+        const pos = positions[(i + offset) % 5];
+        return (
+          <motion.div
+            key={img}
+            className="absolute w-36 h-44"
+            animate={{
+              x: pos.x,
+              y: pos.y,
+              scale: pos.scale,
+              opacity: pos.opacity,
+              filter: `blur(${pos.blur}px)`,
+            }}
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            style={{ zIndex: pos.zIndex }}
+          >
+            {/* Inner div handles gentle float on top of the orbit position */}
+            <motion.div
+              className="w-full h-full border-[6px] border-white rounded-[2rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] overflow-hidden"
+              animate={{ y: [0, -7, 0] }}
+              transition={{
+                duration: 3.8 + i * 0.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.65,
+              }}
+            >
+              <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </motion.div>
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -91,14 +101,12 @@ export default function CoreSolutions() {
   return (
     <section className="relative w-full bg-[#f4f4f7] overflow-hidden">
       <div className="max-w-7xl mx-auto grid grid-cols-12 h-[680px]">
-        {/* Left zone */}
-        <div className="relative col-span-4 h-[680px] hidden md:block">
-          {LEFT_CARDS.map((card) => (
-            <PhotoCard key={card.img} card={card} />
-          ))}
+        {/* Left orbit zone */}
+        <div className="col-span-4 h-[680px] hidden md:block">
+          <OrbitZone imgs={LEFT_IMGS} positions={LEFT_POSITIONS} />
         </div>
 
-        {/* Center */}
+        {/* Centre copy */}
         <motion.div
           className="col-span-12 md:col-span-4 flex flex-col items-center justify-center text-center px-6 relative z-10"
           initial={{ opacity: 0, y: 30 }}
@@ -129,11 +137,9 @@ export default function CoreSolutions() {
           </button>
         </motion.div>
 
-        {/* Right zone */}
-        <div className="relative col-span-4 h-[680px] hidden md:block">
-          {RIGHT_CARDS.map((card) => (
-            <PhotoCard key={card.img} card={card} />
-          ))}
+        {/* Right orbit zone */}
+        <div className="col-span-4 h-[680px] hidden md:block">
+          <OrbitZone imgs={RIGHT_IMGS} positions={RIGHT_POSITIONS} />
         </div>
       </div>
     </section>
