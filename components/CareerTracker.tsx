@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NavigationProps } from '../types';
@@ -113,7 +113,12 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
     filters.sort,
   ]);
 
+  // Guards against out-of-order responses when filters change rapidly:
+  // only the latest request may update state
+  const fetchSeqRef = useRef(0);
+
   const fetchJobs = async () => {
+    const seq = ++fetchSeqRef.current;
     try {
       setIsLoading(true);
       const params: Record<string, string> = {};
@@ -126,15 +131,17 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
       if (filters.sort) params.sort = filters.sort;
 
       const response = await jobApi.list(params);
+      if (seq !== fetchSeqRef.current) return; // stale response — a newer request is in flight
       const jobsList =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (response.data as any)?.jobs || (Array.isArray(response.data) ? response.data : []);
       setJobs(jobsList as Job[]);
     } catch (error) {
+      if (seq !== fetchSeqRef.current) return;
       console.error('Failed to load jobs', error);
       toast.error('Failed to load jobs');
     } finally {
-      setIsLoading(false);
+      if (seq === fetchSeqRef.current) setIsLoading(false);
     }
   };
 

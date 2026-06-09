@@ -14,7 +14,7 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
   const inView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || !Number.isFinite(target)) return;
     const duration = 1400;
     const steps = 60;
     const increment = target / steps;

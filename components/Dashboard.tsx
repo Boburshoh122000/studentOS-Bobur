@@ -844,7 +844,8 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
                   if (!dashboardData?.telegramConnected) {
                     window.open(
                       `https://t.me/Student_OS_bot?start=${dashboardData?.userId || ''}`,
-                      '_blank'
+                      '_blank',
+                      'noopener,noreferrer'
                     );
                   }
                 },

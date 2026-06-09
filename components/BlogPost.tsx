@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
@@ -63,7 +64,9 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
   // Increment view count on mount
   useEffect(() => {
     if (post?.id) {
-      blogApi.incrementView(post.id).catch(() => {});
+      blogApi.incrementView(post.id).catch((err) => {
+        console.warn('Failed to increment view count:', err);
+      });
     }
   }, [post?.id]);
 
@@ -173,7 +176,11 @@ export default function BlogPost({ navigateTo }: NavigationProps) {
                 <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 mt-10">
                   <div
                     className="text-[1.1rem] md:text-lg text-gray-800 dark:text-slate-200 leading-8 md:leading-9 break-words [&>p]:mb-6 [&>ul]:list-none [&>ul]:pl-0 [&>ul>li]:relative [&>ul>li]:pl-6 [&>ul>li]:mb-4 [&>ul>li::before]:content-['◆'] [&>ul>li::before]:absolute [&>ul>li::before]:left-0 [&>ul>li::before]:text-indigo-500 [&>ul>li::before]:font-bold [&>ol]:list-decimal [&>ol]:pl-8 [&>ol>li]:mb-4 [&>ol>li]:pl-1 [&>h1]:text-3xl [&>h1]:font-bold [&>h1]:mb-6 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-10 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-8 [&>h3]:mb-3 [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:my-6 [&>img]:rounded-xl [&>img]:w-full [&>img]:my-6 [&>strong]:font-bold"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
+                    dangerouslySetInnerHTML={{
+                      // Defense in depth: content is sanitized server-side on save,
+                      // but re-sanitize at render so a compromised row can't run scripts
+                      __html: DOMPurify.sanitize(post.content),
+                    }}
                   />
                 </div>
 

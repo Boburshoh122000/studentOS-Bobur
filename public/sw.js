@@ -30,14 +30,24 @@ self.addEventListener('fetch', (event) => {
   // Never intercept API calls
   if (url.pathname.startsWith('/api/')) return;
 
-  // HTML navigation requests — always go to network so new deployments are picked up immediately
+  // HTML navigation requests — always go to network so new deployments are picked up
+  // immediately. A copy of the latest index.html is kept in cache purely as the
+  // offline fallback (it is never served while the network is reachable).
   if (
     event.request.mode === 'navigate' ||
     url.pathname === '/' ||
     url.pathname === '/index.html'
   ) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/index.html'))
+      fetch(event.request)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put('/index.html', copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }

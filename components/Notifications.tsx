@@ -112,7 +112,9 @@ export default function Notifications() {
     if (!n.isRead) {
       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, isRead: true } : x)));
       setUnreadCount((c) => Math.max(0, c - 1));
-      notificationApi.markRead(n.id).catch(() => {});
+      notificationApi.markRead(n.id).catch((err) => {
+        console.warn('Failed to mark notification as read:', err);
+      });
     }
     if (n.link) navigate(n.link);
   };

@@ -19,7 +19,7 @@ const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
  * AutoLogoutProvider
  *
  * Monitors user activity and automatically logs out
- * after 5 minutes of inactivity. Renders nothing —
+ * after 10 minutes of inactivity. Renders nothing —
  * just installs event listeners while the user is authenticated.
  */
 export default function AutoLogoutProvider({ children }: { children: React.ReactNode }) {

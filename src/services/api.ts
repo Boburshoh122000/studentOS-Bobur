@@ -154,11 +154,17 @@ class ApiClient {
     _retryCount = 0
   ): Promise<ApiResponse<T>> {
     const MAX_RETRIES = 3;
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     // Do NOT set Content-Type — browser sets multipart/form-data + boundary
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
         body: formData,
+        headers,
         credentials: 'include',
       });
 

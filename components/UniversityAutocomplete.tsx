@@ -69,7 +69,9 @@ export default function UniversityAutocomplete({
       .then((res) => {
         setAllUniversities(res.data?.universities ?? []);
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.warn('Failed to load universities:', err);
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
