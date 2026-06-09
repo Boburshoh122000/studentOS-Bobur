@@ -4,6 +4,12 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
+// Tailwind (build-time) and icon fonts — replaces the former CDN <script> tags
+import './src/tailwind.css';
+import '@phosphor-icons/web/regular';
+import '@phosphor-icons/web/bold';
+import '@phosphor-icons/web/fill';
+
 // Initialize i18n before anything renders
 import './src/i18n';
 
