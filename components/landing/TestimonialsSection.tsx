@@ -65,10 +65,36 @@ function TypewriterHeading() {
           transition={{ duration: 0.28, delay: 0.1 + i * 0.042, ease: 'easeOut' }}
           className="inline-block"
         >
-          {char === ' ' ? ' ' : char}
+          {char === ' ' ? ' ' : char}
         </motion.span>
       ))}
     </h2>
+  );
+}
+
+// SVG envelope: body + V-folds + open flap
+function EnvelopeSVG() {
+  return (
+    <svg
+      width="336"
+      height="168"
+      viewBox="0 0 336 168"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Body */}
+      <rect width="336" height="168" rx="14" fill="#ececef" />
+      {/* Bottom centre fold */}
+      <path d="M0 168 L168 90 L336 168Z" fill="#e2e2e6" />
+      {/* Left side fold */}
+      <path d="M0 0 L168 90 L0 168Z" fill="#e6e6ea" />
+      {/* Right side fold */}
+      <path d="M336 0 L168 90 L336 168Z" fill="#e6e6ea" />
+      {/* Open flap (tilted back, pointing up) */}
+      <path d="M2 2 L168 82 L334 2Z" fill="#dadadf" stroke="#d0d0d5" strokeWidth="1" />
+      {/* Subtle seal dot */}
+      <circle cx="168" cy="90" r="6" fill="#d0d0d5" />
+    </svg>
   );
 }
 
@@ -76,21 +102,32 @@ export default function TestimonialsSection() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [paused, setPaused] = useState(false);
+  // 'idle' → scroll in → 'revealing' (envelope + card rise) → 'done' (auto-rotate)
+  const [phase, setPhase] = useState<'idle' | 'revealing' | 'done'>('idle');
 
-  const envelopeRef = useRef<HTMLDivElement>(null);
-  const envelopeInView = useInView(envelopeRef, { once: true, margin: '-60px' });
+  const areaRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(areaRef, { once: true, margin: '-60px' });
 
   const subRef = useRef<HTMLParagraphElement>(null);
   const subInView = useInView(subRef, { once: true, margin: '-60px' });
 
+  // Phase sequencing: inView → revealing → done (after 2.3s)
   useEffect(() => {
-    if (paused) return;
+    if (!inView || phase !== 'idle') return;
+    setPhase('revealing');
+    const t = setTimeout(() => setPhase('done'), 2300);
+    return () => clearTimeout(t);
+  }, [inView, phase]);
+
+  // Auto-rotate only after envelope sequence finishes
+  useEffect(() => {
+    if (paused || phase !== 'done') return;
     const id = setInterval(() => {
       setDirection(1);
       setIndex((i) => (i + 1) % testimonials.length);
     }, 4000);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, phase]);
 
   const prev = () => {
     setDirection(-1);
@@ -123,27 +160,41 @@ export default function TestimonialsSection() {
 
         {/* Carousel area */}
         <div
-          ref={envelopeRef}
-          className="relative flex items-center justify-center min-h-[340px]"
+          ref={areaRef}
+          className="relative flex items-center justify-center min-h-[380px]"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* Decorative background cards */}
+          {/* Decorative background shapes */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-56 h-72 bg-[#f4f4f7] rounded-3xl -rotate-6 opacity-70 pointer-events-none" />
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-56 h-72 bg-[#f4f4f7] rounded-3xl rotate-6 opacity-70 pointer-events-none" />
 
-          {/* Envelope reveal wrapper — card wipes upward from bottom slot */}
+          {/* Envelope — shown during 'revealing', exits when done */}
+          <AnimatePresence>
+            {phase === 'revealing' && (
+              <motion.div
+                className="absolute bottom-4 z-0 pointer-events-none"
+                initial={{ opacity: 0, y: 50, scale: 0.88 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 24, scale: 0.9 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <EnvelopeSVG />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Card — wipes upward from the envelope opening */}
           <motion.div
             className="relative w-full max-w-sm z-10"
-            initial={{ y: 90, clipPath: 'inset(100% 0 0 0 round 24px)' }}
+            initial={{ y: 80, clipPath: 'inset(100% 0 0 0 round 24px)' }}
             animate={
-              envelopeInView
+              phase !== 'idle'
                 ? { y: 0, clipPath: 'inset(0% 0 0 0 round 24px)' }
-                : { y: 90, clipPath: 'inset(100% 0 0 0 round 24px)' }
+                : { y: 80, clipPath: 'inset(100% 0 0 0 round 24px)' }
             }
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Inner overflow-hidden so horizontal slide stays clipped */}
             <div className="overflow-hidden rounded-3xl">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
