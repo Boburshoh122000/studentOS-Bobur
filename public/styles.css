@@ -3,52 +3,73 @@ html {
   scroll-behavior: smooth;
 }
 
-/* CoreSolutions vertical marquee */
-@keyframes marqueeUp {
+/* CoreSolutions — elliptical orbit animations */
+@keyframes orbitLeft {
   0% {
-    transform: translateY(0);
+    transform: translate(-50%, calc(-50% - 200px)) scale(1);
+    filter: blur(0px);
+  }
+  25% {
+    transform: translate(calc(-50% + 110px), -50%) scale(0.82);
+    filter: blur(1.5px);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% + 200px)) scale(0.64);
+    filter: blur(4px);
+  }
+  75% {
+    transform: translate(calc(-50% - 110px), -50%) scale(0.82);
+    filter: blur(1.5px);
   }
   100% {
-    transform: translateY(-50%);
+    transform: translate(-50%, calc(-50% - 200px)) scale(1);
+    filter: blur(0px);
   }
 }
-@keyframes marqueeDown {
+@keyframes orbitRight {
   0% {
-    transform: translateY(-50%);
+    transform: translate(-50%, calc(-50% - 200px)) scale(1);
+    filter: blur(0px);
+  }
+  25% {
+    transform: translate(calc(-50% - 110px), -50%) scale(0.82);
+    filter: blur(1.5px);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% + 200px)) scale(0.64);
+    filter: blur(4px);
+  }
+  75% {
+    transform: translate(calc(-50% + 110px), -50%) scale(0.82);
+    filter: blur(1.5px);
   }
   100% {
-    transform: translateY(0);
+    transform: translate(-50%, calc(-50% - 200px)) scale(1);
+    filter: blur(0px);
   }
 }
-.marquee-up {
-  animation: marqueeUp var(--marquee-duration, 18s) linear infinite;
-  will-change: transform;
+.orbit-left {
+  animation: orbitLeft 16s linear infinite;
+  will-change: transform, filter;
 }
-.marquee-down {
-  animation: marqueeDown var(--marquee-duration, 18s) linear infinite;
-  will-change: transform;
+.orbit-right {
+  animation: orbitRight 16s linear infinite;
+  will-change: transform, filter;
 }
-.photo-col-fade {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 18%,
-    black 82%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+.orbit-d-0 {
+  animation-delay: 0s;
 }
-.marquee-dur-15 {
-  --marquee-duration: 15s;
+.orbit-d-1 {
+  animation-delay: -3.2s;
 }
-.marquee-dur-16 {
-  --marquee-duration: 16s;
+.orbit-d-2 {
+  animation-delay: -6.4s;
 }
-.marquee-dur-20 {
-  --marquee-duration: 20s;
+.orbit-d-3 {
+  animation-delay: -9.6s;
 }
-.marquee-dur-22 {
-  --marquee-duration: 22s;
+.orbit-d-4 {
+  animation-delay: -12.8s;
 }
 
 body {

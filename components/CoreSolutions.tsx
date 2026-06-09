@@ -2,41 +2,81 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon } from '@heroicons/react/24/solid';
 
-const COL_A = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6'];
-const COL_B = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6'];
-const COL_C = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
-const COL_D = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+const LEFT_CARDS = [
+  {
+    id: 'l1',
+    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-28 h-32',
+  },
+  {
+    id: 'l2',
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-24 h-24',
+  },
+  {
+    id: 'l3',
+    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-28 h-28',
+  },
+  {
+    id: 'l4',
+    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-24 h-32',
+  },
+  {
+    id: 'l5',
+    img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-28 h-28',
+  },
+];
 
-interface ColProps {
-  seeds: string[];
-  durationClass: string;
-  direction?: 'up' | 'down';
-  wide?: boolean;
+const RIGHT_CARDS = [
+  {
+    id: 'r1',
+    img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-28 h-32',
+  },
+  {
+    id: 'r2',
+    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-24 h-24',
+  },
+  {
+    id: 'r3',
+    img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-24 h-28',
+  },
+  {
+    id: 'r4',
+    img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-28 h-28',
+  },
+  {
+    id: 'r5',
+    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
+    cls: 'w-24 h-32',
+  },
+];
+
+const DELAY = ['orbit-d-0', 'orbit-d-1', 'orbit-d-2', 'orbit-d-3', 'orbit-d-4'];
+
+interface OrbitZoneProps {
+  cards: { id: string; img: string; cls: string }[];
+  side: 'left' | 'right';
 }
 
-function PhotoCol({ seeds, durationClass, direction = 'up', wide = false }: ColProps) {
-  const doubled = [...seeds, ...seeds];
+function OrbitZone({ cards, side }: OrbitZoneProps) {
+  const anim = side === 'left' ? 'orbit-left' : 'orbit-right';
   return (
-    <div
-      className={`photo-col-fade overflow-hidden h-full ${wide ? 'w-[155px]' : 'w-[130px]'} shrink-0`}
-    >
-      <div className={`${direction === 'up' ? 'marquee-up' : 'marquee-down'} ${durationClass}`}>
-        <div className="flex flex-col">
-          {doubled.map((seed, i) => (
-            <div
-              key={i}
-              className={`w-full shrink-0 rounded-2xl overflow-hidden shadow-md bg-gray-200 mb-3 ${wide ? 'h-[200px]' : 'h-[165px]'}`}
-            >
-              <img
-                src={`https://i.pravatar.cc/400?u=sos_${seed}`}
-                alt=""
-                className="w-full h-full object-cover block"
-                loading="lazy"
-              />
-            </div>
-          ))}
+    <div className="relative w-full h-full">
+      {cards.map((card, i) => (
+        <div
+          key={card.id}
+          className={`absolute top-1/2 left-1/2 ${card.cls} rounded-[2rem] border-[5px] border-white shadow-2xl overflow-hidden ${anim} ${DELAY[i]}`}
+        >
+          <img src={card.img} alt="" className="w-full h-full object-cover block" loading="lazy" />
         </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -46,16 +86,15 @@ export default function CoreSolutions() {
 
   return (
     <section className="relative w-full bg-[#f4f4f7] overflow-hidden">
-      <div className="relative h-[680px] flex items-center justify-center">
-        {/* ── LEFT: outer col + inner col ── */}
-        <div className="absolute left-0 top-0 bottom-0 hidden md:flex gap-3">
-          <PhotoCol seeds={COL_A} durationClass="marquee-dur-16" direction="up" wide />
-          <PhotoCol seeds={COL_B} durationClass="marquee-dur-22" direction="down" />
+      <div className="relative grid grid-cols-12 w-full max-w-7xl mx-auto h-[680px]">
+        {/* Left orbit zone */}
+        <div className="col-span-3 h-full hidden md:block">
+          <OrbitZone cards={LEFT_CARDS} side="left" />
         </div>
 
-        {/* ── CENTER ── */}
+        {/* Center */}
         <motion.div
-          className="relative z-10 flex flex-col items-center text-center px-6 max-w-[360px]"
+          className="col-span-12 md:col-span-6 flex flex-col items-center justify-center text-center px-6"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -84,10 +123,9 @@ export default function CoreSolutions() {
           </button>
         </motion.div>
 
-        {/* ── RIGHT: inner col + outer col ── */}
-        <div className="absolute right-0 top-0 bottom-0 hidden md:flex gap-3">
-          <PhotoCol seeds={COL_C} durationClass="marquee-dur-20" direction="up" />
-          <PhotoCol seeds={COL_D} durationClass="marquee-dur-15" direction="down" wide />
+        {/* Right orbit zone */}
+        <div className="col-span-3 h-full hidden md:block">
+          <OrbitZone cards={RIGHT_CARDS} side="right" />
         </div>
       </div>
     </section>
