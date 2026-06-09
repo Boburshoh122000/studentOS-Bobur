@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 const testimonials = [
@@ -50,9 +50,47 @@ function StarRating({ count }: { count: number }) {
   );
 }
 
+function TypewriterHeading() {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const text = 'Words of Appreciation';
+
+  return (
+    <h2 ref={ref} className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
+      {text.split('').map((char, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, y: 18 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+          transition={{ duration: 0.28, delay: 0.1 + i * 0.042, ease: 'easeOut' }}
+          className="inline-block"
+        >
+          {char === ' ' ? ' ' : char}
+        </motion.span>
+      ))}
+    </h2>
+  );
+}
+
 export default function TestimonialsSection() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [paused, setPaused] = useState(false);
+
+  const envelopeRef = useRef<HTMLDivElement>(null);
+  const envelopeInView = useInView(envelopeRef, { once: true, margin: '-60px' });
+
+  const subRef = useRef<HTMLParagraphElement>(null);
+  const subInView = useInView(subRef, { once: true, margin: '-60px' });
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      setDirection(1);
+      setIndex((i) => (i + 1) % testimonials.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [paused]);
 
   const prev = () => {
     setDirection(-1);
@@ -69,58 +107,72 @@ export default function TestimonialsSection() {
   return (
     <section className="w-full py-20 px-4 bg-white overflow-hidden">
       <div className="max-w-4xl mx-auto">
-        {/* Heading */}
+        {/* Heading — typewriter on scroll */}
         <div className="text-center mb-14">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
-            Words of Appreciation
-          </h2>
-          <p className="text-gray-400 mt-4 text-base max-w-md mx-auto">
+          <TypewriterHeading />
+          <motion.p
+            ref={subRef}
+            className="text-gray-400 mt-4 text-base max-w-md mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={subInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 1.1 }}
+          >
             Thousands of students use StudentOS to build their academic future.
-          </p>
+          </motion.p>
         </div>
 
-        {/* Carousel wrapper with background shapes */}
-        <div className="relative flex items-center justify-center min-h-[340px]">
-          {/* Background decorative shapes */}
+        {/* Carousel area */}
+        <div
+          ref={envelopeRef}
+          className="relative flex items-center justify-center min-h-[340px]"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {/* Decorative background cards */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-56 h-72 bg-[#f4f4f7] rounded-3xl -rotate-6 opacity-70 pointer-events-none" />
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-56 h-72 bg-[#f4f4f7] rounded-3xl rotate-6 opacity-70 pointer-events-none" />
 
-          {/* Card */}
-          <div className="relative w-full max-w-sm z-10 overflow-hidden">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={t.name}
-                custom={direction}
-                initial={{ opacity: 0, x: direction * 60 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction * -60 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 flex flex-col items-center text-center mx-auto"
-              >
-                {/* Avatar */}
-                <div className="w-16 h-16 rounded-xl overflow-hidden shadow-md mb-4">
-                  <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
-                </div>
-
-                {/* Name + role */}
-                <p className="text-base font-bold text-[#111827]">{t.name}</p>
-                <p className="text-sm text-gray-400 mt-0.5">{t.role}</p>
-
-                {/* Stars */}
-                <div className="mt-4">
-                  <StarRating count={t.rating} />
-                </div>
-
-                {/* Quote */}
-                <p className="text-sm text-gray-500 leading-relaxed mt-4">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          {/* Envelope reveal wrapper — card wipes upward from bottom slot */}
+          <motion.div
+            className="relative w-full max-w-sm z-10"
+            initial={{ y: 90, clipPath: 'inset(100% 0 0 0 round 24px)' }}
+            animate={
+              envelopeInView
+                ? { y: 0, clipPath: 'inset(0% 0 0 0 round 24px)' }
+                : { y: 90, clipPath: 'inset(100% 0 0 0 round 24px)' }
+            }
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Inner overflow-hidden so horizontal slide stays clipped */}
+            <div className="overflow-hidden rounded-3xl">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={t.name}
+                  custom={direction}
+                  initial={{ opacity: 0, x: direction * 60 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction * -60 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 flex flex-col items-center text-center"
+                >
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-md mb-4">
+                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                  </div>
+                  <p className="text-base font-bold text-[#111827]">{t.name}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{t.role}</p>
+                  <div className="mt-4">
+                    <StarRating count={t.rating} />
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed mt-4">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Navigation arrows */}
+        {/* Controls: prev · dots · next */}
         <div className="flex items-center justify-center gap-4 mt-10">
           <button
             type="button"
@@ -130,6 +182,24 @@ export default function TestimonialsSection() {
           >
             <ChevronLeftIcon className="w-5 h-5 text-[#111827]" />
           </button>
+
+          <div className="flex items-center gap-2">
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to testimonial ${i + 1}`}
+                onClick={() => {
+                  setDirection(i > index ? 1 : -1);
+                  setIndex(i);
+                }}
+                className={`rounded-full transition-all duration-300 ${
+                  i === index ? 'w-5 h-2 bg-[#111827]' : 'w-2 h-2 bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={next}
