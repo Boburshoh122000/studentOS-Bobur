@@ -29,25 +29,20 @@ ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 # Build the app
 RUN npm run build
 
-# Production image with Node.js runtime
+# Production image: static file server only — no app node_modules
 FROM node:20-alpine AS runtime
 
 WORKDIR /app
 
-# Copy package files from builder
-COPY package*.json ./
+RUN npm install -g serve@14
 
-# Copy node_modules from builder to avoid reinstalling
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy built app from builder stage
+# Copy built app from builder stage (includes dist/serve.json with
+# security headers and caching rules, copied from public/)
 COPY --from=builder /app/dist ./dist
 
-# Expose the port that Railway will use
-EXPOSE $PORT
+EXPOSE 4173
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-4173}/ || exit 1
 
-# Start the app with vite preview server
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-4173}"]
