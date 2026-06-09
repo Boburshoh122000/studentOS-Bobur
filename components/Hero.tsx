@@ -14,7 +14,7 @@ import {
 const CENTER_POP_DELAY = 0.1;
 const LINES_START = 0.55;
 const LINE_DURATION = 0.6;
-const LINE_STAGGER = 0.2; // larger stagger → clear one-by-one reveal
+const LINE_STAGGER = 0.2;
 
 type NodeCfg = {
   id: string;
@@ -23,73 +23,72 @@ type NodeCfg = {
   bg: string;
   icon: React.ReactNode;
   floatDuration: number;
-  floatY: number[]; // unique phase per card so they never all move in sync
+  floatY: number[];
 };
 
-// Layout: 2 horizontal arms (far-left, far-right at y≈0)
-//       + 4 diagonal nodes (upper/lower left & right)
-// Matches the reference: flat H-like spread, not a tall star
+// Reference layout: 2 far horizontal arms (y≈0) + 4 diagonal nodes (y≈±50px)
+// Much flatter than before — horizontal spread dominates, vertical is minimal
 const NODES: NodeCfg[] = [
   {
     id: 'top-left',
-    x: -278,
-    y: -118,
+    x: -265,
+    y: -50,
     bg: '#F97316',
-    icon: <DocumentTextIcon className="w-8 h-8 text-white" />,
+    icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
     floatDuration: 4.2,
-    floatY: [-6, 6, -6],
+    floatY: [-5, 5, -5],
   },
   {
     id: 'far-left',
-    x: -418,
-    y: 2,
+    x: -415,
+    y: 0,
     bg: '#3B82F6',
-    icon: <MagnifyingGlassIcon className="w-8 h-8 text-white" />,
+    icon: <MagnifyingGlassIcon className="w-7 h-7 text-white" />,
     floatDuration: 5.4,
-    floatY: [5, -7, 5], // starts going down = out of phase
+    floatY: [5, -6, 5],
   },
   {
     id: 'bottom-left',
-    x: -246,
-    y: 108,
+    x: -238,
+    y: 50,
     bg: '#22C55E',
-    icon: <CalendarDaysIcon className="w-8 h-8 text-white" />,
+    icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
     floatDuration: 4.8,
-    floatY: [7, -4, 7], // reverse
+    floatY: [6, -4, 6],
   },
   {
     id: 'top-right',
-    x: 260,
-    y: -130,
+    x: 252,
+    y: -52,
     bg: '#F43F5E',
-    icon: <AcademicCapIcon className="w-8 h-8 text-white" />,
+    icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
     floatDuration: 3.9,
-    floatY: [-7, 5, -7],
+    floatY: [-6, 4, -6],
   },
   {
     id: 'far-right',
-    x: 422,
-    y: -2,
+    x: 420,
+    y: 0,
     bg: '#7C3AED',
-    icon: <BriefcaseIcon className="w-8 h-8 text-white" />,
+    icon: <BriefcaseIcon className="w-7 h-7 text-white" />,
     floatDuration: 5.6,
-    floatY: [6, -6, 6], // out of phase
+    floatY: [5, -5, 5],
   },
   {
     id: 'bottom-right',
     x: 256,
-    y: 106,
+    y: 48,
     bg: '#14B8A6',
-    icon: <UserGroupIcon className="w-8 h-8 text-white" />,
+    icon: <UserGroupIcon className="w-7 h-7 text-white" />,
     floatDuration: 4.5,
-    floatY: [4, -8, 4], // different reverse
+    floatY: [4, -7, 4],
   },
 ];
 
+// SVG center matches 50% of the 280px-tall container
 const CX = 512;
-const CY = 225;
+const CY = 140;
 
-// Time at which the last (6th) card has fully appeared
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
 
 function TypewriterLine({ text, startDelay }: { text: string; startDelay: number }) {
@@ -119,13 +118,13 @@ export default function Hero() {
   const line2End = line1End + 0.06 + line2.length * 0.04;
 
   return (
-    <section className="relative w-full flex flex-col items-center pt-[140px] pb-24 overflow-visible z-20 bg-white">
+    <section className="relative w-full flex flex-col items-center pt-[120px] pb-20 overflow-visible z-20 bg-white">
       {/* ── Visual Network ── */}
-      <div className="relative w-full max-w-[1024px] h-[450px] flex items-center justify-center pointer-events-none">
-        {/* SVG Lines */}
+      {/* 280px tall container keeps the flat network compact — text sits close below */}
+      <div className="relative w-full max-w-[1024px] h-[280px] flex items-center justify-center pointer-events-none">
         <svg
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
-          viewBox="0 0 1024 450"
+          viewBox="0 0 1024 280"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -141,7 +140,6 @@ export default function Hero() {
 
             return (
               <React.Fragment key={node.id}>
-                {/* Thin light-gray connector */}
                 <motion.path
                   d={`M${CX},${CY} L${tx},${ty}`}
                   stroke="#d1d5db"
@@ -150,7 +148,6 @@ export default function Hero() {
                   animate={{ pathLength: 1 }}
                   transition={{ duration: LINE_DURATION, delay: lineDelay, ease: 'easeOut' }}
                 />
-                {/* Purple dot pops when line arrives */}
                 <motion.circle
                   cx={dotX}
                   cy={dotY}
@@ -175,8 +172,8 @@ export default function Hero() {
           className="absolute z-10"
           style={{ left: '50%', top: '50%' }}
           initial={{ scale: 0 }}
-          animate={{ scale: [0, 1.18, 0.96, 1] }}
-          transition={{ delay: CENTER_POP_DELAY, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+          animate={{ scale: [0, 1.2, 0.95, 1] }}
+          transition={{ delay: CENTER_POP_DELAY, duration: 0.65, ease: [0.34, 1.56, 0.64, 1] }}
         >
           <motion.div
             animate={{ y: [-6, 6, -6] }}
@@ -187,13 +184,13 @@ export default function Hero() {
               ease: 'easeInOut',
               delay: CENTER_POP_DELAY + 0.7,
             }}
-            className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_8px_32px_rgba(109,40,217,0.38)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+            className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_12px_48px_rgba(109,40,217,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
           >
-            <CheckIcon className="w-10 h-10 text-white" />
+            <CheckIcon className="w-12 h-12 text-white" />
           </motion.div>
         </motion.div>
 
-        {/* ── Satellite Tool Cards — one by one ── */}
+        {/* ── Satellite Tool Cards — one by one after their line arrives ── */}
         {NODES.map((node, i) => {
           const toolDelay = LINES_START + i * LINE_STAGGER + LINE_DURATION;
           return (
@@ -224,7 +221,7 @@ export default function Hero() {
                   ease: 'easeInOut',
                   delay: toolDelay + 0.5,
                 }}
-                className="w-20 h-20 rounded-[22px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto shadow-[0_8px_28px_-4px_rgba(0,0,0,0.18)]"
+                className="w-[70px] h-[70px] rounded-[18px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)]"
                 style={{ backgroundColor: node.bg }}
               >
                 {node.icon}
@@ -234,8 +231,8 @@ export default function Hero() {
         })}
       </div>
 
-      {/* ── Typography + CTA — typewriter after all cards appear ── */}
-      <div className="flex flex-col items-center text-center max-w-3xl mx-auto px-4 relative z-20 mt-8">
+      {/* ── Typography + CTA — typewriter after last card appears ── */}
+      <div className="flex flex-col items-center text-center max-w-3xl mx-auto px-4 relative z-20 mt-4">
         <h1 className="text-6xl md:text-7xl font-extrabold tracking-tighter text-[#111827] leading-[1.05]">
           <TypewriterLine text={line1} startDelay={ALL_CARDS_DONE} />
           <br />
