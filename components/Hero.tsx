@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   CheckIcon,
   DocumentTextIcon,
-  MagnifyingGlassIcon,
   CalendarDaysIcon,
   AcademicCapIcon,
-  BriefcaseIcon,
-  UserGroupIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/solid';
 
 const CENTER_POP_DELAY = 0.1;
@@ -16,78 +14,106 @@ const LINES_START = 0.55;
 const LINE_DURATION = 0.6;
 const LINE_STAGGER = 0.2;
 
+type NodeType = 'icon' | 'photo' | 'white';
+
 type NodeCfg = {
   id: string;
   x: number;
   y: number;
-  bg: string;
-  icon: React.ReactNode;
+  type: NodeType;
+  bgClass?: string; // Tailwind bg-[color] class — no inline style needed
+  photoUrl?: string;
+  icon?: React.ReactNode;
+  size: number; // used only for positioning math (half offset)
+  sizeClass: string; // CSS class from styles.css: hero-node-lg/md/sm
   floatDuration: number;
   floatY: number[];
 };
 
-// Reference layout: 2 far horizontal arms (y≈0) + 4 diagonal nodes (y≈±50px)
-// Much flatter than before — horizontal spread dominates, vertical is minimal
+// Layout matches reference exactly:
+//   far-left  = circular student photo (male)
+//   top-left  = colored icon square
+//   bot-left  = colored icon square
+//   top-right = colored icon square
+//   far-right = white card (AI sparkle)
+//   bot-right = circular student photo (female)
 const NODES: NodeCfg[] = [
   {
-    id: 'top-left',
-    x: -265,
-    y: -50,
-    bg: '#F97316',
-    icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
-    floatDuration: 4.2,
-    floatY: [-5, 5, -5],
-  },
-  {
     id: 'far-left',
-    x: -415,
-    y: 0,
-    bg: '#3B82F6',
-    icon: <MagnifyingGlassIcon className="w-7 h-7 text-white" />,
+    x: -445,
+    y: 2,
+    type: 'photo',
+    photoUrl:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    size: 84,
+    sizeClass: 'hero-node-lg',
     floatDuration: 5.4,
     floatY: [5, -6, 5],
   },
   {
+    id: 'top-left',
+    x: -310,
+    y: -100,
+    type: 'icon',
+    bgClass: 'bg-[#F97316]',
+    icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
+    size: 70,
+    sizeClass: 'hero-node-md',
+    floatDuration: 4.2,
+    floatY: [-5, 5, -5],
+  },
+  {
     id: 'bottom-left',
-    x: -238,
-    y: 50,
-    bg: '#22C55E',
+    x: -278,
+    y: 86,
+    type: 'icon',
+    bgClass: 'bg-[#22C55E]',
     icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
+    size: 70,
+    sizeClass: 'hero-node-md',
     floatDuration: 4.8,
     floatY: [6, -4, 6],
   },
   {
     id: 'top-right',
-    x: 252,
-    y: -52,
-    bg: '#F43F5E',
+    x: 284,
+    y: -100,
+    type: 'icon',
+    bgClass: 'bg-[#F43F5E]',
     icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
+    size: 70,
+    sizeClass: 'hero-node-md',
     floatDuration: 3.9,
     floatY: [-6, 4, -6],
   },
   {
     id: 'far-right',
-    x: 420,
-    y: 0,
-    bg: '#7C3AED',
-    icon: <BriefcaseIcon className="w-7 h-7 text-white" />,
+    x: 445,
+    y: -4,
+    type: 'white',
+    icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
+    size: 84,
+    sizeClass: 'hero-node-lg',
     floatDuration: 5.6,
     floatY: [5, -5, 5],
   },
   {
     id: 'bottom-right',
-    x: 256,
-    y: 48,
-    bg: '#14B8A6',
-    icon: <UserGroupIcon className="w-7 h-7 text-white" />,
+    x: 318,
+    y: 88,
+    type: 'photo',
+    photoUrl:
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+    size: 66,
+    sizeClass: 'hero-node-sm',
     floatDuration: 4.5,
     floatY: [4, -7, 4],
   },
 ];
 
-// SVG center matches 50% of the 280px-tall container
+// SVG viewBox matches h-[320px] container; center at CY=160
 const CX = 512;
-const CY = 140;
+const CY = 160;
 
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
 
@@ -102,10 +128,40 @@ function TypewriterLine({ text, startDelay }: { text: string; startDelay: number
           transition={{ duration: 0.2, delay: startDelay + i * 0.04, ease: 'easeOut' }}
           className="inline-block"
         >
-          {char === ' ' ? ' ' : char}
+          {char === ' ' ? ' ' : char}
         </motion.span>
       ))}
     </>
+  );
+}
+
+function NodeCard({ node }: { node: NodeCfg }) {
+  if (node.type === 'photo') {
+    return (
+      <div
+        className={`${node.sizeClass} rounded-full overflow-hidden border-[5px] border-white shadow-[0_8px_28px_-4px_rgba(0,0,0,0.18)]`}
+      >
+        <img src={node.photoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+      </div>
+    );
+  }
+
+  if (node.type === 'white') {
+    return (
+      <div
+        className={`${node.sizeClass} rounded-[22px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_8px_28px_-4px_rgba(0,0,0,0.1)]`}
+      >
+        {node.icon}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`${node.sizeClass} ${node.bgClass} rounded-[18px] flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)]`}
+    >
+      {node.icon}
+    </div>
   );
 }
 
@@ -119,12 +175,11 @@ export default function Hero() {
 
   return (
     <section className="relative w-full flex flex-col items-center pt-[120px] pb-20 overflow-visible z-20 bg-white">
-      {/* ── Visual Network ── */}
-      {/* 280px tall container keeps the flat network compact — text sits close below */}
-      <div className="relative w-full max-w-[1024px] h-[280px] flex items-center justify-center pointer-events-none">
+      {/* ── Visual Network — 320px tall, CY=160 ── */}
+      <div className="relative w-full max-w-[1024px] h-[320px] flex items-center justify-center pointer-events-none">
         <svg
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
-          viewBox="0 0 1024 280"
+          viewBox="0 0 1024 320"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -167,7 +222,7 @@ export default function Hero() {
           })}
         </svg>
 
-        {/* ── Centre Badge — first to appear ── */}
+        {/* ── Centre Badge ── */}
         <motion.div
           className="absolute z-10"
           style={{ left: '50%', top: '50%' }}
@@ -190,18 +245,19 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* ── Satellite Tool Cards — one by one after their line arrives ── */}
+        {/* ── Satellite Nodes — one by one ── */}
         {NODES.map((node, i) => {
           const toolDelay = LINES_START + i * LINE_STAGGER + LINE_DURATION;
+          const half = node.size / 2;
           return (
             <motion.div
               key={node.id}
-              className="absolute z-10"
+              className="absolute z-10 pointer-events-auto"
               style={{
                 left: '50%',
                 top: '50%',
-                marginLeft: node.x,
-                marginTop: node.y,
+                marginLeft: node.x - half,
+                marginTop: node.y - half,
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -221,18 +277,16 @@ export default function Hero() {
                   ease: 'easeInOut',
                   delay: toolDelay + 0.5,
                 }}
-                className="w-[70px] h-[70px] rounded-[18px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)]"
-                style={{ backgroundColor: node.bg }}
               >
-                {node.icon}
+                <NodeCard node={node} />
               </motion.div>
             </motion.div>
           );
         })}
       </div>
 
-      {/* ── Typography + CTA — typewriter after last card appears ── */}
-      <div className="flex flex-col items-center text-center max-w-3xl mx-auto px-4 relative z-20 mt-4">
+      {/* ── Typography + CTA — typewriter after all nodes appear ── */}
+      <div className="flex flex-col items-center text-center max-w-3xl mx-auto px-4 relative z-20 mt-6">
         <h1 className="text-6xl md:text-7xl font-extrabold tracking-tighter text-[#111827] leading-[1.05]">
           <TypewriterLine text={line1} startDelay={ALL_CARDS_DONE} />
           <br />

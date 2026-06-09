@@ -509,6 +509,20 @@ input[type='range']:focus {
   perspective: 1200px;
 }
 
+/* Hero node sizes */
+.hero-node-lg {
+  width: 84px;
+  height: 84px;
+}
+.hero-node-md {
+  width: 70px;
+  height: 70px;
+}
+.hero-node-sm {
+  width: 66px;
+  height: 66px;
+}
+
 /* Hero hub-and-spoke: card dynamic positioning via CSS custom properties */
 .hero-card {
   position: absolute;
