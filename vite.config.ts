@@ -26,6 +26,24 @@ export default defineConfig(({ mode }) => {
       terserOptions: {
         compress: { drop_console: true, drop_debugger: true },
       },
+      rollupOptions: {
+        output: {
+          // Split heavyweight vendors out of the entry chunk so routes only
+          // pay for what they use and vendor code caches independently
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return undefined;
+            if (
+              /node_modules\/(react|react-dom|scheduler|react-router|react-router-dom)\//.test(id)
+            )
+              return 'react-vendor';
+            if (id.includes('framer-motion') || id.includes('/gsap')) return 'motion';
+            if (id.includes('i18next')) return 'i18n';
+            if (id.includes('recharts') || id.includes('/d3-')) return 'charts';
+            if (id.includes('@tsparticles')) return 'particles';
+            return undefined;
+          },
+        },
+      },
     },
     resolve: {
       alias: {
