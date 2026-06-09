@@ -82,21 +82,23 @@ const TOOLS = [
   },
 ];
 
-// Pixel offsets ensure ~28px visual gap between all adjacent cards at base w-40 (160px)
+// y values derived from: y = (cardHalfH) * (1 - scale)
+// so every card's BOTTOM edge lands at the same pixel → rainbow arc shape.
+// cardHalfH = 104px (h-52 = 208px / 2)
 function getCardStyle(offset: number) {
   switch (offset) {
     case -2:
-      return { rotate: -16, scale: 0.72, x: -330, opacity: 0.55, zIndex: 1 };
+      return { rotate: -16, scale: 0.65, x: -310, y: 36, opacity: 0.55, zIndex: 1 };
     case -1:
-      return { rotate: -8, scale: 0.87, x: -175, opacity: 0.82, zIndex: 2 };
+      return { rotate: -8, scale: 0.82, x: -168, y: 19, opacity: 0.82, zIndex: 2 };
     case 0:
-      return { rotate: 0, scale: 1, x: 0, opacity: 1, zIndex: 5 };
+      return { rotate: 0, scale: 1, x: 0, y: 0, opacity: 1, zIndex: 5 };
     case 1:
-      return { rotate: 8, scale: 0.87, x: 175, opacity: 0.82, zIndex: 2 };
+      return { rotate: 8, scale: 0.82, x: 168, y: 19, opacity: 0.82, zIndex: 2 };
     case 2:
-      return { rotate: 16, scale: 0.72, x: 330, opacity: 0.55, zIndex: 1 };
+      return { rotate: 16, scale: 0.65, x: 310, y: 36, opacity: 0.55, zIndex: 1 };
     default:
-      return { rotate: 0, scale: 0.5, x: 0, opacity: 0, zIndex: 0 };
+      return { rotate: 0, scale: 0.5, x: 0, y: 0, opacity: 0, zIndex: 0 };
   }
 }
 
@@ -128,21 +130,26 @@ export default function Integrations() {
             </h2>
           </div>
 
-          {/* Fan carousel */}
-          <div className="relative flex items-center justify-center h-[220px]">
+          {/* Fan carousel — arc layout: all card bottoms align at same y */}
+          <div className="relative flex items-center justify-center h-[224px]">
             {TOOLS.map((tool, i) => {
               const raw = (((i - activeIndex) % TOOLS.length) + TOOLS.length) % TOOLS.length;
               const offset = raw > 2 ? raw - TOOLS.length : raw;
               if (Math.abs(offset) > 2) return null;
               const s = getCardStyle(offset);
+              const isCenter = offset === 0;
 
               return (
                 <motion.div
                   key={tool.id}
-                  animate={{ rotate: s.rotate, scale: s.scale, x: s.x, opacity: s.opacity }}
+                  animate={{ rotate: s.rotate, scale: s.scale, x: s.x, y: s.y, opacity: s.opacity }}
                   transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                   onClick={() => setActiveIndex(i)}
-                  className="absolute w-40 h-52 bg-[#f0f0f3] rounded-2xl flex items-center justify-center cursor-pointer shadow-md"
+                  className={`absolute w-40 h-52 rounded-2xl flex items-center justify-center cursor-pointer ${
+                    isCenter
+                      ? 'bg-white shadow-[0_20px_60px_-8px_rgba(0,0,0,0.18)]'
+                      : 'bg-[#ebebed] shadow-sm'
+                  }`}
                   style={{ zIndex: s.zIndex }}
                   aria-label={`Select ${tool.name}`}
                 >
