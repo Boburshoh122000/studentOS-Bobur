@@ -2,77 +2,93 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon } from '@heroicons/react/24/solid';
 
-const LEFT_CARDS = [
+const LEFT_CARDS: { id: string; img: string; size: string; pos: string; float: string }[] = [
+  {
+    id: 'l0',
+    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+    size: 'w-28 h-32',
+    pos: 'lp-0',
+    float: 'fc-1',
+  },
   {
     id: 'l1',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-28 h-32',
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+    size: 'w-24 h-24',
+    pos: 'lp-1',
+    float: 'fc-2',
   },
   {
     id: 'l2',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-24 h-24',
+    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
+    size: 'w-28 h-28',
+    pos: 'lp-2',
+    float: 'fc-3',
   },
   {
     id: 'l3',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-28 h-28',
+    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
+    size: 'w-24 h-32',
+    pos: 'lp-3',
+    float: 'fc-4',
   },
   {
     id: 'l4',
-    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-24 h-32',
-  },
-  {
-    id: 'l5',
     img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-28 h-28',
+    size: 'w-28 h-28',
+    pos: 'lp-4',
+    float: 'fc-5',
   },
 ];
 
-const RIGHT_CARDS = [
+const RIGHT_CARDS: { id: string; img: string; size: string; pos: string; float: string }[] = [
+  {
+    id: 'r0',
+    img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+    size: 'w-28 h-32',
+    pos: 'rp-0',
+    float: 'fc-3',
+  },
   {
     id: 'r1',
-    img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-28 h-32',
+    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
+    size: 'w-24 h-24',
+    pos: 'rp-1',
+    float: 'fc-1',
   },
   {
     id: 'r2',
-    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-24 h-24',
+    img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
+    size: 'w-24 h-28',
+    pos: 'rp-2',
+    float: 'fc-4',
   },
   {
     id: 'r3',
-    img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-24 h-28',
+    img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
+    size: 'w-28 h-28',
+    pos: 'rp-3',
+    float: 'fc-2',
   },
   {
     id: 'r4',
-    img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-28 h-28',
-  },
-  {
-    id: 'r5',
     img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
-    cls: 'w-24 h-32',
+    size: 'w-24 h-32',
+    pos: 'rp-4',
+    float: 'fc-5',
   },
 ];
 
-const DELAY = ['orbit-d-0', 'orbit-d-1', 'orbit-d-2', 'orbit-d-3', 'orbit-d-4'];
-
-interface OrbitZoneProps {
-  cards: { id: string; img: string; cls: string }[];
-  side: 'left' | 'right';
-}
-
-function OrbitZone({ cards, side }: OrbitZoneProps) {
-  const anim = side === 'left' ? 'orbit-left' : 'orbit-right';
+function PhotoZone({
+  cards,
+}: {
+  cards: { id: string; img: string; size: string; pos: string; float: string }[];
+}) {
   return (
     <div className="relative w-full h-full">
-      {cards.map((card, i) => (
+      {cards.map((card) => (
         <div
           key={card.id}
-          className={`absolute top-1/2 left-1/2 ${card.cls} rounded-[2rem] border-[5px] border-white shadow-2xl overflow-hidden ${anim} ${DELAY[i]}`}
+          className={`absolute ${card.size} ${card.pos} ${card.float} rounded-[2rem] border-[5px] border-white shadow-2xl overflow-hidden`}
         >
           <img src={card.img} alt="" className="w-full h-full object-cover block" loading="lazy" />
         </div>
@@ -87,9 +103,9 @@ export default function CoreSolutions() {
   return (
     <section className="relative w-full bg-[#f4f4f7] overflow-hidden">
       <div className="relative grid grid-cols-12 w-full max-w-7xl mx-auto h-[680px]">
-        {/* Left orbit zone */}
+        {/* Left photo zone */}
         <div className="col-span-3 h-full hidden md:block">
-          <OrbitZone cards={LEFT_CARDS} side="left" />
+          <PhotoZone cards={LEFT_CARDS} />
         </div>
 
         {/* Center */}
@@ -123,9 +139,9 @@ export default function CoreSolutions() {
           </button>
         </motion.div>
 
-        {/* Right orbit zone */}
+        {/* Right photo zone */}
         <div className="col-span-3 h-full hidden md:block">
-          <OrbitZone cards={RIGHT_CARDS} side="right" />
+          <PhotoZone cards={RIGHT_CARDS} />
         </div>
       </div>
     </section>

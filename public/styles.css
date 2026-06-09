@@ -3,73 +3,78 @@ html {
   scroll-behavior: smooth;
 }
 
-/* CoreSolutions — elliptical orbit animations */
-@keyframes orbitLeft {
-  0% {
-    transform: translate(-50%, calc(-50% - 200px)) scale(1);
-    filter: blur(0px);
-  }
-  25% {
-    transform: translate(calc(-50% + 110px), -50%) scale(0.82);
-    filter: blur(1.5px);
+/* CoreSolutions — scattered cards with gentle float */
+@keyframes floatCard {
+  0%,
+  100% {
+    transform: translateY(0px);
   }
   50% {
-    transform: translate(-50%, calc(-50% + 200px)) scale(0.64);
-    filter: blur(4px);
-  }
-  75% {
-    transform: translate(calc(-50% - 110px), -50%) scale(0.82);
-    filter: blur(1.5px);
-  }
-  100% {
-    transform: translate(-50%, calc(-50% - 200px)) scale(1);
-    filter: blur(0px);
+    transform: translateY(-10px);
   }
 }
-@keyframes orbitRight {
-  0% {
-    transform: translate(-50%, calc(-50% - 200px)) scale(1);
-    filter: blur(0px);
-  }
-  25% {
-    transform: translate(calc(-50% - 110px), -50%) scale(0.82);
-    filter: blur(1.5px);
-  }
-  50% {
-    transform: translate(-50%, calc(-50% + 200px)) scale(0.64);
-    filter: blur(4px);
-  }
-  75% {
-    transform: translate(calc(-50% + 110px), -50%) scale(0.82);
-    filter: blur(1.5px);
-  }
-  100% {
-    transform: translate(-50%, calc(-50% - 200px)) scale(1);
-    filter: blur(0px);
-  }
+.fc-1 {
+  animation: floatCard 4.2s ease-in-out infinite;
 }
-.orbit-left {
-  animation: orbitLeft 16s linear infinite;
-  will-change: transform, filter;
+.fc-2 {
+  animation: floatCard 5.1s ease-in-out infinite;
+  animation-delay: -2.3s;
 }
-.orbit-right {
-  animation: orbitRight 16s linear infinite;
-  will-change: transform, filter;
+.fc-3 {
+  animation: floatCard 4.8s ease-in-out infinite;
+  animation-delay: -1.5s;
 }
-.orbit-d-0 {
-  animation-delay: 0s;
+.fc-4 {
+  animation: floatCard 5.5s ease-in-out infinite;
+  animation-delay: -0.8s;
 }
-.orbit-d-1 {
+.fc-5 {
+  animation: floatCard 3.9s ease-in-out infinite;
   animation-delay: -3.2s;
 }
-.orbit-d-2 {
-  animation-delay: -6.4s;
+
+/* Left zone — 5 scattered positions */
+.lp-0 {
+  top: 4%;
+  left: -3%;
 }
-.orbit-d-3 {
-  animation-delay: -9.6s;
+.lp-1 {
+  top: 30%;
+  left: 42%;
 }
-.orbit-d-4 {
-  animation-delay: -12.8s;
+.lp-2 {
+  top: 56%;
+  left: -5%;
+}
+.lp-3 {
+  top: 12%;
+  left: 54%;
+}
+.lp-4 {
+  top: 67%;
+  left: 24%;
+}
+
+/* Right zone — mirrored */
+.rp-0 {
+  top: 4%;
+  right: -3%;
+}
+.rp-1 {
+  top: 30%;
+  right: 42%;
+}
+.rp-2 {
+  top: 56%;
+  right: -5%;
+}
+.rp-3 {
+  top: 12%;
+  right: 54%;
+}
+.rp-4 {
+  top: 67%;
+  right: 24%;
 }
 
 body {
