@@ -14,23 +14,26 @@ const ipStore: RateLimitStore = {};
 const userStore: RateLimitStore = {};
 
 // Clean up expired entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const key in ipStore) {
-    if (ipStore[key].resetTime < now) {
-      delete ipStore[key];
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const key in ipStore) {
+      if (ipStore[key].resetTime < now) {
+        delete ipStore[key];
+      }
     }
-  }
-  for (const key in userStore) {
-    if (userStore[key].resetTime < now) {
-      delete userStore[key];
+    for (const key in userStore) {
+      if (userStore[key].resetTime < now) {
+        delete userStore[key];
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000
+);
 
 interface RateLimitOptions {
-  windowMs: number;        // Time window in milliseconds
-  maxRequests: number;     // Max requests per window
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Max requests per window
   keyGenerator?: (req: Request) => string;
   message?: string;
 }
@@ -41,8 +44,8 @@ interface RateLimitOptions {
  */
 export const rateLimit = (options: RateLimitOptions) => {
   const {
-    windowMs = 60 * 1000,  // Default: 1 minute
-    maxRequests = 10,       // Default: 10 requests per minute
+    windowMs = 60 * 1000, // Default: 1 minute
+    maxRequests = 10, // Default: 10 requests per minute
     keyGenerator = (req: Request) => {
       // Use user ID if authenticated, otherwise IP
       const authReq = req as AuthenticatedRequest;
@@ -94,8 +97,8 @@ export const rateLimit = (options: RateLimitOptions) => {
  * More restrictive: 10 requests per minute per user
  */
 export const aiRateLimit = rateLimit({
-  windowMs: 60 * 1000,    // 1 minute
-  maxRequests: 10,        // 10 requests per minute
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 10, // 10 requests per minute
   message: 'AI request limit exceeded. Please wait before making more AI requests.',
 });
 
@@ -104,7 +107,7 @@ export const aiRateLimit = rateLimit({
  * 100 requests per minute per user
  */
 export const generalRateLimit = rateLimit({
-  windowMs: 60 * 1000,    // 1 minute
-  maxRequests: 100,       // 100 requests per minute
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 100, // 100 requests per minute
   message: 'Request limit exceeded. Please slow down.',
 });

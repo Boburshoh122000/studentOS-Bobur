@@ -5,6 +5,9 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import prettier from 'eslint-config-prettier';
 
 export default [
+  {
+    ignores: ['dist/', 'node_modules/', 'backend/'],
+  },
   js.configs.recommended,
   ...typescript.configs.recommended,
   prettier,
@@ -38,6 +41,29 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'backend/'],
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: {
+        caches: 'readonly',
+        fetch: 'readonly',
+        self: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['telegram-bot/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        Buffer: 'readonly',
+        URL: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        require: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
   },
 ];

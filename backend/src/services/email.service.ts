@@ -42,7 +42,12 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
 /**
  * Send email via SendGrid
  */
-async function sendWithSendGrid(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+async function sendWithSendGrid(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<boolean> {
   if (!EMAIL_API_KEY) {
     console.error('SendGrid API key not configured');
     return false;
@@ -51,7 +56,7 @@ async function sendWithSendGrid(to: string, subject: string, html: string, text?
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${EMAIL_API_KEY}`,
+      Authorization: `Bearer ${EMAIL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -71,7 +76,12 @@ async function sendWithSendGrid(to: string, subject: string, html: string, text?
 /**
  * Send email via Resend
  */
-async function sendWithResend(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+async function sendWithResend(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<boolean> {
   if (!EMAIL_API_KEY) {
     console.error('Resend API key not configured');
     return false;
@@ -80,7 +90,7 @@ async function sendWithResend(to: string, subject: string, html: string, text?: 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${EMAIL_API_KEY}`,
+      Authorization: `Bearer ${EMAIL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

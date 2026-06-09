@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database.js';
@@ -89,37 +88,41 @@ router.get('/transactions', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
-router.post('/transactions', validate(transactionSchema), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const { amount, type, categoryId, description, date } = req.body;
-    
-    // Check if category belongs to user
-    if (categoryId) {
+router.post(
+  '/transactions',
+  validate(transactionSchema),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const { amount, type, categoryId, description, date } = req.body;
+
+      // Check if category belongs to user
+      if (categoryId) {
         const category = await prisma.financeCategory.findFirst({
-            where: { id: categoryId, userId: req.user!.id }
+          where: { id: categoryId, userId: req.user!.id },
         });
         if (!category) {
-            res.status(400).json({ error: 'Invalid category' });
-            return;
+          res.status(400).json({ error: 'Invalid category' });
+          return;
         }
-    }
+      }
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        userId: req.user!.id,
-        amount,
-        type,
-        categoryId,
-        description,
-        date: date ? new Date(date) : undefined,
-      },
-      include: { category: true },
-    });
-    res.json(transaction);
-  } catch (error) {
-    next(error);
+      const transaction = await prisma.transaction.create({
+        data: {
+          userId: req.user!.id,
+          amount,
+          type,
+          categoryId,
+          description,
+          date: date ? new Date(date) : undefined,
+        },
+        include: { category: true },
+      });
+      res.json(transaction);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 router.delete('/transactions/:id', async (req: AuthenticatedRequest, res, next) => {
   try {
@@ -146,19 +149,23 @@ router.get('/categories', async (req: AuthenticatedRequest, res, next) => {
   }
 });
 
-router.post('/categories', validate(categorySchema), async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const category = await prisma.financeCategory.create({
-      data: {
-        userId: req.user!.id,
-        ...req.body,
-      },
-    });
-    res.json(category);
-  } catch (error) {
-    next(error);
+router.post(
+  '/categories',
+  validate(categorySchema),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const category = await prisma.financeCategory.create({
+        data: {
+          userId: req.user!.id,
+          ...req.body,
+        },
+      });
+      res.json(category);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Budgets
 router.get('/budgets', async (req: AuthenticatedRequest, res, next) => {
@@ -167,29 +174,31 @@ router.get('/budgets', async (req: AuthenticatedRequest, res, next) => {
       where: { userId: req.user!.id },
       include: { category: true },
     });
-    
+
     // Calculate spending against budget
-    const budgetsWithProgress = await Promise.all(budgets.map(async (budget) => {
+    const budgetsWithProgress = await Promise.all(
+      budgets.map(async (budget) => {
         const now = new Date();
         const start = new Date(now.getFullYear(), now.getMonth(), 1);
         const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
+
         const spent = await prisma.transaction.aggregate({
-            where: {
-                userId: req.user!.id,
-                categoryId: budget.categoryId,
-                type: 'EXPENSE',
-                date: { gte: start, lte: end }
-            },
-            _sum: { amount: true }
+          where: {
+            userId: req.user!.id,
+            categoryId: budget.categoryId,
+            type: 'EXPENSE',
+            date: { gte: start, lte: end },
+          },
+          _sum: { amount: true },
         });
-        
+
         return {
-            ...budget,
-            spent: spent._sum.amount || 0,
-            remaining: budget.amount - (spent._sum.amount || 0)
+          ...budget,
+          spent: spent._sum.amount || 0,
+          remaining: budget.amount - (spent._sum.amount || 0),
         };
-    }));
+      })
+    );
 
     res.json(budgetsWithProgress);
   } catch (error) {
@@ -200,7 +209,7 @@ router.get('/budgets', async (req: AuthenticatedRequest, res, next) => {
 router.post('/budgets', validate(budgetSchema), async (req: AuthenticatedRequest, res, next) => {
   try {
     const { categoryId, amount, period } = req.body;
-    
+
     const budget = await prisma.budget.upsert({
       where: {
         userId_categoryId_period: {

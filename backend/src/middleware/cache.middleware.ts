@@ -10,14 +10,17 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 
 // Clean up expired entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of cache.entries()) {
-    if (entry.expiry < now) {
-      cache.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, entry] of cache.entries()) {
+      if (entry.expiry < now) {
+        cache.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000
+);
 
 /**
  * Caching middleware for GET requests
@@ -45,7 +48,7 @@ export const cacheMiddleware = (durationSeconds: number = 300) => {
     res.json = (data: any) => {
       cache.set(key, {
         data,
-        expiry: Date.now() + (durationSeconds * 1000),
+        expiry: Date.now() + durationSeconds * 1000,
       });
       res.setHeader('X-Cache', 'MISS');
       return originalJson(data);
@@ -75,6 +78,6 @@ export const clearCache = () => {
 };
 
 // Pre-configured cache durations
-export const shortCache = cacheMiddleware(60);      // 1 minute
-export const mediumCache = cacheMiddleware(300);    // 5 minutes
-export const longCache = cacheMiddleware(900);      // 15 minutes
+export const shortCache = cacheMiddleware(60); // 1 minute
+export const mediumCache = cacheMiddleware(300); // 5 minutes
+export const longCache = cacheMiddleware(900); // 15 minutes

@@ -2,7 +2,12 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircleIcon, CpuChipIcon, DocumentTextIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
+import {
+  CheckCircleIcon,
+  CpuChipIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/solid';
 
 const containerVariants = {
   hidden: {},
@@ -153,9 +158,7 @@ export default function MinimalCoreTools() {
             </p>
             {/* Decorative BG element */}
             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-gray-50 rounded-full border border-gray-100" />
-            <ShieldCheckIcon
-              className="absolute -bottom-6 -right-6 w-32 h-32 text-gray-100 z-0"
-            />
+            <ShieldCheckIcon className="absolute -bottom-6 -right-6 w-32 h-32 text-gray-100 z-0" />
           </motion.div>
 
           {/* Card 4: Smart Learning Plans (Square) */}
@@ -177,9 +180,7 @@ export default function MinimalCoreTools() {
             </p>
             {/* Decorative BG element */}
             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-50 rounded-full border border-indigo-100/50" />
-            <CpuChipIcon
-              className="absolute -bottom-4 -right-4 w-32 h-32 text-indigo-100/50 z-0"
-            />
+            <CpuChipIcon className="absolute -bottom-4 -right-4 w-32 h-32 text-indigo-100/50 z-0" />
           </motion.div>
         </motion.div>
       </div>

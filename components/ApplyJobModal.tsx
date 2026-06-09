@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { jobApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
-import { BriefcaseIcon, InformationCircleIcon, MapPinIcon, PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import {
+  BriefcaseIcon,
+  InformationCircleIcon,
+  MapPinIcon,
+  PaperAirplaneIcon,
+} from '@heroicons/react/24/solid';
 
 interface Job {
   id: string;
