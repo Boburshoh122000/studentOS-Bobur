@@ -33,48 +33,55 @@ html {
   animation-delay: -3.2s;
 }
 
-/* Left zone — 5 scattered positions */
-.lp-0 {
-  top: 4%;
-  left: -3%;
+/* CoreSolutions — per-card positions via data attribute (no inline styles) */
+[data-card='l0'] {
+  top: 3%;
+  left: -10%;
 }
-.lp-1 {
-  top: 30%;
-  left: 42%;
+[data-card='l1'] {
+  top: 22%;
+  left: 12%;
 }
-.lp-2 {
+[data-card='l2'] {
   top: 56%;
-  left: -5%;
+  left: -8%;
 }
-.lp-3 {
-  top: 12%;
-  left: 54%;
+[data-card='l3'] {
+  top: 8%;
+  left: 48%;
 }
-.lp-4 {
-  top: 67%;
-  left: 24%;
+[data-card='l4'] {
+  top: 65%;
+  left: 35%;
 }
 
-/* Right zone — mirrored */
-.rp-0 {
-  top: 4%;
-  right: -3%;
+[data-card='r0'] {
+  top: 3%;
+  right: -10%;
 }
-.rp-1 {
-  top: 30%;
-  right: 42%;
+[data-card='r1'] {
+  top: 22%;
+  right: 12%;
 }
-.rp-2 {
+[data-card='r2'] {
   top: 56%;
-  right: -5%;
+  right: -8%;
 }
-.rp-3 {
-  top: 12%;
-  right: 54%;
+[data-card='r3'] {
+  top: 8%;
+  right: 48%;
 }
-.rp-4 {
-  top: 67%;
-  right: 24%;
+[data-card='r4'] {
+  top: 65%;
+  right: 35%;
+}
+
+/* Outer-edge gradient fades for left/right photo zones */
+.pz-fade-l {
+  background: linear-gradient(to right, #f4f4f7 0%, transparent 40%);
+}
+.pz-fade-r {
+  background: linear-gradient(to left, #f4f4f7 0%, transparent 40%);
 }
 
 body {
