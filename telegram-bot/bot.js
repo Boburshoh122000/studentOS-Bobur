@@ -132,8 +132,6 @@ function t(ctx, key, params = {}) {
     for (const [k, v] of Object.entries(params)) text = text.replaceAll(`{${k}}`, v);
     return text;
 }
-function getLang(ctx) { return ctx.session?.lang || 'en'; }
-
 function mainMenuKb(ctx) {
     return Markup.keyboard([[t(ctx, 'btn_habit')], [t(ctx, 'btn_help')]]).resize();
 }
@@ -250,7 +248,7 @@ bot.action(/toggle_(\d+)/, async (ctx) => {
     }
     const buttons = habits.map((hb, i) => [Markup.button.callback(`${hb.lastDone === today ? '✅' : '⬜'} ${hb.name}  (🔥${hb.streak})`, `toggle_${i}`)]);
     buttons.push([Markup.button.callback(t(ctx, 'habit_delete_btn'), 'delete_menu')]);
-    try { await ctx.editMessageText(t(ctx, 'habit_list'), { parse_mode: 'Markdown', ...Markup.inlineKeyboard(buttons) }); } catch { }
+    try { await ctx.editMessageText(t(ctx, 'habit_list'), { parse_mode: 'Markdown', ...Markup.inlineKeyboard(buttons) }); } catch { /* message unchanged — Telegram rejects no-op edits */ }
 });
 
 bot.action('delete_menu', async (ctx) => {
