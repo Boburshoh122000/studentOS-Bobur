@@ -115,7 +115,7 @@ export default function TestimonialsSection() {
   useEffect(() => {
     if (!inView || phase !== 'idle') return;
     setPhase('revealing');
-    const t = setTimeout(() => setPhase('done'), 2300);
+    const t = setTimeout(() => setPhase('done'), 4000);
     return () => clearTimeout(t);
   }, [inView, phase]);
 
@@ -177,7 +177,7 @@ export default function TestimonialsSection() {
                 initial={{ opacity: 0, y: 50, scale: 0.88 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 24, scale: 0.9 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               >
                 <EnvelopeSVG />
               </motion.div>
@@ -193,7 +193,7 @@ export default function TestimonialsSection() {
                 ? { y: 0, clipPath: 'inset(0% 0 0 0 round 24px)' }
                 : { y: 80, clipPath: 'inset(100% 0 0 0 round 24px)' }
             }
-            transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.4, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="overflow-hidden rounded-3xl">
               <AnimatePresence mode="wait" custom={direction}>
