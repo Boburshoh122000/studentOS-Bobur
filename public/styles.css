@@ -498,6 +498,15 @@ input[type='range']:focus {
   filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.1));
 }
 
+/* CoreSolutions photo cards — radial vignette fades all edges to bg */
+.card-vignette {
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    transparent 45%,
+    rgba(244, 244, 247, 0.9) 100%
+  );
+}
+
 /* Integrations row — 3D card tilt requires perspective on the parent */
 .integrations-row {
   perspective: 1200px;

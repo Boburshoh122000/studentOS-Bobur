@@ -77,7 +77,7 @@ function OrbitZone({ imgs, positions }: { imgs: string[]; positions: OrbPos[] })
           >
             {/* Inner div handles gentle float on top of the orbit position */}
             <motion.div
-              className="w-full h-full border-[6px] border-white rounded-[2rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15),inset_0_0_32px_14px_rgba(244,244,247,0.65)] overflow-hidden"
+              className="relative w-full h-full border-[6px] border-white rounded-[2rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] overflow-hidden"
               animate={{ y: [0, -7, 0] }}
               transition={{
                 duration: 3.8 + i * 0.5,
@@ -87,6 +87,7 @@ function OrbitZone({ imgs, positions }: { imgs: string[]; positions: OrbPos[] })
               }}
             >
               <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <div className="card-vignette absolute inset-0 pointer-events-none" />
             </motion.div>
           </motion.div>
         );
