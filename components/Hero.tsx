@@ -15,29 +15,41 @@ const LINE_DURATION = 0.6;
 const LINE_STAGGER = 0.18;
 
 type NodeType = 'icon' | 'photo' | 'white';
+type LineFrom = 'center' | 'leftHub' | 'rightHub';
 
 type NodeCfg = {
   id: string;
   x: number;
   y: number;
   type: NodeType;
+  lineFrom: LineFrom;
   bgClass?: string;
   photoUrl?: string;
   icon?: React.ReactNode;
-  size: number; // px — must equal sizeClass dimension (used for offset math)
+  size: number; // px — equals the w-/h- arbitrary class below (for offset math)
   sizeClass: string;
   floatDuration: number;
   floatY: number[];
 };
 
-// Positions scaled directly from frame_00.jpg (CY = 150).
-// Compact + flat: two horizontal arms + four tight corner nodes.
+// SVG viewBox 1024 × 300; badge centre at (CX, CY)
+const CX = 512;
+const CY = 150;
+
+// Fishbone fork points — corner nodes branch off here, NOT from dead centre.
+// This reproduces the reference: 2 horizontal spines + 4 forked branches.
+const HUB_DX = 150;
+const LEFT_HUB = { x: CX - HUB_DX, y: CY };
+const RIGHT_HUB = { x: CX + HUB_DX, y: CY };
+
+// Order: spines (far photo / white card) draw first, then the forked corners.
 const NODES: NodeCfg[] = [
   {
     id: 'far-left',
     x: -378,
     y: 0,
     type: 'photo',
+    lineFrom: 'center', // horizontal spine through the left hub
     photoUrl:
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
     size: 76,
@@ -46,10 +58,23 @@ const NODES: NodeCfg[] = [
     floatY: [5, -6, 5],
   },
   {
+    id: 'far-right',
+    x: 378,
+    y: -2,
+    type: 'white',
+    lineFrom: 'center', // horizontal spine through the right hub
+    icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
+    size: 84,
+    sizeClass: 'w-[84px] h-[84px]',
+    floatDuration: 5.6,
+    floatY: [5, -5, 5],
+  },
+  {
     id: 'top-left',
     x: -272,
     y: -76,
     type: 'icon',
+    lineFrom: 'leftHub',
     bgClass: 'bg-[#F97316]',
     icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
     size: 66,
@@ -62,6 +87,7 @@ const NODES: NodeCfg[] = [
     x: -246,
     y: 58,
     type: 'icon',
+    lineFrom: 'leftHub',
     bgClass: 'bg-[#22C55E]',
     icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
     size: 66,
@@ -74,6 +100,7 @@ const NODES: NodeCfg[] = [
     x: 248,
     y: -66,
     type: 'icon',
+    lineFrom: 'rightHub',
     bgClass: 'bg-[#F43F5E]',
     icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
     size: 66,
@@ -82,21 +109,11 @@ const NODES: NodeCfg[] = [
     floatY: [-6, 4, -6],
   },
   {
-    id: 'far-right',
-    x: 378,
-    y: -2,
-    type: 'white',
-    icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
-    size: 84,
-    sizeClass: 'w-[84px] h-[84px]',
-    floatDuration: 5.6,
-    floatY: [5, -5, 5],
-  },
-  {
     id: 'bottom-right',
     x: 272,
     y: 72,
     type: 'photo',
+    lineFrom: 'rightHub',
     photoUrl:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
     size: 64,
@@ -106,11 +123,13 @@ const NODES: NodeCfg[] = [
   },
 ];
 
-// SVG viewBox is 1024 × 300; badge centre sits at (CX, CY)
-const CX = 512;
-const CY = 150;
-
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
+
+function hubFor(from: LineFrom) {
+  if (from === 'leftHub') return LEFT_HUB;
+  if (from === 'rightHub') return RIGHT_HUB;
+  return { x: CX, y: CY };
+}
 
 function TypewriterLine({ text, startDelay }: { text: string; startDelay: number }) {
   return (
@@ -123,8 +142,7 @@ function TypewriterLine({ text, startDelay }: { text: string; startDelay: number
           transition={{ duration: 0.2, delay: startDelay + i * 0.04, ease: 'easeOut' }}
           className="inline-block whitespace-pre"
         >
-          {/* nbsp keeps the space from collapsing inside inline-block */}
-          {char === ' ' ? ' ' : char}
+          {char === ' ' ? ' ' : char}
         </motion.span>
       ))}
     </>
@@ -171,7 +189,7 @@ export default function Hero() {
 
   return (
     <section className="relative w-full flex flex-col items-center pt-[120px] pb-20 overflow-visible z-20 bg-white">
-      {/* ── Visual Network — 300px tall, centre at CY=150 ── */}
+      {/* ── Visual Network — fishbone: 2 spines + 4 forked branches ── */}
       <div className="relative w-full max-w-[1024px] h-[300px] flex items-center justify-center pointer-events-none">
         <svg
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
@@ -182,17 +200,20 @@ export default function Hero() {
           {NODES.map((node, i) => {
             const tx = CX + node.x;
             const ty = CY + node.y;
+            const start = hubFor(node.lineFrom);
             const lineDelay = LINES_START + i * LINE_STAGGER;
 
-            const len = Math.sqrt(node.x * node.x + node.y * node.y);
-            const f = 1 - 52 / len;
-            const dotX = CX + node.x * f;
-            const dotY = CY + node.y * f;
+            // Dot sits 52px from the node centre, back along the line toward its start
+            const dx = start.x - tx;
+            const dy = start.y - ty;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const dotX = tx + (dx / len) * 52;
+            const dotY = ty + (dy / len) * 52;
 
             return (
               <React.Fragment key={node.id}>
                 <motion.path
-                  d={`M${CX},${CY} L${tx},${ty}`}
+                  d={`M${start.x},${start.y} L${tx},${ty}`}
                   stroke="#dfe2e8"
                   strokeWidth="1.5"
                   initial={{ pathLength: 0 }}
