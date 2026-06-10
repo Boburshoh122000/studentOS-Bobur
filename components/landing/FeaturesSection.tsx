@@ -1,5 +1,12 @@
 import { motion } from 'framer-motion';
-import { CalendarDaysIcon, ChartBarIcon, BriefcaseIcon } from '@heroicons/react/24/solid';
+import { useNavigate } from 'react-router-dom';
+import {
+  CalendarDaysIcon,
+  ChartBarIcon,
+  BriefcaseIcon,
+  ClockIcon,
+  BookOpenIcon,
+} from '@heroicons/react/24/solid';
 import ScrollReveal from '../ScrollReveal';
 
 /* ── Card rise animation variant ── */
@@ -20,50 +27,58 @@ const cardVariants = {
    MINI UI MOCKUPS (inside each card)
 ══════════════════════════════════════ */
 
-/** Bar chart mockup — Study Schedule attendance */
-function ScheduleMockup() {
-  const bars = [
-    { day: 'M', h: 70, color: 'bg-indigo-500' },
-    { day: 'T', h: 90, color: 'bg-indigo-500' },
-    { day: 'W', h: 50, color: 'bg-indigo-300' },
-    { day: 'T', h: 85, color: 'bg-indigo-500' },
-    { day: 'F', h: 60, color: 'bg-indigo-300' },
-    { day: 'S', h: 30, color: 'bg-slate-200' },
-    { day: 'S', h: 20, color: 'bg-slate-200' },
-  ];
+/** 3D tilt card (Uiverse by chase2k25, themed for Study Schedule) */
+function StudyScheduleCard() {
+  const navigate = useNavigate();
   return (
-    <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-xs font-bold text-slate-700">Study Attendance</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">This week</p>
+    <div className="study3d">
+      <div className="card">
+        <div className="glass" />
+        <div className="content">
+          <span className="title">Study Schedule</span>
+          <span className="text">
+            Track attendance, plan your sessions, and never miss a class with smart reminders.
+          </span>
         </div>
-        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-          83%
-        </span>
-      </div>
-      {/* Bar chart */}
-      <div className="flex items-end gap-2 h-20">
-        {bars.map((b, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <motion.div
-              className={`w-full rounded-t-md ${b.color}`}
-              initial={{ height: 0 }}
-              whileInView={{ height: `${b.h}%` }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 + i * 0.06, ease: 'easeOut' }}
-            />
-            <span className="text-[9px] text-slate-400 font-medium">{b.day}</span>
+        <div className="bottom">
+          <div className="view-more">
+            <button
+              type="button"
+              className="view-more-button"
+              onClick={() => navigate('/signup/step-1')}
+            >
+              Learn more
+            </button>
+            <svg
+              className="svg"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 12h15m0 0-6-6m6 6-6 6" />
+            </svg>
           </div>
-        ))}
-      </div>
-      {/* Footer stat */}
-      <div className="mt-3 flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-        <span className="text-[10px] text-slate-500">
-          <span className="font-bold text-slate-700">5 of 6</span> sessions completed
-        </span>
+          <div className="social-buttons-container">
+            <button type="button" className="social-button" aria-label="Schedule">
+              <CalendarDaysIcon className="svg" />
+            </button>
+            <button type="button" className="social-button" aria-label="Reminders">
+              <ClockIcon className="svg" />
+            </button>
+            <button type="button" className="social-button" aria-label="Courses">
+              <BookOpenIcon className="svg" />
+            </button>
+          </div>
+        </div>
+        <div className="logo">
+          <span className="circle circle1" />
+          <span className="circle circle2" />
+          <span className="circle circle3" />
+          <span className="circle circle4" />
+          <span className="circle circle5">
+            <CalendarDaysIcon className="svg" />
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -239,15 +254,8 @@ function FeatureCard({
 /* ══════════════════════════════════════
    MAIN EXPORT
 ══════════════════════════════════════ */
+/* The first column is the 3D Study Schedule card; these are the remaining two. */
 const cards: Omit<FeatureCardProps, 'index'>[] = [
-  {
-    icon: CalendarDaysIcon,
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
-    title: 'Study Schedule',
-    description: 'Track attendance and never miss a session.',
-    mockup: <ScheduleMockup />,
-  },
   {
     icon: ChartBarIcon,
     iconBg: 'bg-violet-100',
@@ -286,10 +294,20 @@ export default function FeaturesSection() {
           </ScrollReveal>
         </div>
 
-        {/* Feature cards */}
+        {/* Feature cards — first column is the 3D Study Schedule card */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <motion.div
+            custom={0}
+            variants={cardVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            className="flex items-center justify-center"
+          >
+            <StudyScheduleCard />
+          </motion.div>
           {cards.map((card, i) => (
-            <FeatureCard key={card.title} {...card} index={i} />
+            <FeatureCard key={card.title} {...card} index={i + 1} />
           ))}
         </div>
       </div>
