@@ -42,7 +42,12 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
 /**
  * Send email via SendGrid
  */
-async function sendWithSendGrid(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+async function sendWithSendGrid(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<boolean> {
   if (!EMAIL_API_KEY) {
     console.error('SendGrid API key not configured');
     return false;
@@ -51,7 +56,7 @@ async function sendWithSendGrid(to: string, subject: string, html: string, text?
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${EMAIL_API_KEY}`,
+      Authorization: `Bearer ${EMAIL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -71,7 +76,12 @@ async function sendWithSendGrid(to: string, subject: string, html: string, text?
 /**
  * Send email via Resend
  */
-async function sendWithResend(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+async function sendWithResend(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<boolean> {
   if (!EMAIL_API_KEY) {
     console.error('Resend API key not configured');
     return false;
@@ -80,7 +90,7 @@ async function sendWithResend(to: string, subject: string, html: string, text?: 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${EMAIL_API_KEY}`,
+      Authorization: `Bearer ${EMAIL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -123,7 +133,7 @@ export const emailTemplates = {
           <li>📝 <strong>Optimize Your CV</strong> - Get AI-powered feedback</li>
           <li>📊 <strong>Track Your Habits</strong> - Build productive routines</li>
         </ul>
-        <a href="https://studentos-bobur-production.up.railway.app/dashboard" style="display: inline-block; background: #2D4DE0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Get Started</a>
+        <a href="https://studentos.uz/dashboard" style="display: inline-block; background: #2D4DE0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Get Started</a>
       </div>
     `,
     text: `Welcome to StudentOS, ${name}! Start exploring your dashboard.`,
