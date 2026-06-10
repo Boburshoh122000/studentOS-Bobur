@@ -197,33 +197,37 @@ export default function Hero() {
             const fork = node.x < 0 ? LEFT_FORK : RIGHT_FORK;
             const lineDelay = LINES_START + i * LINE_STAGGER;
 
-            // Dot sits 76px from the node centre, back along the line (reference spacing)
-            const dx = fork.x - tx;
-            const dy = fork.y - ty;
-            const len = Math.hypot(dx, dy);
-            const dotX = tx + (dx / len) * 76;
-            const dotY = ty + (dy / len) * 76;
+            // Corner nodes: angular two-segment path — horizontal out of the node,
+            // then a 45° diagonal into the fork. The bend sits |dy| away from the
+            // fork horizontally so the diagonal is exactly 45° (reference geometry).
+            // Far nodes: single straight horizontal segment.
+            const dy = ty - fork.y;
+            const bendX = fork.x + (node.x > 0 ? Math.abs(dy) : -Math.abs(dy));
+            const d = node.dot
+              ? `M${fork.x},${fork.y} L${bendX},${ty} L${tx},${ty}`
+              : `M${fork.x},${fork.y} L${tx},${ty}`;
 
             return (
               <React.Fragment key={node.id}>
                 <motion.path
-                  d={`M${fork.x},${fork.y} L${tx},${ty}`}
-                  stroke="#dfe2e8"
-                  strokeWidth="1.5"
+                  d={d}
+                  stroke="#D1D5DB"
+                  strokeWidth="1.2"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: LINE_DURATION, delay: lineDelay, ease: 'easeOut' }}
                 />
+                {/* Solid dot AT the junction (bend) point, as in the reference */}
                 {node.dot && (
                   <motion.circle
-                    cx={dotX}
-                    cy={dotY}
+                    cx={bendX}
+                    cy={ty}
                     r="3.5"
                     fill="#7C3AED"
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{
-                      delay: lineDelay + LINE_DURATION,
+                      delay: lineDelay + LINE_DURATION * 0.55,
                       type: 'spring',
                       stiffness: 420,
                       damping: 18,
@@ -252,7 +256,7 @@ export default function Hero() {
               ease: 'easeInOut',
               delay: CENTER_POP_DELAY + 0.7,
             }}
-            className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_14px_50px_rgba(109,40,217,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+            className="w-28 h-28 rounded-[2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_14px_50px_rgba(124,58,237,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
           >
             {/* Check sits inside a thin white ring — matches reference focal point */}
             <div className="w-[70px] h-[70px] rounded-full border-[3px] border-white/90 flex items-center justify-center">
@@ -321,7 +325,7 @@ export default function Hero() {
         <motion.button
           type="button"
           onClick={() => navigate('/signup/step-1')}
-          className="mt-8 px-9 py-4 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-base shadow-lg shadow-violet-500/30 transition-all active:scale-95"
+          className="mt-8 px-9 py-4 rounded-full bg-[#F26B5B] hover:bg-[#E0584A] text-white font-semibold text-base shadow-lg shadow-[#F26B5B]/30 transition-all active:scale-95"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: line2End + 0.45, duration: 0.5 }}
