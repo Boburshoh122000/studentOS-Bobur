@@ -5,7 +5,6 @@ import CoreSolutions from './CoreSolutions';
 import FeaturesSection from './landing/FeaturesSection';
 import Integrations from './landing/Integrations';
 import TestimonialsSection from './landing/TestimonialsSection';
-import MinimalCoreTools from './MinimalCoreTools';
 import MinimalPricing from './MinimalPricing';
 import MinimalFooter from './MinimalFooter';
 
@@ -30,10 +29,7 @@ export default function LandingPage({ navigateTo: _navigateTo }: NavigationProps
         {/* 5 ── Testimonials */}
         <TestimonialsSection />
 
-        {/* 6 ── Core Tools */}
-        <MinimalCoreTools />
-
-        {/* 7 ── Pricing */}
+        {/* 6 ── Pricing */}
         <MinimalPricing />
       </main>
 
