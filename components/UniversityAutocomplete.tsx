@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { universityApi } from '../src/services/api';
 import { BuildingLibraryIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
@@ -134,35 +134,34 @@ export default function UniversityAutocomplete({
   const showCustomOption = query.trim().length >= 2;
   const totalOptions = filtered.length + (showCustomOption ? 1 : 0);
 
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isOpen) {
-        if (e.key === 'ArrowDown' && query.trim().length >= 2) {
-          setIsOpen(true);
-          setHighlighted(0);
-        }
-        return;
+  // Plain function: handler goes to a native input, so memoization buys nothing
+  // and the deps list (incl. selectItem/selectCustom) made useCallback pointless.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) {
+      if (e.key === 'ArrowDown' && query.trim().length >= 2) {
+        setIsOpen(true);
+        setHighlighted(0);
       }
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setHighlighted((h) => Math.min(h + 1, totalOptions - 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setHighlighted((h) => Math.max(h - 1, -1));
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (highlighted === filtered.length) {
-          selectCustom();
-        } else if (highlighted >= 0 && filtered[highlighted]) {
-          selectItem(filtered[highlighted]);
-        }
-      } else if (e.key === 'Escape') {
-        setIsOpen(false);
-        setHighlighted(-1);
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlighted((h) => Math.min(h + 1, totalOptions - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlighted((h) => Math.max(h - 1, -1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlighted === filtered.length) {
+        selectCustom();
+      } else if (highlighted >= 0 && filtered[highlighted]) {
+        selectItem(filtered[highlighted]);
       }
-    },
-    [isOpen, filtered, highlighted, query, totalOptions]
-  );
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+      setHighlighted(-1);
+    }
+  };
 
   const isMatched = value.id !== null;
 

@@ -131,7 +131,8 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
       }
       if (a && a.profile) {
         const prof = a.profile as Record<string, string>;
-        if (!fullName) setFullName(prof.fullName || '');
+        // functional update: don't overwrite a name the user already typed
+        setFullName((prev) => prev || prof.fullName || '');
         setAvatarUrl(prof.avatarUrl || '');
       }
     } catch {

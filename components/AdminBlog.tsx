@@ -107,7 +107,7 @@ export default function AdminBlog({ navigateTo: _navigateTo }: NavigationProps) 
         .replace(/(^-|-$)/g, '');
       setEditorData((prev) => ({ ...prev, slug: generatedSlug }));
     }
-  }, [editorData.title]);
+  }, [editorData.title, editorData.id]);
 
   const fetchPosts = async () => {
     setIsLoading(true);
