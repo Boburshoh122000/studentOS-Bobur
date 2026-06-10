@@ -12,7 +12,6 @@ import {
   PencilIcon,
   PlusIcon,
   TrashIcon,
-  UsersIcon,
 } from '@heroicons/react/24/solid';
 
 interface Scholarship {
@@ -198,7 +197,7 @@ const awardTypes = [
   'Research Grant',
 ];
 
-export default function AdminScholarships({ navigateTo }: NavigationProps) {
+export default function AdminScholarships({ navigateTo: _navigateTo }: NavigationProps) {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);

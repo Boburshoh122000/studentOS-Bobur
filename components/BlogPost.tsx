@@ -29,7 +29,7 @@ interface BlogPostData {
   };
 }
 
-export default function BlogPost({ navigateTo }: NavigationProps) {
+export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<BlogPostData | null>(null);

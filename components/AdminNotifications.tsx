@@ -16,7 +16,7 @@ interface SentNotification {
   user: { email: string; studentProfile?: { fullName?: string } };
 }
 
-export default function AdminNotifications({ navigateTo }: NavigationProps) {
+export default function AdminNotifications({ navigateTo: _navigateTo }: NavigationProps) {
   // Form state
   const [targetMode, setTargetMode] = useState<'user' | 'broadcast'>('user');
   const [email, setEmail] = useState('');

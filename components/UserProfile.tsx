@@ -187,7 +187,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
     setDraftWork({ ...emptyWork });
     setAddingWork(false);
   };
-  const saveEditWork = (i: number) => {
+  const saveEditWork = (_i: number) => {
     persist('work', { workExperience });
     setEditingWorkIdx(null);
   };
@@ -210,7 +210,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
     setDraftEdu({ ...emptyEdu });
     setAddingEdu(false);
   };
-  const saveEditEdu = (i: number) => {
+  const saveEditEdu = (_i: number) => {
     persist('edu', { educationHistory });
     setEditingEduIdx(null);
   };

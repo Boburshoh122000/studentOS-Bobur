@@ -133,7 +133,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
       setNewHabitTitle('');
       setShowNewHabitModal(false);
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error(t('HabitTracker.toast_create_fail'));
     }
   };
@@ -145,7 +145,7 @@ export default function HabitTracker({ navigateTo }: NavigationProps) {
       await habitApi.delete(id);
       toast.success(t('HabitTracker.toast_deleted'));
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error(t('HabitTracker.toast_delete_fail'));
     }
   };

@@ -155,7 +155,7 @@ function GrowthChart({ data }: { data: DayGrowth[] }) {
   );
 }
 
-export default function AdminDashboard({ navigateTo }: NavigationProps) {
+export default function AdminDashboard({ navigateTo: _navigateTo }: NavigationProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

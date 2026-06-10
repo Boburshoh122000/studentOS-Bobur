@@ -203,7 +203,7 @@ export default function EmployerDashboard({ navigateTo }: NavigationProps) {
         downloadCSV(csvData, 'candidates_export.csv');
         toast.success('Export completed', { id: 'export-apps' });
       }
-    } catch (e) {
+    } catch {
       toast.error('Export failed', { id: 'export-apps' });
     }
   };

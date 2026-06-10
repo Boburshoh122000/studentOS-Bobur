@@ -124,7 +124,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
       } else {
         toast.success('Profile updated successfully');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update profile');
     } finally {
       setIsSavingProfile(false);
@@ -162,7 +162,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
         setEmailPassword('');
         setProfileData((prev) => (prev ? { ...prev, email: newEmail.trim() } : null));
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update email');
     } finally {
       setIsSavingEmail(false);
@@ -211,7 +211,7 @@ export default function AdminProfile({ navigateTo }: NavigationProps) {
           navigateTo(Screen.SIGN_IN);
         }, 2000);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to change password');
     } finally {
       setIsSavingPassword(false);

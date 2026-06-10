@@ -92,7 +92,6 @@ export default function Sidebar({
 
   // User data
   const fullName = userData?.profile?.fullName || userData?.email?.split('@')[0] || 'User';
-  const email = userData?.email || '';
   const avatarUrl =
     userData?.profile?.avatarUrl ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random`;

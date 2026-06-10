@@ -128,7 +128,7 @@ const exportToCSV = (users: User[]) => {
   link.click();
 };
 
-export default function AdminUsers({ navigateTo }: NavigationProps) {
+export default function AdminUsers({ navigateTo: _navigateTo }: NavigationProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<UsersPagination>({
     page: 1,
@@ -223,7 +223,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
       await adminApi.updateUser(userId, { isActive: false });
       toast.success('User has been banned');
       fetchUsers();
-    } catch (error) {
+    } catch {
       toast.error('Failed to ban user');
     }
     setActionMenuOpen(null);
@@ -235,7 +235,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
       await adminApi.updateUser(userId, { isActive: true });
       toast.success('User has been activated');
       fetchUsers();
-    } catch (error) {
+    } catch {
       toast.error('Failed to activate user');
     }
     setActionMenuOpen(null);
@@ -248,7 +248,7 @@ export default function AdminUsers({ navigateTo }: NavigationProps) {
       toast.success('User deleted successfully');
       setShowDeleteConfirm(null);
       fetchUsers();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete user');
     }
   };

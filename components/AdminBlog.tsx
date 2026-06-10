@@ -72,7 +72,7 @@ const QUILL_MODULES = {
   ],
 };
 
-export default function AdminBlog({ navigateTo }: NavigationProps) {
+export default function AdminBlog({ navigateTo: _navigateTo }: NavigationProps) {
   const [view, setView] = useState<'list' | 'editor'>('list');
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'drafts'>('all');
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -119,7 +119,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
       } else if (data) {
         setPosts(data as BlogPost[]);
       }
-    } catch (err) {
+    } catch {
       toast.error('Network error loading posts');
     }
     setIsLoading(false);
@@ -186,7 +186,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         await fetchPosts();
         setView('list');
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to save draft');
     }
     setIsSaving(false);
@@ -228,7 +228,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         await fetchPosts();
         setView('list');
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to publish post');
     }
     setIsSaving(false);
@@ -249,7 +249,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         await fetchPosts();
         if (view === 'editor') setView('list');
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete post');
     }
   };
@@ -264,7 +264,7 @@ export default function AdminBlog({ navigateTo }: NavigationProps) {
         toast.success(newStatus === 'PUBLISHED' ? 'Post published!' : 'Post unpublished');
         await fetchPosts();
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to update post');
     }
   };

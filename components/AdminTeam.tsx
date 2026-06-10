@@ -133,7 +133,7 @@ const SOCIAL_PLATFORMS = [
   },
 ];
 
-export default function AdminTeam({ navigateTo }: NavigationProps) {
+export default function AdminTeam({ navigateTo: _navigateTo }: NavigationProps) {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

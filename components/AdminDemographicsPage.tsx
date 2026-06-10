@@ -126,7 +126,7 @@ function FieldDonut({ fields }: { fields: FieldRow[] }) {
 
 /* ─── Main Component ────────────────────────────────────────────────────── */
 
-export default function AdminDemographicsPage({ navigateTo }: NavigationProps) {
+export default function AdminDemographicsPage({ navigateTo: _navigateTo }: NavigationProps) {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [universities, setUniversities] = useState<UniRow[]>([]);
   const [fields, setFields] = useState<FieldRow[]>([]);
@@ -206,8 +206,6 @@ export default function AdminDemographicsPage({ navigateTo }: NavigationProps) {
   const filteredUnis = universities.filter(
     (u) => !uniSearch || u.name.toLowerCase().includes(uniSearch.toLowerCase())
   );
-
-  const ROLES = ['', 'STUDENT', 'EDUCATOR', 'EMPLOYER'];
 
   return (
     <main className="flex flex-1 flex-col overflow-y-auto bg-[#f6f6f8] dark:bg-[#111421]">

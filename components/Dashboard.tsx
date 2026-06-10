@@ -13,7 +13,6 @@ import {
   CheckCircleIcon,
   MagnifyingGlassIcon,
   ClockIcon,
-  EllipsisHorizontalIcon,
   ExclamationTriangleIcon,
   AcademicCapIcon,
   UserCircleIcon,
@@ -41,46 +40,6 @@ import telegramImg from '../public/icons/telegram 3d.png';
 import cvImg from '../public/icons/CV.png';
 import diamondImg from '../public/icons/diamond.png';
 
-/* ──── Status badge config ──── */
-const STATUS_CFG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
-  NEW: {
-    labelKey: 'Dashboard.status_applied',
-    dot: 'bg-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
-    text: 'text-blue-600 dark:text-blue-300',
-  },
-  SCREENING: {
-    labelKey: 'Dashboard.status_screening',
-    dot: 'bg-amber-500',
-    bg: 'bg-amber-50 dark:bg-amber-500/10',
-    text: 'text-amber-600 dark:text-amber-300',
-  },
-  INTERVIEW: {
-    labelKey: 'Dashboard.status_interview',
-    dot: 'bg-violet-500',
-    bg: 'bg-violet-50 dark:bg-violet-500/10',
-    text: 'text-violet-600 dark:text-violet-300',
-  },
-  OFFER: {
-    labelKey: 'Dashboard.status_offer',
-    dot: 'bg-emerald-500',
-    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-    text: 'text-emerald-600 dark:text-emerald-300',
-  },
-  REJECTED: {
-    labelKey: 'Dashboard.status_rejected',
-    dot: 'bg-red-500',
-    bg: 'bg-red-50 dark:bg-red-500/10',
-    text: 'text-red-600 dark:text-red-300',
-  },
-  WITHDRAWN: {
-    labelKey: 'Dashboard.status_withdrawn',
-    dot: 'bg-gray-400',
-    bg: 'bg-gray-100 dark:bg-gray-500/10',
-    text: 'text-gray-500 dark:text-gray-400',
-  },
-};
-
 /* ──── Shared class constants ──── */
 const CARD =
   'bg-white dark:bg-[#14161f] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none transition-all duration-200';
@@ -90,20 +49,6 @@ const LABEL =
   'text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-400 dark:text-gray-500';
 const VIEW_LINK =
   'text-[11px] font-bold text-primary flex items-center gap-1 hover:opacity-70 transition-opacity';
-
-/* ──── Company avatar color (hash by first char) ──── */
-const AVATAR_COLORS = [
-  'bg-blue-600',
-  'bg-violet-600',
-  'bg-emerald-600',
-  'bg-amber-500',
-  'bg-rose-600',
-  'bg-cyan-600',
-  'bg-orange-500',
-  'bg-slate-600',
-];
-const avatarColor = (name: string) =>
-  AVATAR_COLORS[Math.abs((name.toUpperCase().charCodeAt(0) || 65) - 65) % AVATAR_COLORS.length];
 
 /* ──── Relative time ──── */
 const timeAgo = (dateInput?: string | Date): string => {
@@ -115,19 +60,6 @@ const timeAgo = (dateInput?: string | Date): string => {
   if (d < 30) return `${Math.floor(d / 7)}w ago`;
   return `${Math.floor(d / 30)}mo ago`;
 };
-
-/* ──── Pipeline step index ──── */
-const stepFromStatus = (status: string): number => {
-  if (status === 'OFFER') return 2;
-  if (status === 'INTERVIEW') return 1;
-  return 0;
-};
-
-const PIPELINE_STEPS = [
-  'Dashboard.status_applied',
-  'Dashboard.status_interview',
-  'Dashboard.status_offer',
-] as const;
 
 /* ──── ATS chart custom tooltip ──── */
 const AtsTooltip = ({ active, payload }: any) => {
@@ -149,7 +81,7 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [firstName, setFirstName] = useState('');
   const { balance } = useCredits();
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [dismissedNudge, setDismissedNudge] = useState<string | null>(null);
   const [togglingHabit, setTogglingHabit] = useState<string | null>(null);
@@ -225,7 +157,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
     profileCompletion: 0,
     totalHabits: 0,
   };
-  const recentApps = dashboardData?.recentApplications || [];
   const habits: any[] = dashboardData?.habits || [];
   const atsHistory: any[] = dashboardData?.atsHistory || [];
   const upcomingDeadlines: any[] = dashboardData?.upcomingDeadlines || [];
@@ -235,7 +166,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
   const previousAtsScore: number | null = dashboardData?.previousAtsScore ?? null;
   const lastLoginAt: string | null = dashboardData?.lastLoginAt || null;
   const profile = dashboardData?.profile || {};
-  const latestApp = recentApps[0] || null;
 
   /* Greeting */
   const hr = new Date().getHours();
@@ -282,10 +212,6 @@ export default function Dashboard({ navigateTo }: NavigationProps) {
             g1: '#f87171',
             svgFill: '#ef4444',
           };
-
-  /* Latest app pipeline */
-  const currentStep = latestApp ? stepFromStatus(latestApp.status) : 0;
-  const isRejected = latestApp?.status === 'REJECTED';
 
   /* ──── Nudge computation ──── */
   const nudgeType = (() => {

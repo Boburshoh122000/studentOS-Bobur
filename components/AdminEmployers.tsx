@@ -103,7 +103,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-export default function AdminEmployers({ navigateTo }: NavigationProps) {
+export default function AdminEmployers({ navigateTo: _navigateTo }: NavigationProps) {
   // Data state
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [stats, setStats] = useState<Stats>({
