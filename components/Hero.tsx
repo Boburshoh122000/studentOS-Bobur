@@ -195,6 +195,7 @@ export default function Hero() {
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
           viewBox="0 0 1024 300"
           fill="none"
+          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           {NODES.map((node, i) => {
@@ -266,41 +267,42 @@ export default function Hero() {
         </motion.div>
 
         {/* ── Satellite Nodes — one by one, after their line arrives ── */}
+        {/* Positioned by % of the same 1024×300 coordinate space as the SVG, so
+            nodes and lines stay aligned at any container width. */}
         {NODES.map((node, i) => {
           const toolDelay = LINES_START + i * LINE_STAGGER + LINE_DURATION;
-          const half = node.size / 2;
+          const leftPct = ((CX + node.x) / 1024) * 100;
+          const topPct = ((CY + node.y) / 300) * 100;
           return (
-            <motion.div
+            <div
               key={node.id}
-              className="absolute z-10 pointer-events-auto"
-              style={{
-                left: '50%',
-                top: '50%',
-                marginLeft: node.x - half,
-                marginTop: node.y - half,
-              }}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                delay: toolDelay,
-                type: 'spring',
-                stiffness: 280,
-                damping: 17,
-              }}
+              className="absolute z-10 pointer-events-auto -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${leftPct}%`, top: `${topPct}%` }}
             >
               <motion.div
-                animate={{ y: node.floatY }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{
-                  duration: node.floatDuration,
-                  repeat: Infinity,
-                  repeatType: 'mirror',
-                  ease: 'easeInOut',
-                  delay: toolDelay + 0.5,
+                  delay: toolDelay,
+                  type: 'spring',
+                  stiffness: 280,
+                  damping: 17,
                 }}
               >
-                <NodeCard node={node} />
+                <motion.div
+                  animate={{ y: node.floatY }}
+                  transition={{
+                    duration: node.floatDuration,
+                    repeat: Infinity,
+                    repeatType: 'mirror',
+                    ease: 'easeInOut',
+                    delay: toolDelay + 0.5,
+                  }}
+                >
+                  <NodeCard node={node} />
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
