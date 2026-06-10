@@ -509,16 +509,20 @@ input[type='range']:focus {
   perspective: 1200px;
 }
 
-/* Hero node sizes */
-.hero-node-lg {
+/* Hero node sizes — matched to frame_00 reference proportions */
+.hero-node-white {
   width: 84px;
   height: 84px;
 }
-.hero-node-md {
-  width: 70px;
-  height: 70px;
+.hero-node-photo {
+  width: 76px;
+  height: 76px;
 }
-.hero-node-sm {
+.hero-node-photo-sm {
+  width: 64px;
+  height: 64px;
+}
+.hero-node-icon {
   width: 66px;
   height: 66px;
 }

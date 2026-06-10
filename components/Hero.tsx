@@ -12,7 +12,7 @@ import {
 const CENTER_POP_DELAY = 0.1;
 const LINES_START = 0.55;
 const LINE_DURATION = 0.6;
-const LINE_STAGGER = 0.2;
+const LINE_STAGGER = 0.18;
 
 type NodeType = 'icon' | 'photo' | 'white';
 
@@ -21,99 +21,94 @@ type NodeCfg = {
   x: number;
   y: number;
   type: NodeType;
-  bgClass?: string; // Tailwind bg-[color] class — no inline style needed
+  bgClass?: string;
   photoUrl?: string;
   icon?: React.ReactNode;
-  size: number; // used only for positioning math (half offset)
-  sizeClass: string; // CSS class from styles.css: hero-node-lg/md/sm
+  size: number; // px — must equal sizeClass dimension (used for offset math)
+  sizeClass: string;
   floatDuration: number;
   floatY: number[];
 };
 
-// Layout matches reference exactly:
-//   far-left  = circular student photo (male)
-//   top-left  = colored icon square
-//   bot-left  = colored icon square
-//   top-right = colored icon square
-//   far-right = white card (AI sparkle)
-//   bot-right = circular student photo (female)
+// Positions scaled directly from frame_00.jpg (CY = 150).
+// Compact + flat: two horizontal arms + four tight corner nodes.
 const NODES: NodeCfg[] = [
   {
     id: 'far-left',
-    x: -445,
-    y: 2,
+    x: -378,
+    y: 0,
     type: 'photo',
     photoUrl:
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    size: 84,
-    sizeClass: 'hero-node-lg',
+    size: 76,
+    sizeClass: 'hero-node-photo',
     floatDuration: 5.4,
     floatY: [5, -6, 5],
   },
   {
     id: 'top-left',
-    x: -310,
-    y: -100,
+    x: -272,
+    y: -76,
     type: 'icon',
     bgClass: 'bg-[#F97316]',
     icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
-    size: 70,
-    sizeClass: 'hero-node-md',
+    size: 66,
+    sizeClass: 'hero-node-icon',
     floatDuration: 4.2,
     floatY: [-5, 5, -5],
   },
   {
     id: 'bottom-left',
-    x: -278,
-    y: 86,
+    x: -246,
+    y: 58,
     type: 'icon',
     bgClass: 'bg-[#22C55E]',
     icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
-    size: 70,
-    sizeClass: 'hero-node-md',
+    size: 66,
+    sizeClass: 'hero-node-icon',
     floatDuration: 4.8,
     floatY: [6, -4, 6],
   },
   {
     id: 'top-right',
-    x: 284,
-    y: -100,
+    x: 248,
+    y: -66,
     type: 'icon',
     bgClass: 'bg-[#F43F5E]',
     icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
-    size: 70,
-    sizeClass: 'hero-node-md',
+    size: 66,
+    sizeClass: 'hero-node-icon',
     floatDuration: 3.9,
     floatY: [-6, 4, -6],
   },
   {
     id: 'far-right',
-    x: 445,
-    y: -4,
+    x: 378,
+    y: -2,
     type: 'white',
     icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
     size: 84,
-    sizeClass: 'hero-node-lg',
+    sizeClass: 'hero-node-white',
     floatDuration: 5.6,
     floatY: [5, -5, 5],
   },
   {
     id: 'bottom-right',
-    x: 318,
-    y: 88,
+    x: 272,
+    y: 72,
     type: 'photo',
     photoUrl:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-    size: 66,
-    sizeClass: 'hero-node-sm',
+    size: 64,
+    sizeClass: 'hero-node-photo-sm',
     floatDuration: 4.5,
     floatY: [4, -7, 4],
   },
 ];
 
-// SVG viewBox matches h-[320px] container; center at CY=160
+// SVG viewBox is 1024 × 300; badge centre sits at (CX, CY)
 const CX = 512;
-const CY = 160;
+const CY = 150;
 
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
 
@@ -126,9 +121,10 @@ function TypewriterLine({ text, startDelay }: { text: string; startDelay: number
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, delay: startDelay + i * 0.04, ease: 'easeOut' }}
-          className="inline-block"
+          className="inline-block whitespace-pre"
         >
-          {char === ' ' ? ' ' : char}
+          {/* nbsp keeps the space from collapsing inside inline-block */}
+          {char === ' ' ? ' ' : char}
         </motion.span>
       ))}
     </>
@@ -139,7 +135,7 @@ function NodeCard({ node }: { node: NodeCfg }) {
   if (node.type === 'photo') {
     return (
       <div
-        className={`${node.sizeClass} rounded-full overflow-hidden border-[5px] border-white shadow-[0_8px_28px_-4px_rgba(0,0,0,0.18)]`}
+        className={`${node.sizeClass} rounded-[20px] overflow-hidden border-[5px] border-white shadow-[0_10px_30px_-6px_rgba(0,0,0,0.22)]`}
       >
         <img src={node.photoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
       </div>
@@ -149,7 +145,7 @@ function NodeCard({ node }: { node: NodeCfg }) {
   if (node.type === 'white') {
     return (
       <div
-        className={`${node.sizeClass} rounded-[22px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_8px_28px_-4px_rgba(0,0,0,0.1)]`}
+        className={`${node.sizeClass} rounded-[20px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_10px_30px_-6px_rgba(0,0,0,0.12)]`}
       >
         {node.icon}
       </div>
@@ -158,7 +154,7 @@ function NodeCard({ node }: { node: NodeCfg }) {
 
   return (
     <div
-      className={`${node.sizeClass} ${node.bgClass} rounded-[18px] flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)]`}
+      className={`${node.sizeClass} ${node.bgClass} rounded-[18px] flex items-center justify-center shadow-[0_10px_26px_-6px_rgba(0,0,0,0.28)]`}
     >
       {node.icon}
     </div>
@@ -175,11 +171,11 @@ export default function Hero() {
 
   return (
     <section className="relative w-full flex flex-col items-center pt-[120px] pb-20 overflow-visible z-20 bg-white">
-      {/* ── Visual Network — 320px tall, CY=160 ── */}
-      <div className="relative w-full max-w-[1024px] h-[320px] flex items-center justify-center pointer-events-none">
+      {/* ── Visual Network — 300px tall, centre at CY=150 ── */}
+      <div className="relative w-full max-w-[1024px] h-[300px] flex items-center justify-center pointer-events-none">
         <svg
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
-          viewBox="0 0 1024 320"
+          viewBox="0 0 1024 300"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -197,7 +193,7 @@ export default function Hero() {
               <React.Fragment key={node.id}>
                 <motion.path
                   d={`M${CX},${CY} L${tx},${ty}`}
-                  stroke="#d1d5db"
+                  stroke="#dfe2e8"
                   strokeWidth="1.5"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
@@ -222,7 +218,7 @@ export default function Hero() {
           })}
         </svg>
 
-        {/* ── Centre Badge ── */}
+        {/* ── Centre Badge — first to appear ── */}
         <motion.div
           className="absolute z-10"
           style={{ left: '50%', top: '50%' }}
@@ -239,13 +235,13 @@ export default function Hero() {
               ease: 'easeInOut',
               delay: CENTER_POP_DELAY + 0.7,
             }}
-            className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_12px_48px_rgba(109,40,217,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+            className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_14px_50px_rgba(109,40,217,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
           >
             <CheckIcon className="w-12 h-12 text-white" />
           </motion.div>
         </motion.div>
 
-        {/* ── Satellite Nodes — one by one ── */}
+        {/* ── Satellite Nodes — one by one, after their line arrives ── */}
         {NODES.map((node, i) => {
           const toolDelay = LINES_START + i * LINE_STAGGER + LINE_DURATION;
           const half = node.size / 2;
@@ -285,7 +281,7 @@ export default function Hero() {
         })}
       </div>
 
-      {/* ── Typography + CTA — typewriter after all nodes appear ── */}
+      {/* ── Typography + CTA — typewriter after the last node appears ── */}
       <div className="flex flex-col items-center text-center max-w-3xl mx-auto px-4 relative z-20 mt-6">
         <h1 className="text-6xl md:text-7xl font-extrabold tracking-tighter text-[#111827] leading-[1.05]">
           <TypewriterLine text={line1} startDelay={ALL_CARDS_DONE} />
