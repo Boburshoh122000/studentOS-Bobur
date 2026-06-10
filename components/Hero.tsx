@@ -75,7 +75,7 @@ const NODES: NodeCfg[] = [
     y: -76,
     type: 'icon',
     lineFrom: 'leftHub',
-    bgClass: 'bg-[#F97316]',
+    bgClass: 'bg-[#F59E0B]',
     icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
     size: 66,
     sizeClass: 'w-[66px] h-[66px]',
@@ -88,7 +88,7 @@ const NODES: NodeCfg[] = [
     y: 58,
     type: 'icon',
     lineFrom: 'leftHub',
-    bgClass: 'bg-[#22C55E]',
+    bgClass: 'bg-[#3B82F6]',
     icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
     size: 66,
     sizeClass: 'w-[66px] h-[66px]',
@@ -101,7 +101,7 @@ const NODES: NodeCfg[] = [
     y: -66,
     type: 'icon',
     lineFrom: 'rightHub',
-    bgClass: 'bg-[#F43F5E]',
+    bgClass: 'bg-[#EF4444]',
     icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
     size: 66,
     sizeClass: 'w-[66px] h-[66px]',
@@ -258,7 +258,10 @@ export default function Hero() {
             }}
             className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_14px_50px_rgba(109,40,217,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
           >
-            <CheckIcon className="w-12 h-12 text-white" />
+            {/* Check sits inside a thin white ring — matches reference focal point */}
+            <div className="w-[70px] h-[70px] rounded-full border-[3px] border-white/90 flex items-center justify-center">
+              <CheckIcon className="w-9 h-9 text-white" />
+            </div>
           </motion.div>
         </motion.div>
 
