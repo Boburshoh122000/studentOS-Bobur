@@ -47,6 +47,8 @@ export default [
         caches: 'readonly',
         fetch: 'readonly',
         self: 'readonly',
+        URL: 'readonly',
+        Promise: 'readonly',
       },
     },
   },

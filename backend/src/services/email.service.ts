@@ -133,7 +133,7 @@ export const emailTemplates = {
           <li>📝 <strong>Optimize Your CV</strong> - Get AI-powered feedback</li>
           <li>📊 <strong>Track Your Habits</strong> - Build productive routines</li>
         </ul>
-        <a href="https://studentos-bobur-production.up.railway.app/dashboard" style="display: inline-block; background: #2D4DE0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Get Started</a>
+        <a href="https://studentos.uz/dashboard" style="display: inline-block; background: #2D4DE0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Get Started</a>
       </div>
     `,
     text: `Welcome to StudentOS, ${name}! Start exploring your dashboard.`,

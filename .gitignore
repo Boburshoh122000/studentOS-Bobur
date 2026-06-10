@@ -45,3 +45,7 @@ coverage
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Design reference material — not site assets, must not ship to production
+public/Landingpage.mp4
+public/frames/

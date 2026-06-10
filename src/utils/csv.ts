@@ -22,7 +22,7 @@ export const downloadCSV = (data: any[], filename: string) => {
           if (typeof value === 'object') {
             try {
               return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
-            } catch (e) {
+            } catch {
               return '';
             }
           }
