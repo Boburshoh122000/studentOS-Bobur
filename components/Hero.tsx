@@ -15,19 +15,18 @@ const LINE_DURATION = 0.6;
 const LINE_STAGGER = 0.18;
 
 type NodeType = 'icon' | 'photo' | 'white';
-type LineFrom = 'center' | 'leftHub' | 'rightHub';
 
 type NodeCfg = {
   id: string;
   x: number;
   y: number;
   type: NodeType;
-  lineFrom: LineFrom;
   bgClass?: string;
   photoUrl?: string;
   icon?: React.ReactNode;
   size: number; // px — equals the w-/h- arbitrary class below (for offset math)
   sizeClass: string;
+  dot: boolean; // reference shows purple dots only on the corner-node lines
   floatDuration: number;
   floatY: number[];
 };
@@ -36,100 +35,94 @@ type NodeCfg = {
 const CX = 512;
 const CY = 150;
 
-// Fishbone fork points — corner nodes branch off here, NOT from dead centre.
-// This reproduces the reference: 2 horizontal spines + 4 forked branches.
-const HUB_DX = 150;
-const LEFT_HUB = { x: CX - HUB_DX, y: CY };
-const RIGHT_HUB = { x: CX + HUB_DX, y: CY };
+// Per-side fork points. All three lines of a side converge here and STOP —
+// in the reference no line touches the badge (≈60px gap to the badge edge).
+const LEFT_FORK = { x: CX - 115, y: CY };
+const RIGHT_FORK = { x: CX + 115, y: CY + 4 };
 
-// Order: spines (far photo / white card) draw first, then the forked corners.
+// Positions traced from the reference image (relative to badge centre).
+// Order = draw order: horizontal arms first, then corner nodes.
 const NODES: NodeCfg[] = [
   {
     id: 'far-left',
-    x: -378,
-    y: 0,
+    x: -374,
+    y: -2,
     type: 'photo',
-    lineFrom: 'center', // horizontal spine through the left hub
     photoUrl:
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    size: 76,
-    sizeClass: 'w-[76px] h-[76px]',
+    size: 88,
+    sizeClass: 'w-[88px] h-[88px]',
+    dot: false,
     floatDuration: 5.4,
     floatY: [5, -6, 5],
   },
   {
     id: 'far-right',
-    x: 378,
+    x: 372,
     y: -2,
     type: 'white',
-    lineFrom: 'center', // horizontal spine through the right hub
     icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
     size: 84,
     sizeClass: 'w-[84px] h-[84px]',
+    dot: false,
     floatDuration: 5.6,
     floatY: [5, -5, 5],
   },
   {
     id: 'top-left',
-    x: -272,
-    y: -76,
+    x: -274,
+    y: -75,
     type: 'icon',
-    lineFrom: 'leftHub',
-    bgClass: 'bg-[#F59E0B]',
-    icon: <DocumentTextIcon className="w-7 h-7 text-white" />,
-    size: 66,
-    sizeClass: 'w-[66px] h-[66px]',
+    bgClass: 'bg-[#FACC15]',
+    icon: <DocumentTextIcon className="w-6 h-6 text-[#78350F]" />,
+    size: 56,
+    sizeClass: 'w-[56px] h-[56px]',
+    dot: true,
     floatDuration: 4.2,
     floatY: [-5, 5, -5],
   },
   {
     id: 'bottom-left',
-    x: -246,
-    y: 58,
+    x: -245,
+    y: 60,
     type: 'icon',
-    lineFrom: 'leftHub',
-    bgClass: 'bg-[#3B82F6]',
+    bgClass: 'bg-[#22D3EE]',
     icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
-    size: 66,
-    sizeClass: 'w-[66px] h-[66px]',
+    size: 68,
+    sizeClass: 'w-[68px] h-[68px]',
+    dot: true,
     floatDuration: 4.8,
     floatY: [6, -4, 6],
   },
   {
     id: 'top-right',
-    x: 248,
-    y: -66,
+    x: 244,
+    y: -62,
     type: 'icon',
-    lineFrom: 'rightHub',
     bgClass: 'bg-[#EF4444]',
     icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
-    size: 66,
-    sizeClass: 'w-[66px] h-[66px]',
+    size: 68,
+    sizeClass: 'w-[68px] h-[68px]',
+    dot: true,
     floatDuration: 3.9,
     floatY: [-6, 4, -6],
   },
   {
     id: 'bottom-right',
-    x: 272,
-    y: 72,
+    x: 273,
+    y: 74,
     type: 'photo',
-    lineFrom: 'rightHub',
     photoUrl:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-    size: 64,
-    sizeClass: 'w-[64px] h-[64px]',
+    size: 56,
+    sizeClass: 'w-[56px] h-[56px]',
+    dot: true,
     floatDuration: 4.5,
     floatY: [4, -7, 4],
   },
 ];
 
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
-
-function hubFor(from: LineFrom) {
-  if (from === 'leftHub') return LEFT_HUB;
-  if (from === 'rightHub') return RIGHT_HUB;
-  return { x: CX, y: CY };
-}
 
 function TypewriterLine({ text, startDelay }: { text: string; startDelay: number }) {
   return (
@@ -153,7 +146,7 @@ function NodeCard({ node }: { node: NodeCfg }) {
   if (node.type === 'photo') {
     return (
       <div
-        className={`${node.sizeClass} rounded-[20px] overflow-hidden border-[5px] border-white shadow-[0_10px_30px_-6px_rgba(0,0,0,0.22)]`}
+        className={`${node.sizeClass} rounded-[20px] overflow-hidden border-4 border-white shadow-[0_10px_30px_-6px_rgba(0,0,0,0.22)]`}
       >
         <img src={node.photoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
       </div>
@@ -172,7 +165,7 @@ function NodeCard({ node }: { node: NodeCfg }) {
 
   return (
     <div
-      className={`${node.sizeClass} ${node.bgClass} rounded-[18px] flex items-center justify-center shadow-[0_10px_26px_-6px_rgba(0,0,0,0.28)]`}
+      className={`${node.sizeClass} ${node.bgClass} rounded-[16px] flex items-center justify-center shadow-[0_10px_26px_-6px_rgba(0,0,0,0.28)]`}
     >
       {node.icon}
     </div>
@@ -189,7 +182,7 @@ export default function Hero() {
 
   return (
     <section className="relative w-full flex flex-col items-center pt-[120px] pb-20 overflow-visible z-20 bg-white">
-      {/* ── Visual Network — fishbone: 2 spines + 4 forked branches ── */}
+      {/* ── Visual Network — per side: 3 lines converge at a floating fork ── */}
       <div className="relative w-full max-w-[1024px] h-[300px] flex items-center justify-center pointer-events-none">
         <svg
           className="absolute inset-0 w-full h-full z-0 overflow-visible"
@@ -201,40 +194,42 @@ export default function Hero() {
           {NODES.map((node, i) => {
             const tx = CX + node.x;
             const ty = CY + node.y;
-            const start = hubFor(node.lineFrom);
+            const fork = node.x < 0 ? LEFT_FORK : RIGHT_FORK;
             const lineDelay = LINES_START + i * LINE_STAGGER;
 
-            // Dot sits 52px from the node centre, back along the line toward its start
-            const dx = start.x - tx;
-            const dy = start.y - ty;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            const dotX = tx + (dx / len) * 52;
-            const dotY = ty + (dy / len) * 52;
+            // Dot sits 76px from the node centre, back along the line (reference spacing)
+            const dx = fork.x - tx;
+            const dy = fork.y - ty;
+            const len = Math.hypot(dx, dy);
+            const dotX = tx + (dx / len) * 76;
+            const dotY = ty + (dy / len) * 76;
 
             return (
               <React.Fragment key={node.id}>
                 <motion.path
-                  d={`M${start.x},${start.y} L${tx},${ty}`}
+                  d={`M${fork.x},${fork.y} L${tx},${ty}`}
                   stroke="#dfe2e8"
                   strokeWidth="1.5"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: LINE_DURATION, delay: lineDelay, ease: 'easeOut' }}
                 />
-                <motion.circle
-                  cx={dotX}
-                  cy={dotY}
-                  r="4"
-                  fill="#7C3AED"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: lineDelay + LINE_DURATION,
-                    type: 'spring',
-                    stiffness: 420,
-                    damping: 18,
-                  }}
-                />
+                {node.dot && (
+                  <motion.circle
+                    cx={dotX}
+                    cy={dotY}
+                    r="3.5"
+                    fill="#7C3AED"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: lineDelay + LINE_DURATION,
+                      type: 'spring',
+                      stiffness: 420,
+                      damping: 18,
+                    }}
+                  />
+                )}
               </React.Fragment>
             );
           })}
