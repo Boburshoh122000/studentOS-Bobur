@@ -273,7 +273,7 @@ export default function Hero() {
               {/* 3D student avatar (de-watermarked, transparent bg) as the network hub —
                   no card; the violet glow follows the silhouette via drop-shadow */}
               <img
-                src="/icons/hero-student-t.webp"
+                src="/icons/hero-student-v2.webp"
                 alt="StudentOS student avatar"
                 className="w-full h-full object-contain drop-shadow-[0_16px_28px_rgba(124,58,237,0.35)]"
               />
