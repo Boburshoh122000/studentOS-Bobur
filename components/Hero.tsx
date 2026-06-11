@@ -240,30 +240,33 @@ export default function Hero() {
         </svg>
 
         {/* ── Centre Badge — first to appear ── */}
-        <motion.div
-          className="absolute z-10"
-          style={{ left: '50%', top: '50%' }}
-          initial={{ scale: 0 }}
-          animate={{ scale: [0, 1.2, 0.95, 1] }}
-          transition={{ delay: CENTER_POP_DELAY, duration: 0.65, ease: [0.34, 1.56, 0.64, 1] }}
-        >
+        {/* Centering translate lives on a plain div: framer-motion overwrites the
+            inline transform of whatever it animates, so scale/float must sit on
+            separate inner layers or the badge drifts off-centre. */}
+        <div className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <motion.div
-            animate={{ y: [-6, 6, -6] }}
-            transition={{
-              duration: 6,
-              repeat: Infinity,
-              repeatType: 'mirror',
-              ease: 'easeInOut',
-              delay: CENTER_POP_DELAY + 0.7,
-            }}
-            className="w-28 h-28 rounded-[2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_14px_50px_rgba(124,58,237,0.45)] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+            initial={{ scale: 0 }}
+            animate={{ scale: [0, 1.2, 0.95, 1] }}
+            transition={{ delay: CENTER_POP_DELAY, duration: 0.65, ease: [0.34, 1.56, 0.64, 1] }}
           >
-            {/* Check sits inside a thin white ring — matches reference focal point */}
-            <div className="w-[70px] h-[70px] rounded-full border-[3px] border-white/90 flex items-center justify-center">
-              <CheckIcon className="w-9 h-9 text-white" />
-            </div>
+            <motion.div
+              animate={{ y: [-6, 6, -6] }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                repeatType: 'mirror',
+                ease: 'easeInOut',
+                delay: CENTER_POP_DELAY + 0.7,
+              }}
+              className="w-28 h-28 rounded-[2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_14px_50px_rgba(124,58,237,0.45)] flex items-center justify-center pointer-events-auto"
+            >
+              {/* Check sits inside a thin white ring — matches reference focal point */}
+              <div className="w-[70px] h-[70px] rounded-full border-[3px] border-white/90 flex items-center justify-center">
+                <CheckIcon className="w-9 h-9 text-white" />
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* ── Satellite Nodes — one by one, after their line arrives ── */}
         {/* Positioned by % of the same 1024×300 coordinate space as the SVG, so
