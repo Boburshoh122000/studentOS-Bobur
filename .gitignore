@@ -49,3 +49,6 @@ coverage
 # Design reference material — not site assets, must not ship to production
 public/Landingpage.mp4
 public/frames/
+# Multi-MB icon sources — only the derived hero-*.webp copies are used by the site
+public/icons/Student.png
+public/icons/Blue folder with information about employee 3D illustration.jpg
