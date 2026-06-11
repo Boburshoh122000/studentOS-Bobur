@@ -38,9 +38,9 @@ const NODES: NodeCfg[] = [
     id: 'far-left',
     x: -374,
     y: -2,
-    icon: <img src="/icons/hero-folder.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
-    size: 88,
-    sizeClass: 'w-[88px] h-[88px]',
+    icon: <img src="/icons/hero-folder.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
+    size: 108,
+    sizeClass: 'w-[108px] h-[108px]',
     dot: false,
     floatDuration: 5.4,
     floatY: [5, -6, 5],
@@ -49,9 +49,9 @@ const NODES: NodeCfg[] = [
     id: 'far-right',
     x: 372,
     y: -2,
-    icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
-    size: 84,
-    sizeClass: 'w-[84px] h-[84px]',
+    icon: <SparklesIcon className="w-10 h-10 text-[#7C3AED]" />,
+    size: 100,
+    sizeClass: 'w-[100px] h-[100px]',
     dot: false,
     floatDuration: 5.6,
     floatY: [5, -5, 5],
@@ -60,9 +60,9 @@ const NODES: NodeCfg[] = [
     id: 'top-left',
     x: -274,
     y: -75,
-    icon: <img src="/icons/hero-plagiarism.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
-    size: 56,
-    sizeClass: 'w-[56px] h-[56px]',
+    icon: <img src="/icons/hero-plagiarism.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
+    size: 78,
+    sizeClass: 'w-[78px] h-[78px]',
     dot: true,
     floatDuration: 4.2,
     floatY: [-5, 5, -5],
@@ -71,9 +71,9 @@ const NODES: NodeCfg[] = [
     id: 'bottom-left',
     x: -245,
     y: 60,
-    icon: <img src="/icons/hero-telegram.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
-    size: 68,
-    sizeClass: 'w-[68px] h-[68px]',
+    icon: <img src="/icons/hero-telegram.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
+    size: 90,
+    sizeClass: 'w-[90px] h-[90px]',
     dot: true,
     floatDuration: 4.8,
     floatY: [6, -4, 6],
@@ -82,9 +82,9 @@ const NODES: NodeCfg[] = [
     id: 'top-right',
     x: 244,
     y: -62,
-    icon: <img src="/icons/hero-ats.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
-    size: 68,
-    sizeClass: 'w-[68px] h-[68px]',
+    icon: <img src="/icons/hero-ats.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
+    size: 90,
+    sizeClass: 'w-[90px] h-[90px]',
     dot: true,
     floatDuration: 3.9,
     floatY: [-6, 4, -6],
@@ -93,9 +93,9 @@ const NODES: NodeCfg[] = [
     id: 'bottom-right',
     x: 273,
     y: 74,
-    icon: <img src="/icons/hero-cv.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
-    size: 56,
-    sizeClass: 'w-[56px] h-[56px]',
+    icon: <img src="/icons/hero-cv.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
+    size: 78,
+    sizeClass: 'w-[78px] h-[78px]',
     dot: true,
     floatDuration: 4.5,
     floatY: [4, -7, 4],
@@ -103,6 +103,56 @@ const NODES: NodeCfg[] = [
 ];
 
 const ALL_CARDS_DONE = LINES_START + 5 * LINE_STAGGER + LINE_DURATION;
+
+/* CTA button (Uiverse by adamgiebl, "cssbuttons-io"): black at rest, the skewed
+   overlay slides away on hover revealing the purple gradient. Shipped inline via
+   <style> so it can't go stale with the cached /styles.css. */
+const HERO_CTA_CSS = `
+.hero-cta {
+  position: relative;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  border-radius: 0.8em;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(to right, #8e2de2, #4a00e0);
+  color: ghostwhite;
+  overflow: hidden;
+  box-shadow: 0 12px 32px -8px rgba(110, 30, 220, 0.55);
+}
+.hero-cta svg {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5em;
+}
+.hero-cta span {
+  position: relative;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8em 1.3em 0.8em 1.1em;
+  transition: color 0.4s;
+}
+.hero-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -10%;
+  width: 120%;
+  height: 100%;
+  background: #000;
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+}
+.hero-cta:hover::before {
+  transform: translate3d(100%, 0, 0);
+}
+.hero-cta:active {
+  transform: scale(0.95);
+}
+`;
 
 function TypewriterLine({ text, startDelay }: { text: string; startDelay: number }) {
   return (
@@ -125,7 +175,7 @@ function TypewriterLine({ text, startDelay }: { text: string; startDelay: number
 function NodeCard({ node }: { node: NodeCfg }) {
   return (
     <div
-      className={`${node.sizeClass} rounded-[20px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_10px_30px_-6px_rgba(0,0,0,0.12)]`}
+      className={`${node.sizeClass} rounded-[22px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_18px_40px_-8px_rgba(0,0,0,0.22),0_4px_12px_rgba(0,0,0,0.06)]`}
     >
       {node.icon}
     </div>
@@ -218,11 +268,11 @@ export default function Hero() {
                 ease: 'easeInOut',
                 delay: CENTER_POP_DELAY + 0.7,
               }}
-              className="w-28 h-28 rounded-[2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_14px_50px_rgba(124,58,237,0.45)] flex items-center justify-center pointer-events-auto"
+              className="w-32 h-32 rounded-[2.2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_16px_56px_rgba(124,58,237,0.5)] flex items-center justify-center pointer-events-auto"
             >
               {/* Check sits inside a thin white ring — matches reference focal point */}
-              <div className="w-[70px] h-[70px] rounded-full border-[3px] border-white/90 flex items-center justify-center">
-                <CheckIcon className="w-9 h-9 text-white" />
+              <div className="w-20 h-20 rounded-full border-[3px] border-white/90 flex items-center justify-center">
+                <CheckIcon className="w-10 h-10 text-white" />
               </div>
             </motion.div>
           </motion.div>
@@ -285,16 +335,26 @@ export default function Hero() {
           StudentOS is a modern, all-in-one student platform designed to perfectly fit your academic
           needs.
         </motion.p>
-        <motion.button
-          type="button"
-          onClick={() => navigate('/signup/step-1')}
-          className="mt-8 px-9 py-4 rounded-full bg-[#F26B5B] hover:bg-[#E0584A] text-white font-semibold text-base shadow-lg shadow-[#F26B5B]/30 transition-all active:scale-95"
+        <motion.div
+          className="mt-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: line2End + 0.45, duration: 0.5 }}
         >
-          Get Started
-        </motion.button>
+          <style>{HERO_CTA_CSS}</style>
+          <button type="button" onClick={() => navigate('/signup/step-1')} className="hero-cta">
+            <span>
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path
+                  d="M13.25 3.75a.75.75 0 01.75-.75h6a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0V5.56l-8.22 8.22a.75.75 0 11-1.06-1.06l8.22-8.22h-4.19a.75.75 0 01-.75-.75zM5.25 6A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75v-5a.75.75 0 00-1.5 0v5a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75V8.25a.75.75 0 01.75-.75h5a.75.75 0 000-1.5h-5z"
+                  fill="currentColor"
+                />
+              </svg>
+              Get Started
+            </span>
+          </button>
+        </motion.div>
       </div>
     </section>
   );
