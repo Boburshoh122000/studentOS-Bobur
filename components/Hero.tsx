@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon } from '@heroicons/react/24/solid';
 
 const CENTER_POP_DELAY = 0.1;
 const LINES_START = 0.55;
@@ -36,7 +36,7 @@ const RIGHT_FORK = { x: CX + 115, y: CY + 4 };
 const NODES: NodeCfg[] = [
   {
     id: 'far-left',
-    x: -374,
+    x: -420,
     y: -2,
     icon: <img src="/icons/hero-folder.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
     size: 108,
@@ -47,7 +47,7 @@ const NODES: NodeCfg[] = [
   },
   {
     id: 'far-right',
-    x: 372,
+    x: 418,
     y: -2,
     icon: <SparklesIcon className="w-10 h-10 text-[#7C3AED]" />,
     size: 100,
@@ -58,8 +58,8 @@ const NODES: NodeCfg[] = [
   },
   {
     id: 'top-left',
-    x: -274,
-    y: -75,
+    x: -305,
+    y: -95,
     icon: <img src="/icons/hero-plagiarism.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
     size: 78,
     sizeClass: 'w-[78px] h-[78px]',
@@ -69,8 +69,8 @@ const NODES: NodeCfg[] = [
   },
   {
     id: 'bottom-left',
-    x: -245,
-    y: 60,
+    x: -272,
+    y: 80,
     icon: <img src="/icons/hero-telegram.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
     size: 90,
     sizeClass: 'w-[90px] h-[90px]',
@@ -80,8 +80,8 @@ const NODES: NodeCfg[] = [
   },
   {
     id: 'top-right',
-    x: 244,
-    y: -62,
+    x: 272,
+    y: -85,
     icon: <img src="/icons/hero-ats.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
     size: 90,
     sizeClass: 'w-[90px] h-[90px]',
@@ -91,8 +91,8 @@ const NODES: NodeCfg[] = [
   },
   {
     id: 'bottom-right',
-    x: 273,
-    y: 74,
+    x: 305,
+    y: 95,
     icon: <img src="/icons/hero-cv.webp" alt="" className="w-2/3 h-2/3 object-contain" />,
     size: 78,
     sizeClass: 'w-[78px] h-[78px]',
@@ -268,12 +268,14 @@ export default function Hero() {
                 ease: 'easeInOut',
                 delay: CENTER_POP_DELAY + 0.7,
               }}
-              className="w-32 h-32 rounded-[2.2rem] bg-gradient-to-b from-[#A855F7] to-[#7C3AED] shadow-[0_16px_56px_rgba(124,58,237,0.5)] flex items-center justify-center pointer-events-auto"
+              className="w-32 h-32 rounded-[2.2rem] bg-white border border-gray-100 shadow-[0_18px_56px_rgba(124,58,237,0.35),0_6px_18px_rgba(0,0,0,0.08)] flex items-center justify-center overflow-hidden pointer-events-auto"
             >
-              {/* Check sits inside a thin white ring — matches reference focal point */}
-              <div className="w-20 h-20 rounded-full border-[3px] border-white/90 flex items-center justify-center">
-                <CheckIcon className="w-10 h-10 text-white" />
-              </div>
+              {/* 3D student avatar (de-watermarked small webp) as the network hub */}
+              <img
+                src="/icons/hero-student.webp"
+                alt="StudentOS student avatar"
+                className="w-[88%] h-[88%] object-contain"
+              />
             </motion.div>
           </motion.div>
         </div>
