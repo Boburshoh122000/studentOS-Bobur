@@ -68,7 +68,7 @@ function IconTiktok() {
 /* ─── Main Footer Component ─────────────────────────────── */
 export default function MinimalFooter() {
   return (
-    <footer className="fixed bottom-0 left-0 w-full h-[520px] bg-white -z-20 flex flex-col overflow-hidden">
+    <footer className="relative w-full bg-white flex flex-col overflow-hidden mt-2">
       {/* ─── Links grid ─── */}
       <div className="w-full max-w-5xl mx-auto px-6 pt-12 pb-8 flex-1">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">

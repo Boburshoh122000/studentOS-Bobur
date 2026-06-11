@@ -13,7 +13,7 @@ export default function LandingPage({ navigateTo: _navigateTo }: NavigationProps
     <div className="min-h-screen font-sans text-[#0A0A0A] antialiased bg-[#f0f0f5] overflow-x-hidden">
       <MinimalHeader />
 
-      <main className="relative w-full flex flex-col items-center bg-white mb-[600px] md:mb-[520px] shadow-[0_20px_80px_rgba(0,0,0,0.12)] rounded-b-[2.5rem] overflow-hidden">
+      <main className="relative w-full flex flex-col items-center bg-white mb-10 shadow-[0_20px_80px_rgba(0,0,0,0.12)] rounded-b-[2.5rem] overflow-hidden">
         {/* 1 ── Hero */}
         <Hero />
 
