@@ -268,13 +268,14 @@ export default function Hero() {
                 ease: 'easeInOut',
                 delay: CENTER_POP_DELAY + 0.7,
               }}
-              className="w-32 h-32 rounded-[2.2rem] bg-white border border-gray-100 shadow-[0_18px_56px_rgba(124,58,237,0.35),0_6px_18px_rgba(0,0,0,0.08)] flex items-center justify-center overflow-hidden pointer-events-auto"
+              className="w-40 h-40 flex items-center justify-center pointer-events-auto"
             >
-              {/* 3D student avatar (de-watermarked small webp) as the network hub */}
+              {/* 3D student avatar (de-watermarked, transparent bg) as the network hub —
+                  no card; the violet glow follows the silhouette via drop-shadow */}
               <img
                 src="/icons/hero-student.webp"
                 alt="StudentOS student avatar"
-                className="w-[88%] h-[88%] object-contain"
+                className="w-full h-full object-contain drop-shadow-[0_16px_28px_rgba(124,58,237,0.35)]"
               />
             </motion.div>
           </motion.div>
