@@ -1,29 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-  CheckIcon,
-  DocumentTextIcon,
-  CalendarDaysIcon,
-  AcademicCapIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/solid';
+import { CheckIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
 const CENTER_POP_DELAY = 0.1;
 const LINES_START = 0.55;
 const LINE_DURATION = 0.6;
 const LINE_STAGGER = 0.18;
 
-type NodeType = 'icon' | 'photo' | 'white';
-
 type NodeCfg = {
   id: string;
   x: number;
   y: number;
-  type: NodeType;
-  bgClass?: string;
-  photoUrl?: string;
-  icon?: React.ReactNode;
+  icon: React.ReactNode;
   size: number; // px — equals the w-/h- arbitrary class below (for offset math)
   sizeClass: string;
   dot: boolean; // reference shows purple dots only on the corner-node lines
@@ -42,14 +31,14 @@ const RIGHT_FORK = { x: CX + 115, y: CY + 4 };
 
 // Positions traced from the reference image (relative to badge centre).
 // Order = draw order: horizontal arms first, then corner nodes.
+// All nodes are white cards holding 3D product icons (small webp copies of
+// the originals in public/icons — the sources are up to 7MB, hero uses ~5KB).
 const NODES: NodeCfg[] = [
   {
     id: 'far-left',
     x: -374,
     y: -2,
-    type: 'photo',
-    photoUrl:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    icon: <img src="/icons/hero-folder.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
     size: 88,
     sizeClass: 'w-[88px] h-[88px]',
     dot: false,
@@ -60,7 +49,6 @@ const NODES: NodeCfg[] = [
     id: 'far-right',
     x: 372,
     y: -2,
-    type: 'white',
     icon: <SparklesIcon className="w-8 h-8 text-[#7C3AED]" />,
     size: 84,
     sizeClass: 'w-[84px] h-[84px]',
@@ -72,9 +60,7 @@ const NODES: NodeCfg[] = [
     id: 'top-left',
     x: -274,
     y: -75,
-    type: 'icon',
-    bgClass: 'bg-[#FACC15]',
-    icon: <DocumentTextIcon className="w-6 h-6 text-[#78350F]" />,
+    icon: <img src="/icons/hero-plagiarism.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
     size: 56,
     sizeClass: 'w-[56px] h-[56px]',
     dot: true,
@@ -85,9 +71,7 @@ const NODES: NodeCfg[] = [
     id: 'bottom-left',
     x: -245,
     y: 60,
-    type: 'icon',
-    bgClass: 'bg-[#22D3EE]',
-    icon: <CalendarDaysIcon className="w-7 h-7 text-white" />,
+    icon: <img src="/icons/hero-telegram.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
     size: 68,
     sizeClass: 'w-[68px] h-[68px]',
     dot: true,
@@ -98,9 +82,7 @@ const NODES: NodeCfg[] = [
     id: 'top-right',
     x: 244,
     y: -62,
-    type: 'icon',
-    bgClass: 'bg-[#EF4444]',
-    icon: <AcademicCapIcon className="w-7 h-7 text-white" />,
+    icon: <img src="/icons/hero-ats.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
     size: 68,
     sizeClass: 'w-[68px] h-[68px]',
     dot: true,
@@ -111,9 +93,7 @@ const NODES: NodeCfg[] = [
     id: 'bottom-right',
     x: 273,
     y: 74,
-    type: 'photo',
-    photoUrl:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+    icon: <img src="/icons/hero-cv.webp" alt="" className="w-3/5 h-3/5 object-contain" />,
     size: 56,
     sizeClass: 'w-[56px] h-[56px]',
     dot: true,
@@ -143,29 +123,9 @@ function TypewriterLine({ text, startDelay }: { text: string; startDelay: number
 }
 
 function NodeCard({ node }: { node: NodeCfg }) {
-  if (node.type === 'photo') {
-    return (
-      <div
-        className={`${node.sizeClass} rounded-[20px] overflow-hidden border-4 border-white shadow-[0_10px_30px_-6px_rgba(0,0,0,0.22)]`}
-      >
-        <img src={node.photoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-      </div>
-    );
-  }
-
-  if (node.type === 'white') {
-    return (
-      <div
-        className={`${node.sizeClass} rounded-[20px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_10px_30px_-6px_rgba(0,0,0,0.12)]`}
-      >
-        {node.icon}
-      </div>
-    );
-  }
-
   return (
     <div
-      className={`${node.sizeClass} ${node.bgClass} rounded-[16px] flex items-center justify-center shadow-[0_10px_26px_-6px_rgba(0,0,0,0.28)]`}
+      className={`${node.sizeClass} rounded-[20px] bg-white border border-gray-100 flex items-center justify-center shadow-[0_10px_30px_-6px_rgba(0,0,0,0.12)]`}
     >
       {node.icon}
     </div>
