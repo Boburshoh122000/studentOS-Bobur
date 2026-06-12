@@ -76,7 +76,7 @@ interface Filters {
 export default function CareerTracker({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -271,41 +271,6 @@ export default function CareerTracker({ navigateTo }: NavigationProps) {
     filters.jobTypes.length > 0 ||
     filters.paidOnly ||
     filters.remoteOnly;
-
-  /* ── Coming Soon gate for students ── */
-  const isStudent = !user || user.role === 'STUDENT' || user.role === 'EDUCATOR';
-  if (isStudent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#0a0c14] dark:via-[#0f1120] dark:to-[#12132a] flex flex-col items-center justify-center px-6 text-center font-display">
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-6 left-6 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.06]"
-        >
-          <ArrowLeftIcon className="w-4 h-4" />
-          {t('Common.back')}
-        </button>
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/25">
-          <BriefcaseIcon className="w-10 h-10 text-white" />
-        </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-3">
-          {t('CareerTracker.title')}
-        </h1>
-        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-bold mb-6">
-          🚧 Coming Soon
-        </span>
-        <p className="text-gray-500 dark:text-gray-400 max-w-md text-base leading-relaxed mb-10">
-          We're building a powerful career tracking experience for you. Discover internships,
-          graduate roles, and full-time positions — all in one place. Stay tuned!
-        </p>
-        <button
-          onClick={() => navigate(-1)}
-          className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all active:scale-[0.97]"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
-    );
-  }
 
   const filterContent = (
     <div className="p-5">
