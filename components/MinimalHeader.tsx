@@ -9,13 +9,11 @@ import {
   DocumentTextIcon,
   GlobeAltIcon,
   ShieldCheckIcon,
-  Squares2X2Icon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
-import { getDashboardPath } from '../src/utils/navigation';
 import Logo from './ui/Logo';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
@@ -118,7 +116,7 @@ export default function MinimalHeader() {
   const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* Real auth state */
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useMotionValueEvent(scrollY, 'change', (y) => {
     setScrolled(y > 60);
@@ -299,22 +297,8 @@ export default function MinimalHeader() {
           {/* Thin divider */}
           <div className="hidden sm:block w-px h-5 bg-gray-200/80" />
 
-          {/* Conditional Auth — logged-in users get a Dashboard button (no profile
-              shown on the marketing page); visitors get Sign In + Request a Demo */}
-          {isAuthenticated ? (
-            <div className="hidden md:block">
-              <MagneticButton>
-                <Link
-                  to={getDashboardPath(user?.role)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0A0A0A] text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(0,0,0,0.25)] hover:bg-[#222] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] transition-all"
-                >
-                  <Squares2X2Icon className="w-4 h-4" />
-                  Dashboard
-                </Link>
-              </MagneticButton>
-            </div>
-          ) : (
-            /* ── Logged Out: Sign In + Get Started (desktop only) ── */
+          {/* Auth actions — only for visitors; logged-in users see nothing here */}
+          {!isAuthenticated && (
             <>
               <Link
                 to="/signin"
@@ -426,18 +410,8 @@ export default function MinimalHeader() {
                 </AnimatePresence>
               </div>
 
-              {/* Auth buttons */}
-              {isAuthenticated ? (
-                <div className="mt-6">
-                  <Link
-                    to={getDashboardPath(user?.role)}
-                    onClick={() => setMobileOpen(false)}
-                    className="w-full block text-center py-3.5 rounded-xl bg-indigo-600 text-white text-[15px] font-semibold shadow-sm hover:bg-indigo-700 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                </div>
-              ) : (
+              {/* Auth buttons — visitors only; logged-in users see nothing here */}
+              {!isAuthenticated && (
                 <div className="mt-6 flex flex-col gap-3">
                   <Link
                     to="/signin"
