@@ -15,7 +15,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
 import { getDashboardPath, getSettingsPath, getDashboardLabel } from '../src/utils/navigation';
 import Logo from './ui/Logo';
@@ -31,7 +31,7 @@ const toolItems = [
 /* ─── Nav links ─────────────────────────────────────────── */
 const navLinks = [
   { label: 'About', href: '/about' },
-  { label: 'Career Tracker', href: '/career-tracker' },
+  { label: 'Pricing', href: '/#pricing' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -92,6 +92,22 @@ function MagneticButton({
 export default function MinimalHeader() {
   const { scrollY } = useScroll();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  /* Pricing lives in a section on the landing page — scroll to it (or go home first) */
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    if (pathname === '/') {
+      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(
+        () => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }),
+        350
+      );
+    }
+  };
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [lastYPos, setLastYPos] = useState(0);
@@ -244,6 +260,7 @@ export default function MinimalHeader() {
             <Link
               key={link.label}
               to={link.href}
+              onClick={link.href === '/#pricing' ? handlePricingClick : undefined}
               className={`text-sm font-medium transition-colors relative ${
                 pathname === link.href
                   ? 'text-[#0A0A0A] font-semibold'
@@ -430,7 +447,9 @@ export default function MinimalHeader() {
                 <Link
                   key={link.label}
                   to={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={
+                    link.href === '/#pricing' ? handlePricingClick : () => setMobileOpen(false)
+                  }
                   className={`py-4 border-b border-gray-50 text-lg font-medium transition-colors ${
                     pathname === link.href ? 'text-indigo-600' : 'text-gray-900'
                   }`}

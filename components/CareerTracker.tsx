@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { NavigationProps } from '../types';
+import { NavigationProps, Screen } from '../types';
+import DashboardLayout from './DashboardLayout';
 import { jobApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import ApplyJobModal from './ApplyJobModal';
@@ -72,7 +73,7 @@ interface Filters {
   sort: string;
 }
 
-export default function CareerTracker({ navigateTo: _navigateTo }: NavigationProps) {
+export default function CareerTracker({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
@@ -484,7 +485,7 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
   );
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display">
+    <DashboardLayout currentScreen={Screen.CAREER_TRACKER} navigateTo={navigateTo}>
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-card-light dark:bg-card-dark">
         <div className="max-w-[1280px] mx-auto px-6 py-4">
@@ -783,6 +784,6 @@ export default function CareerTracker({ navigateTo: _navigateTo }: NavigationPro
             onToggleSave={handleDetailSave}
           />
         ))}
-    </div>
+    </DashboardLayout>
   );
 }

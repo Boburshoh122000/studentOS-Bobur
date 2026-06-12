@@ -5,6 +5,7 @@ import {
   AcademicCapIcon,
   TrophyIcon,
   FireIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/solid';
 
 /**
@@ -23,6 +24,7 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
   { screen: Screen.ACADEMIC_TOOLS, icon: AcademicCapIcon, label: 'Academic Tools' },
   { screen: Screen.SCHOLARSHIPS, icon: TrophyIcon, label: 'Scholarships' },
   { screen: Screen.HABIT_TRACKER, icon: FireIcon, label: 'Habit Tracker' },
+  { screen: Screen.CAREER_TRACKER, icon: ClipboardDocumentListIcon, label: 'Career Tracker' },
 ];
 
 /**
