@@ -3,10 +3,8 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useSpring, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRightOnRectangleIcon,
   Bars3Icon,
   ChevronDownIcon,
-  Cog8ToothIcon,
   CpuChipIcon,
   DocumentTextIcon,
   GlobeAltIcon,
@@ -17,7 +15,7 @@ import {
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../src/contexts/AuthContext';
-import { getDashboardPath, getSettingsPath, getDashboardLabel } from '../src/utils/navigation';
+import { getDashboardPath } from '../src/utils/navigation';
 import Logo from './ui/Logo';
 
 /* ─── Tools dropdown items ──────────────────────────────── */
@@ -113,16 +111,14 @@ export default function MinimalHeader() {
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [avatarOpen, setAvatarOpen] = useState(false);
   const [activeLang, setActiveLang] = useState('EN');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const langTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const avatarTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* Real auth state */
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   useMotionValueEvent(scrollY, 'change', (y) => {
     setScrolled(y > 60);
@@ -150,26 +146,6 @@ export default function MinimalHeader() {
   };
   const closeLang = () => {
     langTimeout.current = setTimeout(() => setLangOpen(false), 150);
-  };
-  const openAvatar = () => {
-    if (avatarTimeout.current) clearTimeout(avatarTimeout.current);
-    setAvatarOpen(true);
-  };
-  const closeAvatar = () => {
-    avatarTimeout.current = setTimeout(() => setAvatarOpen(false), 150);
-  };
-
-  /* Get user initials for avatar */
-  const getInitials = () => {
-    if (user?.profile?.fullName) {
-      return user.profile.fullName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return user?.email?.[0]?.toUpperCase() ?? 'U';
   };
 
   return (
@@ -323,76 +299,19 @@ export default function MinimalHeader() {
           {/* Thin divider */}
           <div className="hidden sm:block w-px h-5 bg-gray-200/80" />
 
-          {/* Conditional Auth / Avatar */}
+          {/* Conditional Auth — logged-in users get a Dashboard button (no profile
+              shown on the marketing page); visitors get Sign In + Request a Demo */}
           {isAuthenticated ? (
-            /* ── Logged In: Avatar with Dropdown ── */
-            <div className="relative" onMouseEnter={openAvatar} onMouseLeave={closeAvatar}>
-              <button onClick={() => setAvatarOpen(!avatarOpen)} className="flex-shrink-0">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg transition-shadow ring-2 ring-white/50 cursor-pointer"
+            <div className="hidden md:block">
+              <MagneticButton>
+                <Link
+                  to={getDashboardPath(user?.role)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0A0A0A] text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(0,0,0,0.25)] hover:bg-[#222] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] transition-all"
                 >
-                  {user?.profile?.avatarUrl ? (
-                    <img
-                      src={user.profile.avatarUrl}
-                      alt=""
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs font-semibold">{getInitials()}</span>
-                  )}
-                </motion.div>
-              </button>
-
-              <AnimatePresence>
-                {avatarOpen && (
-                  <motion.div
-                    variants={dropdownVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="absolute top-full right-0 mt-3 bg-white/90 backdrop-blur-xl border border-gray-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl p-1.5 w-48 z-50"
-                  >
-                    {/* User info */}
-                    <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
-                        {user?.profile?.fullName ?? 'User'}
-                      </p>
-                      <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                    </div>
-
-                    <Link
-                      to={getDashboardPath(user?.role)}
-                      onClick={() => setAvatarOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
-                    >
-                      <Squares2X2Icon className="w-4 h-4" />
-                      {getDashboardLabel(user?.role)}
-                    </Link>
-                    <Link
-                      to={getSettingsPath(user?.role)}
-                      onClick={() => setAvatarOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 font-medium transition-colors w-full"
-                    >
-                      <Cog8ToothIcon className="w-4 h-4" />
-                      Settings
-                    </Link>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setAvatarOpen(false);
-                      }}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 font-medium transition-colors w-full text-left"
-                    >
-                      <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  <Squares2X2Icon className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              </MagneticButton>
             </div>
           ) : (
             /* ── Logged Out: Sign In + Get Started (desktop only) ── */
@@ -508,7 +427,17 @@ export default function MinimalHeader() {
               </div>
 
               {/* Auth buttons */}
-              {!isAuthenticated && (
+              {isAuthenticated ? (
+                <div className="mt-6">
+                  <Link
+                    to={getDashboardPath(user?.role)}
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full block text-center py-3.5 rounded-xl bg-indigo-600 text-white text-[15px] font-semibold shadow-sm hover:bg-indigo-700 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                </div>
+              ) : (
                 <div className="mt-6 flex flex-col gap-3">
                   <Link
                     to="/signin"
