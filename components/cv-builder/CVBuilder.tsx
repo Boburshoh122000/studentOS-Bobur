@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CVData,
   defaultCVData,
@@ -145,6 +146,7 @@ interface SkillsInputProps {
 }
 
 const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
 
   const addSkill = () => {
@@ -167,7 +169,7 @@ const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-          placeholder="Add a skill and press Enter"
+          placeholder={t('CV.add_skill_ph')}
           className="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
         />
         <button
@@ -175,7 +177,7 @@ const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
           onClick={addSkill}
           className="px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark"
         >
-          Add
+          {t('CV.add')}
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -189,7 +191,7 @@ const SkillsInput: React.FC<SkillsInputProps> = ({ skills, onChange }) => {
               type="button"
               onClick={() => removeSkill(index)}
               className="hover:text-red-500"
-              title="Remove skill"
+              title={t('CV.rm_skill')}
             >
               <XMarkIcon className="w-3 h-3" />
             </button>
@@ -206,339 +208,363 @@ const ExperienceItem: React.FC<{
   exp: Experience;
   onChange: (exp: Experience) => void;
   onRemove: () => void;
-}> = ({ exp, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove experience"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Job Title"
-        value={exp.role}
-        onChange={(v) => onChange({ ...exp, role: v })}
-        placeholder="Frontend Developer"
-      />
-      <Input
-        label="Company"
-        value={exp.company}
-        onChange={(v) => onChange({ ...exp, company: v })}
-        placeholder="TechCorp Inc."
-      />
-    </div>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Start Date"
-        value={exp.startDate}
-        onChange={(v) => onChange({ ...exp, startDate: v })}
-        placeholder="Jan 2022"
-      />
-      <div className="space-y-1">
-        <label className="text-[11px] font-medium text-slate-500 uppercase">End Date</label>
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={exp.current ? '' : exp.endDate}
-            onChange={(e) => onChange({ ...exp, endDate: e.target.value })}
-            placeholder={exp.current ? 'Present' : 'Dec 2023'}
-            disabled={exp.current}
-            className="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm disabled:opacity-50"
-          />
-          <label className="flex items-center gap-1 text-xs text-slate-500">
-            <input
-              type="checkbox"
-              checked={exp.current}
-              onChange={(e) => onChange({ ...exp, current: e.target.checked, endDate: '' })}
-              className="rounded border-slate-300"
-            />
-            Current
+}> = ({ exp, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_experience')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_job_title')}
+          value={exp.role}
+          onChange={(v) => onChange({ ...exp, role: v })}
+          placeholder={t('CV.ph_role')}
+        />
+        <Input
+          label={t('CV.l_company')}
+          value={exp.company}
+          onChange={(v) => onChange({ ...exp, company: v })}
+          placeholder={t('CV.ph_company')}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_start')}
+          value={exp.startDate}
+          onChange={(v) => onChange({ ...exp, startDate: v })}
+          placeholder={t('CV.ph_exp_start')}
+        />
+        <div className="space-y-1">
+          <label className="text-[11px] font-medium text-slate-500 uppercase">
+            {t('CV.l_end')}
           </label>
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={exp.current ? '' : exp.endDate}
+              onChange={(e) => onChange({ ...exp, endDate: e.target.value })}
+              placeholder={exp.current ? t('CV.ph_present') : t('CV.ph_exp_end')}
+              disabled={exp.current}
+              className="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm disabled:opacity-50"
+            />
+            <label className="flex items-center gap-1 text-xs text-slate-500">
+              <input
+                type="checkbox"
+                checked={exp.current}
+                onChange={(e) => onChange({ ...exp, current: e.target.checked, endDate: '' })}
+                className="rounded border-slate-300"
+              />
+              {t('CV.current')}
+            </label>
+          </div>
         </div>
       </div>
+      <Textarea
+        label={t('CV.l_description')}
+        value={exp.description}
+        onChange={(v) => onChange({ ...exp, description: v })}
+        placeholder={t('CV.ph_exp_desc')}
+        rows={4}
+      />
     </div>
-    <Textarea
-      label="Description"
-      value={exp.description}
-      onChange={(v) => onChange({ ...exp, description: v })}
-      placeholder="• Developed new features..."
-      rows={4}
-    />
-  </div>
-);
+  );
+};
 
 const EducationItem: React.FC<{
   edu: Education;
   onChange: (edu: Education) => void;
   onRemove: () => void;
-}> = ({ edu, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove education"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Degree"
-        value={edu.degree}
-        onChange={(v) => onChange({ ...edu, degree: v })}
-        placeholder="Bachelor of Science"
-      />
-      <Input
-        label="School"
-        value={edu.school}
-        onChange={(v) => onChange({ ...edu, school: v })}
-        placeholder="University of..."
-      />
+}> = ({ edu, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_education')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_degree')}
+          value={edu.degree}
+          onChange={(v) => onChange({ ...edu, degree: v })}
+          placeholder={t('CV.ph_degree')}
+        />
+        <Input
+          label={t('CV.l_school')}
+          value={edu.school}
+          onChange={(v) => onChange({ ...edu, school: v })}
+          placeholder={t('CV.ph_school')}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_start')}
+          value={edu.startDate}
+          onChange={(v) => onChange({ ...edu, startDate: v })}
+          placeholder={t('CV.ph_edu_start')}
+        />
+        <Input
+          label={t('CV.l_end')}
+          value={edu.endDate}
+          onChange={(v) => onChange({ ...edu, endDate: v })}
+          placeholder={t('CV.ph_edu_end')}
+        />
+      </div>
     </div>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Start Date"
-        value={edu.startDate}
-        onChange={(v) => onChange({ ...edu, startDate: v })}
-        placeholder="2018"
-      />
-      <Input
-        label="End Date"
-        value={edu.endDate}
-        onChange={(v) => onChange({ ...edu, endDate: v })}
-        placeholder="2022"
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 const LanguageItem: React.FC<{
   lang: Language;
   onChange: (lang: Language) => void;
   onRemove: () => void;
-}> = ({ lang, onChange, onRemove }) => (
-  <div className="flex gap-3 items-center">
-    <input
-      type="text"
-      value={lang.name}
-      onChange={(e) => onChange({ ...lang, name: e.target.value })}
-      placeholder="Language"
-      className="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-    />
-    <select
-      value={lang.proficiency}
-      onChange={(e) =>
-        onChange({ ...lang, proficiency: e.target.value as Language['proficiency'] })
-      }
-      className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-      aria-label="Language proficiency level"
-    >
-      <option value="native">Native</option>
-      <option value="fluent">Fluent</option>
-      <option value="advanced">Advanced</option>
-      <option value="intermediate">Intermediate</option>
-      <option value="beginner">Beginner</option>
-    </select>
-    <button
-      type="button"
-      onClick={onRemove}
-      className="p-2 text-slate-400 hover:text-red-500"
-      title="Remove language"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-  </div>
-);
+}> = ({ lang, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex gap-3 items-center">
+      <input
+        type="text"
+        value={lang.name}
+        onChange={(e) => onChange({ ...lang, name: e.target.value })}
+        placeholder={t('CV.ph_language')}
+        className="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+      />
+      <select
+        value={lang.proficiency}
+        onChange={(e) =>
+          onChange({ ...lang, proficiency: e.target.value as Language['proficiency'] })
+        }
+        className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+        aria-label={t('CV.prof_aria')}
+      >
+        <option value="native">{t('CV.prof_native')}</option>
+        <option value="fluent">{t('CV.prof_fluent')}</option>
+        <option value="advanced">{t('CV.prof_advanced')}</option>
+        <option value="intermediate">{t('CV.prof_intermediate')}</option>
+        <option value="beginner">{t('CV.prof_beginner')}</option>
+      </select>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="p-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_language')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+};
 
 const ProjectItem: React.FC<{
   item: Project;
   onChange: (item: Project) => void;
   onRemove: () => void;
-}> = ({ item, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove project"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <Input
-      label="Project Title"
-      value={item.title}
-      onChange={(v) => onChange({ ...item, title: v })}
-      placeholder="My Awesome Project"
-    />
-    <Input
-      label="Technologies"
-      value={item.technologies}
-      onChange={(v) => onChange({ ...item, technologies: v })}
-      placeholder="React, Node.js, PostgreSQL"
-    />
-    <Input
-      label="URL"
-      value={item.url}
-      onChange={(v) => onChange({ ...item, url: v })}
-      placeholder="https://github.com/..."
-    />
-    <Textarea
-      label="Description"
-      value={item.description}
-      onChange={(v) => onChange({ ...item, description: v })}
-      placeholder="What the project does..."
-      rows={3}
-    />
-  </div>
-);
+}> = ({ item, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_project')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+      <Input
+        label={t('CV.l_project_title')}
+        value={item.title}
+        onChange={(v) => onChange({ ...item, title: v })}
+        placeholder={t('CV.ph_project_title')}
+      />
+      <Input
+        label={t('CV.l_technologies')}
+        value={item.technologies}
+        onChange={(v) => onChange({ ...item, technologies: v })}
+        placeholder={t('CV.ph_technologies')}
+      />
+      <Input
+        label={t('CV.l_url')}
+        value={item.url}
+        onChange={(v) => onChange({ ...item, url: v })}
+        placeholder={t('CV.ph_project_url')}
+      />
+      <Textarea
+        label={t('CV.l_description')}
+        value={item.description}
+        onChange={(v) => onChange({ ...item, description: v })}
+        placeholder={t('CV.ph_project_desc')}
+        rows={3}
+      />
+    </div>
+  );
+};
 
 const VolunteeringItem: React.FC<{
   item: Volunteering;
   onChange: (item: Volunteering) => void;
   onRemove: () => void;
-}> = ({ item, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove volunteering"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Role"
-        value={item.role}
-        onChange={(v) => onChange({ ...item, role: v })}
-        placeholder="Volunteer Tutor"
-      />
-      <Input
-        label="Organization"
-        value={item.organization}
-        onChange={(v) => onChange({ ...item, organization: v })}
-        placeholder="Red Cross"
+}> = ({ item, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_volunteering')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_role')}
+          value={item.role}
+          onChange={(v) => onChange({ ...item, role: v })}
+          placeholder={t('CV.ph_vol_role')}
+        />
+        <Input
+          label={t('CV.l_organization')}
+          value={item.organization}
+          onChange={(v) => onChange({ ...item, organization: v })}
+          placeholder={t('CV.ph_organization')}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_start')}
+          value={item.startDate}
+          onChange={(v) => onChange({ ...item, startDate: v })}
+          placeholder={t('CV.ph_vol_start')}
+        />
+        <Input
+          label={t('CV.l_end')}
+          value={item.endDate}
+          onChange={(v) => onChange({ ...item, endDate: v })}
+          placeholder={t('CV.ph_vol_end')}
+        />
+      </div>
+      <Textarea
+        label={t('CV.l_description')}
+        value={item.description}
+        onChange={(v) => onChange({ ...item, description: v })}
+        placeholder={t('CV.ph_vol_desc')}
+        rows={3}
       />
     </div>
-    <div className="grid grid-cols-2 gap-3">
-      <Input
-        label="Start Date"
-        value={item.startDate}
-        onChange={(v) => onChange({ ...item, startDate: v })}
-        placeholder="Jan 2021"
-      />
-      <Input
-        label="End Date"
-        value={item.endDate}
-        onChange={(v) => onChange({ ...item, endDate: v })}
-        placeholder="Dec 2022"
-      />
-    </div>
-    <Textarea
-      label="Description"
-      value={item.description}
-      onChange={(v) => onChange({ ...item, description: v })}
-      placeholder="Responsibilities..."
-      rows={3}
-    />
-  </div>
-);
+  );
+};
 
 const AwardItem: React.FC<{
   item: Award;
   onChange: (item: Award) => void;
   onRemove: () => void;
-}> = ({ item, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove award"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <div className="grid grid-cols-2 gap-3">
+}> = ({ item, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_award')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_award_title')}
+          value={item.title}
+          onChange={(v) => onChange({ ...item, title: v })}
+          placeholder={t('CV.ph_award_title')}
+        />
+        <Input
+          label={t('CV.l_issuer')}
+          value={item.issuer}
+          onChange={(v) => onChange({ ...item, issuer: v })}
+          placeholder={t('CV.ph_issuer')}
+        />
+      </div>
       <Input
-        label="Award Title"
-        value={item.title}
-        onChange={(v) => onChange({ ...item, title: v })}
-        placeholder="Dean's List"
+        label={t('CV.l_date')}
+        value={item.date}
+        onChange={(v) => onChange({ ...item, date: v })}
+        placeholder={t('CV.ph_award_date')}
       />
-      <Input
-        label="Issuer"
-        value={item.issuer}
-        onChange={(v) => onChange({ ...item, issuer: v })}
-        placeholder="University of..."
+      <Textarea
+        label={t('CV.l_description')}
+        value={item.description}
+        onChange={(v) => onChange({ ...item, description: v })}
+        placeholder={t('CV.ph_award_desc')}
+        rows={2}
       />
     </div>
-    <Input
-      label="Date"
-      value={item.date}
-      onChange={(v) => onChange({ ...item, date: v })}
-      placeholder="2023"
-    />
-    <Textarea
-      label="Description"
-      value={item.description}
-      onChange={(v) => onChange({ ...item, description: v })}
-      placeholder="Optional details..."
-      rows={2}
-    />
-  </div>
-);
+  );
+};
 
 const PublicationItem: React.FC<{
   item: Publication;
   onChange: (item: Publication) => void;
   onRemove: () => void;
-}> = ({ item, onChange, onRemove }) => (
-  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
-    <button
-      type="button"
-      onClick={onRemove}
-      className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-      title="Remove publication"
-    >
-      <TrashIcon className="w-3.5 h-3.5" />
-    </button>
-    <Input
-      label="Title"
-      value={item.title}
-      onChange={(v) => onChange({ ...item, title: v })}
-      placeholder="Research Paper Title"
-    />
-    <div className="grid grid-cols-2 gap-3">
+}> = ({ item, onChange, onRemove }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg space-y-3 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+        title={t('CV.rm_publication')}
+      >
+        <TrashIcon className="w-3.5 h-3.5" />
+      </button>
       <Input
-        label="Publisher"
-        value={item.publisher}
-        onChange={(v) => onChange({ ...item, publisher: v })}
-        placeholder="IEEE, Springer..."
+        label={t('CV.l_title')}
+        value={item.title}
+        onChange={(v) => onChange({ ...item, title: v })}
+        placeholder={t('CV.ph_pub_title')}
       />
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label={t('CV.l_publisher')}
+          value={item.publisher}
+          onChange={(v) => onChange({ ...item, publisher: v })}
+          placeholder={t('CV.ph_publisher')}
+        />
+        <Input
+          label={t('CV.l_date')}
+          value={item.date}
+          onChange={(v) => onChange({ ...item, date: v })}
+          placeholder={t('CV.ph_pub_date')}
+        />
+      </div>
       <Input
-        label="Date"
-        value={item.date}
-        onChange={(v) => onChange({ ...item, date: v })}
-        placeholder="2023"
+        label={t('CV.l_url')}
+        value={item.url}
+        onChange={(v) => onChange({ ...item, url: v })}
+        placeholder={t('CV.ph_pub_url')}
       />
     </div>
-    <Input
-      label="URL"
-      value={item.url}
-      onChange={(v) => onChange({ ...item, url: v })}
-      placeholder="https://doi.org/..."
-    />
-  </div>
-);
+  );
+};
 
 const CustomSectionEditor: React.FC<{
   section: CustomSection;
   onChange: (section: CustomSection) => void;
   onRemove: () => void;
 }> = ({ section, onChange, onRemove }) => {
+  const { t } = useTranslation();
   const addItem = () => {
     onChange({
       ...section,
@@ -554,17 +580,17 @@ const CustomSectionEditor: React.FC<{
 
   return (
     <Accordion
-      title={section.sectionTitle || 'Custom Section'}
+      title={section.sectionTitle || t('CV.sec_custom')}
       icon="tune"
       isOpen={true}
       onToggle={() => {}}
       onRemove={onRemove}
     >
       <Input
-        label="Section Title"
+        label={t('CV.l_section_title')}
         value={section.sectionTitle}
         onChange={(v) => onChange({ ...section, sectionTitle: v })}
-        placeholder="Certifications, Hobbies, etc."
+        placeholder={t('CV.ph_section_title')}
       />
       <div className="space-y-3 mt-3">
         {section.items.map((item) => (
@@ -576,27 +602,27 @@ const CustomSectionEditor: React.FC<{
               type="button"
               onClick={() => removeItem(item.id)}
               className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
-              title="Remove item"
+              title={t('CV.rm_item')}
             >
               <TrashIcon className="w-3.5 h-3.5" />
             </button>
             <Input
-              label="Title"
+              label={t('CV.l_title')}
               value={item.title}
               onChange={(v) => updateItem(item.id, { ...item, title: v })}
-              placeholder="Item title"
+              placeholder={t('CV.ph_item_title')}
             />
             <Input
-              label="Subtitle"
+              label={t('CV.l_subtitle')}
               value={item.subtitle}
               onChange={(v) => updateItem(item.id, { ...item, subtitle: v })}
-              placeholder="Optional subtitle"
+              placeholder={t('CV.ph_subtitle')}
             />
             <Textarea
-              label="Description"
+              label={t('CV.l_description')}
               value={item.description}
               onChange={(v) => updateItem(item.id, { ...item, description: v })}
-              placeholder="Optional description"
+              placeholder={t('CV.ph_item_desc')}
               rows={2}
             />
           </div>
@@ -607,7 +633,7 @@ const CustomSectionEditor: React.FC<{
           className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
         >
           <PlusIcon className="w-3.5 h-3.5" />
-          Add Item
+          {t('CV.add_item')}
         </button>
       </div>
     </Accordion>
@@ -625,14 +651,14 @@ type DynamicSectionType =
   | 'publications'
   | 'custom';
 
-const SECTION_OPTIONS: { id: DynamicSectionType; label: string; icon: string }[] = [
-  { id: 'education', label: 'Education', icon: 'school' },
-  { id: 'experience', label: 'Experience', icon: 'work' },
-  { id: 'projects', label: 'Projects', icon: 'code' },
-  { id: 'volunteering', label: 'Volunteering', icon: 'volunteer_activism' },
-  { id: 'awards', label: 'Awards / Grants', icon: 'emoji_events' },
-  { id: 'publications', label: 'Publications', icon: 'article' },
-  { id: 'custom', label: 'Custom Section', icon: 'tune' },
+const SECTION_OPTIONS: { id: DynamicSectionType; labelKey: string; icon: string }[] = [
+  { id: 'education', labelKey: 'CV.opt_education', icon: 'school' },
+  { id: 'experience', labelKey: 'CV.opt_experience', icon: 'work' },
+  { id: 'projects', labelKey: 'CV.opt_projects', icon: 'code' },
+  { id: 'volunteering', labelKey: 'CV.opt_volunteering', icon: 'volunteer_activism' },
+  { id: 'awards', labelKey: 'CV.opt_awards', icon: 'emoji_events' },
+  { id: 'publications', labelKey: 'CV.opt_publications', icon: 'article' },
+  { id: 'custom', labelKey: 'CV.opt_custom', icon: 'tune' },
 ];
 
 // ─── TEMPLATE CONFIG ─────────────────────────────────────────────────────────
@@ -725,6 +751,7 @@ function TemplateThumbnail({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function CVBuilder() {
+  const { t } = useTranslation();
   const [cvData, setCvData] = useState<CVData>(defaultCVData);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>('modern');
   const [openSections, setOpenSections] = useState<string[]>(['personal']);
@@ -1005,7 +1032,7 @@ export default function CVBuilder() {
     // Safety net: if export hangs for more than 30s, unblock the button
     const safetyTimeout = setTimeout(() => {
       setIsExporting(false);
-      toast.error('Export timed out. Please try again.');
+      toast.error(t('CV.export_timeout'));
     }, 30000);
 
     try {
@@ -1077,7 +1104,7 @@ export default function CVBuilder() {
 
       if (isIOS) {
         window.open(blobUrl, '_blank');
-        toast.success('PDF opened — tap Share → Save to Files to download.');
+        toast.success(t('CV.pdf_opened'));
         setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
       } else {
         const a = document.createElement('a');
@@ -1094,7 +1121,7 @@ export default function CVBuilder() {
       setShowSyncModal(true);
     } catch (error) {
       console.error('Failed to export PDF:', error);
-      toast.error('Export failed. Please try again.');
+      toast.error(t('CV.export_failed'));
     } finally {
       clearTimeout(safetyTimeout);
       setIsExporting(false);
@@ -1131,18 +1158,18 @@ export default function CVBuilder() {
         workExperience: workExperience.length > 0 ? workExperience : undefined,
       });
 
-      toast.success('Profile updated successfully!');
+      toast.success(t('CV.profile_updated'));
       setShowSyncModal(false);
     } catch (error) {
       console.error('Failed to sync profile:', error);
-      toast.error('Failed to update profile.');
+      toast.error(t('CV.profile_update_failed'));
     } finally {
       setIsSyncing(false);
     }
   };
 
   const clearDraft = () => {
-    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+    if (confirm(t('CV.confirm_clear'))) {
       setCvData(defaultCVData);
       localStorage.removeItem(STORAGE_KEY);
       setActiveSections(['experience', 'education', 'skills', 'languages']);
@@ -1201,7 +1228,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="experience"
-            title="Work Experience"
+            title={t('CV.sec_experience')}
             icon="work"
             isOpen={openSections.includes('experience')}
             onToggle={() => toggleSection('experience')}
@@ -1222,7 +1249,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Experience
+                {t('CV.add_experience')}
               </button>
             </div>
           </Accordion>
@@ -1231,7 +1258,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="education"
-            title="Education"
+            title={t('CV.sec_education')}
             icon="school"
             isOpen={openSections.includes('education')}
             onToggle={() => toggleSection('education')}
@@ -1252,7 +1279,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Education
+                {t('CV.add_education')}
               </button>
             </div>
           </Accordion>
@@ -1261,7 +1288,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="skills"
-            title="Skills"
+            title={t('CV.sec_skills')}
             icon="psychology"
             isOpen={openSections.includes('skills')}
             onToggle={() => toggleSection('skills')}
@@ -1277,7 +1304,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="languages"
-            title="Languages"
+            title={t('CV.sec_languages')}
             icon="translate"
             isOpen={openSections.includes('languages')}
             onToggle={() => toggleSection('languages')}
@@ -1298,7 +1325,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Language
+                {t('CV.add_language')}
               </button>
             </div>
           </Accordion>
@@ -1307,7 +1334,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="projects"
-            title="Projects"
+            title={t('CV.sec_projects')}
             icon="code"
             isOpen={openSections.includes('projects')}
             onToggle={() => toggleSection('projects')}
@@ -1328,7 +1355,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Project
+                {t('CV.add_project')}
               </button>
             </div>
           </Accordion>
@@ -1337,7 +1364,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="volunteering"
-            title="Volunteering"
+            title={t('CV.sec_volunteering')}
             icon="volunteer_activism"
             isOpen={openSections.includes('volunteering')}
             onToggle={() => toggleSection('volunteering')}
@@ -1358,7 +1385,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Volunteering
+                {t('CV.add_volunteering')}
               </button>
             </div>
           </Accordion>
@@ -1367,7 +1394,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="awards"
-            title="Awards / Grants"
+            title={t('CV.sec_awards')}
             icon="emoji_events"
             isOpen={openSections.includes('awards')}
             onToggle={() => toggleSection('awards')}
@@ -1388,7 +1415,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Award
+                {t('CV.add_award')}
               </button>
             </div>
           </Accordion>
@@ -1397,7 +1424,7 @@ export default function CVBuilder() {
         return (
           <Accordion
             key="publications"
-            title="Publications"
+            title={t('CV.sec_publications')}
             icon="article"
             isOpen={openSections.includes('publications')}
             onToggle={() => toggleSection('publications')}
@@ -1418,7 +1445,7 @@ export default function CVBuilder() {
                 className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-medium hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Add Publication
+                {t('CV.add_publication')}
               </button>
             </div>
           </Accordion>
@@ -1446,97 +1473,99 @@ export default function CVBuilder() {
             <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
               1
             </span>
-            <span className="text-xs font-semibold text-primary">Information</span>
+            <span className="text-xs font-semibold text-primary">{t('CV.step_information')}</span>
           </div>
           <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center gap-1.5 opacity-40">
             <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center">
               2
             </span>
-            <span className="text-xs font-semibold text-slate-400">Design</span>
+            <span className="text-xs font-semibold text-slate-400">{t('CV.step_design')}</span>
           </div>
         </div>
 
         {/* Form content */}
         <div className="p-6 pb-4 space-y-4 flex-1">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-white">CV Editor</h2>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+              {t('CV.cv_editor')}
+            </h2>
             <button
               onClick={clearDraft}
               className="text-xs text-slate-400 hover:text-red-500 transition-colors"
             >
-              Clear All
+              {t('CV.clear_all')}
             </button>
           </div>
 
           {/* Personal Details — always fixed */}
           <Accordion
-            title="Personal Details"
+            title={t('CV.sec_personal')}
             icon="person"
             isOpen={openSections.includes('personal')}
             onToggle={() => toggleSection('personal')}
           >
             <div className="grid grid-cols-2 gap-3">
               <Input
-                label="First Name"
+                label={t('CV.l_first_name')}
                 value={cvData.personalInfo.firstName}
                 onChange={(v) => updatePersonalInfo('firstName', v)}
-                placeholder="John"
+                placeholder={t('CV.ph_first_name')}
               />
               <Input
-                label="Last Name"
+                label={t('CV.l_last_name')}
                 value={cvData.personalInfo.lastName}
                 onChange={(v) => updatePersonalInfo('lastName', v)}
-                placeholder="Doe"
+                placeholder={t('CV.ph_last_name')}
               />
             </div>
             <Input
-              label="Job Title"
+              label={t('CV.l_job_title')}
               value={cvData.personalInfo.jobTitle}
               onChange={(v) => updatePersonalInfo('jobTitle', v)}
-              placeholder="Frontend Developer"
+              placeholder={t('CV.ph_job_title')}
             />
             <Input
-              label="Email"
+              label={t('CV.l_email')}
               value={cvData.personalInfo.email}
               onChange={(v) => updatePersonalInfo('email', v)}
-              placeholder="john@example.com"
+              placeholder={t('CV.ph_email')}
               type="email"
             />
             <div className="grid grid-cols-2 gap-3">
               <Input
-                label="Phone"
+                label={t('CV.l_phone')}
                 value={cvData.personalInfo.phone}
                 onChange={(v) => updatePersonalInfo('phone', v)}
-                placeholder="+1 234 567 8900"
+                placeholder={t('CV.ph_phone')}
               />
               <Input
-                label="Location"
+                label={t('CV.l_location')}
                 value={cvData.personalInfo.location}
                 onChange={(v) => updatePersonalInfo('location', v)}
-                placeholder="New York, USA"
+                placeholder={t('CV.ph_location')}
               />
             </div>
             <Input
-              label="LinkedIn"
+              label={t('CV.l_linkedin')}
               value={cvData.personalInfo.linkedin}
               onChange={(v) => updatePersonalInfo('linkedin', v)}
-              placeholder="linkedin.com/in/johndoe"
+              placeholder={t('CV.ph_linkedin')}
             />
           </Accordion>
 
           {/* Summary — always fixed */}
           <Accordion
-            title="Professional Summary"
+            title={t('CV.sec_summary')}
             icon="summarize"
             isOpen={openSections.includes('summary')}
             onToggle={() => toggleSection('summary')}
           >
             <Textarea
-              label="About You"
+              label={t('CV.l_about_you')}
               value={cvData.summary}
               onChange={(v) => setCvData((prev) => ({ ...prev, summary: v }))}
-              placeholder="A brief introduction about yourself, your experience, and career goals..."
+              placeholder={t('CV.ph_summary')}
               rows={5}
             />
           </Accordion>
@@ -1552,13 +1581,13 @@ export default function CVBuilder() {
               className="w-full py-3 border-2 border-dashed border-primary/30 rounded-xl text-primary text-sm font-semibold hover:bg-primary/5 hover:border-primary/50 transition-all flex items-center justify-center gap-2"
             >
               <PlusCircleIcon className="w-3.5 h-3.5" />
-              Add Section
+              {t('CV.add_section')}
             </button>
 
             {showAddMenu && (
               <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
                 {availableSections.length === 0 ? (
-                  <div className="p-3 text-center text-xs text-slate-400">All sections added</div>
+                  <div className="p-3 text-center text-xs text-slate-400">{t('CV.all_added')}</div>
                 ) : (
                   availableSections.map((opt) => (
                     <button
@@ -1570,7 +1599,7 @@ export default function CVBuilder() {
                         {opt.icon}
                       </span>
                       <span className="text-sm text-slate-700 dark:text-slate-200">
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </span>
                     </button>
                   ))
@@ -1587,7 +1616,7 @@ export default function CVBuilder() {
             onClick={() => setMobileStep(2)}
             className="w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            Choose Design
+            {t('CV.choose_design')}
             <ArrowDownTrayIcon className="w-4 h-4 -rotate-90" />
           </button>
         </div>
@@ -1609,21 +1638,23 @@ export default function CVBuilder() {
             className="flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
           >
             <ArrowPathIcon className="w-4 h-4 rotate-180" />
-            Back
+            {t('CV.back')}
           </button>
           <div className="flex items-center gap-2 flex-1 justify-center">
             <div className="flex items-center gap-1 opacity-40">
               <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center">
                 1
               </span>
-              <span className="text-xs font-semibold text-slate-400">Information</span>
+              <span className="text-xs font-semibold text-slate-400">
+                {t('CV.step_information')}
+              </span>
             </div>
             <div className="w-6 h-px bg-slate-300 dark:bg-slate-600" />
             <div className="flex items-center gap-1">
               <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
                 2
               </span>
-              <span className="text-xs font-semibold text-primary">Design</span>
+              <span className="text-xs font-semibold text-primary">{t('CV.step_design')}</span>
             </div>
           </div>
           <button
@@ -1637,14 +1668,14 @@ export default function CVBuilder() {
             ) : (
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             )}
-            {isExporting ? 'Exporting...' : 'Download PDF'}
+            {isExporting ? t('CV.exporting') : t('CV.download_pdf')}
           </button>
         </div>
 
         {/* Desktop: template toolbar (hidden on mobile) */}
         <div className="hidden md:flex shrink-0 px-4 py-3 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 items-center gap-4">
           <span className="text-[11px] font-semibold text-slate-500 uppercase shrink-0">
-            Shablon:
+            {t('CV.template_label')}
           </span>
           <div className="flex-1 overflow-x-auto">
             <div className="flex gap-2 pb-1">
@@ -1669,12 +1700,12 @@ export default function CVBuilder() {
             {isExporting ? (
               <>
                 <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
-                Yuklanmoqda...
+                {t('CV.exporting')}
               </>
             ) : (
               <>
                 <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
-                PDF yuklab olish
+                {t('CV.download_pdf')}
               </>
             )}
           </button>
@@ -1683,7 +1714,7 @@ export default function CVBuilder() {
         {/* Mobile: template thumbnail grid (hidden on desktop) */}
         <div className="md:hidden shrink-0 p-4 bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700">
           <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-3">
-            Choose a Template
+            {t('CV.choose_template')}
           </p>
           <div className="grid grid-cols-3 gap-2">
             {TEMPLATES.map((t) => (
@@ -1721,19 +1752,18 @@ export default function CVBuilder() {
                 <ArrowPathIcon className="w-5 h-5 text-primary" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                Update your Portfolio?
+                {t('CV.sync_title')}
               </h3>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Would you like to update your main Profile with data from this CV? This will sync your{' '}
-              <strong>name, headline, bio, education, experience, and skills</strong>.
+              {t('CV.sync_desc_pre')} <strong>{t('CV.sync_desc_bold')}</strong>.
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowSyncModal(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
-                No, Skip
+                {t('CV.sync_skip')}
               </button>
               <button
                 onClick={syncToProfile}
@@ -1743,12 +1773,12 @@ export default function CVBuilder() {
                 {isSyncing ? (
                   <>
                     <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                    Syncing...
+                    {t('CV.syncing')}
                   </>
                 ) : (
                   <>
                     <CheckIcon className="w-4 h-4" />
-                    Yes, Update Profile
+                    {t('CV.sync_confirm')}
                   </>
                 )}
               </button>
