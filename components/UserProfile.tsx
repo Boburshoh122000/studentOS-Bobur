@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { userApi, authApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
@@ -75,6 +76,7 @@ const cancelBtnCls =
 
 /* ═══════════════════════════════════════════════════════════ */
 export default function UserProfile({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -158,9 +160,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
     try {
       setSaving(section);
       await userApi.updateProfile(data);
-      toast.success('Saved!');
+      toast.success(t('Profile.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('Profile.save_failed'));
     } finally {
       setSaving(null);
     }
@@ -244,18 +246,18 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_FILE) {
-      toast.error('File must be under 5 MB');
+      toast.error(t('Profile.file_too_large'));
       return;
     }
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
     if (!allowed.includes(file.type)) {
-      toast.error('Only JPG, PNG, WebP, or PDF');
+      toast.error(t('Profile.file_type'));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       setDraftCert((prev) => ({ ...prev, fileUrl: reader.result as string, fileName: file.name }));
-      toast.success(`"${file.name}" attached`);
+      toast.success(t('Profile.file_attached', { name: file.name }));
     };
     reader.readAsDataURL(file);
   };
@@ -308,24 +310,24 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       <input
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Full Name"
+                        placeholder={t('Profile.full_name_ph')}
                         className={`${inputCls} font-bold`}
                       />
                       <input
                         value={headline}
                         onChange={(e) => setHeadline(e.target.value)}
-                        placeholder="Headline"
+                        placeholder={t('Profile.headline_ph')}
                         className={inputCls}
                       />
                     </div>
                   ) : (
                     <div>
                       <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                        {fullName || 'Your Name'}
+                        {fullName || t('Profile.name_fallback')}
                       </h1>
                       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
                         <BriefcaseIcon className="w-4 h-4 text-gray-400" />
-                        {headline || 'Add a headline'}
+                        {headline || t('Profile.headline_fallback')}
                       </p>
                     </div>
                   )}
@@ -339,21 +341,21 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button
                       onClick={saveHeader}
                       disabled={saving === 'header'}
                       className={saveBtnCls}
                     >
-                      <CheckIcon className="w-3.5 h-3.5" /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> {t('Common.save')}
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => setEditingHeader(true)}
                     className={actionBtnCls}
-                    title="Edit"
+                    title={t('Common.edit')}
                   >
                     <PencilIcon className="w-4 h-4" />
                   </button>
@@ -364,7 +366,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* ═══ ABOUT ME ═══ */}
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">About Me</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('Profile.about_me')}
+                </h2>
                 {editingBio ? (
                   <div className="flex items-center gap-2">
                     <button
@@ -374,10 +378,10 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button onClick={saveBio} disabled={saving === 'bio'} className={saveBtnCls}>
-                      <CheckIcon className="w-3.5 h-3.5" /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> {t('Common.save')}
                     </button>
                   </div>
                 ) : (
@@ -390,17 +394,13 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Write a short professional summary..."
+                  placeholder={t('Profile.bio_ph')}
                   className={textareaCls}
                   rows={4}
                 />
               ) : (
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
-                  {bio || (
-                    <span className="italic text-gray-400">
-                      No bio yet — click the pencil to add one.
-                    </span>
-                  )}
+                  {bio || <span className="italic text-gray-400">{t('Profile.no_bio')}</span>}
                 </p>
               )}
             </div>
@@ -408,7 +408,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* ═══ SKILLS ═══ */}
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Skills</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('Profile.skills')}
+                </h2>
                 {editingSkills ? (
                   <div className="flex items-center gap-2">
                     <button
@@ -418,14 +420,14 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       }}
                       className={cancelBtnCls}
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button
                       onClick={saveSkills}
                       disabled={saving === 'skills'}
                       className={saveBtnCls}
                     >
-                      <CheckIcon className="w-3.5 h-3.5" /> Save
+                      <CheckIcon className="w-3.5 h-3.5" /> {t('Common.save')}
                     </button>
                   </div>
                 ) : (
@@ -452,7 +454,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   </span>
                 ))}
                 {skills.length === 0 && !editingSkills && (
-                  <p className="text-sm text-gray-400 italic">No skills added yet.</p>
+                  <p className="text-sm text-gray-400 italic">{t('Profile.no_skills')}</p>
                 )}
               </div>
               {editingSkills && (
@@ -461,14 +463,14 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    placeholder="Type a skill and press Enter..."
+                    placeholder={t('Profile.skill_ph')}
                     className={`${inputCls} flex-1`}
                   />
                   <button
                     onClick={addSkill}
                     className="px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition"
                   >
-                    Add
+                    {t('Profile.add')}
                   </button>
                 </div>
               )}
@@ -477,7 +479,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* ═══ WORK EXPERIENCE ═══ */}
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Work Experience</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('Profile.work_experience')}
+                </h2>
                 {!addingWork && editingWorkIdx === null && (
                   <button
                     onClick={() => {
@@ -503,39 +507,39 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         <input
                           value={w.role}
                           onChange={(e) => updateWork(i, 'role', e.target.value)}
-                          placeholder="Role"
+                          placeholder={t('Profile.ph_role')}
                           className={inputCls}
                         />
                         <input
                           value={w.company}
                           onChange={(e) => updateWork(i, 'company', e.target.value)}
-                          placeholder="Company"
+                          placeholder={t('Profile.ph_company')}
                           className={inputCls}
                         />
                       </div>
                       <input
                         value={w.duration}
                         onChange={(e) => updateWork(i, 'duration', e.target.value)}
-                        placeholder="Duration"
+                        placeholder={t('Profile.ph_duration')}
                         className={inputCls}
                       />
                       <textarea
                         value={w.description}
                         onChange={(e) => updateWork(i, 'description', e.target.value)}
-                        placeholder="Description"
+                        placeholder={t('Profile.ph_description')}
                         className={textareaCls}
                         rows={2}
                       />
                       <div className="flex justify-end gap-2">
                         <button onClick={() => setEditingWorkIdx(null)} className={cancelBtnCls}>
-                          <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                          <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                         </button>
                         <button
                           onClick={() => saveEditWork(i)}
                           disabled={saving === 'work'}
                           className={saveBtnCls}
                         >
-                          <CheckIcon className="w-3.5 h-3.5" /> Save
+                          <CheckIcon className="w-3.5 h-3.5" /> {t('Common.save')}
                         </button>
                       </div>
                     </div>
@@ -550,7 +554,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                              {w.role || 'Untitled'}
+                              {w.role || t('Profile.role_fallback')}
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{w.company}</p>
                           </div>
@@ -582,7 +586,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   )
                 )}
                 {workExperience.length === 0 && !addingWork && (
-                  <p className="text-sm text-gray-400 italic">No work experience yet.</p>
+                  <p className="text-sm text-gray-400 italic">{t('Profile.no_work')}</p>
                 )}
               </div>
 
@@ -593,39 +597,39 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     <input
                       value={draftWork.role}
                       onChange={(e) => setDraftWork({ ...draftWork, role: e.target.value })}
-                      placeholder="Role / Title"
+                      placeholder={t('Profile.ph_role_title')}
                       className={inputCls}
                     />
                     <input
                       value={draftWork.company}
                       onChange={(e) => setDraftWork({ ...draftWork, company: e.target.value })}
-                      placeholder="Company"
+                      placeholder={t('Profile.ph_company')}
                       className={inputCls}
                     />
                   </div>
                   <input
                     value={draftWork.duration}
                     onChange={(e) => setDraftWork({ ...draftWork, duration: e.target.value })}
-                    placeholder="Duration (e.g. 2022 – Present)"
+                    placeholder={t('Profile.ph_duration_ex')}
                     className={inputCls}
                   />
                   <textarea
                     value={draftWork.description}
                     onChange={(e) => setDraftWork({ ...draftWork, description: e.target.value })}
-                    placeholder="Description..."
+                    placeholder={t('Profile.ph_description_dots')}
                     className={textareaCls}
                     rows={2}
                   />
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingWork(false)} className={cancelBtnCls}>
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button
                       onClick={confirmAddWork}
                       disabled={saving === 'work'}
                       className={saveBtnCls}
                     >
-                      <PlusIcon className="w-3.5 h-3.5" /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> {t('Profile.add')}
                     </button>
                   </div>
                 </div>
@@ -635,7 +639,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* ═══ EDUCATION ═══ */}
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Education</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('Profile.education')}
+                </h2>
                 {!addingEdu && editingEduIdx === null && (
                   <button
                     onClick={() => {
@@ -660,39 +666,39 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         <input
                           value={ed.school}
                           onChange={(e) => updateEdu(i, 'school', e.target.value)}
-                          placeholder="School"
+                          placeholder={t('Profile.ed_ph_school')}
                           className={inputCls}
                         />
                         <input
                           value={ed.degree}
                           onChange={(e) => updateEdu(i, 'degree', e.target.value)}
-                          placeholder="Degree"
+                          placeholder={t('Profile.ed_ph_degree')}
                           className={inputCls}
                         />
                       </div>
                       <input
                         value={ed.year}
                         onChange={(e) => updateEdu(i, 'year', e.target.value)}
-                        placeholder="Year"
+                        placeholder={t('Profile.ed_ph_year')}
                         className={inputCls}
                       />
                       <textarea
                         value={ed.description}
                         onChange={(e) => updateEdu(i, 'description', e.target.value)}
-                        placeholder="Description"
+                        placeholder={t('Profile.ph_description')}
                         className={textareaCls}
                         rows={2}
                       />
                       <div className="flex justify-end gap-2">
                         <button onClick={() => setEditingEduIdx(null)} className={cancelBtnCls}>
-                          <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                          <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                         </button>
                         <button
                           onClick={() => saveEditEdu(i)}
                           disabled={saving === 'edu'}
                           className={saveBtnCls}
                         >
-                          <CheckIcon className="w-3.5 h-3.5" /> Save
+                          <CheckIcon className="w-3.5 h-3.5" /> {t('Common.save')}
                         </button>
                       </div>
                     </div>
@@ -705,7 +711,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                              {ed.school || 'University'}
+                              {ed.school || t('Profile.school_fallback')}
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{ed.degree}</p>
                           </div>
@@ -737,7 +743,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   )
                 )}
                 {educationHistory.length === 0 && !addingEdu && (
-                  <p className="text-sm text-gray-400 italic">No education added yet.</p>
+                  <p className="text-sm text-gray-400 italic">{t('Profile.no_education')}</p>
                 )}
               </div>
 
@@ -747,39 +753,39 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     <input
                       value={draftEdu.school}
                       onChange={(e) => setDraftEdu({ ...draftEdu, school: e.target.value })}
-                      placeholder="School / University"
+                      placeholder={t('Profile.ed_ph_school_uni')}
                       className={inputCls}
                     />
                     <input
                       value={draftEdu.degree}
                       onChange={(e) => setDraftEdu({ ...draftEdu, degree: e.target.value })}
-                      placeholder="Degree"
+                      placeholder={t('Profile.ed_ph_degree')}
                       className={inputCls}
                     />
                   </div>
                   <input
                     value={draftEdu.year}
                     onChange={(e) => setDraftEdu({ ...draftEdu, year: e.target.value })}
-                    placeholder="Year (e.g. 2020 – 2024)"
+                    placeholder={t('Profile.ed_ph_year_ex')}
                     className={inputCls}
                   />
                   <textarea
                     value={draftEdu.description}
                     onChange={(e) => setDraftEdu({ ...draftEdu, description: e.target.value })}
-                    placeholder="Description..."
+                    placeholder={t('Profile.ph_description_dots')}
                     className={textareaCls}
                     rows={2}
                   />
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingEdu(false)} className={cancelBtnCls}>
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button
                       onClick={confirmAddEdu}
                       disabled={saving === 'edu'}
                       className={saveBtnCls}
                     >
-                      <PlusIcon className="w-3.5 h-3.5" /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> {t('Profile.add')}
                     </button>
                   </div>
                 </div>
@@ -789,7 +795,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* ═══ CERTIFICATES ═══ */}
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Certificates</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('Profile.certificates')}
+                </h2>
                 {!addingCert && (
                   <button
                     onClick={() => {
@@ -815,7 +823,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   <div className="w-14 h-14 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-3">
                     <TrophyIcon className="w-6 h-6 text-gray-300 dark:text-gray-600" />
                   </div>
-                  <p className="text-sm text-gray-400 italic">No certificates uploaded yet.</p>
+                  <p className="text-sm text-gray-400 italic">{t('Profile.no_certificates')}</p>
                 </div>
               )}
 
@@ -834,7 +842,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                        {cert.name || 'Certificate'}
+                        {cert.name || t('Profile.cert_fallback')}
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {cert.issuer}
@@ -848,7 +856,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                           onClick={() => setViewingCert(cert)}
                           className="flex items-center gap-1 text-xs text-primary font-medium hover:underline mr-2 opacity-0 group-hover:opacity-100 transition"
                         >
-                          <EyeIcon className="w-5 h-5" /> View
+                          <EyeIcon className="w-5 h-5" /> {t('Common.view')}
                         </button>
                       )}
                       <button
@@ -868,20 +876,20 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                     <input
                       value={draftCert.name}
                       onChange={(e) => setDraftCert({ ...draftCert, name: e.target.value })}
-                      placeholder="Certificate Name"
+                      placeholder={t('Profile.cert_ph_name')}
                       className={inputCls}
                     />
                     <input
                       value={draftCert.issuer}
                       onChange={(e) => setDraftCert({ ...draftCert, issuer: e.target.value })}
-                      placeholder="Issuing Organization"
+                      placeholder={t('Profile.cert_ph_issuer')}
                       className={inputCls}
                     />
                   </div>
                   <input
                     value={draftCert.date}
                     onChange={(e) => setDraftCert({ ...draftCert, date: e.target.value })}
-                    placeholder="Date (e.g. March 2024)"
+                    placeholder={t('Profile.cert_ph_date')}
                     className={inputCls}
                   />
                   <div>
@@ -897,19 +905,19 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                       className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary hover:text-primary cursor-pointer transition"
                     >
                       <ArrowUpTrayIcon className="w-4 h-4" />
-                      {draftCert.fileName || 'Upload file (JPG, PNG, PDF · max 5 MB)'}
+                      {draftCert.fileName || t('Profile.cert_upload')}
                     </label>
                   </div>
                   <div className="flex justify-end gap-2">
                     <button onClick={() => setAddingCert(false)} className={cancelBtnCls}>
-                      <XMarkIcon className="w-3.5 h-3.5" /> Cancel
+                      <XMarkIcon className="w-3.5 h-3.5" /> {t('Common.cancel')}
                     </button>
                     <button
                       onClick={confirmAddCert}
                       disabled={saving === 'cert' || !draftCert.name}
                       className={saveBtnCls}
                     >
-                      <PlusIcon className="w-3.5 h-3.5" /> Add
+                      <PlusIcon className="w-3.5 h-3.5" /> {t('Profile.add')}
                     </button>
                   </div>
                 </div>
@@ -922,16 +930,16 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* Profile Strength */}
             <div className={cardCls}>
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
-                Profile Strength
+                {t('Profile.profile_strength')}
               </h3>
               {(() => {
                 const sections = [
-                  { label: 'Name & Headline', done: !!(fullName && headline) },
-                  { label: 'About Me', done: !!bio },
-                  { label: 'Skills', done: skills.length > 0 },
-                  { label: 'Work Experience', done: workExperience.length > 0 },
-                  { label: 'Education', done: educationHistory.length > 0 },
-                  { label: 'Certificates', done: certificates.length > 0 },
+                  { label: t('Profile.sec_name_headline'), done: !!(fullName && headline) },
+                  { label: t('Profile.about_me'), done: !!bio },
+                  { label: t('Profile.skills'), done: skills.length > 0 },
+                  { label: t('Profile.work_experience'), done: workExperience.length > 0 },
+                  { label: t('Profile.education'), done: educationHistory.length > 0 },
+                  { label: t('Profile.certificates'), done: certificates.length > 0 },
                 ];
                 const completed = sections.filter((s) => s.done).length;
                 const pct = Math.round((completed / sections.length) * 100);
@@ -995,32 +1003,32 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             {/* Quick Actions */}
             <div className={cardCls}>
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
-                Quick Actions
+                {t('Profile.quick_actions')}
               </h3>
               <div className="space-y-2">
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    toast.success('Profile link copied!');
+                    toast.success(t('Profile.link_copied'));
                   }}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
                   <ShareIcon className="w-4 h-4 text-primary" />
-                  Share Profile
+                  {t('Profile.share_profile')}
                 </button>
                 <button
                   onClick={() => navigateTo(Screen.CV_BUILDER)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
                   <DocumentTextIcon className="w-4 h-4 text-primary" />
-                  Build CV from Profile
+                  {t('Profile.build_cv')}
                 </button>
                 <button
                   onClick={() => navigateTo(Screen.SETTINGS)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
                   <BoltIcon className="w-4 h-4 text-primary" />
-                  Account Settings
+                  {t('Profile.account_settings')}
                 </button>
               </div>
             </div>
@@ -1032,10 +1040,11 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   <BoltIcon className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Pro Tip</h4>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                    {t('Profile.pro_tip')}
+                  </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Complete all profile sections to stand out to employers. Profiles with 100%
-                    completion get 3× more visibility.
+                    {t('Profile.tip_text')}
                   </p>
                 </div>
               </div>
@@ -1081,7 +1090,9 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
             <div className="w-80 bg-white dark:bg-[#1a1f2e] border-l border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white">Media</h2>
+                <h2 className="text-base font-bold text-gray-900 dark:text-white">
+                  {t('Profile.media')}
+                </h2>
                 <button
                   onClick={() => setViewingCert(null)}
                   className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded transition"
@@ -1098,7 +1109,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white text-sm">
-                      {viewingCert.name || 'Certificate'}
+                      {viewingCert.name || t('Profile.cert_fallback')}
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{viewingCert.issuer}</p>
                   </div>
@@ -1107,7 +1118,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                 {viewingCert.date && (
                   <div className="mb-4">
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                      Date
+                      {t('Profile.date_label')}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-300">{viewingCert.date}</p>
                   </div>
@@ -1116,7 +1127,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                 {viewingCert.fileName && (
                   <div className="mb-4">
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                      File
+                      {t('Profile.file_label')}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-300 break-all">
                       {viewingCert.fileName}
@@ -1132,7 +1143,7 @@ export default function UserProfile({ navigateTo }: NavigationProps) {
                   download={viewingCert.fileName || 'certificate'}
                   className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition"
                 >
-                  <ArrowDownTrayIcon className="w-4 h-4" /> Download
+                  <ArrowDownTrayIcon className="w-4 h-4" /> {t('Common.download')}
                 </a>
               </div>
             </div>
