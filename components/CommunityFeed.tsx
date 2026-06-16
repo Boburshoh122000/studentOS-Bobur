@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { communityApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
@@ -19,6 +20,7 @@ interface Post {
 }
 
 export default function CommunityFeed({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
       setPosts((response.data as { posts: any[] }).posts || []);
     } catch (err: any) {
       console.error('Failed to fetch posts:', err);
-      setError('Failed to load community posts. Please try again.');
+      setError(t('Community.load_error'));
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
       fetchPosts(); // Refresh posts
     } catch (err: any) {
       console.error('Failed to create post:', err);
-      alert('Failed to create post. Please try again.');
+      alert(t('Community.create_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -80,7 +82,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
       );
     } catch (err: any) {
       console.error('Failed to toggle like:', err);
-      alert('Failed to update like. Please try again.');
+      alert(t('Community.like_error'));
     }
   };
 
@@ -92,9 +94,9 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    if (diffMins < 60) return t('Community.time_min', { count: diffMins });
+    if (diffHours < 24) return t('Community.time_hour', { count: diffHours });
+    return t('Community.time_day', { count: diffDays });
   };
 
   return (
@@ -120,7 +122,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                 </span>
                 <input
                   className="block w-full pl-10 pr-3 py-2 border border-transparent bg-gray-100 dark:bg-gray-800 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary transition-colors dark:text-gray-200"
-                  placeholder="Search topics..."
+                  placeholder={t('Community.search_ph')}
                   type="text"
                 />
               </div>
@@ -130,31 +132,31 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                 onClick={() => navigateTo(Screen.LANDING)}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
               >
-                Home
+                {t('Community.nav_home')}
               </button>
               <button className="text-gray-900 dark:text-white font-semibold border-b-2 border-gray-900 dark:border-white py-5">
-                Community
+                {t('Community.nav_community')}
               </button>
               <button
                 onClick={() => navigateTo(Screen.CAREER_TRACKER)}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
               >
-                Jobs
+                {t('Community.nav_jobs')}
               </button>
               <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium">
-                Messaging
+                {t('Community.nav_messaging')}
               </button>
             </div>
             <div className="flex items-center gap-4">
               <button
                 className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Notifications"
+                aria-label={t('Community.aria_notifications')}
               >
                 <i className="ph-fill ph-bell text-xl"></i>
               </button>
               <button
                 className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Messages"
+                aria-label={t('Community.aria_messages')}
               >
                 <i className="ph-fill ph-chat-text text-xl"></i>
               </button>
@@ -175,9 +177,11 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                   <span className="text-primary font-bold text-2xl">U</span>
                 </div>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Welcome!</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                {t('Community.welcome')}
+              </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Join the community discussion
+                {t('Community.welcome_sub')}
               </p>
             </div>
             <div className="space-y-1">
@@ -186,21 +190,21 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                 href="#"
               >
                 <i className="ph-fill ph-house text-xl"></i>
-                My Feed
+                {t('Community.my_feed')}
               </a>
               <a
                 className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="#"
               >
                 <i className="ph-fill ph-fire text-xl"></i>
-                Popular
+                {t('Community.popular')}
               </a>
               <a
                 className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="#"
               >
                 <i className="ph-fill ph-bookmark-simple text-xl"></i>
-                Bookmarks
+                {t('Community.bookmarks')}
               </a>
             </div>
           </div>
@@ -215,7 +219,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                 </div>
                 <input
                   className="flex-1 bg-gray-50 dark:bg-gray-800 border-none rounded-lg px-4 focus:ring-1 focus:ring-primary dark:text-white placeholder-gray-500"
-                  placeholder="Start a post or discussion..."
+                  placeholder={t('Community.post_ph')}
                   type="text"
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
@@ -225,10 +229,10 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
               <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-3">
                 <div className="flex gap-4">
                   <button className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                    <i className="ph-fill ph-image text-blue-500"></i> Media
+                    <i className="ph-fill ph-image text-blue-500"></i> {t('Community.media')}
                   </button>
                   <button className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                    <i className="ph-fill ph-link text-gray-500"></i> Link
+                    <i className="ph-fill ph-link text-gray-500"></i> {t('Community.link')}
                   </button>
                 </div>
                 <button
@@ -236,7 +240,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                   disabled={isSubmitting || !newPostContent.trim()}
                   className="bg-primary hover:bg-blue-700 text-white px-6 py-1.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Posting...' : 'Post'}
+                  {isSubmitting ? t('Community.posting') : t('Community.post')}
                 </button>
               </div>
             </div>
@@ -253,7 +257,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                   onClick={fetchPosts}
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  Try Again
+                  {t('Community.try_again')}
                 </button>
               </div>
             )}
@@ -263,11 +267,9 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
               <div className="bg-white dark:bg-[#1F2937] rounded-xl p-8 shadow-sm border border-[#E5E7EB] dark:border-[#374151] text-center">
                 <i className="ph-fill ph-chats-circle text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                  No posts yet
+                  {t('Community.no_posts')}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Be the first to start a discussion!
-                </p>
+                <p className="text-gray-500 dark:text-gray-400">{t('Community.no_posts_sub')}</p>
               </div>
             )}
 
@@ -305,7 +307,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                     </div>
                     <button
                       className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                      aria-label="More options"
+                      aria-label={t('Community.more_options')}
                     >
                       <i className="ph-bold ph-dots-three text-2xl"></i>
                     </button>
@@ -318,7 +320,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                       <div className="mt-3 rounded-xl overflow-hidden">
                         <img
                           src={post.imageUrl}
-                          alt="Post attachment"
+                          alt={t('Community.post_attachment')}
                           className="w-full object-cover max-h-96"
                         />
                       </div>
@@ -341,7 +343,7 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
                       </button>
                     </div>
                     <button className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm font-medium">
-                      <i className="ph-fill ph-share-network text-lg"></i> Share
+                      <i className="ph-fill ph-share-network text-lg"></i> {t('Community.share')}
                     </button>
                   </div>
                 </div>
@@ -353,72 +355,76 @@ export default function CommunityFeed({ navigateTo }: NavigationProps) {
             <div className="bg-white dark:bg-[#1F2937] rounded-xl p-5 shadow-sm border border-[#E5E7EB] dark:border-[#374151]">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">
-                  Trending Today
+                  {t('Community.trending_today')}
                 </h3>
                 <a className="text-primary text-xs font-bold hover:underline" href="#">
-                  View all
+                  {t('Community.view_all')}
                 </a>
               </div>
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 gap-1 mb-0.5">
-                    <span>Technology</span>
+                    <span>{t('Community.cat_technology')}</span>
                     <span>•</span>
-                    <span>Trending</span>
+                    <span>{t('Community.tag_trending')}</span>
                   </div>
                   <h4 className="font-bold text-gray-900 dark:text-white hover:text-primary cursor-pointer transition-colors">
                     #SummerInternships
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">12.5k posts</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    12.5k {t('Community.posts')}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 gap-1 mb-0.5">
-                    <span>Academic</span>
+                    <span>{t('Community.cat_academic')}</span>
                     <span>•</span>
-                    <span>Trending</span>
+                    <span>{t('Community.tag_trending')}</span>
                   </div>
                   <h4 className="font-bold text-gray-900 dark:text-white hover:text-primary cursor-pointer transition-colors">
                     #CS101
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">4.2k posts</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    4.2k {t('Community.posts')}
+                  </p>
                 </div>
               </div>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-5 border border-blue-100 dark:border-blue-900/30">
               <div className="flex items-center gap-2 mb-3 text-primary dark:text-blue-400">
                 <i className="ph-fill ph-shield-check text-xl"></i>
-                <h3 className="font-bold text-sm">Community Rules</h3>
+                <h3 className="font-bold text-sm">{t('Community.rules_title')}</h3>
               </div>
               <ul className="space-y-2 mb-4">
                 <li className="flex gap-2 text-xs text-gray-600 dark:text-gray-300">
                   <span className="text-blue-400">•</span>
-                  Be respectful and constructive.
+                  {t('Community.rule_1')}
                 </li>
                 <li className="flex gap-2 text-xs text-gray-600 dark:text-gray-300">
                   <span className="text-blue-400">•</span>
-                  No spam or self-promotion.
+                  {t('Community.rule_2')}
                 </li>
                 <li className="flex gap-2 text-xs text-gray-600 dark:text-gray-300">
                   <span className="text-blue-400">•</span>
-                  Keep it professional.
+                  {t('Community.rule_3')}
                 </li>
               </ul>
               <a className="text-primary text-xs font-bold hover:underline" href="#">
-                Read full guidelines
+                {t('Community.read_guidelines')}
               </a>
             </div>
             <div className="px-2">
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 dark:text-gray-500">
                 <button onClick={() => navigateTo(Screen.ABOUT)} className="hover:underline">
-                  About
+                  {t('Community.footer_about')}
                 </button>
                 <a className="hover:underline" href="#">
-                  Help Center
+                  {t('Community.help_center')}
                 </a>
                 <a className="hover:underline" href="/privacy">
-                  Privacy & Terms
+                  {t('Community.privacy_terms')}
                 </a>
-                <span>StudentOS © 2024</span>
+                <span>{t('Community.copyright')}</span>
               </div>
             </div>
           </div>

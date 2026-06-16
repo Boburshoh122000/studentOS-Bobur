@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { userApi, authApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
@@ -29,6 +30,7 @@ const emptyEdu: EducationEntry = { school: '', degree: '', year: '', description
 const emptyWork: WorkEntry = { company: '', role: '', duration: '', description: '' };
 
 export default function ProfileSettings({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -82,9 +84,9 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         educationHistory,
         workExperience,
       });
-      toast.success('Portfolio saved successfully!');
+      toast.success(t('Portfolio.saved_success'));
     } catch {
-      toast.error('Failed to save portfolio');
+      toast.error(t('Portfolio.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -116,10 +118,8 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   const headerContent = (
     <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-8 py-4 bg-white border-b border-gray-200">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Portfolio</h1>
-        <p className="text-gray-500 mt-1 text-sm">
-          Your professional profile visible to employers and recruiters.
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('Portfolio.title')}</h1>
+        <p className="text-gray-500 mt-1 text-sm">{t('Portfolio.subtitle')}</p>
       </div>
       <button
         onClick={handleSave}
@@ -127,7 +127,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
         className="mt-4 md:mt-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50"
       >
         <CheckIcon className="w-[18px] h-[18px]" />
-        {saving ? 'Saving...' : 'Save Changes'}
+        {saving ? t('Portfolio.saving') : t('Portfolio.save_changes')}
       </button>
     </div>
   );
@@ -135,7 +135,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
   if (isLoading) {
     return (
       <DashboardLayout currentScreen={Screen.PROFILE} navigateTo={navigateTo}>
-        <div className="flex h-full items-center justify-center">Loading...</div>
+        <div className="flex h-full items-center justify-center">{t('Common.loading')}</div>
       </DashboardLayout>
     );
   }
@@ -170,25 +170,25 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name
+                        {t('Portfolio.full_name')}
                       </label>
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Admin"
+                        placeholder={t('Portfolio.full_name_ph')}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white font-semibold text-gray-900"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Headline
+                        {t('Portfolio.headline')}
                       </label>
                       <input
                         type="text"
                         value={headline}
                         onChange={(e) => setHeadline(e.target.value)}
-                        placeholder="e.g. Junior Frontend Developer"
+                        placeholder={t('Portfolio.headline_ph')}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                       />
                     </div>
@@ -204,17 +204,19 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                 <UserIcon className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">About Me</h2>
+              <h2 className="text-lg font-bold text-gray-900">{t('Portfolio.about_me')}</h2>
             </div>
 
             <textarea
               rows={5}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Write a short professional summary about yourself..."
+              placeholder={t('Portfolio.about_ph')}
               className="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-gray-700 leading-relaxed"
             ></textarea>
-            <p className="text-right text-xs text-gray-400 mt-2">{bio.length}/500 characters</p>
+            <p className="text-right text-xs text-gray-400 mt-2">
+              {t('Portfolio.char_count', { count: bio.length })}
+            </p>
           </div>
 
           {/* 3. Education Section */}
@@ -223,7 +225,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                 <AcademicCapIcon className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Education</h2>
+              <h2 className="text-lg font-bold text-gray-900">{t('Portfolio.education')}</h2>
             </div>
 
             <div className="space-y-4 mb-4">
@@ -241,13 +243,13 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full font-medium"
-                      placeholder="School"
+                      placeholder={t('Portfolio.ph_school')}
                       value={edu.school}
                       onChange={(e) => updateEducation(index, 'school', e.target.value)}
                     />
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Degree"
+                      placeholder={t('Portfolio.ph_degree')}
                       value={edu.degree}
                       onChange={(e) => updateEducation(index, 'degree', e.target.value)}
                     />
@@ -255,13 +257,13 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Year"
+                      placeholder={t('Portfolio.ph_year')}
                       value={edu.year}
                       onChange={(e) => updateEducation(index, 'year', e.target.value)}
                     />
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Description (optional)"
+                      placeholder={t('Portfolio.ph_desc_optional')}
                       value={edu.description}
                       onChange={(e) => updateEducation(index, 'description', e.target.value)}
                     />
@@ -280,10 +282,10 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               </div>
               <div className="text-center">
                 <span className="block text-sm font-medium text-gray-900 group-hover:text-blue-700">
-                  Add Education
+                  {t('Portfolio.add_education')}
                 </span>
                 <span className="block text-xs text-gray-500 mt-1">
-                  University, Bootcamp, or Online Course
+                  {t('Portfolio.education_hint')}
                 </span>
               </div>
             </button>
@@ -295,7 +297,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                 <BriefcaseIcon className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Experience & Projects</h2>
+              <h2 className="text-lg font-bold text-gray-900">{t('Portfolio.experience')}</h2>
             </div>
 
             <div className="space-y-4 mb-4">
@@ -313,13 +315,13 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full font-medium"
-                      placeholder="Company"
+                      placeholder={t('Portfolio.ph_company')}
                       value={work.company}
                       onChange={(e) => updateWork(index, 'company', e.target.value)}
                     />
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Role"
+                      placeholder={t('Portfolio.ph_role')}
                       value={work.role}
                       onChange={(e) => updateWork(index, 'role', e.target.value)}
                     />
@@ -327,13 +329,13 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Duration"
+                      placeholder={t('Portfolio.ph_duration')}
                       value={work.duration}
                       onChange={(e) => updateWork(index, 'duration', e.target.value)}
                     />
                     <input
                       className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                      placeholder="Description"
+                      placeholder={t('Portfolio.ph_description')}
                       value={work.description}
                       onChange={(e) => updateWork(index, 'description', e.target.value)}
                     />
@@ -350,7 +352,7 @@ export default function ProfileSettings({ navigateTo }: NavigationProps) {
                 <PlusIcon className="w-5 h-5 text-gray-500 group-hover:text-blue-600" />
               </div>
               <span className="block text-sm font-medium text-gray-900 group-hover:text-blue-700">
-                Add Experience
+                {t('Portfolio.add_experience')}
               </span>
             </button>
           </div>

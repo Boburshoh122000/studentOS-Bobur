@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { UserIcon } from '@heroicons/react/24/solid';
 
 type OrbPos = {
@@ -97,6 +98,7 @@ function OrbitZone({ imgs, positions }: { imgs: string[]; positions: OrbPos[] })
 
 export default function CoreSolutions() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="relative w-full bg-[#f4f4f7] overflow-hidden">
@@ -119,13 +121,13 @@ export default function CoreSolutions() {
           </div>
 
           <h2 className="text-[clamp(36px,4.5vw,56px)] font-extrabold tracking-tight text-[#111827] leading-[1.08]">
-            Core Student
+            {t('Landing.core.title_1')}
             <br />
-            solutions
+            {t('Landing.core.title_2')}
           </h2>
 
           <p className="text-[15px] text-gray-500 mt-5 leading-relaxed max-w-[260px]">
-            Streamline your studies in one centralized platform, enhancing your productivity.
+            {t('Landing.core.subtitle')}
           </p>
 
           <button
@@ -133,7 +135,7 @@ export default function CoreSolutions() {
             onClick={() => navigate('/signup/step-1')}
             className="mt-8 px-9 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition-colors"
           >
-            Learn more
+            {t('Landing.core.cta')}
           </button>
         </motion.div>
 

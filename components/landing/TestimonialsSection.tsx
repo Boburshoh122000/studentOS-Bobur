@@ -1,40 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
+/* Role + quote are resolved via i18n at render: Landing.testimonials.<key>_role / _quote */
 const testimonials = [
-  {
-    name: 'Aziza Mirzayeva',
-    role: 'Computer Science student at WIUT',
-    avatar: 'https://i.pravatar.cc/100?u=aziza',
-    rating: 5,
-    quote:
-      'I rewrote my CV with StudentOS and got 3 interview calls in one week. The ATS checker alone was worth it — I had no idea my old CV was scoring 32%.',
-  },
-  {
-    name: 'Jasur Karimov',
-    role: 'Engineering student at INHA University',
-    avatar: 'https://i.pravatar.cc/100?u=jasur',
-    rating: 5,
-    quote:
-      'The learning plan feature helped me structure my prep for internship season. I went from zero offers to two competing offers in a single semester.',
-  },
-  {
-    name: 'Sofia Lozano',
-    role: 'Business student at Turin Polytechnic',
-    avatar: 'https://i.pravatar.cc/100?u=sofia',
-    rating: 5,
-    quote:
-      'Plagiarism checker saved me from submitting an essay with accidental similarity. The dashboard makes it so easy to track everything in one place.',
-  },
-  {
-    name: 'Bobur Tashmatov',
-    role: 'Finance student at Westminster',
-    avatar: 'https://i.pravatar.cc/100?u=bobur',
-    rating: 5,
-    quote:
-      'The scholarship finder helped me discover opportunities I never knew existed. Found three scholarships and successfully applied for two of them.',
-  },
+  { key: 'r1', name: 'Aziza Mirzayeva', avatar: 'https://i.pravatar.cc/100?u=aziza', rating: 5 },
+  { key: 'r2', name: 'Jasur Karimov', avatar: 'https://i.pravatar.cc/100?u=jasur', rating: 5 },
+  { key: 'r3', name: 'Sofia Lozano', avatar: 'https://i.pravatar.cc/100?u=sofia', rating: 5 },
+  { key: 'r4', name: 'Bobur Tashmatov', avatar: 'https://i.pravatar.cc/100?u=bobur', rating: 5 },
 ];
 
 function StarRating({ count }: { count: number }) {
@@ -51,9 +25,10 @@ function StarRating({ count }: { count: number }) {
 }
 
 function TypewriterHeading() {
+  const { t } = useTranslation();
   const ref = useRef<HTMLHeadingElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
-  const text = 'Words of Appreciation';
+  const text = t('Landing.testimonials.heading');
 
   return (
     <h2 ref={ref} className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
@@ -165,6 +140,7 @@ function EnvelopeSVG() {
 }
 
 export default function TestimonialsSection() {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [paused, setPaused] = useState(false);
@@ -216,7 +192,7 @@ export default function TestimonialsSection() {
     setIndex((i) => (i + 1) % testimonials.length);
   };
 
-  const t = testimonials[index];
+  const active = testimonials[index];
 
   return (
     <section className="w-full py-20 px-4 bg-white overflow-hidden">
@@ -231,7 +207,7 @@ export default function TestimonialsSection() {
             animate={subInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 1.1 }}
           >
-            Thousands of students use StudentOS to build their academic future.
+            {t('Landing.testimonials.subtitle')}
           </motion.p>
         </div>
 
@@ -281,7 +257,7 @@ export default function TestimonialsSection() {
             <div className="overflow-hidden rounded-3xl">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
-                  key={t.name}
+                  key={active.key}
                   custom={direction}
                   initial={{ opacity: 0, x: direction * 60 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -290,15 +266,21 @@ export default function TestimonialsSection() {
                   className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 flex flex-col items-center text-center"
                 >
                   <div className="w-16 h-16 rounded-xl overflow-hidden shadow-md mb-4">
-                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                    <img
+                      src={active.avatar}
+                      alt={active.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <p className="text-base font-bold text-[#111827]">{t.name}</p>
-                  <p className="text-sm text-gray-400 mt-0.5">{t.role}</p>
+                  <p className="text-base font-bold text-[#111827]">{active.name}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">
+                    {t(`Landing.testimonials.${active.key}_role`)}
+                  </p>
                   <div className="mt-4">
-                    <StarRating count={t.rating} />
+                    <StarRating count={active.rating} />
                   </div>
                   <p className="text-sm text-gray-500 leading-relaxed mt-4">
-                    &ldquo;{t.quote}&rdquo;
+                    &ldquo;{t(`Landing.testimonials.${active.key}_quote`)}&rdquo;
                   </p>
                 </motion.div>
               </AnimatePresence>

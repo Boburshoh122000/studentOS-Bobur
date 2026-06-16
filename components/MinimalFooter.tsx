@@ -1,41 +1,42 @@
 'use client';
 
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-/* ─── Footer Link Data ──────────────────────────────────── */
+/* ─── Footer Link Data — labels resolved via i18n at render ─── */
 const columns = [
   {
-    title: 'Product',
+    titleKey: 'Landing.footer.col_product',
     links: [
-      { label: 'CV Scanner', href: '/app/ats-checker' },
-      { label: 'Learning Plan', href: '/app/learning-plan' },
-      { label: 'Habit Tracker', href: '/app/habit-tracker' },
-      { label: 'Plagiarism Check', href: '/app/plagiarism' },
+      { labelKey: 'Landing.footer.cv_scanner', href: '/app/ats-checker' },
+      { labelKey: 'Landing.footer.learning_plan', href: '/app/learning-plan' },
+      { labelKey: 'Landing.footer.habit_tracker', href: '/app/habit-tracker' },
+      { labelKey: 'Landing.footer.plagiarism', href: '/app/plagiarism' },
     ],
   },
   {
-    title: 'Features',
+    titleKey: 'Landing.footer.col_features',
     links: [
-      { label: 'Scholarships', href: '/app/scholarships' },
-      { label: 'Career Tools', href: '/app/career-tools' },
-      { label: 'Community', href: '/app/community' },
-      { label: 'Analytics', href: '/app' },
+      { labelKey: 'Landing.footer.scholarships', href: '/app/scholarships' },
+      { labelKey: 'Landing.footer.career_tools', href: '/app/career-tools' },
+      { labelKey: 'Landing.footer.community', href: '/app/community' },
+      { labelKey: 'Landing.footer.analytics', href: '/app' },
     ],
   },
   {
-    title: 'Pricing',
+    titleKey: 'Landing.footer.col_pricing',
     links: [
-      { label: 'Free Plan', href: '/signup/step-1' },
-      { label: 'Credits', href: '/signin' },
+      { labelKey: 'Landing.footer.free_plan', href: '/signup/step-1' },
+      { labelKey: 'Landing.footer.credits', href: '/signin' },
     ],
   },
   {
-    title: 'Resources',
+    titleKey: 'Landing.footer.col_resources',
     links: [
-      { label: 'Blog', href: '/blog' },
-      { label: 'About Us', href: '/about' },
-      { label: 'Contact', href: '/contact' },
-      { label: 'Privacy Policy', href: '/privacy' },
+      { labelKey: 'Landing.footer.blog', href: '/blog' },
+      { labelKey: 'Landing.footer.about', href: '/about' },
+      { labelKey: 'Landing.footer.contact', href: '/contact' },
+      { labelKey: 'Landing.footer.privacy', href: '/privacy' },
     ],
   },
 ];
@@ -67,6 +68,7 @@ function IconTiktok() {
 
 /* ─── Main Footer Component ─────────────────────────────── */
 export default function MinimalFooter() {
+  const { t } = useTranslation();
   return (
     <footer className="relative w-full bg-white flex flex-col overflow-hidden mt-2">
       {/* ─── Links grid ─── */}
@@ -75,21 +77,21 @@ export default function MinimalFooter() {
           {/* Brand column */}
           <div className="col-span-2 md:col-span-1">
             <p className="text-sm text-gray-500 leading-relaxed max-w-[200px]">
-              StudentOS is the platform that builds a thriving academic career — all in one place.
+              {t('Landing.footer.brand')}
             </p>
           </div>
 
           {/* Link columns */}
           {columns.map((col) => (
-            <div key={col.title} className="flex flex-col gap-2.5">
-              <span className="text-sm font-semibold text-[#111827] mb-1">{col.title}</span>
+            <div key={col.titleKey} className="flex flex-col gap-2.5">
+              <span className="text-sm font-semibold text-[#111827] mb-1">{t(col.titleKey)}</span>
               {col.links.map((link) => (
                 <Link
-                  key={link.label}
+                  key={link.href}
                   to={link.href}
                   className="text-sm text-gray-400 hover:text-[#111827] transition-colors"
                 >
-                  {link.label}
+                  {t(link.labelKey)}
                 </Link>
               ))}
             </div>
@@ -98,7 +100,7 @@ export default function MinimalFooter() {
 
         {/* Social + copyright */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
-          <span className="text-xs text-gray-400">© 2026 StudentOS. All rights reserved.</span>
+          <span className="text-xs text-gray-400">{t('Landing.footer.rights')}</span>
           <div className="flex items-center gap-2">
             {[
               { Icon: IconInstagram, label: 'Instagram' },

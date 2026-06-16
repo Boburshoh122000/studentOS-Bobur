@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Cog6ToothIcon } from '@heroicons/react/24/solid';
 
+/* Tool descriptions are resolved via i18n at render: Landing.integrations.<id>_desc */
 const TOOLS = [
   {
     id: 'gmail',
     name: 'Gmail',
-    description: 'Send and manage your academic emails',
     logo: (
       <svg viewBox="0 0 64 64" className="w-16 h-16">
         <rect width="64" height="64" rx="10" fill="#fff" />
@@ -18,7 +19,6 @@ const TOOLS = [
   {
     id: 'notion',
     name: 'Notion',
-    description: 'Organize your notes and study plans',
     logo: (
       <svg viewBox="0 0 64 64" className="w-16 h-16">
         <rect width="64" height="64" rx="10" fill="#fff" />
@@ -39,7 +39,6 @@ const TOOLS = [
   {
     id: 'meet',
     name: 'Google Meet',
-    description: 'Seamless video meetings for study groups',
     logo: (
       <svg viewBox="0 0 64 64" className="w-16 h-16">
         <rect width="64" height="64" rx="10" fill="#fff" />
@@ -52,7 +51,6 @@ const TOOLS = [
   {
     id: 'outlook',
     name: 'Microsoft Outlook',
-    description: 'Stay on top of every deadline and email',
     logo: (
       <svg viewBox="0 0 64 64" className="w-16 h-16">
         <rect width="64" height="64" rx="10" fill="#fff" />
@@ -67,7 +65,6 @@ const TOOLS = [
   {
     id: 'teams',
     name: 'Microsoft Teams',
-    description: 'Collaborate on projects with classmates',
     logo: (
       <svg viewBox="0 0 64 64" className="w-16 h-16">
         <rect width="64" height="64" rx="10" fill="#fff" />
@@ -103,6 +100,7 @@ function getCardStyle(offset: number) {
 }
 
 export default function Integrations() {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(2);
 
   useEffect(() => {
@@ -124,9 +122,9 @@ export default function Integrations() {
               <Cog6ToothIcon className="w-6 h-6 text-[#EF4444]" />
             </div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
-              Integrate with your existing
+              {t('Landing.integrations.title_1')}
               <br />
-              tools in seconds
+              {t('Landing.integrations.title_2')}
             </h2>
           </div>
 
@@ -170,7 +168,9 @@ export default function Integrations() {
               className="text-center mt-8"
             >
               <p className="text-base font-bold text-[#111827]">{activeTool.name}</p>
-              <p className="text-sm text-gray-400 mt-1">{activeTool.description}</p>
+              <p className="text-sm text-gray-400 mt-1">
+                {t(`Landing.integrations.${activeTool.id}_desc`)}
+              </p>
             </motion.div>
           </AnimatePresence>
 

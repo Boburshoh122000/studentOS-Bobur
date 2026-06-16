@@ -13,23 +13,24 @@ import {
 } from '@heroicons/react/24/solid';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../src/contexts/AuthContext';
 import Logo from './ui/Logo';
 
-/* ─── Tools dropdown items ──────────────────────────────── */
+/* ─── Tools dropdown items (labels resolved via i18n at render) ─── */
 const toolItems = [
-  { label: 'ATS Resume Checker', icon: DocumentTextIcon, href: '/app/ats-checker' },
-  { label: 'Plagiarism Check', icon: ShieldCheckIcon, href: '/app/plagiarism' },
-  { label: 'Learning Plan', icon: CpuChipIcon, href: '/app/learning-plan' },
-  { label: 'Habit Tracker', icon: CheckBadgeIcon, href: '/app/habit-tracker' },
+  { labelKey: 'Landing.header.tool_ats', icon: DocumentTextIcon, href: '/app/ats-checker' },
+  { labelKey: 'Landing.header.tool_plagiarism', icon: ShieldCheckIcon, href: '/app/plagiarism' },
+  { labelKey: 'Landing.header.tool_learning', icon: CpuChipIcon, href: '/app/learning-plan' },
+  { labelKey: 'Landing.header.tool_habits', icon: CheckBadgeIcon, href: '/app/habit-tracker' },
 ];
 
-/* ─── Nav links ─────────────────────────────────────────── */
+/* ─── Nav links (labels resolved via i18n at render) ─── */
 const navLinks = [
-  { label: 'About', href: '/about' },
-  { label: 'Pricing', href: '/#pricing' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact', href: '/contact' },
+  { labelKey: 'Header.about', href: '/about' },
+  { labelKey: 'Header.pricing', href: '/#pricing' },
+  { labelKey: 'Header.blog', href: '/blog' },
+  { labelKey: 'Header.contact', href: '/contact' },
 ];
 
 /* ─── Languages ─────────────────────────────────────────── */
@@ -86,9 +87,11 @@ function MagneticButton({
 
 /* ─── Main Header Component ─────────────────────────────── */
 export default function MinimalHeader() {
+  const { t, i18n } = useTranslation();
   const { scrollY } = useScroll();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const currentLang = (i18n.language || 'en').slice(0, 2).toUpperCase();
 
   /* Pricing lives in a section on the landing page — scroll to it (or go home first) */
   const handlePricingClick = (e: React.MouseEvent) => {
@@ -109,7 +112,6 @@ export default function MinimalHeader() {
   const [lastYPos, setLastYPos] = useState(0);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [activeLang, setActiveLang] = useState('EN');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const toolsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -183,7 +185,7 @@ export default function MinimalHeader() {
                 : 'text-gray-500 hover:text-[#0A0A0A]'
             }`}
           >
-            {navLinks[0].label}
+            {t(navLinks[0].labelKey)}
             {pathname === navLinks[0].href && (
               <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full" />
             )}
@@ -195,7 +197,7 @@ export default function MinimalHeader() {
               onClick={() => setToolsOpen(!toolsOpen)}
               className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
             >
-              Tools
+              {t('Header.tools')}
               <motion.span animate={{ rotate: toolsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                 <ChevronDownIcon className="w-3.5 h-3.5" />
               </motion.span>
@@ -213,7 +215,7 @@ export default function MinimalHeader() {
                 >
                   {toolItems.map((item) => (
                     <Link
-                      key={item.label}
+                      key={item.href}
                       to={item.href}
                       onClick={() => setToolsOpen(false)}
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium cursor-pointer w-full"
@@ -221,7 +223,7 @@ export default function MinimalHeader() {
                       <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
                         <item.icon className="w-4 h-4 text-indigo-600" />
                       </div>
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   ))}
                 </motion.div>
@@ -232,7 +234,7 @@ export default function MinimalHeader() {
           {/* Remaining nav links */}
           {navLinks.slice(1).map((link) => (
             <Link
-              key={link.label}
+              key={link.href}
               to={link.href}
               onClick={link.href === '/#pricing' ? handlePricingClick : undefined}
               className={`text-sm font-medium transition-colors relative ${
@@ -241,7 +243,7 @@ export default function MinimalHeader() {
                   : 'text-gray-500 hover:text-[#0A0A0A]'
               }`}
             >
-              {link.label}
+              {t(link.labelKey)}
               {pathname === link.href && (
                 <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full" />
               )}
@@ -254,11 +256,13 @@ export default function MinimalHeader() {
           {/* Language Switcher */}
           <div className="relative" onMouseEnter={openLang} onMouseLeave={closeLang}>
             <button
+              type="button"
               onClick={() => setLangOpen(!langOpen)}
+              aria-label={t('Header.switch_language')}
               className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#0A0A0A] transition-colors px-2 py-1.5 rounded-full hover:bg-gray-100/60"
             >
               <GlobeAltIcon className="w-3.5 h-3.5" />
-              {activeLang}
+              {currentLang}
               <ChevronDownIcon className="w-3 h-3" />
             </button>
 
@@ -275,12 +279,13 @@ export default function MinimalHeader() {
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
+                      type="button"
                       onClick={() => {
-                        setActiveLang(lang.code);
+                        i18n.changeLanguage(lang.code.toLowerCase());
                         setLangOpen(false);
                       }}
                       className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                        activeLang === lang.code
+                        currentLang === lang.code
                           ? 'bg-indigo-50 text-indigo-600 font-semibold'
                           : 'text-gray-600 hover:bg-gray-50 font-medium'
                       }`}
@@ -304,7 +309,7 @@ export default function MinimalHeader() {
                 to="/signin"
                 className="hidden md:block text-sm font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
               >
-                Sign In
+                {t('Header.sign_in')}
               </Link>
               <div className="hidden md:block">
                 <MagneticButton>
@@ -312,7 +317,7 @@ export default function MinimalHeader() {
                     to="/signup/step-1"
                     className="inline-block px-5 py-2.5 rounded-full bg-[#0A0A0A] text-white text-sm font-semibold shadow-[0_4px_14px_0_rgba(0,0,0,0.25)] hover:bg-[#222] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] transition-all"
                   >
-                    Request a Demo
+                    {t('Header.request_demo')}
                   </Link>
                 </MagneticButton>
               </div>
@@ -323,7 +328,7 @@ export default function MinimalHeader() {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex md:hidden items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100/60 transition-colors"
-            title="Menu"
+            title={t('Header.menu')}
           >
             {mobileOpen ? (
               <XMarkIcon className="w-5 h-5 text-gray-700" />
@@ -348,7 +353,7 @@ export default function MinimalHeader() {
               {/* Nav links */}
               {navLinks.map((link) => (
                 <Link
-                  key={link.label}
+                  key={link.href}
                   to={link.href}
                   onClick={
                     link.href === '/#pricing' ? handlePricingClick : () => setMobileOpen(false)
@@ -357,7 +362,7 @@ export default function MinimalHeader() {
                     pathname === link.href ? 'text-indigo-600' : 'text-gray-900'
                   }`}
                 >
-                  {link.label}
+                  {t(link.labelKey)}
                 </Link>
               ))}
 
@@ -367,7 +372,7 @@ export default function MinimalHeader() {
                   onClick={() => setMobileToolsOpen(!mobileToolsOpen)}
                   className="flex justify-between items-center w-full py-4 text-left text-lg font-medium text-gray-900"
                 >
-                  Tools
+                  {t('Header.tools')}
                   <motion.span
                     animate={{ rotate: mobileToolsOpen ? 180 : 0 }}
                     transition={{ duration: 0.25 }}
@@ -392,7 +397,7 @@ export default function MinimalHeader() {
                       <div className="flex flex-col gap-1 pb-4 pl-1">
                         {toolItems.map((item) => (
                           <Link
-                            key={item.label}
+                            key={item.href}
                             to={item.href}
                             onClick={() => {
                               setMobileOpen(false);
@@ -401,7 +406,7 @@ export default function MinimalHeader() {
                             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/50 transition-colors"
                           >
                             <item.icon className="w-4 h-4" />
-                            <span className="text-[15px] font-medium">{item.label}</span>
+                            <span className="text-[15px] font-medium">{t(item.labelKey)}</span>
                           </Link>
                         ))}
                       </div>
@@ -418,14 +423,14 @@ export default function MinimalHeader() {
                     onClick={() => setMobileOpen(false)}
                     className="w-full text-center py-3 rounded-xl text-[15px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    Sign In
+                    {t('Header.sign_in')}
                   </Link>
                   <Link
                     to="/signup/step-1"
                     onClick={() => setMobileOpen(false)}
                     className="w-full text-center py-3.5 rounded-xl bg-indigo-600 text-white text-[15px] font-semibold shadow-sm hover:bg-indigo-700 transition-colors"
                   >
-                    Get Started
+                    {t('Header.get_started')}
                   </Link>
                 </div>
               )}

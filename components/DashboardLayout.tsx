@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { authApi } from '../src/services/api';
 import Sidebar from './Sidebar';
@@ -31,13 +32,13 @@ const FOCUS_SCREENS = new Set<Screen>([
   Screen.PRESENTATION,
 ]);
 
-/* ── Map focus screens to their parent hub for the back button ── */
-const FOCUS_BACK_MAP: Partial<Record<Screen, { label: string; screen: Screen }>> = {
-  [Screen.CV_BUILDER]: { label: 'Career Tools', screen: Screen.CAREER_TOOLS },
-  [Screen.ATS_CHECKER]: { label: 'Career Tools', screen: Screen.CAREER_TOOLS },
-  [Screen.LEARNING_PLAN]: { label: 'Academic Tools', screen: Screen.ACADEMIC_TOOLS },
-  [Screen.PLAGIARISM]: { label: 'Academic Tools', screen: Screen.ACADEMIC_TOOLS },
-  [Screen.PRESENTATION]: { label: 'Academic Tools', screen: Screen.ACADEMIC_TOOLS },
+/* ── Map focus screens to their parent hub for the back button (label via i18n) ── */
+const FOCUS_BACK_MAP: Partial<Record<Screen, { labelKey: string; screen: Screen }>> = {
+  [Screen.CV_BUILDER]: { labelKey: 'Common.career_tools', screen: Screen.CAREER_TOOLS },
+  [Screen.ATS_CHECKER]: { labelKey: 'Common.career_tools', screen: Screen.CAREER_TOOLS },
+  [Screen.LEARNING_PLAN]: { labelKey: 'Common.academic_tools', screen: Screen.ACADEMIC_TOOLS },
+  [Screen.PLAGIARISM]: { labelKey: 'Common.academic_tools', screen: Screen.ACADEMIC_TOOLS },
+  [Screen.PRESENTATION]: { labelKey: 'Common.academic_tools', screen: Screen.ACADEMIC_TOOLS },
 };
 
 export default function DashboardLayout({
@@ -46,6 +47,7 @@ export default function DashboardLayout({
   children,
   headerContent,
 }: DashboardLayoutProps) {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -86,7 +88,7 @@ export default function DashboardLayout({
               className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-primary transition-colors group"
             >
               <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-              <span>{backTarget.label}</span>
+              <span>{t(backTarget.labelKey)}</span>
             </button>
           )}
           <div className="ml-auto">
@@ -116,7 +118,7 @@ export default function DashboardLayout({
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Open navigation menu"
+            aria-label={t('Common.open_menu')}
           >
             <Bars3Icon className="w-5 h-5 text-gray-700 dark:text-white" />
           </button>

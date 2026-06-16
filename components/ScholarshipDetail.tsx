@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { scholarshipApi } from '../src/services/api';
 import DashboardLayout from './DashboardLayout';
@@ -71,17 +72,18 @@ function titleCase(s: string): string {
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [scholarship, setScholarship] = useState<Scholarship | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     setIsLoading(true);
-    setError(null);
+    setLoadError(false);
     scholarshipApi
       .get(id)
       .then((res) => {
@@ -90,7 +92,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
         setScholarship(s);
         setIsSaved(!!s.isSaved);
       })
-      .catch(() => setError('This scholarship could not be found.'))
+      .catch(() => setLoadError(true))
       .finally(() => setIsLoading(false));
   }, [id]);
 
@@ -129,7 +131,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-blue-400 transition-colors mb-6"
         >
           <ArrowLeftIcon className="w-4 h-4" />
-          Back to Scholarship Finder
+          {t('Scholarship.back_to_finder')}
         </button>
 
         {/* Loading */}
@@ -140,16 +142,18 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
         )}
 
         {/* Error */}
-        {error && !isLoading && (
+        {loadError && !isLoading && (
           <div className="text-center py-20 bg-white dark:bg-[#141722] rounded-2xl border border-gray-200 dark:border-gray-800">
             <XCircleIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 mb-5 text-[14px]">{error}</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-5 text-[14px]">
+              {t('Scholarship.not_found_error')}
+            </p>
             <button
               type="button"
               onClick={() => navigate('/app/scholarships')}
               className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-[13px] font-semibold transition-colors"
             >
-              Back to Search
+              {t('Scholarship.back_to_search')}
             </button>
           </div>
         )}
@@ -175,7 +179,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
                     )}
                     {scholarship.isTrending && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 rounded-md text-[12px] font-semibold">
-                        <FireIcon className="w-3.5 h-3.5" /> Trending
+                        <FireIcon className="w-3.5 h-3.5" /> {t('Scholarship.trending')}
                       </span>
                     )}
                     <span
@@ -190,7 +194,9 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
                       ) : (
                         <XCircleIcon className="w-3.5 h-3.5" />
                       )}
-                      {scholarship.isActive ? 'Active' : 'Closed'}
+                      {scholarship.isActive
+                        ? t('Scholarship.status_active')
+                        : t('Scholarship.status_closed')}
                     </span>
                   </div>
 
@@ -225,7 +231,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
               {/* Amount */}
               <div className="p-4 sm:p-5">
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1.5">
-                  Award Amount
+                  {t('Scholarship.award_amount')}
                 </p>
                 <p className="text-[18px] font-bold text-primary dark:text-blue-400 leading-tight">
                   {scholarship.awardAmount || '—'}
@@ -235,7 +241,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
               {/* Study Level */}
               <div className="p-4 sm:p-5">
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1.5">
-                  Study Level
+                  {t('Scholarship.study_level_caption')}
                 </p>
                 <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 capitalize">
                   {scholarship.studyLevel?.toLowerCase().replace(/_/g, ' ') || '—'}
@@ -245,7 +251,7 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
               {/* Deadline */}
               <div className="p-4 sm:p-5 col-span-2 sm:col-span-1 border-t sm:border-t-0 border-gray-100 dark:border-gray-800">
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-1.5">
-                  Application Deadline
+                  {t('Scholarship.application_deadline')}
                 </p>
                 {scholarship.deadline ? (
                   <div>
@@ -267,15 +273,19 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
                           deadlineUrgency === 'urgent' ? 'text-red-400' : 'text-amber-400'
                         }`}
                       >
-                        {days} day{days !== 1 ? 's' : ''} remaining
+                        {t('Scholarship.days_remaining', { count: days })}
                       </p>
                     )}
                     {days !== null && days <= 0 && (
-                      <p className="text-[11px] mt-0.5 text-gray-400">Deadline passed</p>
+                      <p className="text-[11px] mt-0.5 text-gray-400">
+                        {t('Scholarship.deadline_passed')}
+                      </p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-[14px] font-semibold text-gray-400">Not specified</p>
+                  <p className="text-[14px] font-semibold text-gray-400">
+                    {t('Scholarship.not_specified')}
+                  </p>
                 )}
               </div>
             </div>
@@ -283,12 +293,12 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
             {/* ── Description ── */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-[12px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
-                About this Scholarship
+                {t('Scholarship.about_scholarship')}
               </h2>
               <p className="text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed">
                 {scholarship.description && scholarship.description.length > 3
                   ? scholarship.description
-                  : "No description is available for this scholarship. Please visit the institution's website or the application link for full details."}
+                  : t('Scholarship.no_description_long')}
               </p>
             </div>
 
@@ -302,16 +312,14 @@ export default function ScholarshipDetail({ navigateTo }: NavigationProps) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-[14px] rounded-xl transition-colors"
                   >
-                    Apply Now <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                    {t('Scholarship.apply_now_plain')}{' '}
+                    <ArrowTopRightOnSquareIcon className="w-4 h-4" />
                   </a>
-                  <p className="text-[12px] text-gray-400">
-                    Opens the official application page in a new tab.
-                  </p>
+                  <p className="text-[12px] text-gray-400">{t('Scholarship.opens_official')}</p>
                 </>
               ) : (
                 <p className="text-[13px] text-gray-400 dark:text-gray-500">
-                  No application link available. Check the institution's official website for
-                  details.
+                  {t('Scholarship.no_link_long')}
                 </p>
               )}
             </div>

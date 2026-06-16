@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { aiApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -99,8 +100,8 @@ const DiamondIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 
 type ScanOption = {
   id: string;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   icon: React.ElementType;
   iconBg: string;
   iconColor: string;
@@ -123,32 +124,32 @@ const FILE_SIZE_LABELS: Record<string, string> = {
 const SCAN_OPTIONS: ScanOption[] = [
   {
     id: 'advanced-ai',
-    label: 'Advanced AI Scan',
-    description: 'In-depth AI analysis',
+    labelKey: 'Plagiarism.opt_ai_label',
+    descKey: 'Plagiarism.opt_ai_desc',
     icon: CpuChipIcon,
     iconBg: 'bg-indigo-50 dark:bg-indigo-900/30',
     iconColor: 'text-indigo-600 dark:text-indigo-400',
   },
   {
     id: 'plagiarism',
-    label: 'Plagiarism Check',
-    description: 'Check for copied content',
+    labelKey: 'Plagiarism.opt_plag_label',
+    descKey: 'Plagiarism.opt_plag_desc',
     icon: ShieldCheckIcon,
     iconBg: 'bg-red-50 dark:bg-red-900/30',
     iconColor: 'text-red-500 dark:text-red-400',
   },
   {
     id: 'hallucinations',
-    label: 'AI Hallucinations',
-    description: 'Check claims and cite sources',
+    labelKey: 'Plagiarism.opt_hall_label',
+    descKey: 'Plagiarism.opt_hall_desc',
     icon: ExclamationTriangleIcon,
     iconBg: 'bg-yellow-50 dark:bg-yellow-900/30',
     iconColor: 'text-yellow-600 dark:text-yellow-400',
   },
   {
     id: 'feedback',
-    label: 'Writing Feedback',
-    description: 'Content, clarity, and grammar',
+    labelKey: 'Plagiarism.opt_fb_label',
+    descKey: 'Plagiarism.opt_fb_desc',
     icon: PencilSquareIcon,
     iconBg: 'bg-blue-50 dark:bg-blue-900/30',
     iconColor: 'text-blue-500 dark:text-blue-400',
@@ -156,8 +157,9 @@ const SCAN_OPTIONS: ScanOption[] = [
 ];
 
 export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const [textContent, setTextContent] = useState('');
-  const [documentName, setDocumentName] = useState('Untitled Document');
+  const [documentName, setDocumentName] = useState(t('Plagiarism.untitled'));
   const [isChecking, setIsChecking] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -208,7 +210,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
     const sizeLimit = FILE_SIZE_LIMITS[file.type];
     if (sizeLimit && file.size > sizeLimit) {
       const ext = file.name.split('.').pop()?.toUpperCase() ?? 'File';
-      setError(`${ext} files must be under ${FILE_SIZE_LABELS[file.type]}.`);
+      setError(t('Plagiarism.file_too_large', { ext, size: FILE_SIZE_LABELS[file.type] }));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -231,9 +233,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       const data = response.data as { extractedText: string; fileName: string; truncated: boolean };
       setTextContent(data.extractedText);
       setDocumentName(file.name.replace(/\.[^.]+$/, ''));
-      if (data.truncated) setError('Document was truncated to 20,000 characters.');
+      if (data.truncated) setError(t('Plagiarism.truncated'));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to extract text from file.');
+      setError(err instanceof Error ? err.message : t('Plagiarism.extract_failed'));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -242,11 +244,11 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
 
   const handleCheck = async () => {
     if (!textContent.trim()) {
-      setError('Please enter some text to check');
+      setError(t('Plagiarism.enter_text'));
       return;
     }
     if (wordCount < 20) {
-      setError('Please enter at least 20 words for an accurate analysis.');
+      setError(t('Plagiarism.min_words'));
       return;
     }
     setIsChecking(true);
@@ -259,7 +261,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
           required: errData?.required || 0,
           available: errData?.available || 0,
           shortfall: errData?.shortfall || 0,
-          toolName: errData?.toolName || 'Plagiarism Checker',
+          toolName: errData?.toolName || t('Plagiarism.tool_name'),
         });
         setShowInsufficientModal(true);
         return;
@@ -269,7 +271,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
       setActiveResultTab('overview');
       refreshBalance();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to check content. Please try again.');
+      setError(err instanceof Error ? err.message : t('Plagiarism.check_failed'));
     } finally {
       setIsChecking(false);
     }
@@ -315,13 +317,17 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
   const resultTabs = useMemo(() => {
     if (!result) return [];
     return [
-      { id: 'overview', label: 'Overview' },
-      ...(result.plagiarismDetails ? [{ id: 'plagiarism', label: 'Plagiarism' }] : []),
-      ...(result.aiDetectionDetails ? [{ id: 'ai', label: 'AI Detection' }] : []),
-      ...(result.hallucinationDetails ? [{ id: 'hallucinations', label: 'Hallucinations' }] : []),
-      ...(result.feedbackDetails ? [{ id: 'feedback', label: 'Writing Feedback' }] : []),
+      { id: 'overview', label: t('Plagiarism.tab_overview') },
+      ...(result.plagiarismDetails
+        ? [{ id: 'plagiarism', label: t('Plagiarism.tab_plagiarism') }]
+        : []),
+      ...(result.aiDetectionDetails ? [{ id: 'ai', label: t('Plagiarism.tab_ai') }] : []),
+      ...(result.hallucinationDetails
+        ? [{ id: 'hallucinations', label: t('Plagiarism.tab_hallucinations') }]
+        : []),
+      ...(result.feedbackDetails ? [{ id: 'feedback', label: t('Plagiarism.tab_feedback') }] : []),
     ];
-  }, [result]);
+  }, [result, t]);
 
   return (
     <>
@@ -336,7 +342,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   className="font-semibold text-gray-800 dark:text-white text-sm bg-transparent border-none outline-none w-48 focus:ring-0 p-0"
                   value={documentName}
                   onChange={(e) => setDocumentName(e.target.value)}
-                  placeholder="Document name..."
+                  placeholder={t('Plagiarism.doc_name_ph')}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -358,7 +364,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     <DocumentArrowUpIcon className="w-4 h-4" />
                   )}
                   <span className="hidden sm:inline">
-                    {isUploading ? 'Extracting...' : 'Upload'}
+                    {isUploading ? t('Plagiarism.extracting') : t('Plagiarism.upload')}
                   </span>
                 </button>
               </div>
@@ -366,7 +372,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
             {/* ── Mobile: "Add your document" section ── */}
             <div className="md:hidden px-4 pt-4 pb-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
-                Add your document
+                {t('Plagiarism.add_document')}
               </p>
               {/* Upload card */}
               <button
@@ -384,7 +390,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                    {isUploading ? 'Extracting text…' : 'Upload a document'}
+                    {isUploading
+                      ? t('Plagiarism.extracting_text')
+                      : t('Plagiarism.upload_document')}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                     PDF · 10 MB &nbsp;·&nbsp; DOCX · 5 MB &nbsp;·&nbsp; TXT · 2 MB
@@ -396,7 +404,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
               <div className="flex items-center gap-2 mt-3">
                 <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
                 <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                  or paste text below
+                  {t('Plagiarism.or_paste')}
                 </span>
                 <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
               </div>
@@ -404,7 +412,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
 
             <textarea
               className="flex-1 w-full p-5 md:p-12 min-h-[200px] resize-none outline-none border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed placeholder-gray-400 dark:placeholder-gray-600 bg-transparent"
-              placeholder="Paste your essay, article, or assignment here…"
+              placeholder={t('Plagiarism.paste_ph')}
               value={textContent}
               onChange={(e) => {
                 setTextContent(e.target.value);
@@ -428,19 +436,19 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   ) : (
                     <ClipboardDocumentIcon className="w-3.5 h-3.5" />
                   )}
-                  {copied ? 'Copied' : 'Copy'}
+                  {copied ? t('Plagiarism.copied') : t('Plagiarism.copy')}
                 </button>
                 <button
                   onClick={handleClear}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 >
                   <TrashIcon className="w-3.5 h-3.5" />
-                  Clear
+                  {t('Plagiarism.clear')}
                 </button>
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                 <LanguageIcon className="w-3.5 h-3.5" />
-                <span>{wordCount} words</span>
+                <span>{t('Plagiarism.words', { count: wordCount })}</span>
               </div>
             </div>
 
@@ -526,10 +534,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   </g>
                 </svg>
                 <p className="mt-6 text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  Scanning document...
+                  {t('Plagiarism.scanning_doc')}
                 </p>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Analyzing {selectedOptions.length} module{selectedOptions.length > 1 ? 's' : ''}
+                  {t('Plagiarism.analyzing_modules', { count: selectedOptions.length })}
                 </p>
               </div>
             )}
@@ -539,7 +547,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
           <div className="w-full md:w-80 lg:w-96 bg-gray-50 dark:bg-background-dark md:border-l border-gray-200 dark:border-gray-700 flex flex-col px-3 pt-3 pb-3 md:p-4 overflow-y-auto">
             <div className="flex-1 space-y-3">
               <p className="md:hidden text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1 pb-1">
-                Scan options
+                {t('Plagiarism.scan_options')}
               </p>
               {SCAN_OPTIONS.map((opt) => {
                 const isSelected = selectedOptions.includes(opt.id);
@@ -556,10 +564,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {opt.description}
+                        {t(opt.descKey)}
                       </p>
                     </div>
                     <div
@@ -576,10 +584,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">
-                    Create Custom Reviewer
+                    {t('Plagiarism.custom_reviewer')}
                   </p>
                   <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mt-0.5">
-                    Add review instructions
+                    {t('Plagiarism.custom_reviewer_desc')}
                   </p>
                 </div>
                 <SparklesIcon className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
@@ -596,7 +604,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 }
                 className="w-full flex items-center justify-between bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 px-6 py-4 rounded-2xl font-bold text-lg transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>{isChecking ? 'Scanning...' : 'Scan Document'}</span>
+                <span>{isChecking ? t('Plagiarism.scanning') : t('Plagiarism.scan_document')}</span>
                 {isChecking ? (
                   <ArrowPathIcon className="w-5 h-5 animate-spin" />
                 ) : (
@@ -605,12 +613,12 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
               </button>
               <div className="mt-4 text-center flex flex-col gap-1">
                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Cost:{' '}
+                  {t('Plagiarism.cost')}{' '}
                   <span className="text-gray-900 dark:text-white font-bold">
                     {costLoading ? (
                       <span className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin align-middle" />
                     ) : actualCost !== null ? (
-                      `${actualCost} Credits`
+                      t('Plagiarism.credits_amount', { count: actualCost })
                     ) : (
                       '—'
                     )}
@@ -619,13 +627,14 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5 mt-1">
                   <DiamondIcon className="w-4 h-4 text-blue-500" />
                   <span>
-                    You have <strong className="text-gray-800 dark:text-gray-200">{balance}</strong>{' '}
-                    credits remaining
+                    {t('Plagiarism.credits_remaining_pre')}{' '}
+                    <strong className="text-gray-800 dark:text-gray-200">{balance}</strong>{' '}
+                    {t('Plagiarism.credits_remaining_post')}
                   </span>
                 </div>
                 {!hasEnoughCredits && actualCost !== null && (
                   <p className="text-xs text-red-500 dark:text-red-400 font-medium mt-1">
-                    You need {actualCost - balance} more credits to run this check.
+                    {t('Plagiarism.need_more', { count: actualCost - balance })}
                   </p>
                 )}
               </div>
@@ -642,23 +651,23 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
                     <MagnifyingGlassIcon className="w-6 h-6 text-indigo-500" />
-                    Analysis Report
+                    {t('Plagiarism.analysis_report')}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-2">
-                    <span>{result.wordCount} words</span>
+                    <span>{t('Plagiarism.words', { count: result.wordCount })}</span>
                     <span className="text-gray-300 dark:text-gray-600">&middot;</span>
                     <span className="flex items-center gap-1">
                       <ClockIcon className="w-3.5 h-3.5" />
                       {(result.processingTimeMs / 1000).toFixed(1)}s
                     </span>
                     <span className="text-gray-300 dark:text-gray-600">&middot;</span>
-                    <span>{result.creditCost} credits used</span>
+                    <span>{t('Plagiarism.credits_used', { count: result.creditCost })}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setResult(null)}
                   className="p-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition"
-                  aria-label="Close report"
+                  aria-label={t('Plagiarism.close_report')}
                 >
                   <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </button>
@@ -686,7 +695,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       {/* Originality */}
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                          Originality Score
+                          {t('Plagiarism.originality_score')}
                         </p>
                         <div className="flex items-baseline gap-3">
                           <span
@@ -697,7 +706,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                           <span
                             className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.isOriginal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}
                           >
-                            {result.isOriginal ? '\u2713 Passed' : '\u2717 Review'}
+                            {result.isOriginal ? t('Plagiarism.passed') : t('Plagiarism.review')}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
@@ -710,7 +719,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       {/* AI Probability */}
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                          AI Probability
+                          {t('Plagiarism.ai_probability')}
                         </p>
                         <div className="flex items-baseline gap-3">
                           <span
@@ -722,10 +731,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                             className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.aiProbabilityScore <= 30 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : result.aiProbabilityScore <= 60 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}
                           >
                             {result.aiProbabilityScore <= 30
-                              ? 'Human'
+                              ? t('Plagiarism.human')
                               : result.aiProbabilityScore <= 60
-                                ? 'Mixed'
-                                : 'Likely AI'}
+                                ? t('Plagiarism.mixed')
+                                : t('Plagiarism.likely_ai')}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
@@ -738,7 +747,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       {/* Readability */}
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                          Readability
+                          {t('Plagiarism.readability')}
                         </p>
                         <div className="flex items-center gap-3 mt-2">
                           <BookOpenIcon className="w-8 h-8 text-indigo-500" />
@@ -750,7 +759,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     </div>
                     <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
-                        Summary
+                        {t('Plagiarism.summary')}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.summary}
@@ -765,7 +774,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                          Originality Score
+                          {t('Plagiarism.originality_score')}
                         </p>
                         <div className="flex items-baseline gap-3">
                           <span
@@ -777,8 +786,8 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                             className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.plagiarismDetails.isOriginal ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}
                           >
                             {result.plagiarismDetails.isOriginal
-                              ? '\u2713 Original'
-                              : '\u2717 Flagged'}
+                              ? t('Plagiarism.original')
+                              : t('Plagiarism.flagged')}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
@@ -790,7 +799,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Citation Quality
+                          {t('Plagiarism.citation_quality')}
                         </p>
                         <span className="text-2xl font-bold text-gray-900 dark:text-white">
                           {result.plagiarismDetails.citationQuality}
@@ -798,7 +807,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Sources Found
+                          {t('Plagiarism.sources_found')}
                         </p>
                         <span className="text-4xl font-black text-gray-900 dark:text-white">
                           {result.plagiarismDetails.sourcesFound}
@@ -808,8 +817,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.plagiarismDetails.matchedSegments.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <LinkIcon className="w-5 h-5 text-gray-400" /> Matched Segments (
-                          {result.plagiarismDetails.matchedSegments.length})
+                          <LinkIcon className="w-5 h-5 text-gray-400" />{' '}
+                          {t('Plagiarism.matched_segments', {
+                            count: result.plagiarismDetails.matchedSegments.length,
+                          })}
                         </h3>
                         <div className="flex flex-col gap-4">
                           {result.plagiarismDetails.matchedSegments.map((seg, i) => (
@@ -827,7 +838,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                                   {seg.type} ({seg.similarityPercent}%)
                                 </span>
                                 <span className="text-gray-500 dark:text-gray-400 line-clamp-1">
-                                  Source: {seg.possibleSource}
+                                  {t('Plagiarism.source')} {seg.possibleSource}
                                 </span>
                               </div>
                             </div>
@@ -849,7 +860,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                          AI Probability
+                          {t('Plagiarism.ai_probability')}
                         </p>
                         <div className="flex items-baseline gap-3">
                           <span
@@ -861,10 +872,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                             className={`px-2.5 py-1 text-xs font-bold rounded-lg ${result.aiDetectionDetails.aiProbabilityScore <= 30 ? 'bg-emerald-50 text-emerald-700' : result.aiDetectionDetails.aiProbabilityScore <= 60 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}
                           >
                             {result.aiDetectionDetails.aiProbabilityScore <= 30
-                              ? 'Human'
+                              ? t('Plagiarism.human')
                               : result.aiDetectionDetails.aiProbabilityScore <= 60
-                                ? 'Mixed'
-                                : 'Likely AI'}
+                                ? t('Plagiarism.mixed')
+                                : t('Plagiarism.likely_ai')}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
@@ -876,7 +887,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Confidence
+                          {t('Plagiarism.confidence')}
                         </p>
                         <span className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
                           {result.aiDetectionDetails.confidence}
@@ -884,7 +895,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Perplexity
+                          {t('Plagiarism.perplexity')}
                         </p>
                         <span className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
                           {result.aiDetectionDetails.perplexityLevel}
@@ -894,7 +905,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.aiDetectionDetails.detectedPatterns.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                          Detected Patterns
+                          {t('Plagiarism.detected_patterns')}
                         </h3>
                         <div className="flex flex-col gap-3">
                           {result.aiDetectionDetails.detectedPatterns.map((pattern, i) => (
@@ -911,7 +922,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     )}
                     <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
-                        Verdict
+                        {t('Plagiarism.verdict')}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         {result.aiDetectionDetails.verdict}
@@ -926,7 +937,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Claims Checked
+                          {t('Plagiarism.claims_checked')}
                         </p>
                         <span className="text-4xl font-black text-gray-900 dark:text-white">
                           {result.hallucinationDetails.totalClaimsChecked}
@@ -934,7 +945,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Verified
+                          {t('Plagiarism.verified')}
                         </p>
                         <span className="text-4xl font-black text-emerald-500">
                           {result.hallucinationDetails.verifiedClaims}
@@ -942,7 +953,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                       </div>
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
                         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                          Risk Level
+                          {t('Plagiarism.risk_level')}
                         </p>
                         <span
                           className={`text-sm font-bold px-4 py-1.5 rounded-full uppercase ${getRiskBadge(result.hallucinationDetails.hallucinationRisk)}`}
@@ -954,8 +965,10 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.hallucinationDetails.unverifiedClaims.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" /> Unverified
-                          Claims ({result.hallucinationDetails.unverifiedClaims.length})
+                          <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />{' '}
+                          {t('Plagiarism.unverified_claims', {
+                            count: result.hallucinationDetails.unverifiedClaims.length,
+                          })}
                         </h3>
                         <div className="flex flex-col gap-4">
                           {result.hallucinationDetails.unverifiedClaims.map((claim, i) => (
@@ -997,10 +1010,19 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { label: 'Overall', score: result.feedbackDetails.overallScore },
-                        { label: 'Grammar', score: result.feedbackDetails.grammarScore },
-                        { label: 'Clarity', score: result.feedbackDetails.clarityScore },
-                        { label: 'Tone', score: result.feedbackDetails.toneScore },
+                        {
+                          label: t('Plagiarism.fb_overall'),
+                          score: result.feedbackDetails.overallScore,
+                        },
+                        {
+                          label: t('Plagiarism.fb_grammar'),
+                          score: result.feedbackDetails.grammarScore,
+                        },
+                        {
+                          label: t('Plagiarism.fb_clarity'),
+                          score: result.feedbackDetails.clarityScore,
+                        },
+                        { label: t('Plagiarism.fb_tone'), score: result.feedbackDetails.toneScore },
                       ].map((item) => (
                         <div
                           key={item.label}
@@ -1024,7 +1046,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.feedbackDetails.strengths.length > 0 && (
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-                          {'\u2705'} Strengths
+                          {t('Plagiarism.strengths')}
                         </h3>
                         <div className="space-y-2">
                           {result.feedbackDetails.strengths.map((s, i) => (
@@ -1041,7 +1063,9 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.feedbackDetails.grammarIssues.length > 0 && (
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                          Grammar Issues ({result.feedbackDetails.grammarIssues.length})
+                          {t('Plagiarism.grammar_issues', {
+                            count: result.feedbackDetails.grammarIssues.length,
+                          })}
                         </h3>
                         <div className="flex flex-col gap-3">
                           {result.feedbackDetails.grammarIssues.map((issue, i) => (
@@ -1070,7 +1094,7 @@ export default function PlagiarismChecker({ navigateTo }: NavigationProps) {
                     {result.feedbackDetails.suggestions.length > 0 && (
                       <div className="bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-                          {'\uD83D\uDCA1'} Suggestions
+                          {t('Plagiarism.suggestions')}
                         </h3>
                         <div className="space-y-2">
                           {result.feedbackDetails.suggestions.map((s, i) => (

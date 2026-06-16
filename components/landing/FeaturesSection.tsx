@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   CalendarDaysIcon,
   ChartBarIcon,
@@ -115,16 +116,15 @@ const STUDY3D_CSS = `
 /** 3D tilt card (Uiverse by chase2k25, themed for Study Schedule) */
 function StudyScheduleCard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <div className="study3d">
       <style>{STUDY3D_CSS}</style>
       <div className="card">
         <div className="glass" />
         <div className="content">
-          <span className="title">Study Schedule</span>
-          <span className="text">
-            Track attendance, plan your sessions, and never miss a class with smart reminders.
-          </span>
+          <span className="title">{t('Landing.features.schedule_title')}</span>
+          <span className="text">{t('Landing.features.schedule_text')}</span>
         </div>
         <div className="bottom">
           <div className="view-more">
@@ -133,7 +133,7 @@ function StudyScheduleCard() {
               className="view-more-button"
               onClick={() => navigate('/signup/step-1')}
             >
-              Learn more
+              {t('Landing.features.learn_more')}
             </button>
             <svg
               className="svg"
@@ -172,18 +172,19 @@ function StudyScheduleCard() {
 
 /** Line chart mockup — Real-time grade/progress insights */
 function InsightsMockup() {
+  const { t } = useTranslation();
   /* Points for an SVG polyline in a 200×80 box */
   const points = '0,60 40,45 80,55 120,25 160,35 200,15';
   return (
     <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-bold text-slate-700">Progress Insights</p>
+        <p className="text-xs font-bold text-slate-700">{t('Landing.features.mock_progress')}</p>
         <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-          ↑ 12% vs last month
+          {t('Landing.features.mock_vs_month')}
         </span>
       </div>
-      <p className="text-[10px] text-slate-400 mb-3">Average score across all courses</p>
+      <p className="text-[10px] text-slate-400 mb-3">{t('Landing.features.mock_avg_courses')}</p>
       {/* Line chart */}
       <div className="relative h-20">
         <svg viewBox="0 0 200 80" className="w-full h-full" preserveAspectRatio="none">
@@ -231,9 +232,9 @@ function InsightsMockup() {
       {/* Metrics row */}
       <div className="mt-3 grid grid-cols-3 gap-2 text-center">
         {[
-          { label: 'Avg Score', value: '87%' },
-          { label: 'Streak', value: '14d' },
-          { label: 'Top Subject', value: 'CS' },
+          { label: t('Landing.features.mock_avg_score'), value: '87%' },
+          { label: t('Landing.features.mock_streak'), value: '14d' },
+          { label: t('Landing.features.mock_top_subject'), value: 'CS' },
         ].map((m) => (
           <div key={m.label}>
             <p className="text-xs font-black text-slate-800">{m.value}</p>
@@ -247,16 +248,37 @@ function InsightsMockup() {
 
 /** Pipeline mockup — CV & career application tracker */
 function CareerMockup() {
+  const { t } = useTranslation();
   const stages = [
-    { label: 'Applied', count: 12, color: 'bg-slate-200', text: 'text-slate-600' },
-    { label: 'Screening', count: 5, color: 'bg-indigo-200', text: 'text-indigo-700' },
-    { label: 'Interview', count: 3, color: 'bg-violet-300', text: 'text-violet-700' },
-    { label: 'Offer', count: 1, color: 'bg-emerald-400', text: 'text-emerald-900' },
+    {
+      label: t('Landing.features.mock_applied'),
+      count: 12,
+      color: 'bg-slate-200',
+      text: 'text-slate-600',
+    },
+    {
+      label: t('Landing.features.mock_screening'),
+      count: 5,
+      color: 'bg-indigo-200',
+      text: 'text-indigo-700',
+    },
+    {
+      label: t('Landing.features.mock_interview'),
+      count: 3,
+      color: 'bg-violet-300',
+      text: 'text-violet-700',
+    },
+    {
+      label: t('Landing.features.mock_offer'),
+      count: 1,
+      color: 'bg-emerald-400',
+      text: 'text-emerald-900',
+    },
   ];
   return (
     <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-xs font-bold text-slate-700">Career Pipeline</p>
+        <p className="text-xs font-bold text-slate-700">{t('Landing.features.mock_pipeline')}</p>
         <span className="text-[9px] text-slate-400 font-medium">Jan 2026</span>
       </div>
       {/* Funnel bars */}
@@ -283,7 +305,9 @@ function CareerMockup() {
         <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center">
           <BriefcaseIcon className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="text-[10px] text-indigo-700 font-semibold">ATS score: 92 / 100</span>
+        <span className="text-[10px] text-indigo-700 font-semibold">
+          {t('Landing.features.mock_ats_score')}
+        </span>
         <span className="ml-auto text-[9px] text-indigo-500 font-bold">↑ +8</span>
       </div>
     </div>
@@ -340,27 +364,34 @@ function FeatureCard({
 /* ══════════════════════════════════════
    MAIN EXPORT
 ══════════════════════════════════════ */
-/* The first column is the 3D Study Schedule card; these are the remaining two. */
-const cards: Omit<FeatureCardProps, 'index'>[] = [
+/* The first column is the 3D Study Schedule card; these are the remaining two.
+   Titles/descriptions are i18n keys resolved at render. */
+type CardCfg = Omit<FeatureCardProps, 'index' | 'title' | 'description'> & {
+  titleKey: string;
+  descKey: string;
+};
+
+const cards: CardCfg[] = [
   {
     icon: ChartBarIcon,
     iconBg: 'bg-violet-100',
     iconColor: 'text-violet-600',
-    title: 'Real-Time Insights',
-    description: 'See your grade trends and study streaks live.',
+    titleKey: 'Landing.features.insights_title',
+    descKey: 'Landing.features.insights_desc',
     mockup: <InsightsMockup />,
   },
   {
     icon: BriefcaseIcon,
     iconBg: 'bg-emerald-100',
     iconColor: 'text-emerald-600',
-    title: 'Career Tools',
-    description: 'Manage applications and optimise your CV with AI.',
+    titleKey: 'Landing.features.career_title',
+    descKey: 'Landing.features.career_desc',
     mockup: <CareerMockup />,
   },
 ];
 
 export default function FeaturesSection() {
+  const { t } = useTranslation();
   return (
     <section className="w-full py-20 md:py-28 px-4 bg-white">
       <div className="max-w-5xl mx-auto">
@@ -368,14 +399,13 @@ export default function FeaturesSection() {
         <div className="text-center mb-12">
           <ScrollReveal>
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight">
-              Built for everyone
+              {t('Landing.features.heading')}
             </h2>
           </ScrollReveal>
 
           <ScrollReveal delay={0.12} className="mt-4">
             <p className="text-base text-gray-400 max-w-md mx-auto">
-              Thousands of students, from freshmen to PhD candidates, use StudentOS to handle their
-              academic life.
+              {t('Landing.features.subtitle')}
             </p>
           </ScrollReveal>
         </div>
@@ -392,9 +422,18 @@ export default function FeaturesSection() {
           >
             <StudyScheduleCard />
           </motion.div>
-          {cards.map((card, i) => (
-            <FeatureCard key={card.title} {...card} index={i + 1} />
-          ))}
+          {cards.map((card, i) => {
+            const { titleKey, descKey, ...rest } = card;
+            return (
+              <FeatureCard
+                key={titleKey}
+                {...rest}
+                title={t(titleKey)}
+                description={t(descKey)}
+                index={i + 1}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

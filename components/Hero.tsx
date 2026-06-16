@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SparklesIcon } from '@heroicons/react/24/solid';
 
 const CENTER_POP_DELAY = 0.1;
@@ -184,9 +185,10 @@ function NodeCard({ node }: { node: NodeCfg }) {
 
 export default function Hero() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const line1 = 'All-in-one Student';
-  const line2 = 'platform';
+  const line1 = t('Landing.hero.title_line1');
+  const line2 = t('Landing.hero.title_line2');
   const line1End = ALL_CARDS_DONE + line1.length * 0.04;
   const line2End = line1End + 0.06 + line2.length * 0.04;
 
@@ -335,8 +337,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: line2End + 0.15, duration: 0.55 }}
         >
-          StudentOS is a modern, all-in-one student platform designed to perfectly fit your academic
-          needs.
+          {t('Landing.hero.subtitle')}
         </motion.p>
         <motion.div
           className="mt-8"
@@ -354,7 +355,7 @@ export default function Hero() {
                   fill="currentColor"
                 />
               </svg>
-              Get Started
+              {t('Landing.hero.cta')}
             </span>
           </button>
         </motion.div>

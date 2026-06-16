@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { learningPlanApi } from '../src/services/api';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -98,61 +99,62 @@ function PegtopLoader() {
 /* ─── Template Data ─────────────────────────────────────────────────────────── */
 
 const TEMPLATE_CATEGORIES = [
-  { id: 'all', label: 'All' },
-  { id: 'programming', label: 'Programming' },
-  { id: 'languages', label: 'Languages' },
-  { id: 'science', label: 'Science' },
-  { id: 'business', label: 'Business' },
-  { id: 'exam-prep', label: 'Exam Prep' },
+  { id: 'all', labelKey: 'Learning.cat_all' },
+  { id: 'programming', labelKey: 'Learning.cat_programming' },
+  { id: 'languages', labelKey: 'Learning.cat_languages' },
+  { id: 'science', labelKey: 'Learning.cat_science' },
+  { id: 'business', labelKey: 'Learning.cat_business' },
+  { id: 'exam-prep', labelKey: 'Learning.cat_exam_prep' },
 ];
 
+/* Template display text + prompt are i18n keys resolved at render. */
 const TEMPLATES = [
   {
     id: 1,
     category: 'programming',
-    name: 'Web Development',
-    description: 'Master frontend and backend web development from HTML/CSS to React and Node.js',
-    prompt:
-      'I want to learn full-stack web development including HTML, CSS, JavaScript, React and Node.js',
+    nameKey: 'Learning.t1_name',
+    descKey: 'Learning.t1_desc',
+    promptKey: 'Learning.t1_prompt',
   },
   {
     id: 2,
     category: 'exam-prep',
-    name: 'IELTS Preparation',
-    description: 'Prepare for IELTS exam with a structured study plan covering all sections',
-    prompt: 'Help me prepare for IELTS exam and achieve a score of 7.0 or higher',
+    nameKey: 'Learning.t2_name',
+    descKey: 'Learning.t2_desc',
+    promptKey: 'Learning.t2_prompt',
   },
   {
     id: 3,
     category: 'programming',
-    name: 'Data Science',
-    description: 'Learn data analysis, machine learning, and Python for data science',
-    prompt: 'I want to learn data science, Python, machine learning, and data analysis',
+    nameKey: 'Learning.t3_name',
+    descKey: 'Learning.t3_desc',
+    promptKey: 'Learning.t3_prompt',
   },
   {
     id: 4,
     category: 'business',
-    name: 'Digital Marketing',
-    description: 'Master SEO, social media marketing, and content strategy',
-    prompt: 'I want to learn digital marketing including SEO, social media, and content creation',
+    nameKey: 'Learning.t4_name',
+    descKey: 'Learning.t4_desc',
+    promptKey: 'Learning.t4_prompt',
   },
   {
     id: 5,
     category: 'languages',
-    name: 'English Speaking',
-    description: 'Improve English speaking and conversation skills from intermediate to advanced',
-    prompt: 'I want to improve my English speaking and communication skills to an advanced level',
+    nameKey: 'Learning.t5_name',
+    descKey: 'Learning.t5_desc',
+    promptKey: 'Learning.t5_prompt',
   },
   {
     id: 6,
     category: 'science',
-    name: 'Mathematics',
-    description: 'Build a strong math foundation from algebra to calculus',
-    prompt: 'I want to learn mathematics from algebra through calculus and beyond',
+    nameKey: 'Learning.t6_name',
+    descKey: 'Learning.t6_desc',
+    promptKey: 'Learning.t6_prompt',
   },
 ];
 
 export default function LearningPlan({ navigateTo }: NavigationProps) {
+  const { t, i18n } = useTranslation();
   const [topic, setTopic] = useState('');
   const [duration, setDuration] = useState('4 weeks');
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>(
@@ -199,7 +201,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
-      setError('Please enter a learning topic');
+      setError(t('Learning.enter_topic'));
       return;
     }
     setIsGenerating(true);
@@ -219,7 +221,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           required: errData?.required || 0,
           available: errData?.available || 0,
           shortfall: errData?.shortfall || 0,
-          toolName: errData?.toolName || 'Learning Plan',
+          toolName: errData?.toolName || t('Learning.tool_name'),
         });
         setShowInsufficientModal(true);
         return;
@@ -241,7 +243,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         refreshBalance();
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to generate plan. Please try again.');
+      setError(err.message || t('Learning.generate_failed'));
     } finally {
       setIsGenerating(false);
     }
@@ -342,12 +344,12 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
           onClick={() => navigateTo(Screen.ACADEMIC_TOOLS)}
         >
           <ArrowLeftIcon className="w-[18px] h-[18px]" />
-          <span className="text-sm font-medium">Academic Tools</span>
+          <span className="text-sm font-medium">{t('Common.academic_tools')}</span>
         </div>
         <h2 className="text-2xl font-bold text-text-main dark:text-white flex items-center gap-3">
-          Learning Plan Generator
+          {t('Learning.generator_title')}
           <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-semibold">
-            AI Powered
+            {t('Learning.ai_powered')}
           </span>
         </h2>
       </div>
@@ -359,14 +361,16 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-sm text-sm"
           >
             <PlusIcon className="w-[18px] h-[18px]" />
-            Create New Plan
+            {t('Learning.create_new')}
           </button>
         ) : (
           /* Recent Plans pills */
           <div className="flex items-center gap-2 flex-wrap justify-end max-w-lg">
             {recentPlans.length > 0 && (
               <>
-                <span className="text-xs text-text-sub font-medium mr-1">Recent:</span>
+                <span className="text-xs text-text-sub font-medium mr-1">
+                  {t('Learning.recent')}
+                </span>
                 {recentPlans.slice(0, 3).map((p) => (
                   <button
                     key={p}
@@ -392,7 +396,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
         <div className="flex-1 w-full min-h-[70vh] flex items-center justify-center bg-gray-50/50 dark:bg-[#0f111a] backdrop-blur-sm rounded-3xl">
           <div className="flex flex-col items-center gap-6">
             <PegtopLoader />
-            <p className="text-sm text-text-sub animate-pulse">Loading your learning plan...</p>
+            <p className="text-sm text-text-sub animate-pulse">{t('Learning.loading')}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -424,10 +428,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
 
             {/* Title */}
             <h1 className="text-[32px] font-bold text-gray-900 dark:text-white text-center mb-2 leading-tight">
-              Let's build your learning plan
+              {t('Learning.build_title')}
             </h1>
             <p className="text-base text-gray-500 dark:text-gray-400 text-center mb-8 max-w-md">
-              Describe any learning goal and watch it become a plan in seconds.
+              {t('Learning.build_subtitle')}
             </p>
 
             {/* Glowing animated border textarea */}
@@ -440,7 +444,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate();
                   }}
-                  placeholder="I want to learn Python programming from scratch and build web applications..."
+                  placeholder={t('Learning.topic_ph')}
                   rows={3}
                   className="w-full bg-transparent border-none outline-none ring-0 text-[15px] text-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none pr-[120px] leading-relaxed"
                 />
@@ -450,7 +454,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                   disabled={isGenerating || !topic.trim()}
                   className="absolute bottom-4 right-4 px-4 py-2 bg-gray-100 dark:bg-white/[0.08] hover:bg-gray-200 dark:hover:bg-white/[0.14] border border-gray-200 dark:border-white/[0.1] rounded-lg text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Build plan
+                  {t('Learning.build_plan')}
                 </button>
               </div>
             </div>
@@ -468,22 +472,22 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                       : 'bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.1] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.1]'
                   }`}
                 >
-                  {d}
+                  {t(`Learning.diff_${d}`)}
                 </button>
               ))}
               <div className="relative ml-auto">
                 <select
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  aria-label="Duration"
+                  aria-label={t('Learning.duration_aria')}
                   className="bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.1] text-gray-600 dark:text-gray-300 font-medium text-xs cursor-pointer appearance-none outline-none rounded-full pl-3 pr-7 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.1] transition-colors"
                 >
-                  <option value="1 week">1 week</option>
-                  <option value="2 weeks">2 weeks</option>
-                  <option value="3 weeks">3 weeks</option>
-                  <option value="4 weeks">4 weeks</option>
-                  <option value="2 months">2 months</option>
-                  <option value="3 months">3 months</option>
+                  <option value="1 week">{t('Learning.dur_1_week')}</option>
+                  <option value="2 weeks">{t('Learning.dur_2_weeks')}</option>
+                  <option value="3 weeks">{t('Learning.dur_3_weeks')}</option>
+                  <option value="4 weeks">{t('Learning.dur_4_weeks')}</option>
+                  <option value="2 months">{t('Learning.dur_2_months')}</option>
+                  <option value="3 months">{t('Learning.dur_3_months')}</option>
                 </select>
                 <svg
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
@@ -499,7 +503,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             {/* Divider */}
             <div className="flex items-center gap-4 w-full max-w-[680px] my-7">
               <div className="flex-1 h-px bg-gray-200 dark:bg-white/[0.08]" />
-              <span className="text-xs text-gray-400">or</span>
+              <span className="text-xs text-gray-400">{t('Learning.or')}</span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-white/[0.08]" />
             </div>
 
@@ -513,13 +517,13 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
               className="flex items-center gap-1.5 px-6 py-2.5 border border-gray-200 dark:border-white/[0.1] rounded-xl bg-white dark:bg-white/[0.04] text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.18] transition-all"
             >
               <PlusIcon className="w-4 h-4" />
-              Start from scratch
+              {t('Learning.start_scratch')}
             </button>
 
             {/* Templates */}
             <div className="w-full mt-12">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Start with a template
+                {t('Learning.start_template')}
               </h2>
 
               {/* Category tabs */}
@@ -535,7 +539,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]'
                     }`}
                   >
-                    {cat.label}
+                    {t(cat.labelKey)}
                   </button>
                 ))}
               </div>
@@ -547,16 +551,16 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                     key={tpl.id}
                     type="button"
                     onClick={() => {
-                      setTopic(tpl.prompt);
+                      setTopic(t(tpl.promptKey));
                       setTimeout(() => textareaRef.current?.focus(), 50);
                     }}
                     className="text-left border border-gray-100 dark:border-white/[0.07] rounded-xl p-5 bg-white dark:bg-[#14161f] hover:border-gray-300 dark:hover:border-white/[0.15] hover:shadow-sm transition-all"
                   >
                     <p className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1.5">
-                      {tpl.name}
+                      {t(tpl.nameKey)}
                     </p>
                     <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
-                      {tpl.description}
+                      {t(tpl.descKey)}
                     </p>
                   </button>
                 ))}
@@ -737,7 +741,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             </svg>
 
             <p className="mt-8 text-base text-gray-500 dark:text-gray-400">
-              Loading your learning plan...
+              {t('Learning.loading')}
             </p>
           </div>
         </div>
@@ -769,10 +773,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full mb-8 pb-4 border-b border-gray-200 dark:border-gray-800 gap-4">
               <div>
                 <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                  Your Personalized Plan
+                  {t('Learning.plan_title')}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Follow these steps to reach your goal.
+                  {t('Learning.plan_subtitle')}
                 </p>
               </div>
               <button
@@ -783,7 +787,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 shrink-0"
               >
                 <PlusIcon className="w-5 h-5" />
-                Create New Plan
+                {t('Learning.create_new')}
               </button>
             </div>
 
@@ -829,10 +833,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                               <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500 line-through">
                                 {phase.title}
                               </h3>
-                              <p className="text-sm text-gray-400">Completed</p>
+                              <p className="text-sm text-gray-400">{t('Learning.completed')}</p>
                             </div>
                             <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-semibold dark:bg-green-900/20 dark:text-green-400">
-                              Done
+                              {t('Learning.done')}
                             </span>
                           </div>
                         </div>
@@ -843,11 +847,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                               {phase.title}
                             </h3>
                             <span className="text-xs text-text-sub font-medium bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                              Locked
+                              {t('Learning.locked')}
                             </span>
                           </div>
                           <p className="text-sm text-text-sub mt-2">
-                            Unlock by completing Phase {index}.
+                            {t('Learning.unlock_phase', { number: index })}
                           </p>
                         </div>
                       ) : (
@@ -867,7 +871,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                 {phaseCompleted}/{phaseResources.length}
                               </span>
                               <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                                Current Step
+                                {t('Learning.current_step')}
                               </span>
                             </div>
                           </div>
@@ -907,7 +911,11 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                                       {resource.title}
                                     </h4>
                                     <p className="text-xs text-text-sub mt-1">
-                                      {isVideo ? 'Video' : isExercise ? '✍️ Exercise' : 'Article'}
+                                      {isVideo
+                                        ? t('Learning.type_video')
+                                        : isExercise
+                                          ? t('Learning.type_exercise')
+                                          : t('Learning.type_article')}
                                       {resource.durationText && ` • ${resource.durationText}`}
                                     </p>
                                   </div>
@@ -976,7 +984,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 {/* Weekly Goals */}
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
                   <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
-                    Weekly Goals
+                    {t('Learning.weekly_goals')}
                   </h3>
                   <div className="space-y-4">
                     {/* Videos */}
@@ -991,10 +999,13 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         />
                         <div>
                           <p className="text-sm font-semibold text-text-main dark:text-white">
-                            Watch {videoResources.length} Videos
+                            {t('Learning.watch_videos', { count: videoResources.length })}
                           </p>
                           <p className="text-xs text-text-sub">
-                            {completedVideos}/{videoResources.length} completed
+                            {t('Learning.completed_count', {
+                              done: completedVideos,
+                              total: videoResources.length,
+                            })}
                           </p>
                         </div>
                       </div>
@@ -1012,10 +1023,13 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         />
                         <div>
                           <p className="text-sm font-semibold text-text-main dark:text-white">
-                            Read {articleResources.length} Articles
+                            {t('Learning.read_articles', { count: articleResources.length })}
                           </p>
                           <p className="text-xs text-text-sub">
-                            {completedArticles}/{articleResources.length} completed
+                            {t('Learning.completed_count', {
+                              done: completedArticles,
+                              total: articleResources.length,
+                            })}
                           </p>
                         </div>
                       </div>
@@ -1026,7 +1040,7 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 {/* Overall Progress */}
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
                   <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
-                    Overall Progress
+                    {t('Learning.overall_progress')}
                   </h3>
                   <div className="flex items-center gap-4">
                     <ProgressRing value={progressPercent} size="lg" />
@@ -1035,7 +1049,10 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         {progressPercent}%
                       </p>
                       <p className="text-xs text-text-sub">
-                        {completedResources}/{totalResources} resources
+                        {t('Learning.resources_count', {
+                          done: completedResources,
+                          total: totalResources,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -1050,24 +1067,26 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                 {/* Plan Info — Motivational */}
                 <div className="bg-card-light dark:bg-card-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
                   <h3 className="text-sm font-bold text-text-sub uppercase mb-4 tracking-wide">
-                    Your Journey
+                    {t('Learning.your_journey')}
                   </h3>
                   <div className="space-y-3">
                     {/* Goal */}
                     <div className="p-3 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/10">
-                      <p className="text-xs text-primary font-semibold mb-0.5">Goal</p>
+                      <p className="text-xs text-primary font-semibold mb-0.5">
+                        {t('Learning.goal')}
+                      </p>
                       <p className="text-sm font-medium text-text-main dark:text-white leading-snug">
                         {plan.topic}
                       </p>
                     </div>
                     {/* Estimated completion */}
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-text-sub">Est. completion</span>
+                      <span className="text-xs text-text-sub">{t('Learning.est_completion')}</span>
                       <span className="text-xs font-semibold text-text-main dark:text-white">
                         {new Date(
                           new Date(plan.createdAt).getTime() +
                             plan.durationWeeks * 7 * 24 * 60 * 60 * 1000
-                        ).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                        ).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     {/* Exercises */}
@@ -1077,24 +1096,27 @@ export default function LearningPlan({ navigateTo }: NavigationProps) {
                         .filter((r) => r.type === 'EXERCISE').length;
                       return exerciseCount > 0 ? (
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-text-sub">Exercises</span>
+                          <span className="text-xs text-text-sub">{t('Learning.exercises')}</span>
                           <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                            ✍️ {exerciseCount} hands-on
+                            {t('Learning.hands_on', { count: exerciseCount })}
                           </span>
                         </div>
                       ) : null;
                     })()}
                     {/* Duration */}
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-text-sub">Duration</span>
+                      <span className="text-xs text-text-sub">{t('Learning.duration_label')}</span>
                       <span className="text-xs font-semibold text-text-main dark:text-white">
-                        {plan.durationWeeks} weeks · {plan.phases.length} phases
+                        {t('Learning.weeks_phases', {
+                          weeks: plan.durationWeeks,
+                          phases: plan.phases.length,
+                        })}
                       </span>
                     </div>
                     {/* Progress bar */}
                     <div className="pt-1">
                       <div className="flex justify-between text-xs text-text-sub mb-1">
-                        <span>Progress</span>
+                        <span>{t('Learning.progress')}</span>
                         <span className="font-semibold text-primary">{progressPercent}%</span>
                       </div>
                       <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
