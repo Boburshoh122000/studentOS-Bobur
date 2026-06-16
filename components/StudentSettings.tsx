@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useCredits } from '../src/contexts/CreditContext';
@@ -64,14 +65,14 @@ interface ProfileData {
 }
 
 // ─── Tab Configuration ───────────────────────────────────────────────
-const TABS: { id: SettingsTab; label: string; icon: React.ElementType; danger?: boolean }[] = [
-  { id: 'profile', label: 'My Profile', icon: UserIcon },
-  { id: 'security', label: 'Password & Security', icon: ShieldCheckIcon },
-  { id: 'notifications', label: 'Notifications', icon: BellIcon },
-  { id: 'billing', label: 'Billing', icon: CreditCardIcon },
-  { id: 'earn', label: 'Earn Credits', icon: GiftIcon },
-  { id: 'integrations', label: 'Integrations', icon: LinkIcon },
-  { id: 'delete', label: 'Delete Account', icon: TrashIcon, danger: true },
+const TABS: { id: SettingsTab; labelKey: string; icon: React.ElementType; danger?: boolean }[] = [
+  { id: 'profile', labelKey: 'Settings.tab_profile', icon: UserIcon },
+  { id: 'security', labelKey: 'Settings.tab_security', icon: ShieldCheckIcon },
+  { id: 'notifications', labelKey: 'Settings.notifications', icon: BellIcon },
+  { id: 'billing', labelKey: 'Settings.tab_billing', icon: CreditCardIcon },
+  { id: 'earn', labelKey: 'Settings.tab_earn', icon: GiftIcon },
+  { id: 'integrations', labelKey: 'Settings.tab_integrations', icon: LinkIcon },
+  { id: 'delete', labelKey: 'Settings.delete_account', icon: TrashIcon, danger: true },
 ];
 
 // ─── Reusable Card ───────────────────────────────────────────────────
@@ -105,6 +106,7 @@ function InfoField({ label, value }: { label: string; value: string }) {
 }
 
 function EditButton({ onClick, loading }: { onClick: () => void; loading?: boolean }) {
+  const { t } = useTranslation();
   return (
     <button
       onClick={onClick}
@@ -116,13 +118,14 @@ function EditButton({ onClick, loading }: { onClick: () => void; loading?: boole
       ) : (
         <PencilIcon className="w-3.5 h-3.5" />
       )}
-      {loading ? 'Saving...' : 'Edit'}
+      {loading ? t('Settings.saving') : t('Settings.edit')}
     </button>
   );
 }
 
 // ─── Main Component ──────────────────────────────────────────────────
 export default function StudentSettings({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const { user, refreshUser, logout } = useAuth();
   const { balance, refreshBalance } = useCredits();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
@@ -306,7 +309,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   const handleSaveProfile = async () => {
     const name = `${firstName} ${lastName}`.trim();
     if (!name) {
-      toast.error('Name cannot be empty');
+      toast.error(t('Settings.name_empty'));
       return;
     }
     setIsSavingProfile(true);
@@ -317,11 +320,11 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         country: country.trim() || undefined,
       });
       if (error) throw new Error(error);
-      toast.success('Profile updated successfully!');
+      toast.success(t('Settings.profile_updated'));
       setEditingSection(null);
       await Promise.all([fetchProfile(), refreshUser()]);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
+      toast.error(err instanceof Error ? err.message : t('Settings.profile_update_failed'));
     } finally {
       setIsSavingProfile(false);
     }
@@ -330,31 +333,31 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   // ── Password Change ──
   const handleChangePassword = async () => {
     if (!currentPassword) {
-      toast.error('Please enter your current password');
+      toast.error(t('Settings.enter_current_pw'));
       return;
     }
     if (!newPassword || !confirmPassword) {
-      toast.error('Please fill in both password fields');
+      toast.error(t('Settings.fill_both_pw'));
       return;
     }
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('Settings.pw_min'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('Settings.pw_mismatch'));
       return;
     }
     setIsSavingPassword(true);
     try {
       const { error } = await authApi.changePassword({ currentPassword, newPassword });
       if (error) throw new Error(error);
-      toast.success('Password updated successfully!');
+      toast.success(t('Settings.pw_updated'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update password');
+      toast.error(err instanceof Error ? err.message : t('Settings.pw_update_failed'));
     } finally {
       setIsSavingPassword(false);
     }
@@ -367,7 +370,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
       setUnreadCount((c) => Math.max(0, c - 1));
     } catch {
-      toast.error('Failed to mark as read');
+      toast.error(t('Settings.mark_read_failed'));
     }
   };
 
@@ -376,9 +379,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       await notificationApi.markAllRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
-      toast.success('All notifications marked as read');
+      toast.success(t('Settings.all_marked_read'));
     } catch {
-      toast.error('Failed to mark all as read');
+      toast.error(t('Settings.mark_all_failed'));
     }
   };
 
@@ -389,10 +392,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     try {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
-      toast.success('Referral link copied!');
+      toast.success(t('Settings.referral_copied'));
       setTimeout(() => setCopied(false), 3000);
     } catch {
-      toast.error('Failed to copy link');
+      toast.error(t('Settings.copy_failed'));
     }
   };
 
@@ -410,7 +413,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         setTgCodeExpiry(new Date(data.expiresAt));
       }
     } catch {
-      toast.error('Failed to generate code');
+      toast.error(t('Settings.code_gen_failed'));
     } finally {
       setIsGeneratingCode(false);
     }
@@ -418,7 +421,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
   // ── Telegram: disconnect ──
   const handleDisconnectTg = async () => {
-    if (!confirm('Disconnect your Telegram account?')) return;
+    if (!confirm(t('Settings.confirm_disconnect'))) return;
     setIsDisconnecting(true);
     try {
       const { error } = await userApi.disconnectTelegram();
@@ -428,9 +431,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       }
       setTgConnected(false);
       setTgUsername(null);
-      toast.success('Telegram disconnected');
+      toast.success(t('Settings.tg_disconnected'));
     } catch {
-      toast.error('Failed to disconnect');
+      toast.error(t('Settings.disconnect_failed'));
     } finally {
       setIsDisconnecting(false);
     }
@@ -440,7 +443,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   const handleClaimTelegram = async () => {
     // Must have Telegram linked
     if (!tgConnected) {
-      toast.error('Connect your Telegram account first (Settings → Integrations)');
+      toast.error(t('Settings.connect_tg_prompt'));
       setActiveTab('integrations');
       return;
     }
@@ -452,19 +455,19 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         if (error.includes('Join @creo_life')) {
           // Open channel so user can join, then try again
           window.open('https://t.me/creo_life', '_blank');
-          toast.error('Join the channel first, then click Verify again');
+          toast.error(t('Settings.join_then_verify'));
         } else {
           toast.error(error);
         }
         return;
       }
       if (data) {
-        toast.success('+5 Credits added!');
+        toast.success(t('Settings.credits_added'));
         setTelegramClaimed(true);
         await Promise.all([refreshUser(), refreshBalance()]);
       }
     } catch {
-      toast.error('Failed to claim credits');
+      toast.error(t('Settings.claim_failed'));
     } finally {
       setIsClaiming(false);
     }
@@ -473,16 +476,16 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   // ── Delete Account ──
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== 'DELETE') return;
-    if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+    if (!confirm(t('Settings.confirm_delete'))) return;
     setIsDeleting(true);
     try {
       const { error } = await authApi.deleteAccount();
       if (error) throw new Error(error);
-      toast.success('Account deleted. Goodbye!');
+      toast.success(t('Settings.account_deleted'));
       await logout();
       navigateTo(Screen.LANDING);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete account');
+      toast.error(err instanceof Error ? err.message : t('Settings.delete_failed'));
     } finally {
       setIsDeleting(false);
     }
@@ -491,10 +494,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   // ── Time helpers ──
   const timeAgo = (dateStr: string) => {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    if (seconds < 60) return t('Settings.time_just_now');
+    if (seconds < 3600) return t('Settings.time_min', { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t('Settings.time_hour', { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t('Settings.time_day', { count: Math.floor(seconds / 86400) });
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -509,10 +512,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   const headerContent = (
     <header className="h-auto min-h-[4.5rem] px-4 md:px-8 py-3 md:py-0 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 bg-white dark:bg-[#1e2330] border-b border-gray-200 dark:border-gray-800 z-10">
       <div className="flex flex-col justify-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Account Settings</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Manage your profile, security, and preferences
-        </p>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+          {t('Settings.header_title')}
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('Settings.header_sub')}</p>
       </div>
     </header>
   );
@@ -537,7 +540,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     <>
       {/* Avatar & Basic Info */}
       <SettingsCard
-        title="My Profile"
+        title={t('Settings.my_profile')}
         action={<EditButton onClick={() => setEditingSection('personal')} />}
       >
         <div className="flex items-center gap-5">
@@ -557,10 +560,13 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               {profile.fullName || email}
             </h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {profile.headline || (user?.role === 'STUDENT' ? 'Student' : user?.role || 'Member')}
+              {profile.headline ||
+                (user?.role === 'STUDENT'
+                  ? t('Settings.role_student')
+                  : user?.role || t('Settings.role_member'))}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
-              <MapPinIcon className="w-3 h-3" /> {profile.country || 'Not set'}
+              <MapPinIcon className="w-3 h-3" /> {profile.country || t('Settings.not_set')}
             </p>
           </div>
         </div>
@@ -568,7 +574,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
       {/* Personal Info */}
       <SettingsCard
-        title="Personal Information"
+        title={t('Settings.personal_info')}
         action={
           editingSection === 'personal' ? (
             <div className="flex gap-2">
@@ -589,7 +595,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 ) : (
                   <CheckIcon className="w-3.5 h-3.5" />
                 )}
-                Save
+                {t('Settings.save')}
               </button>
             </div>
           ) : (
@@ -601,31 +607,31 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                First Name
+                {t('Settings.first_name')}
               </label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="First name"
+                placeholder={t('Settings.ph_first_name')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Last Name
+                {t('Settings.last_name')}
               </label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Last name"
+                placeholder={t('Settings.ph_last_name')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Email Address
+                {t('Settings.email_address')}
               </label>
               <input
                 type="email"
@@ -636,24 +642,24 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Phone
+                {t('Settings.phone')}
               </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+998-XX-XXX-XX-XX"
+                placeholder={t('Settings.ph_phone')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Bio
+                {t('Settings.bio')}
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about yourself"
+                placeholder={t('Settings.ph_bio')}
                 rows={2}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none"
               />
@@ -661,12 +667,12 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
-            <InfoField label="First Name" value={firstName} />
-            <InfoField label="Last Name" value={lastName} />
-            <InfoField label="Email Address" value={email} />
-            <InfoField label="Phone" value={phone || '—'} />
+            <InfoField label={t('Settings.first_name')} value={firstName} />
+            <InfoField label={t('Settings.last_name')} value={lastName} />
+            <InfoField label={t('Settings.email_address')} value={email} />
+            <InfoField label={t('Settings.phone')} value={phone || '—'} />
             <div className="sm:col-span-2">
-              <InfoField label="Bio" value={bio || '—'} />
+              <InfoField label={t('Settings.bio')} value={bio || '—'} />
             </div>
           </div>
         )}
@@ -674,7 +680,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
       {/* Address */}
       <SettingsCard
-        title="Address"
+        title={t('Settings.address')}
         action={
           <EditButton
             onClick={() =>
@@ -687,37 +693,37 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Country
+                {t('Settings.country')}
               </label>
               <input
                 type="text"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                placeholder="Country"
+                placeholder={t('Settings.ph_country')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                City/State
+                {t('Settings.city_state')}
               </label>
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="City"
+                placeholder={t('Settings.ph_city')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                Postal Code
+                {t('Settings.postal_code')}
               </label>
               <input
                 type="text"
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value)}
-                placeholder="100000"
+                placeholder={t('Settings.ph_postal')}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
@@ -732,15 +738,15 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 ) : (
                   <CheckIcon className="w-3.5 h-3.5" />
                 )}{' '}
-                Save
+                {t('Settings.save')}
               </button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
-            <InfoField label="Country" value={country || '—'} />
-            <InfoField label="City/State" value={city || '—'} />
-            <InfoField label="Postal Code" value={postalCode || '—'} />
+            <InfoField label={t('Settings.country')} value={country || '—'} />
+            <InfoField label={t('Settings.city_state')} value={city || '—'} />
+            <InfoField label={t('Settings.postal_code')} value={postalCode || '—'} />
           </div>
         )}
       </SettingsCard>
@@ -748,18 +754,18 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   );
 
   const renderSecurity = () => (
-    <SettingsCard title="Change Password">
+    <SettingsCard title={t('Settings.change_password')}>
       <div className="space-y-4 max-w-lg">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Current Password
+            {t('Settings.current_password')}
           </label>
           <div className="relative">
             <input
               type={showCurrentPw ? 'text' : 'password'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
+              placeholder={t('Settings.ph_current_pw')}
               className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
             />
             <button
@@ -777,14 +783,14 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            New Password
+            {t('Settings.new_password')}
           </label>
           <div className="relative">
             <input
               type={showNewPw ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Min 6 characters"
+              placeholder={t('Settings.ph_new_pw')}
               className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
             />
             <button
@@ -798,13 +804,13 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Confirm New Password
+            {t('Settings.confirm_new_password')}
           </label>
           <input
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Re-enter new password"
+            placeholder={t('Settings.ph_confirm_pw')}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
           />
         </div>
@@ -815,7 +821,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-sm"
           >
             {isSavingPassword && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
-            {isSavingPassword ? 'Updating...' : 'Update Password'}
+            {isSavingPassword ? t('Settings.updating') : t('Settings.update_password')}
           </button>
         </div>
       </div>
@@ -824,14 +830,14 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
 
   const renderNotifications = () => (
     <SettingsCard
-      title={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+      title={`${t('Settings.notifications')} ${unreadCount > 0 ? t('Settings.unread_suffix', { count: unreadCount }) : ''}`}
       action={
         unreadCount > 0 ? (
           <button
             onClick={handleMarkAllRead}
             className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
           >
-            Mark all as read
+            {t('Settings.mark_all_read')}
           </button>
         ) : undefined
       }
@@ -843,7 +849,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
       ) : notifications.length === 0 ? (
         <div className="text-center py-8">
           <BellIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('Settings.no_notifications')}
+          </p>
         </div>
       ) : (
         <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
@@ -882,14 +890,15 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
     <>
       {/* Balance Summary */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 mb-6 text-white shadow-lg">
-        <p className="text-sm font-medium text-blue-100 mb-1">Available Balance</p>
+        <p className="text-sm font-medium text-blue-100 mb-1">{t('Settings.available_balance')}</p>
         <p className="text-4xl font-bold tracking-tight">
-          {balance} <span className="text-lg font-medium text-blue-200">Credits</span>
+          {balance}{' '}
+          <span className="text-lg font-medium text-blue-200">{t('Settings.credits_unit')}</span>
         </p>
       </div>
 
       {/* Transaction History */}
-      <SettingsCard title="Credit Usage History">
+      <SettingsCard title={t('Settings.credit_history')}>
         {isLoadingHistory ? (
           <div className="flex justify-center py-8">
             <ArrowPathIcon className="w-6 h-6 animate-spin text-blue-500" />
@@ -897,7 +906,9 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         ) : creditHistory.length === 0 ? (
           <div className="text-center py-8">
             <CreditCardIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No transactions yet</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t('Settings.no_transactions')}
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-800 -mx-1">
@@ -931,26 +942,29 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
   );
 
   const renderEarnCredits = () => (
-    <SettingsCard title="Earn Free Credits">
+    <SettingsCard title={t('Settings.earn_title')}>
       <div className="space-y-5">
         {/* Task 1: Invite Friends */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/15 dark:to-indigo-900/15 rounded-xl p-5 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-center gap-2 mb-1.5">
             <GiftIcon className="w-[18px] h-[18px] text-blue-600 dark:text-blue-400" />
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Invite Friends</h4>
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+              {t('Settings.invite_friends')}
+            </h4>
             <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
-              +5 Credits
+              {t('Settings.badge_5credits')}
             </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3.5">
-            Invite a friend and get <strong>5 credits</strong> when they sign up using your link.
+            {t('Settings.invite_desc_pre')} <strong>{t('Settings.invite_desc_bold')}</strong>{' '}
+            {t('Settings.invite_desc_post')}
           </p>
           <div className="flex items-center gap-2">
             <input
               type="text"
               readOnly
-              value={referralLink ?? 'Loading your link...'}
-              aria-label="Referral link"
+              value={referralLink ?? t('Settings.loading_link')}
+              aria-label={t('Settings.referral_aria')}
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 text-xs font-mono focus:outline-none truncate"
             />
             <button
@@ -963,7 +977,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               ) : (
                 <ClipboardIcon className="w-5 h-5" />
               )}
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? t('Settings.copied') : t('Settings.copy')}
             </button>
           </div>
         </div>
@@ -981,14 +995,14 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                   <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                 </svg>
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Join Our Telegram Channel
+                  {t('Settings.join_tg_channel')}
                 </h4>
                 <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
-                  +5 Credits
+                  {t('Settings.badge_5credits')}
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Join{' '}
+                {t('Settings.tg_desc_pre')}{' '}
                 <a
                   href="https://t.me/creo_life"
                   target="_blank"
@@ -997,10 +1011,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 >
                   @creo_life
                 </a>{' '}
-                on Telegram for <strong>5 free credits</strong>.{' '}
+                {t('Settings.tg_desc_post')} <strong>{t('Settings.free_credits_bold')}</strong>.{' '}
                 {!tgConnected && (
                   <span className="text-amber-600 dark:text-amber-400">
-                    Connect Telegram first →
+                    {t('Settings.connect_tg_first')}
                   </span>
                 )}
               </p>
@@ -1013,19 +1027,19 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             >
               {isClaiming ? (
                 <>
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" /> Verifying...
+                  <ArrowPathIcon className="w-4 h-4 animate-spin" /> {t('Settings.verifying')}
                 </>
               ) : telegramClaimed ? (
                 <>
-                  <CheckCircleIcon className="w-4 h-4" /> Claimed!
+                  <CheckCircleIcon className="w-4 h-4" /> {t('Settings.claimed')}
                 </>
               ) : !tgConnected ? (
                 <>
-                  <PaperAirplaneIcon className="w-4 h-4" /> Connect Telegram
+                  <PaperAirplaneIcon className="w-4 h-4" /> {t('Settings.connect_telegram')}
                 </>
               ) : (
                 <>
-                  <PaperAirplaneIcon className="w-4 h-4" /> Verify
+                  <PaperAirplaneIcon className="w-4 h-4" /> {t('Settings.verify')}
                 </>
               )}
             </button>
@@ -1042,25 +1056,29 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Delete Account</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">This action is irreversible</p>
+          <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">
+            {t('Settings.delete_account')}
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {t('Settings.delete_irreversible')}
+          </p>
         </div>
       </div>
       <div className="bg-red-50 dark:bg-red-900/10 rounded-xl p-4 mb-5 border border-red-100 dark:border-red-900/30">
         <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">
-          Once you delete your account, there is no going back. All of your data, credits, and
-          progress will be permanently removed.
+          {t('Settings.delete_long')}
         </p>
       </div>
       <div className="max-w-md">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-          Type <strong className="text-red-600">DELETE</strong> to confirm
+          {t('Settings.type_delete_pre')} <strong className="text-red-600">DELETE</strong>{' '}
+          {t('Settings.type_delete_post')}
         </label>
         <input
           type="text"
           value={deleteConfirm}
           onChange={(e) => setDeleteConfirm(e.target.value)}
-          placeholder='Type "DELETE"'
+          placeholder={t('Settings.ph_type_delete')}
           className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all mb-4"
         />
         <button
@@ -1069,7 +1087,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           className="px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
         >
           {isDeleting && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
-          {isDeleting ? 'Deleting...' : 'Delete My Account'}
+          {isDeleting ? t('Settings.deleting') : t('Settings.delete_my_account')}
         </button>
       </div>
     </div>
@@ -1095,10 +1113,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                Telegram Integration
+                {t('Settings.tg_integration')}
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Connect the StudentOS bot to manage habits directly from Telegram.
+                {t('Settings.tg_integration_desc')}
               </p>
             </div>
           </div>
@@ -1108,7 +1126,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
         {isLoadingTg ? (
           <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm flex items-center gap-3">
             <ArrowPathIcon className="w-5 h-5 animate-spin text-gray-400" />
-            <span className="text-sm text-gray-500">Checking connection…</span>
+            <span className="text-sm text-gray-500">{t('Settings.checking_connection')}</span>
           </div>
         ) : tgConnected ? (
           <div className="bg-emerald-50 dark:bg-emerald-900/15 rounded-2xl border border-emerald-200 dark:border-emerald-800/40 p-5 flex items-center justify-between gap-4">
@@ -1116,10 +1134,12 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               <CheckCircleIcon className="w-6 h-6 text-emerald-500 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                  Connected{tgUsername ? ` as ${tgUsername}` : ''}
+                  {tgUsername
+                    ? t('Settings.connected_as', { name: tgUsername })
+                    : t('Settings.connected')}
                 </p>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  Your Telegram account is linked. You can use /habits in the bot.
+                  {t('Settings.tg_linked_desc')}
                 </p>
               </div>
             </div>
@@ -1134,7 +1154,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               ) : (
                 <XMarkIcon className="w-3.5 h-3.5" />
               )}
-              Disconnect
+              {t('Settings.disconnect')}
             </button>
           </div>
         ) : (
@@ -1145,32 +1165,34 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 <div className="w-10 h-10 rounded-xl bg-[#229ED9]/10 flex items-center justify-center text-[#229ED9]">
                   <TgIcon />
                 </div>
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white">How to connect</h4>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                  {t('Settings.how_to_connect')}
+                </h4>
               </div>
               <ol className="space-y-2.5 mb-5">
                 {(
                   [
                     [
-                      'Click ',
-                      <strong key="b">"Open in Telegram"</strong>,
-                      ' below to open the bot.',
+                      `${t('Settings.conn_s1_pre')} `,
+                      <strong key="b">{t('Settings.conn_open_quoted')}</strong>,
+                      ` ${t('Settings.conn_s1_post')}`,
                     ],
                     [
-                      'Click ',
-                      <strong key="b">Generate Link Code</strong>,
-                      ' to create a pairing key.',
+                      `${t('Settings.conn_s2_pre')} `,
+                      <strong key="b">{t('Settings.conn_generate_bold')}</strong>,
+                      ` ${t('Settings.conn_s2_post')}`,
                     ],
                     [
-                      'Send the generated code to the bot as ',
+                      `${t('Settings.conn_s3_pre')} `,
                       <code
                         key="c"
                         className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono"
                       >
                         /link 123456
                       </code>,
-                      '.',
+                      t('Settings.conn_s3_post'),
                     ],
-                    ["You'll receive a confirmation and can start using the bot!"],
+                    [t('Settings.conn_s4')],
                   ] as React.ReactNode[][]
                 ).map((parts, i) => (
                   <li
@@ -1191,7 +1213,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#229ED9] hover:bg-[#1e8ec5] text-white text-sm font-semibold rounded-xl transition-colors"
               >
                 <TgIcon />
-                Open in Telegram
+                {t('Settings.open_in_telegram')}
                 <svg
                   className="w-3.5 h-3.5 opacity-70"
                   fill="none"
@@ -1213,7 +1235,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
               {tgCode && tgSecondsLeft > 0 ? (
                 <>
                   <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
-                    Your link code
+                    {t('Settings.your_link_code')}
                   </p>
                   <div className="inline-flex items-center gap-3 bg-gray-50 dark:bg-gray-800/60 rounded-2xl px-6 py-3 mb-3">
                     <span className="text-3xl font-bold font-mono tracking-widest text-gray-900 dark:text-white">
@@ -1224,7 +1246,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                       title="Copy code"
                       onClick={() => {
                         navigator.clipboard.writeText(`/link ${tgCode}`);
-                        toast.success('Copied!');
+                        toast.success(t('Settings.copied_short'));
                       }}
                       className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
@@ -1232,10 +1254,11 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                     </button>
                   </div>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
-                    Send <code className="font-mono">/link {tgCode}</code> to the bot
+                    {t('Settings.send_link_pre')} <code className="font-mono">/link {tgCode}</code>{' '}
+                    {t('Settings.send_link_post')}
                   </p>
                   <p className="text-xs text-amber-500 font-medium">
-                    Expires in {fmtTime(tgSecondsLeft)}
+                    {t('Settings.expires_in', { time: fmtTime(tgSecondsLeft) })}
                   </p>
                   <button
                     type="button"
@@ -1243,7 +1266,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                     disabled={isGeneratingCode}
                     className="mt-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline transition-colors"
                   >
-                    Generate new code
+                    {t('Settings.generate_new_code')}
                   </button>
                 </>
               ) : (
@@ -1252,10 +1275,10 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                     <ArrowPathIcon className="w-6 h-6 text-gray-400" />
                   </div>
                   <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                    No active code
+                    {t('Settings.no_active_code')}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-                    Generate a code to pair your Telegram account
+                    {t('Settings.generate_code_desc')}
                   </p>
                   <button
                     type="button"
@@ -1268,7 +1291,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                     ) : (
                       <LinkIcon className="w-4 h-4" />
                     )}
-                    Generate Link Code
+                    {t('Settings.generate_link_code')}
                   </button>
                 </>
               )}
@@ -1327,7 +1350,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
                         <Icon
                           className={`w-5 h-5 ${isActive && !tab.danger ? 'text-blue-600 dark:text-blue-400' : tab.danger ? 'text-red-400' : 'text-gray-400 dark:text-gray-500'}`}
                         />
-                        <span className="hidden md:inline">{tab.label}</span>
+                        <span className="hidden md:inline">{t(tab.labelKey)}</span>
                         {tab.id === 'notifications' && unreadCount > 0 && (
                           <span className="ml-auto hidden md:inline-flex w-5 h-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
                             {unreadCount}
@@ -1345,7 +1368,7 @@ export default function StudentSettings({ navigateTo }: NavigationProps) {
           <div className="flex-1 min-w-0">
             <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {TABS.find((t) => t.id === activeTab)?.label}
+                {t(TABS.find((tab) => tab.id === activeTab)?.labelKey ?? '')}
               </h2>
             </div>
             {tabContent[activeTab]()}
