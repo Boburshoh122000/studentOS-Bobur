@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import MinimalHeader from './MinimalHeader';
 import Team from './Team';
@@ -13,6 +14,7 @@ import {
 import { ArrowDownIcon } from '@heroicons/react/24/solid';
 
 export default function AboutUs({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden antialiased selection:bg-primary/30 selection:text-primary pt-28">
       <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root">
@@ -25,14 +27,13 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                 <div className="flex flex-col gap-6 flex-1 text-center lg:text-left items-center lg:items-start">
                   <div className="space-y-4">
                     <span className="inline-block px-3 py-1 text-xs font-bold tracking-wide text-primary uppercase bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                      Our Vision
+                      {t('About.vision_badge')}
                     </span>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white">
-                      Empowering the next generation of leaders
+                      {t('About.hero_title')}
                     </h1>
                     <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-normal leading-relaxed max-w-2xl">
-                      We are building the operating system for your future career. Connecting
-                      ambition with opportunity through technology.
+                      {t('About.hero_sub')}
                     </p>
                   </div>
                   <button
@@ -42,7 +43,7 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                     }}
                     className="mt-2 flex items-center gap-2 h-12 px-6 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold transition-colors"
                   >
-                    <span>See our story</span>
+                    <span>{t('About.see_story')}</span>
                     <ArrowDownIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -67,15 +68,13 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
           >
             <div className="max-w-[800px] mx-auto px-4 md:px-10 text-center">
               <h2 className="text-primary text-sm font-bold tracking-widest uppercase mb-4">
-                Our Mission
+                {t('About.mission_label')}
               </h2>
               <h3 className="text-2xl md:text-3xl font-bold leading-tight mb-6 text-slate-900 dark:text-white">
-                Bridging the gap between education and execution.
+                {t('About.mission_title')}
               </h3>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                We believe education shouldn't stop at the classroom door. StudentOS bridges the gap
-                between academic achievement and professional success, providing the tools needed to
-                navigate the modern career landscape with confidence and clarity.
+                {t('About.mission_text')}
               </p>
             </div>
           </div>
@@ -83,10 +82,10 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
             <div className="flex flex-col gap-12">
               <div className="text-center md:text-left max-w-[720px]">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                  Core Values
+                  {t('About.values_title')}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 text-lg">
-                  The principles that guide every feature we build and every decision we make.
+                  {t('About.values_sub')}
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -95,11 +94,10 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                     <LightBulbIcon className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
-                    Innovation
+                    {t('About.val_innovation')}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    We are constantly pushing boundaries to find new solutions for age-old problems
-                    in education tech.
+                    {t('About.val_innovation_text')}
                   </p>
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
@@ -107,21 +105,21 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                     <UserIcon className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
-                    Accessibility
+                    {t('About.val_accessibility')}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Tools designed for everyone, everywhere. We ensure our platform works for
-                    students from all backgrounds.
+                    {t('About.val_accessibility_text')}
                   </p>
                 </div>
                 <div className="group p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                     <ShieldCheckIcon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Trust</h3>
+                  <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
+                    {t('About.val_trust')}
+                  </h3>
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Your future is private. Data privacy, security, and transparency are our top
-                    priorities.
+                    {t('About.val_trust_text')}
                   </p>
                 </div>
               </div>
@@ -141,18 +139,16 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
               <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-10 md:p-16 gap-8">
                 <div className="flex flex-col gap-4 max-w-xl text-center md:text-left">
                   <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                    Ready to launch your career?
+                    {t('About.cta_title')}
                   </h2>
-                  <p className="text-blue-100 text-lg">
-                    Join thousands of students who are already building their future with StudentOS.
-                  </p>
+                  <p className="text-blue-100 text-lg">{t('About.cta_sub')}</p>
                 </div>
                 <div className="flex flex-shrink-0">
                   <button
                     onClick={() => navigateTo(Screen.SIGNUP_STEP_1)}
                     className="bg-white text-primary hover:bg-blue-50 transition-colors px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2 group"
                   >
-                    <span>Join the community</span>
+                    <span>{t('About.cta_button')}</span>
                     <ArrowRightIcon className="w-5 h-5 transition-transform" />
                   </button>
                 </div>
@@ -168,69 +164,83 @@ export default function AboutUs({ navigateTo }: NavigationProps) {
                   <AcademicCapIcon className="w-5 h-5 text-primary" />
                   <span className="font-bold text-lg">StudentOS</span>
                 </div>
-                <p className="text-slate-500 text-sm">
-                  Building the operating system for your future career.
-                </p>
+                <p className="text-slate-500 text-sm">{t('About.footer_tagline')}</p>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-4">Product</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-4">
+                  {t('About.footer_product')}
+                </h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                   <li>
-                    <button className="hover:text-primary transition-colors">Features</button>
+                    <button className="hover:text-primary transition-colors">
+                      {t('About.footer_features')}
+                    </button>
                   </li>
                   <li>
-                    <button className="hover:text-primary transition-colors">Pricing</button>
+                    <button className="hover:text-primary transition-colors">
+                      {t('About.footer_pricing')}
+                    </button>
                   </li>
                   <li>
-                    <button className="hover:text-primary transition-colors">Integrations</button>
+                    <button className="hover:text-primary transition-colors">
+                      {t('About.footer_integrations')}
+                    </button>
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-4">Company</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-4">
+                  {t('About.footer_company')}
+                </h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                   <li>
                     <button
                       onClick={() => navigateTo(Screen.ABOUT)}
                       className="hover:text-primary transition-colors"
                     >
-                      About Us
+                      {t('About.footer_about')}
                     </button>
                   </li>
                   <li>
-                    <button className="hover:text-primary transition-colors">Careers</button>
+                    <button className="hover:text-primary transition-colors">
+                      {t('About.footer_careers')}
+                    </button>
                   </li>
                   <li>
                     <button
                       onClick={() => navigateTo(Screen.BLOG)}
                       className="hover:text-primary transition-colors"
                     >
-                      Blog
+                      {t('About.footer_blog')}
                     </button>
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-4">
+                  {t('About.footer_legal')}
+                </h4>
                 <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                   <li>
                     <a href="/privacy" className="hover:text-primary transition-colors">
-                      Privacy
+                      {t('About.footer_privacy')}
                     </a>
                   </li>
                   <li>
                     <a href="/terms" className="hover:text-primary transition-colors">
-                      Terms
+                      {t('About.footer_terms')}
                     </a>
                   </li>
                   <li>
-                    <button className="hover:text-primary transition-colors">Security</button>
+                    <button className="hover:text-primary transition-colors">
+                      {t('About.footer_security')}
+                    </button>
                   </li>
                 </ul>
               </div>
             </div>
             <div className="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-slate-400">© 2024 StudentOS Inc. All rights reserved.</p>
+              <p className="text-sm text-slate-400">{t('About.footer_rights')}</p>
               <div className="flex gap-4 text-slate-400">
                 <a className="hover:text-primary transition-colors" href="#">
                   <span className="sr-only">Twitter</span>

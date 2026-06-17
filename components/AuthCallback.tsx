@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../src/services/api';
 import { useAuth } from '../src/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
  */
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { refreshUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const hasRun = useRef(false);
@@ -29,13 +31,13 @@ export default function AuthCallback() {
         const errorParam = urlParams.get('error');
 
         if (errorParam) {
-          setError(`Google sign-in cancelled or failed: ${errorParam}`);
+          setError(t('Auth.cb_google_failed', { error: errorParam }));
           return;
         }
 
         if (!code) {
           console.error('[AuthCallback] No authorization code in URL');
-          setError('No authorization code received. Please try signing in again.');
+          setError(t('Auth.cb_no_code'));
           return;
         }
 
@@ -60,9 +62,14 @@ export default function AuthCallback() {
           // Hydrate auth context directly to avoid /me round-trip on mobile
           await refreshUser(response.data.user as any);
 
-          toast.success(
-            `Welcome${response.data.isNewUser ? '' : ' back'}, ${response.data.user.profile?.fullName || response.data.user.email}!`
-          );
+          {
+            const name = response.data.user.profile?.fullName || response.data.user.email;
+            toast.success(
+              response.data.isNewUser
+                ? t('Auth.cb_welcome_new', { name })
+                : t('Auth.cb_welcome_back', { name })
+            );
+          }
 
           if (response.data.isNewUser) {
             navigate('/signup/step-2', { replace: true });
@@ -79,12 +86,12 @@ export default function AuthCallback() {
         }
       } catch (err) {
         console.error('[AuthCallback] Error:', err);
-        setError('An unexpected error occurred. Please try again.');
+        setError(t('Auth.cb_unexpected'));
       }
     };
 
     handleAuthCallback();
-  }, [navigate, refreshUser]);
+  }, [navigate, refreshUser, t]);
 
   if (error) {
     return (
@@ -95,7 +102,7 @@ export default function AuthCallback() {
               <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Authentication Failed
+              {t('Auth.cb_auth_failed')}
             </h2>
             <p className="text-slate-500 dark:text-slate-400">{error}</p>
             <button
@@ -103,7 +110,7 @@ export default function AuthCallback() {
               onClick={() => navigate('/signin')}
               className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
             >
-              Back to Sign In
+              {t('Auth.cb_back_signin')}
             </button>
           </div>
         </div>

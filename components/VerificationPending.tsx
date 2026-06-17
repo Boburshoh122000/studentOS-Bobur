@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../src/contexts/AuthContext';
 import { authApi } from '../src/services/api';
 import { CheckIcon, ClockIcon, LockClosedIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 export default function VerificationPending() {
+  const { t } = useTranslation();
   const { logout, refreshUser } = useAuth();
   const navigate = useNavigate();
 
@@ -55,12 +57,9 @@ export default function VerificationPending() {
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 mb-3">
-              Verification Pending
+              {t('Auth.vp_title')}
             </h1>
-            <p className="text-slate-500 text-sm leading-relaxed mb-8">
-              Thank you for registering your organization! Our team is reviewing your account.
-              You'll receive an email notification once your account has been verified and approved.
-            </p>
+            <p className="text-slate-500 text-sm leading-relaxed mb-8">{t('Auth.vp_desc')}</p>
 
             {/* Status steps */}
             <div className="text-left space-y-4 mb-8">
@@ -69,8 +68,8 @@ export default function VerificationPending() {
                   <CheckIcon className="w-[18px] h-[18px] text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Account created</p>
-                  <p className="text-xs text-slate-500">Your organization profile is set up</p>
+                  <p className="text-sm font-medium text-slate-900">{t('Auth.vp_step1')}</p>
+                  <p className="text-xs text-slate-500">{t('Auth.vp_step1_sub')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -78,8 +77,8 @@ export default function VerificationPending() {
                   <ClockIcon className="w-[18px] h-[18px] text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Under review</p>
-                  <p className="text-xs text-slate-500">Our admin team is verifying your details</p>
+                  <p className="text-sm font-medium text-slate-900">{t('Auth.vp_step2')}</p>
+                  <p className="text-xs text-slate-500">{t('Auth.vp_step2_sub')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -87,10 +86,8 @@ export default function VerificationPending() {
                   <LockClosedIcon className="w-[18px] h-[18px] text-slate-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400">Full access</p>
-                  <p className="text-xs text-slate-400">
-                    Post jobs, recruit talent, and manage applications
-                  </p>
+                  <p className="text-sm font-medium text-slate-400">{t('Auth.vp_step3')}</p>
+                  <p className="text-xs text-slate-400">{t('Auth.vp_step3_sub')}</p>
                 </div>
               </div>
             </div>
@@ -100,13 +97,13 @@ export default function VerificationPending() {
                 to="/"
                 className="block w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm text-center shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
               >
-                Back to Home
+                {t('Auth.vp_back_home')}
               </Link>
               <button
                 onClick={() => logout()}
                 className="w-full py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
-                Sign out
+                {t('Auth.vp_sign_out')}
               </button>
             </div>
           </div>
@@ -115,11 +112,11 @@ export default function VerificationPending() {
         {/* Footer */}
         <div className="p-8 text-center">
           <p className="text-xs text-slate-400">
-            Need help?{' '}
+            {t('Auth.vp_need_help')}{' '}
             <Link to="/contact" className="text-blue-600 hover:underline">
-              Contact support
+              {t('Auth.vp_contact_support')}
             </Link>{' '}
-            • © 2026 StudentOS
+            • {t('Auth.vp_copyright')}
           </p>
         </div>
       </div>
@@ -134,10 +131,9 @@ export default function VerificationPending() {
           <div className="mx-auto mb-8 w-32 h-32 rounded-3xl bg-white/80 backdrop-blur-sm shadow-xl flex items-center justify-center">
             <ShieldCheckIcon className="w-12 h-12 text-indigo-500" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-3">Almost There!</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-3">{t('Auth.vp_almost')}</h2>
           <p className="text-slate-600 text-sm max-w-xs mx-auto leading-relaxed">
-            We verify all organization accounts to ensure a safe and trusted platform for students
-            and educators.
+            {t('Auth.vp_almost_sub')}
           </p>
         </div>
       </div>
