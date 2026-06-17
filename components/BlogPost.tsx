@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import { GlobalLoader } from './ui/GlobalLoader';
@@ -30,6 +31,7 @@ interface BlogPostData {
 }
 
 export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<BlogPostData | null>(null);
@@ -50,11 +52,11 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
       if (response.data) {
         setPost(response.data as BlogPostData);
       } else {
-        setError('Post not found');
+        setError(t('Blog.post_not_found'));
       }
     } catch (err: any) {
       console.error('Failed to fetch blog post:', err);
-      setError('Failed to load the article. Please try again.');
+      setError(t('Blog.article_load_error'));
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
               className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors self-start"
             >
               <ArrowLeftIcon className="w-[18px] h-[18px]" />
-              Back to Blog
+              {t('Blog.back_to_blog')}
             </button>
 
             {/* Loading State */}
@@ -108,14 +110,14 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
                   <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                  Article not found
+                  {t('Blog.article_not_found')}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">{error}</p>
                 <button
                   onClick={() => navigate('/blog')}
                   className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Browse All Articles
+                  {t('Blog.browse_all')}
                 </button>
               </div>
             )}
@@ -135,11 +137,11 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
                       </span>
                     ))}
                     <span className="text-sm text-slate-400">
-                      {estimateReadTime(post.content)} min read
+                      {t('Blog.min_read', { count: estimateReadTime(post.content) })}
                     </span>
                     <span className="flex items-center gap-1 text-sm text-slate-400">
                       <EyeIcon className="w-4 h-4" />
-                      {post.views || 0} views
+                      {t('Blog.views', { count: post.views || 0 })}
                     </span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">
@@ -197,7 +199,7 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
                         navigator.share?.({ title: post.title, url: window.location.href })
                       }
                       className="flex items-center gap-2 p-2 text-sm font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
-                      title="Share article"
+                      title={t('Blog.share_article')}
                     >
                       <ShareIcon className="w-5 h-5" />
                     </button>
@@ -213,7 +215,7 @@ export default function BlogPost({ navigateTo: _navigateTo }: NavigationProps) {
           <div className="max-w-[800px] mx-auto px-4 md:px-10 flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <span className="font-bold text-slate-900 dark:text-white">StudentOS</span>
-              <p className="text-sm text-slate-400">© 2024 StudentOS Inc. All rights reserved.</p>
+              <p className="text-sm text-slate-400">{t('Blog.footer_rights')}</p>
             </div>
           </div>
         </footer>

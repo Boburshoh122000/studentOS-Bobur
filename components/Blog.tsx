@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { blogApi } from '../src/services/api';
 import MinimalHeader from './MinimalHeader';
@@ -32,20 +33,22 @@ interface BlogPost {
 
 export default function Blog({ navigateTo }: NavigationProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // `id` is the value sent to the backend tag filter; label is i18n-resolved.
   const categories = [
-    'All',
-    'Career Advice',
-    'Study Tips',
-    'Productivity',
-    'Success Stories',
-    'Tools',
-    'Student Life',
+    { id: 'All', labelKey: 'Blog.cat_all' },
+    { id: 'Career Advice', labelKey: 'Blog.cat_career' },
+    { id: 'Study Tips', labelKey: 'Blog.cat_study' },
+    { id: 'Productivity', labelKey: 'Blog.cat_productivity' },
+    { id: 'Success Stories', labelKey: 'Blog.cat_success' },
+    { id: 'Tools', labelKey: 'Blog.cat_tools' },
+    { id: 'Student Life', labelKey: 'Blog.cat_student_life' },
   ];
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
       setPosts(data?.posts || []);
     } catch (err: any) {
       console.error('Failed to fetch blog posts:', err);
-      setError('Failed to load blog posts. Please try again.');
+      setError(t('Blog.load_error'));
     } finally {
       setLoading(false);
     }
@@ -139,11 +142,11 @@ export default function Blog({ navigateTo }: NavigationProps) {
                         </span>
                       ))}
                       <span className="text-xs text-slate-400 font-medium">
-                        {estimateReadTime(featuredPost.content)} min read
+                        {t('Blog.min_read', { count: estimateReadTime(featuredPost.content) })}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-slate-400 font-medium">
                         <EyeIcon className="w-3.5 h-3.5" />
-                        {featuredPost.views || 0} views
+                        {t('Blog.views', { count: featuredPost.views || 0 })}
                       </span>
                     </div>
                     <h1 className="text-2xl font-black leading-tight tracking-tight text-slate-900 dark:text-white md:text-4xl group-hover:text-primary transition-colors">
@@ -156,7 +159,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                     )}
                     <div className="pt-2">
                       <span className="flex items-center gap-2 text-sm font-bold text-primary group-hover:text-blue-600 transition-colors">
-                        Read Article <ArrowRightIcon className="w-3.5 h-3.5" />
+                        {t('Blog.read_article')} <ArrowRightIcon className="w-3.5 h-3.5" />
                       </span>
                     </div>
                   </div>
@@ -171,15 +174,15 @@ export default function Blog({ navigateTo }: NavigationProps) {
                 <div className="flex overflow-x-auto whitespace-nowrap items-center gap-2 pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {categories.map((category) => (
                     <button
-                      key={category}
-                      onClick={() => setActiveCategory(category)}
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
                       className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors border ${
-                        activeCategory === category
+                        activeCategory === category.id
                           ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm'
                           : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
                       }`}
                     >
-                      {category}
+                      {t(category.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -189,7 +192,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                 <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   className="h-10 w-full rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm outline-none transition-all"
-                  placeholder="Search articles..."
+                  placeholder={t('Blog.search_ph')}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -201,7 +204,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
             <section className="flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Latest Articles
+                  {t('Blog.latest')}
                 </h2>
               </div>
 
@@ -215,7 +218,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                     <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                    Failed to load articles
+                    {t('Blog.load_fail_title')}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">
                     {error}
@@ -224,7 +227,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                     onClick={fetchPosts}
                     className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
-                    Try Again
+                    {t('Blog.try_again')}
                   </button>
                 </div>
               )}
@@ -236,12 +239,10 @@ export default function Blog({ navigateTo }: NavigationProps) {
                     <MagnifyingGlassIcon className="w-5 h-5 text-slate-400" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                    No articles found
+                    {t('Blog.none_title')}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    {posts.length === 0
-                      ? 'No articles have been published yet. Check back soon!'
-                      : "We couldn't find any articles matching your search. Try adjusting your filters."}
+                    {posts.length === 0 ? t('Blog.none_empty') : t('Blog.none_search')}
                   </p>
                   {searchQuery && (
                     <button
@@ -251,7 +252,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                       }}
                       className="mt-6 text-primary font-bold hover:underline"
                     >
-                      Clear all filters
+                      {t('Blog.clear_filters')}
                     </button>
                   )}
                 </div>
@@ -303,7 +304,7 @@ export default function Blog({ navigateTo }: NavigationProps) {
                           </p>
                         )}
                         <p className="text-xs text-slate-400 mt-1 flex items-center gap-3">
-                          <span>By {post.author.name}</span>
+                          <span>{t('Blog.by_author', { name: post.author.name })}</span>
                           <span className="flex items-center gap-1">
                             <EyeIcon className="w-3.5 h-3.5" />
                             {post.views || 0}
@@ -328,29 +329,26 @@ export default function Blog({ navigateTo }: NavigationProps) {
               <div className="px-6 py-12 md:px-12 md:py-16 flex flex-col md:flex-row gap-8 items-center justify-between">
                 <div className="flex flex-col gap-3 max-w-lg text-center md:text-left">
                   <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                    Join 50,000+ students leveling up their careers.
+                    {t('Blog.news_title')}
                   </h2>
-                  <p className="text-slate-400 text-sm md:text-base">
-                    Get the latest study hacks, career advice, and StudentOS updates delivered
-                    straight to your inbox.
-                  </p>
+                  <p className="text-slate-400 text-sm md:text-base">{t('Blog.news_sub')}</p>
                 </div>
                 <div className="w-full max-w-md">
                   <form className="flex flex-col sm:flex-row gap-3">
                     <input
                       className="flex-1 rounded-lg border-0 bg-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary backdrop-blur-sm"
-                      placeholder="Enter your email"
+                      placeholder={t('Blog.news_ph')}
                       type="email"
                     />
                     <button
                       className="rounded-lg bg-primary px-6 py-3 font-bold text-white hover:bg-primary/90 transition-colors whitespace-nowrap"
                       type="button"
                     >
-                      Subscribe
+                      {t('Blog.subscribe')}
                     </button>
                   </form>
                   <p className="mt-3 text-xs text-slate-500 text-center md:text-left">
-                    No spam, unsubscribe anytime.
+                    {t('Blog.no_spam')}
                   </p>
                 </div>
               </div>
@@ -369,60 +367,64 @@ export default function Blog({ navigateTo }: NavigationProps) {
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white">StudentOS</h3>
                 </div>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  The all-in-one operating system for your academic life.
-                </p>
+                <p className="text-sm text-slate-500 leading-relaxed">{t('Blog.footer_tagline')}</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-10">
                 <div className="flex flex-col gap-3">
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Platform</h4>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    {t('Blog.footer_platform')}
+                  </h4>
                   <a
                     href="#"
                     className="text-sm text-slate-500 hover:text-primary transition-colors"
                   >
-                    Features
+                    {t('Blog.footer_features')}
                   </a>
                   <a
                     href="#"
                     className="text-sm text-slate-500 hover:text-primary transition-colors"
                   >
-                    Pricing
+                    {t('Blog.footer_pricing')}
                   </a>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Resources</h4>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    {t('Blog.footer_resources')}
+                  </h4>
                   <button
                     onClick={() => navigateTo(Screen.BLOG)}
                     className="text-sm text-slate-500 hover:text-primary transition-colors text-left"
                   >
-                    Blog
+                    {t('Blog.footer_blog')}
                   </button>
                   <button
                     onClick={() => navigateTo(Screen.COMMUNITY)}
                     className="text-sm text-slate-500 hover:text-primary transition-colors text-left"
                   >
-                    Community
+                    {t('Blog.footer_community')}
                   </button>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Company</h4>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    {t('Blog.footer_company')}
+                  </h4>
                   <a
                     href="#"
                     className="text-sm text-slate-500 hover:text-primary transition-colors"
                   >
-                    About Us
+                    {t('Blog.footer_about')}
                   </a>
                   <button
                     onClick={() => navigateTo(Screen.CONTACT)}
                     className="text-sm text-slate-500 hover:text-primary transition-colors text-left"
                   >
-                    Contact
+                    {t('Blog.footer_contact')}
                   </button>
                 </div>
               </div>
             </div>
             <div className="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-slate-400">© 2024 StudentOS Inc. All rights reserved.</p>
+              <p className="text-sm text-slate-400">{t('Blog.footer_rights')}</p>
             </div>
           </div>
         </footer>
