@@ -1,4 +1,6 @@
 import { useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   XMarkIcon,
   BriefcaseIcon,
@@ -72,39 +74,39 @@ function daysUntil(d?: string): number | null {
   return Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, t: TFunction): string {
   const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 3600 * 24));
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  return `${days}d ago`;
+  if (days === 0) return t('Jobs.today');
+  if (days === 1) return t('Jobs.yesterday');
+  return t('Jobs.days_ago', { count: days });
 }
 
-function formatJobType(type?: string): string {
-  if (!type) return 'Full-time';
+function formatJobType(type: string | undefined, t: TFunction): string {
   const map: Record<string, string> = {
-    FULL_TIME: 'Full-time',
-    PART_TIME: 'Part-time',
-    INTERNSHIP: 'Internship',
-    GRADUATE: 'Graduate',
+    FULL_TIME: t('Jobs.type_full'),
+    PART_TIME: t('Jobs.type_part'),
+    INTERNSHIP: t('Jobs.type_internship'),
+    GRADUATE: t('Jobs.type_graduate'),
   };
+  if (!type) return t('Jobs.type_full');
   return map[type] || type.replace('_', '-');
 }
 
-function formatLocationType(type?: string): string {
-  if (!type) return 'Onsite';
+function formatLocationType(type: string | undefined, t: TFunction): string {
   const map: Record<string, string> = {
-    REMOTE: 'Remote',
-    HYBRID: 'Hybrid',
-    ONSITE: 'Onsite',
+    REMOTE: t('Jobs.loc_remote'),
+    HYBRID: t('Jobs.loc_hybrid'),
+    ONSITE: t('Jobs.loc_onsite'),
   };
+  if (!type) return t('Jobs.loc_onsite');
   return map[type] || type;
 }
 
-function formatDuration(weeks?: number): string | null {
+function formatDuration(weeks: number | undefined, t: TFunction): string | null {
   if (!weeks) return null;
   const months = Math.round(weeks / 4);
-  if (months <= 1) return '1 month';
-  return `${months} months`;
+  if (months <= 1) return t('Jobs.one_month');
+  return t('Jobs.months', { count: months });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════ */
@@ -115,6 +117,7 @@ export default function JobDetailModal({
   onApply,
   onToggleSave,
 }: JobDetailModalProps) {
+  const { t } = useTranslation();
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -144,14 +147,14 @@ export default function JobDetailModal({
     job.currency,
     job.salaryPeriod || job.salaryType || 'YEARLY'
   );
-  const duration = formatDuration(job.durationWeeks);
+  const duration = formatDuration(job.durationWeeks, t);
 
   /* ── Content sections (only if data exists) ── */
   const sections: { title: string; content: React.ReactNode }[] = [];
 
   if (job.description) {
     sections.push({
-      title: 'Job Description',
+      title: t('Jobs.sec_description'),
       content: (
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
           {job.description}
@@ -162,7 +165,7 @@ export default function JobDetailModal({
 
   if (job.responsibilities && job.responsibilities.length > 0) {
     sections.push({
-      title: 'Responsibilities',
+      title: t('Jobs.sec_responsibilities'),
       content: (
         <ul className="space-y-1.5">
           {job.responsibilities.map((r, i) => (
@@ -178,7 +181,7 @@ export default function JobDetailModal({
 
   if (job.requirements && job.requirements.length > 0) {
     sections.push({
-      title: 'Requirements',
+      title: t('Jobs.sec_requirements'),
       content: (
         <ul className="space-y-1.5">
           {job.requirements.map((r, i) => (
@@ -194,7 +197,7 @@ export default function JobDetailModal({
 
   if (job.benefits && job.benefits.length > 0) {
     sections.push({
-      title: 'Benefits & Perks',
+      title: t('Jobs.sec_benefits'),
       content: (
         <ul className="space-y-1.5">
           {job.benefits.map((b, i) => (
@@ -210,7 +213,7 @@ export default function JobDetailModal({
 
   if (job.employer?.description) {
     sections.push({
-      title: 'About the Company',
+      title: t('Jobs.sec_about'),
       content: (
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           {job.employer.description}
@@ -221,7 +224,7 @@ export default function JobDetailModal({
 
   if (job.skills && job.skills.length > 0) {
     sections.push({
-      title: 'Skills & Tags',
+      title: t('Jobs.sec_skills'),
       content: (
         <div className="flex flex-wrap gap-2">
           {job.skills.map((skill) => (
@@ -300,15 +303,15 @@ export default function JobDetailModal({
                 }
               >
                 <BriefcaseIcon className="w-3 h-3" />
-                {formatJobType(job.jobType)}
+                {formatJobType(job.jobType, t)}
               </JobChip>
               <JobChip color="blue">
                 <MapPinIcon className="w-3 h-3" />
-                {formatLocationType(job.locationType)}
+                {formatLocationType(job.locationType, t)}
               </JobChip>
               <JobChip color={isPaid ? 'green' : 'gray'}>
                 <CurrencyDollarIcon className="w-3 h-3" />
-                {isPaid ? 'Paid' : 'Unpaid'}
+                {isPaid ? t('Jobs.paid') : t('Jobs.unpaid')}
               </JobChip>
             </div>
 
@@ -316,7 +319,7 @@ export default function JobDetailModal({
             <div className="flex items-end gap-3">
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-0.5">
-                  Salary
+                  {t('Jobs.salary')}
                 </p>
                 <p
                   className={`text-2xl font-extrabold leading-none ${
@@ -325,7 +328,7 @@ export default function JobDetailModal({
                       : 'text-gray-400 dark:text-gray-500'
                   }`}
                 >
-                  {isPaid ? salary : 'Unpaid'}
+                  {isPaid ? salary : t('Jobs.unpaid')}
                 </p>
               </div>
               {isPaid && (
@@ -338,22 +341,34 @@ export default function JobDetailModal({
             {/* Details: clean 2-col list, no inner boxes */}
             <div className="grid grid-cols-2 gap-x-8 gap-y-3 pt-1">
               {job.location && (
-                <DetailRow icon={<MapPinIcon className="w-3.5 h-3.5" />} label="Location">
+                <DetailRow
+                  icon={<MapPinIcon className="w-3.5 h-3.5" />}
+                  label={t('Jobs.label_location')}
+                >
                   {job.location}
                 </DetailRow>
               )}
               {duration && (
-                <DetailRow icon={<ClockIcon className="w-3.5 h-3.5" />} label="Duration">
+                <DetailRow
+                  icon={<ClockIcon className="w-3.5 h-3.5" />}
+                  label={t('Jobs.label_duration')}
+                >
                   {duration}
                 </DetailRow>
               )}
               {job.hoursPerWeek && (
-                <DetailRow icon={<ClockIcon className="w-3.5 h-3.5" />} label="Hours">
-                  {job.hoursPerWeek} hrs/week
+                <DetailRow
+                  icon={<ClockIcon className="w-3.5 h-3.5" />}
+                  label={t('Jobs.label_hours')}
+                >
+                  {t('Jobs.hrs_week', { hours: job.hoursPerWeek })}
                 </DetailRow>
               )}
               {job.startDate && (
-                <DetailRow icon={<CalendarIcon className="w-3.5 h-3.5" />} label="Start Date">
+                <DetailRow
+                  icon={<CalendarIcon className="w-3.5 h-3.5" />}
+                  label={t('Jobs.label_start')}
+                >
                   {new Date(job.startDate).toLocaleDateString('en-US', {
                     month: 'short',
                     year: 'numeric',
@@ -363,22 +378,25 @@ export default function JobDetailModal({
               {deadline && (
                 <DetailRow
                   icon={<CalendarIcon className="w-3.5 h-3.5" />}
-                  label="Deadline"
+                  label={t('Jobs.label_deadline')}
                   accent={isDeadlinePassed ? 'muted' : isDeadlineSoon ? 'red' : undefined}
                 >
                   {fmtDate(deadline)}
                   {days !== null && days > 0 && (
                     <span className="ml-1.5 text-[11px] font-semibold text-amber-500">
-                      ({days}d left)
+                      {t('Jobs.days_left', { count: days })}
                     </span>
                   )}
                   {isDeadlinePassed && (
-                    <span className="ml-1.5 text-[11px] text-gray-400">passed</span>
+                    <span className="ml-1.5 text-[11px] text-gray-400">{t('Jobs.passed')}</span>
                   )}
                 </DetailRow>
               )}
-              <DetailRow icon={<CalendarIcon className="w-3.5 h-3.5" />} label="Posted">
-                {timeAgo(job.postedAt)}
+              <DetailRow
+                icon={<CalendarIcon className="w-3.5 h-3.5" />}
+                label={t('Jobs.label_posted')}
+              >
+                {timeAgo(job.postedAt, t)}
               </DetailRow>
             </div>
           </div>
@@ -407,7 +425,7 @@ export default function JobDetailModal({
               className="flex-1 py-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
             >
               <CheckCircleIcon className="w-5 h-5" />
-              Applied
+              {t('Jobs.applied')}
             </button>
           ) : isDeadlinePassed ? (
             <button
@@ -415,7 +433,7 @@ export default function JobDetailModal({
               disabled
               className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default"
             >
-              ⏰ Deadline Passed
+              {t('Jobs.deadline_passed')}
             </button>
           ) : (
             <button
@@ -423,7 +441,7 @@ export default function JobDetailModal({
               onClick={() => onApply(job)}
               className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary/30"
             >
-              Apply Now <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+              {t('Jobs.apply_now')} <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </button>
           )}
 
@@ -438,11 +456,11 @@ export default function JobDetailModal({
           >
             {job.isSaved ? (
               <>
-                <BookmarkIcon className="w-4 h-4" /> Saved
+                <BookmarkIcon className="w-4 h-4" /> {t('Jobs.saved')}
               </>
             ) : (
               <>
-                <BookmarkOutlineIcon className="w-4 h-4" /> Save
+                <BookmarkOutlineIcon className="w-4 h-4" /> {t('Jobs.save')}
               </>
             )}
           </button>

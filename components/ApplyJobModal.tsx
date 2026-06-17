@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { jobApi } from '../src/services/api';
 import { toast } from 'react-hot-toast';
 import {
@@ -24,6 +25,7 @@ interface ApplyJobModalProps {
 }
 
 export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: ApplyJobModalProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
 
@@ -40,19 +42,19 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
 
       if (error) {
         if (error.includes('Already applied')) {
-          toast.error('You have already applied to this job');
+          toast.error(t('Jobs.already_applied'));
         } else {
           toast.error(error);
         }
         return;
       }
 
-      toast.success('Application submitted successfully!');
+      toast.success(t('Jobs.apply_success'));
       setCoverLetter('');
       onSuccess();
       onClose();
     } catch {
-      toast.error('Failed to submit application');
+      toast.error(t('Jobs.apply_failed'));
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +74,12 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
               <PaperAirplaneIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Apply for Job</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Submit your application</p>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {t('Jobs.apply_title')}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t('Jobs.apply_subtitle')}
+              </p>
             </div>
           </div>
 
@@ -102,17 +108,18 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
             {/* Cover Letter */}
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                Cover Letter <span className="text-slate-400 font-normal">(Optional)</span>
+                {t('Jobs.cover_letter')}{' '}
+                <span className="text-slate-400 font-normal">{t('Jobs.optional')}</span>
               </label>
               <textarea
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                placeholder="Tell the employer why you're a great fit for this role..."
+                placeholder={t('Jobs.cover_ph')}
                 rows={6}
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
               />
               <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                A good cover letter can make your application stand out!
+                {t('Jobs.cover_hint')}
               </p>
             </div>
 
@@ -120,10 +127,7 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
             <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
               <div className="flex items-start gap-2">
                 <InformationCircleIcon className="w-[18px] h-[18px] text-blue-600 text-blue-400 dark:text-blue-400" />
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Your profile CV will be shared with the employer. Make sure your profile is up to
-                  date!
-                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300">{t('Jobs.cv_notice')}</p>
               </div>
             </div>
           </div>
@@ -135,7 +139,7 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
               onClick={onClose}
               className="px-5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {t('Common.cancel')}
             </button>
             <button
               type="submit"
@@ -145,12 +149,12 @@ export default function ApplyJobModal({ isOpen, onClose, job, onSuccess }: Apply
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Submitting...
+                  {t('Jobs.submitting')}
                 </>
               ) : (
                 <>
                   <PaperAirplaneIcon className="w-[18px] h-[18px]" />
-                  Submit Application
+                  {t('Jobs.submit_application')}
                 </>
               )}
             </button>
