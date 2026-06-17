@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 export default function PrivacyPolicy({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
       {/* Header */}
@@ -12,112 +14,97 @@ export default function PrivacyPolicy({ navigateTo }: NavigationProps) {
             className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
           >
             <ArrowLeftIcon className="w-5 h-5" />
-            Back to Home
+            {t('Legal.back_home')}
           </button>
         </div>
       </header>
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-8">Privacy Policy</h1>
-        <p className="text-slate-500 dark:text-slate-400 mb-8">Last updated: February 5, 2026</p>
+        <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-8">
+          {t('Legal.privacy_title')}
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mb-8">{t('Legal.last_updated')}</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              1. Information We Collect
+              {t('Legal.privacy_s1_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We collect information you provide directly to us, such as when you create an account,
-              update your profile, use our services, or contact us for support. This may include
-              your name, email address, educational information, and any content you choose to
-              share.
+              {t('Legal.privacy_s1_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              2. How We Use Your Information
+              {t('Legal.privacy_s2_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We use the information we collect to provide, maintain, and improve our services,
-              personalize your experience, communicate with you about updates and opportunities, and
-              protect the security of our platform.
+              {t('Legal.privacy_s2_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              3. Information Sharing
+              {t('Legal.privacy_s3_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We do not sell your personal information. We may share your information with
-              third-party service providers who assist us in operating our platform, employers (with
-              your explicit consent when you apply for jobs), and as required by law.
+              {t('Legal.privacy_s3_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              4. Data Security
+              {t('Legal.privacy_s4_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We implement appropriate technical and organizational measures to protect your
-              personal information against unauthorized access, alteration, disclosure, or
-              destruction. However, no method of transmission over the Internet is 100% secure.
+              {t('Legal.privacy_s4_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              5. Your Rights
+              {t('Legal.privacy_s5_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              You have the right to access, correct, or delete your personal information. You can
-              update your account settings at any time or contact us to request data deletion. You
-              may also opt out of marketing communications.
+              {t('Legal.privacy_s5_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              6. Cookies and Tracking
+              {t('Legal.privacy_s6_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We use cookies and similar technologies to enhance your experience, analyze usage
-              patterns, and personalize content. You can control cookie preferences through your
-              browser settings.
+              {t('Legal.privacy_s6_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              7. Children's Privacy
+              {t('Legal.privacy_s7_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Our Service is not directed to children under 13. We do not knowingly collect personal
-              information from children under 13. If we learn we have collected such information, we
-              will promptly delete it.
+              {t('Legal.privacy_s7_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              8. Changes to This Policy
+              {t('Legal.privacy_s8_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              We may update this Privacy Policy from time to time. We will notify you of any
-              material changes by posting the new policy on this page and updating the "Last
-              updated" date.
+              {t('Legal.privacy_s8_p')}
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-              9. Contact Us
+              {t('Legal.privacy_s9_h')}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              If you have any questions about this Privacy Policy, please contact us at{' '}
+              {t('Legal.privacy_contact_pre')}{' '}
               <a href="mailto:privacy@studentos.com" className="text-primary hover:underline">
                 privacy@studentos.com
               </a>
@@ -130,7 +117,7 @@ export default function PrivacyPolicy({ navigateTo }: NavigationProps) {
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-8 mt-12">
         <div className="max-w-4xl mx-auto px-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          © 2026 StudentOS. All rights reserved.
+          {t('Legal.rights')}
         </div>
       </footer>
     </div>
