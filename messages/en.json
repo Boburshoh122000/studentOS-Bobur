@@ -146,7 +146,11 @@
     "this_month": "This month",
     "career_tools": "Career Tools",
     "academic_tools": "Academic Tools",
-    "open_menu": "Open navigation menu"
+    "open_menu": "Open navigation menu",
+    "theme_toggle": "Toggle dark mode",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_current": "Current: {{mode}} Mode"
   },
   "Auth": {
     "sign_in": "Sign In",
@@ -244,7 +248,18 @@
     "cb_welcome_back": "Welcome back, {{name}}!",
     "cb_unexpected": "An unexpected error occurred. Please try again.",
     "cb_auth_failed": "Authentication Failed",
-    "cb_back_signin": "Back to Sign In"
+    "cb_back_signin": "Back to Sign In",
+    "la_footer": "Terms • Privacy Policy • © 2026 StudentOS",
+    "la_cv_title": "AI CV Builder",
+    "la_cv_sub": "ATS Optimized Resumes",
+    "la_job_title": "Smart Job Finder",
+    "la_job_sub": "Personalized Matches",
+    "la_scholar_title": "Grant Hunter",
+    "la_scholar_sub": "Find Funding",
+    "la_present_title": "Slide Deck AI",
+    "la_present_sub": "Instant Presentations",
+    "la_plag_title": "Originality Check",
+    "la_plag_sub": "Verify Authenticity"
   },
   "Signup": {
     "welcome": "Welcome! Tell us about yourself.",
@@ -1079,7 +1094,11 @@
     "login_failed": "Invalid email or password.",
     "too_many_attempts": "Too many attempts. Please try again later.",
     "attempts_remaining": "attempts remaining",
-    "blocked_minutes": "minutes blocked"
+    "blocked_minutes": "minutes blocked",
+    "boundary_title": "Something went wrong",
+    "boundary_desc": "We're sorry, but something unexpected happened. Please try again.",
+    "boundary_try_again": "Try Again",
+    "boundary_reload": "Reload Page"
   },
   "Success": {
     "saved": "Saved successfully!",
@@ -1104,7 +1123,17 @@
     "minutes_ago": "{{m}}m ago",
     "hours_ago": "{{h}}h ago",
     "days_ago": "{{d}}d ago",
-    "months_ago": "{{mo}}mo ago"
+    "months_ago": "{{mo}}mo ago",
+    "nd_title": "Notifications",
+    "nd_bell_aria": "Notifications",
+    "nd_unread_aria": "{{count}} unread notifications",
+    "nd_mark_all_read": "Mark all read",
+    "nd_none": "No notifications yet",
+    "nd_mark_as_read": "Mark as read",
+    "nd_at": "at",
+    "nd_mark_read_failed": "Failed to mark as read",
+    "nd_all_marked": "All notifications marked as read",
+    "nd_mark_all_failed": "Failed to mark all as read"
   },
   "HabitTracker": {
     "title": "Habit Tracker",
@@ -1748,5 +1777,29 @@
     "privacy_s8_p": "We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the \"Last updated\" date.",
     "privacy_s9_h": "9. Contact Us",
     "privacy_contact_pre": "If you have any questions about this Privacy Policy, please contact us at"
+  },
+  "Credits": {
+    "needed": "Credits needed",
+    "short_pre": "You're",
+    "short_post": "credits short to use this tool.",
+    "buy": "Buy Credits",
+    "invite": "Invite & Earn",
+    "topup": "Top Up {{count}} Credits",
+    "not_now": "Not now"
+  },
+  "ToolCard": {
+    "new_matches": "✨ 3 New Matches",
+    "grant": "$5,000 Grant",
+    "applied": "Applied Successfully",
+    "original": "Original Content"
+  },
+  "University": {
+    "search_ph": "Search by name in Uzbek, Russian or English…",
+    "loading": "Loading universities…",
+    "aria_input": "University or school",
+    "aria_clear": "Clear university",
+    "aria_suggestions": "University suggestions",
+    "no_results": "No results found",
+    "other": "Other:"
   }
 }

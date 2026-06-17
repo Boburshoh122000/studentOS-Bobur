@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   ArrowTopRightOnSquareIcon,
   BoltIcon,
@@ -22,6 +23,7 @@ export default function InsufficientCreditsModal({
   available,
   shortfall,
 }: InsufficientCreditsModalProps) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const pct = required > 0 ? Math.round((available / required) * 100) : 0;
@@ -44,7 +46,7 @@ export default function InsufficientCreditsModal({
           {/* Close */}
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('Common.close')}
             className="absolute top-3 right-3 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition"
           >
             <XMarkIcon className="w-[18px] h-[18px]" />
@@ -65,7 +67,7 @@ export default function InsufficientCreditsModal({
           <div className="mb-6">
             <div className="flex justify-between items-baseline mb-2">
               <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                Credits needed
+                {t('Credits.needed')}
               </span>
               <span className="text-xs text-gray-400">
                 {available} / {required}
@@ -81,8 +83,9 @@ export default function InsufficientCreditsModal({
             </div>
 
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              You're <strong className="text-gray-600 dark:text-gray-300">{shortfall}</strong>{' '}
-              credits short to use this tool.
+              {t('Credits.short_pre')}{' '}
+              <strong className="text-gray-600 dark:text-gray-300">{shortfall}</strong>{' '}
+              {t('Credits.short_post')}
             </p>
           </div>
 
@@ -98,7 +101,7 @@ export default function InsufficientCreditsModal({
                 <BoltIcon className="w-[18px] h-[18px] text-violet-600 dark:text-violet-400" />
               </div>
               <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
-                Buy Credits
+                {t('Credits.buy')}
               </span>
             </button>
 
@@ -112,7 +115,7 @@ export default function InsufficientCreditsModal({
                 <GiftIcon className="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-400" />
               </div>
               <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                Invite & Earn
+                {t('Credits.invite')}
               </span>
             </button>
           </div>
@@ -124,7 +127,7 @@ export default function InsufficientCreditsModal({
             }}
             className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all active:scale-[0.98]"
           >
-            Top Up {shortfall} Credits
+            {t('Credits.topup', { count: shortfall })}
             <ArrowTopRightOnSquareIcon className="w-4 h-4" />
           </button>
 
@@ -132,7 +135,7 @@ export default function InsufficientCreditsModal({
             onClick={onClose}
             className="w-full mt-3 text-center text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition py-1"
           >
-            Not now
+            {t('Credits.not_now')}
           </button>
         </div>
       </div>

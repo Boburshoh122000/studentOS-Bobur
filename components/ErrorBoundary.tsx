@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from '../src/i18n';
 
 interface Props {
   children: React.ReactNode;
@@ -80,10 +81,10 @@ export default class ErrorBoundary extends React.Component<Props, State> {
                 marginBottom: '0.5rem',
               }}
             >
-              Something went wrong
+              {i18n.t('Error.boundary_title')}
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>
-              We're sorry, but something unexpected happened. Please try again.
+              {i18n.t('Error.boundary_desc')}
             </p>
 
             {this.state.error && (
@@ -121,7 +122,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
                   cursor: 'pointer',
                 }}
               >
-                Try Again
+                {i18n.t('Error.boundary_try_again')}
               </button>
               <button
                 onClick={() => window.location.reload()}
@@ -134,7 +135,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
                   cursor: 'pointer',
                 }}
               >
-                Reload Page
+                {i18n.t('Error.boundary_reload')}
               </button>
             </div>
           </div>

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 type ToolType = 'cv' | 'job' | 'scholarship' | 'presentation' | 'plagiarism';
 
 interface ToolCardProps {
@@ -17,6 +19,7 @@ const iconConfig: Record<ToolType, { icon: string; gradient: string }> = {
 };
 
 export default function ToolCard({ type, title, subtitle }: ToolCardProps) {
+  const { t } = useTranslation();
   const { icon, gradient } = iconConfig[type];
 
   return (
@@ -57,7 +60,9 @@ export default function ToolCard({ type, title, subtitle }: ToolCardProps) {
               <div className="h-2 bg-slate-100 rounded-full w-20"></div>
             </div>
             <div className="h-14 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 flex items-center justify-center">
-              <span className="text-xs font-semibold text-blue-500">✨ 3 New Matches</span>
+              <span className="text-xs font-semibold text-blue-500">
+                {t('ToolCard.new_matches')}
+              </span>
             </div>
           </div>
         )}
@@ -65,8 +70,8 @@ export default function ToolCard({ type, title, subtitle }: ToolCardProps) {
         {type === 'scholarship' && (
           <div className="text-center py-3 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-purple-100">
             <span className="text-2xl">🏆</span>
-            <p className="text-sm font-bold text-purple-700 mt-1">$5,000 Grant</p>
-            <p className="text-[10px] text-purple-500 font-medium">Applied Successfully</p>
+            <p className="text-sm font-bold text-purple-700 mt-1">{t('ToolCard.grant')}</p>
+            <p className="text-[10px] text-purple-500 font-medium">{t('ToolCard.applied')}</p>
           </div>
         )}
 
@@ -83,7 +88,7 @@ export default function ToolCard({ type, title, subtitle }: ToolCardProps) {
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-50 to-cyan-50 border-4 border-teal-400 flex items-center justify-center mb-1 shadow-inner">
               <span className="text-sm font-bold text-teal-600">100%</span>
             </div>
-            <span className="text-[10px] text-slate-500 font-medium">Original Content</span>
+            <span className="text-[10px] text-slate-500 font-medium">{t('ToolCard.original')}</span>
           </div>
         )}
       </div>

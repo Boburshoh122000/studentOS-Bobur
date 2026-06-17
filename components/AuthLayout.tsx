@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ToolCard from './ToolCard';
 import Logo from './ui/Logo';
 
@@ -20,6 +21,7 @@ export default function AuthLayout({
   footerLinkText,
   footerLinkTo,
 }: AuthLayoutProps) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex bg-white font-sans">
       {/* Left Panel - Minimalist Form */}
@@ -59,7 +61,7 @@ export default function AuthLayout({
 
         {/* Bottom Section - Footer */}
         <div className="p-8 text-center">
-          <p className="text-xs text-slate-400">Terms • Privacy Policy • © 2026 StudentOS</p>
+          <p className="text-xs text-slate-400">{t('Auth.la_footer')}</p>
         </div>
       </div>
 
@@ -83,63 +85,63 @@ export default function AuthLayout({
           <div className="flex flex-col gap-6 animate-marquee-up-slow">
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
             {/* Duplicate for infinite loop */}
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
           </div>
@@ -148,63 +150,63 @@ export default function AuthLayout({
           <div className="flex flex-col gap-6 animate-marquee-down">
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
             {/* Duplicate for infinite loop */}
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
           </div>
@@ -213,63 +215,63 @@ export default function AuthLayout({
           <div className="flex flex-col gap-6 animate-marquee-up-fast">
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
             {/* Duplicate for infinite loop */}
             <ToolCard
               type="job"
-              title="Smart Job Finder"
-              subtitle="Personalized Matches"
+              title={t('Auth.la_job_title')}
+              subtitle={t('Auth.la_job_sub')}
               color="bg-blue-500"
             />
             <ToolCard
               type="scholarship"
-              title="Grant Hunter"
-              subtitle="Find Funding"
+              title={t('Auth.la_scholar_title')}
+              subtitle={t('Auth.la_scholar_sub')}
               color="bg-yellow-500"
             />
             <ToolCard
               type="presentation"
-              title="Slide Deck AI"
-              subtitle="Instant Presentations"
+              title={t('Auth.la_present_title')}
+              subtitle={t('Auth.la_present_sub')}
               color="bg-indigo-500"
             />
             <ToolCard
               type="plagiarism"
-              title="Originality Check"
-              subtitle="Verify Authenticity"
+              title={t('Auth.la_plag_title')}
+              subtitle={t('Auth.la_plag_sub')}
               color="bg-red-500"
             />
             <ToolCard
               type="cv"
-              title="AI CV Builder"
-              subtitle="ATS Optimized Resumes"
+              title={t('Auth.la_cv_title')}
+              subtitle={t('Auth.la_cv_sub')}
               color="bg-green-500"
             />
           </div>

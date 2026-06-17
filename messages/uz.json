@@ -146,7 +146,11 @@
     "this_month": "Shu oy",
     "career_tools": "Karyera asboblari",
     "academic_tools": "Akademik asboblar",
-    "open_menu": "Navigatsiya menyusini ochish"
+    "open_menu": "Navigatsiya menyusini ochish",
+    "theme_toggle": "Tungi rejimni almashtirish",
+    "theme_dark": "Tungi",
+    "theme_light": "Kunduzgi",
+    "theme_current": "Joriy: {{mode}} rejim"
   },
   "Auth": {
     "sign_in": "Kirish",
@@ -244,7 +248,18 @@
     "cb_welcome_back": "Qaytganingiz bilan, {{name}}!",
     "cb_unexpected": "Kutilmagan xatolik yuz berdi. Qayta urinib ko'ring.",
     "cb_auth_failed": "Autentifikatsiya muvaffaqiyatsiz",
-    "cb_back_signin": "Kirishga qaytish"
+    "cb_back_signin": "Kirishga qaytish",
+    "la_footer": "Shartlar • Maxfiylik siyosati • © 2026 StudentOS",
+    "la_cv_title": "AI CV yaratuvchi",
+    "la_cv_sub": "ATS uchun rezyume",
+    "la_job_title": "Aqlli ish qidiruv",
+    "la_job_sub": "Shaxsiy mosliklar",
+    "la_scholar_title": "Grant ovchisi",
+    "la_scholar_sub": "Moliyalashtirish toping",
+    "la_present_title": "AI taqdimot",
+    "la_present_sub": "Bir zumda slaydlar",
+    "la_plag_title": "Originallik tekshiruvi",
+    "la_plag_sub": "Haqiqiyligini tasdiqlang"
   },
   "Signup": {
     "welcome": "Xush kelibsiz! O'zingiz haqingizda gapirib bering.",
@@ -1079,7 +1094,11 @@
     "login_failed": "Noto'g'ri email yoki parol.",
     "too_many_attempts": "Juda ko'p urinish. Iltimos, keyinroq qayta urinib ko'ring.",
     "attempts_remaining": "urinish qoldi",
-    "blocked_minutes": "daqiqa bloklanasiz"
+    "blocked_minutes": "daqiqa bloklanasiz",
+    "boundary_title": "Nimadir xato ketdi",
+    "boundary_desc": "Kechirasiz, kutilmagan xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    "boundary_try_again": "Qayta urinish",
+    "boundary_reload": "Sahifani qayta yuklash"
   },
   "Success": {
     "saved": "Muvaffaqiyatli saqlandi!",
@@ -1104,7 +1123,17 @@
     "minutes_ago": "{{m}} daq oldin",
     "hours_ago": "{{h}} soat oldin",
     "days_ago": "{{d}} kun oldin",
-    "months_ago": "{{mo}} oy oldin"
+    "months_ago": "{{mo}} oy oldin",
+    "nd_title": "Bildirishnomalar",
+    "nd_bell_aria": "Bildirishnomalar",
+    "nd_unread_aria": "{{count}} o'qilmagan bildirishnoma",
+    "nd_mark_all_read": "Hammasini o'qilgan deb belgilash",
+    "nd_none": "Hozircha bildirishnomalar yo'q",
+    "nd_mark_as_read": "O'qilgan deb belgilash",
+    "nd_at": "soat",
+    "nd_mark_read_failed": "O'qilgan deb belgilab bo'lmadi",
+    "nd_all_marked": "Barcha bildirishnomalar o'qilgan deb belgilandi",
+    "nd_mark_all_failed": "Barchasini belgilab bo'lmadi"
   },
   "HabitTracker": {
     "title": "Odatlar kuzatuvi",
@@ -1748,5 +1777,29 @@
     "privacy_s8_p": "Biz ushbu Maxfiylik siyosatini vaqti-vaqti bilan yangilashimiz mumkin. Har qanday muhim o'zgarishlar haqida yangi siyosatni ushbu sahifada joylash va «So'nggi yangilanish» sanasini yangilash orqali sizni xabardor qilamiz.",
     "privacy_s9_h": "9. Biz bilan bog'lanish",
     "privacy_contact_pre": "Agar ushbu Maxfiylik siyosati bo'yicha savollaringiz bo'lsa, biz bilan quyidagi manzil orqali bog'laning:"
+  },
+  "Credits": {
+    "needed": "Kerakli kreditlar",
+    "short_pre": "Sizga",
+    "short_post": "kredit yetishmayapti — bu vositadan foydalanish uchun.",
+    "buy": "Kredit sotib olish",
+    "invite": "Taklif qiling va ishlang",
+    "topup": "{{count}} kredit to'ldirish",
+    "not_now": "Hozir emas"
+  },
+  "ToolCard": {
+    "new_matches": "✨ 3 ta yangi moslik",
+    "grant": "$5 000 grant",
+    "applied": "Ariza topshirildi",
+    "original": "Original kontent"
+  },
+  "University": {
+    "search_ph": "Nomi bo'yicha o'zbek, rus yoki ingliz tilida qidiring…",
+    "loading": "Universitetlar yuklanmoqda…",
+    "aria_input": "Universitet yoki maktab",
+    "aria_clear": "Tozalash",
+    "aria_suggestions": "Universitet takliflari",
+    "no_results": "Natija topilmadi",
+    "other": "Boshqa:"
   }
 }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { notificationApi } from '../src/services/api';
 import toast from 'react-hot-toast';
 import { BellIcon, BellSlashIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
 export function NotificationDropdown() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -44,7 +46,7 @@ export function NotificationDropdown() {
       await notificationApi.markRead(id);
       fetchNotifications();
     } catch {
-      toast.error('Failed to mark as read');
+      toast.error(t('Notifications.nd_mark_read_failed'));
     }
   };
 
@@ -52,9 +54,9 @@ export function NotificationDropdown() {
     try {
       await notificationApi.markAllRead();
       fetchNotifications();
-      toast.success('All notifications marked as read');
+      toast.success(t('Notifications.nd_all_marked'));
     } catch {
-      toast.error('Failed to mark all as read');
+      toast.error(t('Notifications.nd_mark_all_failed'));
     }
   };
 
@@ -92,7 +94,11 @@ export function NotificationDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+        aria-label={
+          unreadCount > 0
+            ? t('Notifications.nd_unread_aria', { count: unreadCount })
+            : t('Notifications.nd_bell_aria')
+        }
         className="relative p-2 rounded-full bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-sub hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
       >
         <BellIcon className="w-5 h-5" />
@@ -104,13 +110,15 @@ export function NotificationDropdown() {
       {isOpen && (
         <div className="absolute right-0 top-12 w-80 md:w-96 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
           <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-            <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
+            <h3 className="font-bold text-gray-900 dark:text-white">
+              {t('Notifications.nd_title')}
+            </h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
                 className="text-xs text-primary hover:text-primary/80 font-medium"
               >
-                Mark all read
+                {t('Notifications.nd_mark_all_read')}
               </button>
             )}
           </div>
@@ -119,7 +127,7 @@ export function NotificationDropdown() {
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <BellSlashIcon className="w-9 h-9 text-gray-300" />
-                <p className="text-sm">No notifications yet</p>
+                <p className="text-sm">{t('Notifications.nd_none')}</p>
               </div>
             ) : (
               notifications.map((n) => (
@@ -141,7 +149,7 @@ export function NotificationDropdown() {
                       </h4>
                       <p className="text-xs text-text-sub mt-1 leading-relaxed">{n.message}</p>
                       <p className="text-[10px] text-gray-400 mt-2">
-                        {new Date(n.createdAt).toLocaleDateString()} at{' '}
+                        {new Date(n.createdAt).toLocaleDateString()} {t('Notifications.nd_at')}{' '}
                         {new Date(n.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -151,9 +159,9 @@ export function NotificationDropdown() {
                     {!n.isRead && (
                       <button
                         onClick={(e) => handleMarkRead(n.id, e)}
-                        aria-label="Mark as read"
+                        aria-label={t('Notifications.nd_mark_as_read')}
                         className="absolute top-4 right-4 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Mark as read"
+                        title={t('Notifications.nd_mark_as_read')}
                       >
                         <CheckCircleIcon className="w-4 h-4" />
                       </button>

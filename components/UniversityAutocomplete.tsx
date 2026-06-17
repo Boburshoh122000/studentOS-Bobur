@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { universityApi } from '../src/services/api';
 import { BuildingLibraryIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
@@ -43,11 +44,12 @@ function highlight(text: string, query: string): React.ReactElement {
 export default function UniversityAutocomplete({
   value,
   onChange,
-  placeholder = 'Search by name in Uzbek, Russian or English…',
+  placeholder,
   label,
   required,
   inputClassName,
 }: Props) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(value.name);
   const [allUniversities, setAllUniversities] = useState<University[]>([]);
   const [filtered, setFiltered] = useState<University[]>([]);
@@ -196,11 +198,13 @@ export default function UniversityAutocomplete({
             if (query.trim().length >= 2) setIsOpen(true);
           }}
           onKeyDown={onKeyDown}
-          placeholder={isLoading ? 'Loading universities…' : placeholder}
+          placeholder={
+            isLoading ? t('University.loading') : (placeholder ?? t('University.search_ph'))
+          }
           disabled={isLoading}
           role="combobox"
           autoComplete="off"
-          aria-label={label || 'University or school'}
+          aria-label={label || t('University.aria_input')}
           aria-expanded={isOpen ? 'true' : 'false'}
           aria-controls={listboxId}
           aria-haspopup="listbox"
@@ -220,7 +224,7 @@ export default function UniversityAutocomplete({
             <button
               type="button"
               onClick={clear}
-              aria-label="Clear university"
+              aria-label={t('University.aria_clear')}
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <XMarkIcon className="w-3.5 h-3.5" />
@@ -247,7 +251,7 @@ export default function UniversityAutocomplete({
           ref={listRef}
           id={listboxId}
           role="listbox"
-          aria-label="University suggestions"
+          aria-label={t('University.aria_suggestions')}
           className="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-[300px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {/* No results */}
@@ -258,7 +262,7 @@ export default function UniversityAutocomplete({
               aria-disabled="true"
               className="px-4 py-3 text-sm text-slate-400 text-center select-none"
             >
-              Natija topilmadi / No results found
+              {t('University.no_results')}
             </li>
           )}
 
@@ -326,7 +330,7 @@ export default function UniversityAutocomplete({
             >
               <span className="text-blue-500 text-base font-bold leading-none shrink-0">+</span>
               <span className="text-sm text-slate-600 dark:text-slate-300">
-                Boshqa: &ldquo;
+                {t('University.other')} &ldquo;
                 <span className="font-semibold text-slate-800 dark:text-white">{query.trim()}</span>
                 &rdquo;
               </span>
