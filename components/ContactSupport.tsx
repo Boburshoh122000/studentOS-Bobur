@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Screen, NavigationProps } from '../types';
 import {
   AcademicCapIcon,
@@ -15,6 +16,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 export default function ContactSupport({ navigateTo }: NavigationProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white transition-colors duration-200 pt-20">
       {/* Top Navigation */}
@@ -36,17 +38,17 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.LANDING)}
               className="text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
             >
-              Home
+              {t('Header.home')}
             </button>
             <button
               onClick={() => navigateTo(Screen.LANDING)}
               className="text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
             >
-              About
+              {t('Header.about')}
             </button>
             <div className="group relative h-full flex items-center">
               <button className="flex items-center gap-1 text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors focus:outline-none py-6">
-                Tools
+                {t('Header.tools')}
                 <ChevronDownIcon className="w-3.5 h-3.5" />
               </button>
               <div className="mega-menu absolute left-1/2 top-[80%] z-50 w-[640px] -translate-x-1/2 translate-y-2 rounded-2xl border border-white/50 bg-white/90 backdrop-blur-xl p-5 shadow-2xl ring-1 ring-black/5 transition-all duration-300 ease-out invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 dark:bg-[#1e2130]/95 dark:border-slate-700">
@@ -59,10 +61,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <ClipboardDocumentCheckIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          CV & ATS Checker
+                          {t('Contact.tool_ats')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Optimize for recruitment algorithms
+                          {t('Contact.tool_ats_desc')}
                         </div>
                       </div>
                     </button>
@@ -73,10 +75,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <BriefcaseIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Job Finder
+                          {t('Contact.tool_jobs')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Internships & graduate roles
+                          {t('Contact.tool_jobs_desc')}
                         </div>
                       </div>
                     </button>
@@ -87,10 +89,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <ScaleIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Plagiarism & AI Checker
+                          {t('Contact.tool_plag')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Ensure academic integrity
+                          {t('Contact.tool_plag_desc')}
                         </div>
                       </div>
                     </button>
@@ -101,10 +103,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <UsersIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Presentation Maker
+                          {t('Contact.tool_present')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Create slides in minutes
+                          {t('Contact.tool_present_desc')}
                         </div>
                       </div>
                     </button>
@@ -117,10 +119,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <AcademicCapIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Scholarship Finder
+                          {t('Contact.tool_scholar')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Find funding opportunities
+                          {t('Contact.tool_scholar_desc')}
                         </div>
                       </div>
                     </button>
@@ -131,10 +133,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <CheckCircleIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Habit Tracker
+                          {t('Contact.tool_habits')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Build study routines
+                          {t('Contact.tool_habits_desc')}
                         </div>
                       </div>
                     </button>
@@ -145,10 +147,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       <MapIcon className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-white">
-                          Learning Plan Builder
+                          {t('Contact.tool_learning')}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Customized curriculum paths
+                          {t('Contact.tool_learning_desc')}
                         </div>
                       </div>
                     </button>
@@ -160,19 +162,19 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.COMMUNITY)}
               className="text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
             >
-              Community
+              {t('Contact.nav_community')}
             </button>
             <button
               onClick={() => navigateTo(Screen.BLOG)}
               className="text-sm font-medium text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
             >
-              Blog
+              {t('Header.blog')}
             </button>
             <button
               onClick={() => navigateTo(Screen.CONTACT)}
               className="text-sm font-bold text-primary dark:text-primary underline decoration-2 underline-offset-8"
             >
-              Contact
+              {t('Header.contact')}
             </button>
           </nav>
           <div className="flex items-center gap-4">
@@ -180,13 +182,13 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               onClick={() => navigateTo(Screen.SIGN_IN)}
               className="hidden sm:flex text-sm font-medium text-text-main hover:text-primary dark:text-white dark:hover:text-primary transition-colors"
             >
-              Sign In
+              {t('Header.sign_in')}
             </button>
             <button
               onClick={() => navigateTo(Screen.SIGNUP_STEP_1)}
               className="flex items-center justify-center overflow-hidden rounded-xl h-10 px-5 bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
             >
-              <span className="truncate">Get Started</span>
+              <span className="truncate">{t('Header.get_started')}</span>
             </button>
           </div>
           <div className="md:hidden">
@@ -204,11 +206,10 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
           <div className="mb-12 text-center md:text-left">
             <div className="flex flex-col gap-4 max-w-2xl">
               <h1 className="text-4xl md:text-5xl font-black tracking-tight text-text-main dark:text-white">
-                Get in touch
+                {t('Contact.heading')}
               </h1>
               <p className="text-lg text-text-sub dark:text-gray-400 leading-relaxed">
-                Have a question or feedback? We’re here to help you succeed with StudentOS. Fill out
-                the form or reach out directly.
+                {t('Contact.subheading')}
               </p>
             </div>
           </div>
@@ -219,7 +220,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
               {/* Info Card */}
               <div className="bg-card-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-border-light dark:border-border-dark flex flex-col gap-6">
                 <h3 className="text-lg font-bold text-text-main dark:text-white mb-2">
-                  Contact Information
+                  {t('Contact.info_title')}
                 </h3>
                 {/* Email Item */}
                 <div className="flex items-start gap-4 group">
@@ -228,7 +229,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                   </div>
                   <div className="flex flex-col pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-text-sub dark:text-gray-500 mb-1">
-                      Email us
+                      {t('Contact.email_us')}
                     </span>
                     <a
                       href="mailto:support@studentos.com"
@@ -245,12 +246,12 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                   </div>
                   <div className="flex flex-col pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-text-sub dark:text-gray-500 mb-1">
-                      Visit us
+                      {t('Contact.visit_us')}
                     </span>
                     <p className="text-base font-medium text-text-main dark:text-white">
-                      Amir Temur street 13
+                      {t('Contact.address_l1')}
                       <br />
-                      Tashkent, Uzbekistan
+                      {t('Contact.address_l2')}
                     </p>
                   </div>
                 </div>
@@ -258,7 +259,9 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
 
               {/* Socials */}
               <div className="bg-card-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-border-light dark:border-border-dark">
-                <h3 className="text-lg font-bold text-text-main dark:text-white mb-6">Follow Us</h3>
+                <h3 className="text-lg font-bold text-text-main dark:text-white mb-6">
+                  {t('Contact.follow_us')}
+                </h3>
                 <div className="flex gap-6">
                   {/* Twitter */}
                   <a href="#" className="flex flex-col items-center gap-2 group w-20">
@@ -307,7 +310,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 group-hover:from-primary/80 transition-all"></div>
                 <div className="relative z-10 flex items-end p-6 w-full">
                   <p className="text-white font-bold text-xl leading-tight">
-                    Join 10,000+ students organizing their life.
+                    {t('Contact.illustration')}
                   </p>
                 </div>
               </div>
@@ -317,7 +320,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
             <div className="lg:col-span-7">
               <div className="bg-card-light dark:bg-surface-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-8 md:p-10">
                 <h2 className="text-2xl font-bold text-text-main dark:text-white mb-6">
-                  Send us a message
+                  {t('Contact.send_title')}
                 </h2>
                 <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -326,12 +329,12 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                         className="block text-sm font-semibold text-text-main dark:text-gray-200"
                         htmlFor="name"
                       >
-                        Full Name
+                        {t('Contact.full_name')}
                       </label>
                       <input
                         className="block w-full rounded-lg border-border-light bg-background-light px-4 py-3 text-text-main placeholder-text-sub focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder-gray-500 sm:text-sm shadow-sm transition-all focus:ring-2 outline-none"
                         id="name"
-                        placeholder="John Doe"
+                        placeholder={t('Contact.ph_name')}
                         type="text"
                       />
                     </div>
@@ -340,12 +343,12 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                         className="block text-sm font-semibold text-text-main dark:text-gray-200"
                         htmlFor="email"
                       >
-                        Email Address
+                        {t('Contact.email_address')}
                       </label>
                       <input
                         className="block w-full rounded-lg border-border-light bg-background-light px-4 py-3 text-text-main placeholder-text-sub focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder-gray-500 sm:text-sm shadow-sm transition-all focus:ring-2 outline-none"
                         id="email"
-                        placeholder="john@university.edu"
+                        placeholder={t('Contact.ph_email')}
                         type="email"
                       />
                     </div>
@@ -355,17 +358,17 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       className="block text-sm font-semibold text-text-main dark:text-gray-200"
                       htmlFor="subject"
                     >
-                      Subject
+                      {t('Contact.subject')}
                     </label>
                     <div className="relative">
                       <select
                         className="block w-full appearance-none rounded-lg border-border-light bg-background-light px-4 py-3 text-text-main focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-white sm:text-sm shadow-sm transition-all focus:ring-2 outline-none"
                         id="subject"
                       >
-                        <option>General Inquiry</option>
-                        <option>Technical Support</option>
-                        <option>Billing Question</option>
-                        <option>Partnership</option>
+                        <option>{t('Contact.subj_general')}</option>
+                        <option>{t('Contact.subj_technical')}</option>
+                        <option>{t('Contact.subj_billing')}</option>
+                        <option>{t('Contact.subj_partnership')}</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-text-sub dark:text-gray-400">
                         <ChevronDownIcon className="w-5 h-5" />
@@ -377,12 +380,12 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       className="block text-sm font-semibold text-text-main dark:text-gray-200"
                       htmlFor="message"
                     >
-                      Message
+                      {t('Contact.message')}
                     </label>
                     <textarea
                       className="block w-full rounded-lg border-border-light bg-background-light px-4 py-3 text-text-main placeholder-text-sub focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder-gray-500 sm:text-sm shadow-sm transition-all focus:ring-2 outline-none resize-none"
                       id="message"
-                      placeholder="How can we help you today?"
+                      placeholder={t('Contact.ph_message')}
                       rows={4}
                     ></textarea>
                   </div>
@@ -391,7 +394,7 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
                       className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary-dark hover:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-surface-dark sm:w-auto min-w-[160px]"
                       type="submit"
                     >
-                      <span>Send Message</span>
+                      <span>{t('Contact.send_message')}</span>
                       <PaperAirplaneIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -403,40 +406,37 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
           {/* FAQ Section */}
           <div className="mt-20 max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold text-text-main dark:text-white text-center mb-10">
-              Frequently Asked Questions
+              {t('Contact.faq_title')}
             </h2>
             <div className="space-y-4">
               {/* FAQ Item 1 */}
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
-                  <span>How do I upgrade to StudentOS Pro?</span>
+                  <span>{t('Contact.faq1_q')}</span>
                   <ChevronDownIcon className="w-5 h-5" />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
-                  You can upgrade to Pro directly from your dashboard settings. Click on the
-                  'Billing' tab and select the Pro plan. We offer monthly and yearly subscriptions.
+                  {t('Contact.faq1_a')}
                 </div>
               </details>
               {/* FAQ Item 2 */}
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
-                  <span>Is there a discount for students?</span>
+                  <span>{t('Contact.faq2_q')}</span>
                   <ChevronDownIcon className="w-5 h-5" />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
-                  Yes! We offer a 50% discount for all verified students. Simply sign up with your
-                  .edu email address, and the discount will be automatically applied at checkout.
+                  {t('Contact.faq2_a')}
                 </div>
               </details>
               {/* FAQ Item 3 */}
               <details className="group rounded-xl bg-card-light dark:bg-surface-dark border border-border-light dark:border-border-dark overflow-hidden transition-all duration-300 open:shadow-md">
                 <summary className="flex cursor-pointer list-none items-center justify-between p-6 text-base font-semibold text-text-main dark:text-white transition-colors hover:text-primary">
-                  <span>How do I reset my password?</span>
+                  <span>{t('Contact.faq3_q')}</span>
                   <ChevronDownIcon className="w-5 h-5" />
                 </summary>
                 <div className="px-6 pb-6 text-text-sub dark:text-gray-400 leading-relaxed">
-                  If you've forgotten your password, go to the login page and click "Forgot
-                  Password". We'll send a reset link to your registered email address immediately.
+                  {t('Contact.faq3_a')}
                 </div>
               </details>
             </div>
@@ -448,26 +448,26 @@ export default function ContactSupport({ navigateTo }: NavigationProps) {
       <footer className="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-surface-dark py-10 mt-12">
         <div className="mx-auto max-w-7xl px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-sm text-text-sub dark:text-gray-500">
-            © 2023 StudentOS Inc. All rights reserved.
+            {t('Contact.footer_rights')}
           </div>
           <div className="flex gap-6">
             <a
               href="/privacy"
               className="text-sm text-text-sub hover:text-primary dark:text-gray-500 dark:hover:text-white transition-colors"
             >
-              Privacy Policy
+              {t('Contact.footer_privacy')}
             </a>
             <a
               href="/terms"
               className="text-sm text-text-sub hover:text-primary dark:text-gray-500 dark:hover:text-white transition-colors"
             >
-              Terms of Service
+              {t('Contact.footer_terms')}
             </a>
             <button
               onClick={() => navigateTo(Screen.CONTACT)}
               className="text-sm text-text-sub hover:text-primary dark:text-gray-500 dark:hover:text-white transition-colors"
             >
-              Contact Support
+              {t('Contact.footer_contact')}
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { teamApi } from '../src/services/api';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -172,6 +173,7 @@ const cardVariants = {
 
 /* ─── Main Component ─────────────────────────────────────── */
 export default function Team() {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -205,14 +207,13 @@ export default function Team() {
           className="mb-16"
         >
           <span className="text-sm font-semibold text-indigo-600 tracking-widest uppercase">
-            Our People
+            {t('About.team_label')}
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white tracking-tight mt-3 leading-tight">
-            Meet the Team
+            {t('About.team_title')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mt-4 text-lg max-w-xl leading-relaxed">
-            A passionate group of builders, designers, and dreamers working to transcend the
-            conventional.
+            {t('About.team_sub')}
           </p>
         </motion.div>
 
